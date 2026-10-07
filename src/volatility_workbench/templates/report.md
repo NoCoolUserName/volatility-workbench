@@ -5,7 +5,7 @@ Analysis: {{START_UTC}} to {{END_UTC}}. Revision: {{REVISION_OR_FIRST}}.
 
 > Editable template fields use `{{...}}`. Replace them with observed values or
 > explicit unknowns; remove these editing notes from a completed report. Follow
-> [REPORT_SPEC.md](../../docs/REPORT_SPEC.md), the authoritative contract.
+> [REPORT_SPEC.md](https://github.com/NoCoolUserName/volatility-mcp/blob/main/src/volatility_mcp/resources/REPORT_SPEC.md), the authoritative contract.
 
 ## Executive summary
 

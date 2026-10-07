@@ -377,3 +377,14 @@ immutable pin/lock generation, incompatible-series rejection, duplicate-version
 no-op and an inert dry run. The live public release lookup found the current tested
 core release and made no changes. Candidate PR generation is tested with fixtures;
 no fake core release was published merely to manufacture an update PR.
+
+GitHub's Workbench compatibility workflow passed on Python 3.12 and 3.13 after
+publication, including installed-wheel tests. Core's separate CI also passed.
+The actual manual `Update core` run succeeded as a no-change run against the public
+core release. Repository workflow defaults remain read-only; the updater job alone
+requests contents/pull-request write access, and the repository permits token-created
+PRs. No PAT or additional secret was created. See the
+[compatibility run](https://github.com/NoCoolUserName/volatility-workbench/actions/runs/37589967237)
+and [manual updater run](https://github.com/NoCoolUserName/volatility-workbench/actions/runs/37590071999).
+The moved presentation template's contract link was corrected and the two installed
+resource/compatibility checks passed after that documentation-only repair.
