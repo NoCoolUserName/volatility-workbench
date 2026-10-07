@@ -1,0 +1,23 @@
+# Publish source and harmless fixtures only.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.env*
+config.local.*
+relocation.local.json
+*.raw
+*.mem
+*.vmem
+*.dmp
+*.lime
+*.dd
+*.exe
+*.dll
+*.sys
+*.log
+.DS_Store
+work/

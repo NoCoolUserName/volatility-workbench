@@ -1,0 +1,71 @@
+name: Update core
+on:
+  schedule:
+    - cron: '23 9 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: update-core
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Select eligible immutable release
+        id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python scripts/update_core.py
+          if git diff --quiet; then exit 0; fi
+          sha=$(python -c 'import json; print(json.load(open("core-dependency.json"))["commit"])')
+          branch="deps/core-$sha"
+          existing=$(gh pr list --state all --head "$branch" --json number --jq 'length')
+          if [ "$existing" != 0 ]; then exit 0; fi
+          if git ls-remote --exit-code origin "refs/heads/$branch" >/dev/null; then exit 0; fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+      - name: Validate candidate before proposing it
+        if: steps.candidate.outputs.changed == 'true'
+        run: |
+          python -m pip install -r requirements.lock.txt
+          python -m pip install .
+          python -m unittest discover -s tests -q
+          node --check src/volatility_workbench/static/app.js
+          python scripts/package_smoke.py
+      - name: Propose tested dependency update
+        if: steps.candidate.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPDATE_BRANCH: ${{ steps.candidate.outputs.branch }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          git switch -c "$UPDATE_BRANCH"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pyproject.toml requirements.lock.txt core-dependency.json
+          git commit -m 'Update tested volatility-mcp dependency'
+          git push origin "$UPDATE_BRANCH"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          record=json.loads(Path('core-dependency.json').read_text())
+          Path('/tmp/core-pr.md').write_text(
+              'Adopt volatility-mcp '+record['version']+' at `'+record['commit']+'`.\n\n'
+              'The candidate lock, installed wheel, both MCP protocol modes, and Workbench regressions passed before this PR was opened. '
+              'Validation: '+os.environ['RUN_URL']+'\n\n'
+              'Token-created PR checks may require approval; the linked updater run already validated these exact dependency changes. '
+              'No application updates or automatic merge are performed.\n')
+          PY
+          gh pr create --base main --head "$UPDATE_BRANCH" --title 'Update tested volatility-mcp dependency' --body-file /tmp/core-pr.md
