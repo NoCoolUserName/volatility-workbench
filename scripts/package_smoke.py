@@ -42,7 +42,7 @@ assert require_core().API_VERSION == 1
 assert 'site-packages' in str(files('volatility_mcp'))
 assert 'site-packages' in str(files('volatility_workbench'))
 assert 'Executive summary' in report_spec()
-for p in ['static/app.js','static/index.html','static/style.css','templates/report.md']:
+for p in ['static/app.js','static/index.html','static/style.css','static/icon.png','templates/report.md']:
     assert files('volatility_workbench').joinpath(p).read_bytes()
 root=Path.cwd(); evidence=root/'evidence';evidence.mkdir()
 config=Config(evidence, root/'outputs', Path(sys.executable),Path(sys.executable),cache_path=root/'cache',enable_xpnet=False)
@@ -62,7 +62,7 @@ async def main():
     worker=threading.Thread(target=server.serve_forever,daemon=True);worker.start()
     def check():
         opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        for path in ['/','/app.js','/style.css','/api/state']:
+        for path in ['/','/app.js','/style.css','/icon.png','/api/state']:
             request=urllib.request.Request(server.origin+path,headers={'Cookie':'volatility_ui='+server.token})
             with opener.open(request) as response: assert response.status==200
     try: await asyncio.to_thread(check)

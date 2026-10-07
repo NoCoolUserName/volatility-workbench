@@ -8,7 +8,7 @@ from volatility_mcp import api
 class InstallationTests(unittest.TestCase):
     def test_assets_and_installed_contract(self):
         root=files('volatility_workbench')
-        for name in ('static/app.js','static/style.css','static/index.html','templates/report.md'):
+        for name in ('static/app.js','static/style.css','static/index.html','static/icon.png','templates/report.md'):
             self.assertTrue(root.joinpath(name).read_bytes())
         self.assertIn('Executive summary',api.report_spec())
         self.assertIs(require_core(), api)

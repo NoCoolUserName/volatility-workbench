@@ -44,6 +44,22 @@ accepted for old launchers but is no longer needed for packaged assets/contracts
 See [workflow and limits](docs/LOCAL_UI.md), [validation](docs/UI_VALIDATION.md),
 [ownership and recovery](docs/SEPARATION.md), and [security](SECURITY.md).
 
+On macOS, launch and reopen use the system's default browser through `/usr/bin/open`.
+If opening fails, Workbench prints an explicit message and keeps the private launch
+URL available in Terminal. `--no-open` skips browser opening.
+
+The packaged icon also appears in the browser tab. To apply the same custom icon
+to an existing macOS `.command` launcher (without changing its command):
+
+```sh
+swift scripts/macos-icon.swift /tmp/workbench-icon.png "/absolute/path/to/Launch Volatility Workbench.command"
+```
+
+The Swift source draws the icon using AppKit; it requires Apple's Swift tools.
+To regenerate the packaged image, use `src/volatility_workbench/static/icon.png`
+as the output path and omit the launcher argument. The launcher remains a Terminal
+script, with no separate desktop application to install.
+
 ## Develop both repositories
 
 Place the two checkouts alongside each other, then use Workbench's environment:

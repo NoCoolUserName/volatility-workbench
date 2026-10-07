@@ -102,7 +102,7 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         (root/'session.json').write_text(json.dumps({'url':'http://127.0.0.1:1/#synthetic'}))
         with (root/'app.lock').open('a+') as lock:
             fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
-            with patch('volatility_workbench.http.webbrowser.open') as browser:
+            with patch('volatility_workbench.http.open_browser') as browser:
                 with self.assertRaisesRegex(ValueError,'older Workbench'):
                     await serve(SimpleNamespace(config=self.config,state_dir=str(root),no_open=False))
                 browser.assert_not_called()

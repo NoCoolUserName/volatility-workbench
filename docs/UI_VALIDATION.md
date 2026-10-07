@@ -388,3 +388,35 @@ PRs. No PAT or additional secret was created. See the
 and [manual updater run](https://github.com/NoCoolUserName/volatility-workbench/actions/runs/37590071999).
 The moved presentation template's contract link was corrected and the two installed
 resource/compatibility checks passed after that documentation-only repair.
+
+
+## macOS launcher and icon follow-up — 2026-10-07
+
+Browser opening now uses macOS Launch Services through `/usr/bin/open`, avoiding
+Python's AppleScript browser automation. Both cold start and reopening use the same
+helper. Failure or timeout prints an explicit fallback message without repeating
+the private capability in error diagnostics, and the HTTP server remains available.
+Other platforms retain Python's standard browser support.
+
+All 37 application tests passed from the editable checkout and from an isolated
+wheel installation outside either checkout. Package smoke checks include the PNG
+icon's HTTP route. Browser helper tests cover macOS dispatch, failure, timeout and
+other-platform fallback; the stale-instance test still prevents browser reopening.
+
+The actual local Desktop command was simplified to call the package CLI, retaining
+the existing config, relocation and state roots. With the server confirmed idle,
+the command was executed from outside the checkout. Cold start and a second launch
+succeeded without browser errors, and the second launch reused the running server.
+The native Vivaldi window was visually checked at the new server address with saved
+cases loaded. Full saved state compared equal before and after the restart.
+No investigation or report-generation request was submitted.
+
+A custom memory-chip/lens icon was drawn with the committed AppKit/Swift source,
+packaged as the browser favicon, and installed on the existing Desktop command.
+The native icon installer returned success, and Finder's custom-icon flag and
+resource fork are present. Direct Finder window automation failed to attach, so
+a Finder double-click itself was not tested; the actual Desktop script was tested
+directly. No desktop application wrapper was added.
+
+The Workbench checkout now has its GitHub `origin` and `main` upstream configured.
+The earlier environment restriction on local Git configuration is resolved.

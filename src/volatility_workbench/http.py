@@ -11,6 +11,8 @@ from pathlib import Path
 import secrets
 import re
 import signal
+import subprocess
+import sys
 import threading
 from urllib.parse import urlsplit, parse_qs
 import webbrowser
@@ -19,6 +21,20 @@ from .storage import atomic_json, private_dir, safe_file
 from volatility_mcp.api import load_config
 import volatility_mcp
 from .compatibility import require_core
+
+
+def open_browser(url):
+    """Use the registered macOS browser without AppleScript automation."""
+    try:
+        if sys.platform == 'darwin':
+            opened = subprocess.run(['/usr/bin/open', url], capture_output=True, timeout=15).returncode == 0
+        else:
+            opened = webbrowser.open(url)
+    except (OSError, subprocess.TimeoutExpired, webbrowser.Error):
+        opened = False
+    if not opened:
+        print('Could not open the browser automatically. Open the private launch URL printed above in your browser. Workbench remains available.', file=sys.stderr)
+    return opened
 
 
 def runtime_fingerprint():
@@ -117,7 +133,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             self.guard()
             url=urlsplit(self.path)
-            assets={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8')}
+            assets={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/icon.png':('icon.png','image/png')}
             if url.path in assets:
                 name,mime=assets[url.path]
                 return self.send(200,(Path(__file__).parent/'static'/name).read_bytes(),mime)
@@ -164,7 +180,7 @@ async def serve(args):
         session=json.loads((root/'session.json').read_text())
         check_running_version(session,fingerprint)
         print('Workbench is already running: '+session['url'])
-        if not args.no_open:await asyncio.to_thread(webbrowser.open,session['url'])
+        if not args.no_open:await asyncio.to_thread(open_browser,session['url'])
         return
     app=Workbench(args.config,root,getattr(args,'project',None))
     await app.start()
@@ -178,7 +194,7 @@ async def serve(args):
     loop=asyncio.get_running_loop()
     for signum in (signal.SIGINT,signal.SIGTERM):loop.add_signal_handler(signum,stop.set)
     try:
-        if not args.no_open:await asyncio.to_thread(webbrowser.open,url)
+        if not args.no_open:await asyncio.to_thread(open_browser,url)
         await stop.wait()
     finally:
         await app.close()
