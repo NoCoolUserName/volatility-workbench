@@ -9,12 +9,18 @@ concurrency:
   group: update-core
   cancel-in-progress: false
 jobs:
-  update:
-    runs-on: ubuntu-latest
+  validate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
+    outputs:
+      changed: ${{ steps.candidate.outputs.changed }}
+      commit: ${{ steps.candidate.outputs.commit }}
+      digest: ${{ steps.digest.outputs.digest }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
@@ -24,30 +30,105 @@ jobs:
           node-version: '22'
       - name: Select eligible immutable release
         id: candidate
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           python scripts/update_core.py
           if git diff --quiet; then
-            echo "No eligible core update is available." >> "$GITHUB_STEP_SUMMARY"
+            echo 'No eligible core update is available.' >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           sha=$(python -c 'import json; print(json.load(open("core-dependency.json"))["commit"])')
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "commit=$sha" >> "$GITHUB_OUTPUT"
-      - name: Validate candidate for manual adoption
+      - name: Validate candidate with read-only permissions
         if: steps.candidate.outputs.changed == 'true'
         run: |
+          set -euo pipefail
           python -m pip install -r requirements.lock.txt
           python -m pip install .
           python -m unittest discover -s tests -q
           node --check src/volatility_workbench/static/app.js
           python scripts/package_smoke.py
-      - name: Report validated candidate
+      - name: Record exact validated files
+        id: digest
         if: steps.candidate.outputs.changed == 'true'
-        env:
-          CORE_COMMIT: ${{ steps.candidate.outputs.commit }}
         run: |
-          echo '### A tested core update is available' >> "$GITHUB_STEP_SUMMARY"
-          echo "Candidate commit: $CORE_COMMIT" >> "$GITHUB_STEP_SUMMARY"
-          echo 'Adopt it manually after review. This workflow has read-only permissions and does not push changes or open a pull request.' >> "$GITHUB_STEP_SUMMARY"
+          set -euo pipefail
+          test "$(git diff --name-only | sort)" = "$(printf '%s\n' core-dependency.json pyproject.toml requirements.lock.txt | sort)"
+          digest=$(sha256sum core-dependency.json pyproject.toml requirements.lock.txt | sha256sum | cut -d' ' -f1)
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+  propose:
+    needs: validate
+    if: github.ref == 'refs/heads/main' && needs.validate.outputs.changed == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Recreate and verify the tested proposal
+        env:
+          CORE_COMMIT: ${{ needs.validate.outputs.commit }}
+          VALIDATED_DIGEST: ${{ needs.validate.outputs.digest }}
+        run: |
+          set -euo pipefail
+          # Fresh trusted checkout. This job installs or executes no candidate code.
+          python3 scripts/update_core.py
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          expected = os.environ['CORE_COMMIT']
+          assert re.fullmatch(r'[0-9a-f]{40}', expected), 'Invalid candidate SHA'
+          assert json.loads(Path('core-dependency.json').read_text())['commit'] == expected, 'Candidate changed after validation'
+          PY
+          test "$(git diff --name-only | sort)" = "$(printf '%s\n' core-dependency.json pyproject.toml requirements.lock.txt | sort)"
+          digest=$(sha256sum core-dependency.json pyproject.toml requirements.lock.txt | sha256sum | cut -d' ' -f1)
+          test "$digest" = "$VALIDATED_DIGEST"
+          git diff --check
+      - name: Open a proposal for human review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CORE_COMMIT: ${{ needs.validate.outputs.commit }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          UPDATE_BRANCH="deps/core-$CORE_COMMIT"
+          existing=$(gh pr list --state all --head "$UPDATE_BRANCH" --json number --jq 'length')
+          if [ "$existing" != 0 ]; then
+            echo 'A proposal for this candidate already exists.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if ! git ls-remote origin "refs/heads/$UPDATE_BRANCH" > "$RUNNER_TEMP/core-existing-ref"; then
+            exit 1
+          fi
+          if [ -s "$RUNNER_TEMP/core-existing-ref" ]; then
+            echo 'Candidate branch already exists; leaving it for human review.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git switch -c "$UPDATE_BRANCH"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- pyproject.toml requirements.lock.txt core-dependency.json
+          git commit -m 'Update tested volatility-mcp dependency'
+          git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push origin "$UPDATE_BRANCH"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          record = json.loads(Path('core-dependency.json').read_text())
+          Path(os.environ['RUNNER_TEMP'], 'core-pr.md').write_text(
+              'Adopt volatility-mcp ' + record['version'] + ' at `' + record['commit'] + '`.\n\n'
+              'The exact three dependency files were tested with a read-only token. '
+              'The publishing job independently reproduced and verified their SHA-256 digest.\n\n'
+              'Validation: ' + os.environ['RUN_URL'] + '\n\n'
+              'Review and merge when ready. GitHub may ask you to approve PR checks; '
+              'the linked updater run has already tested this proposal.\n'
+          )
+          PY
+          gh pr create --base main --head "$UPDATE_BRANCH" --title 'Update tested volatility-mcp dependency' --body-file "$RUNNER_TEMP/core-pr.md"
+          echo 'Tested proposal opened for human review; no automatic merge or approving review.' >> "$GITHUB_STEP_SUMMARY"
