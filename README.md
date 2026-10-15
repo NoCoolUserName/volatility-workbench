@@ -37,8 +37,11 @@ the presentation template, and the core report contract ship in the wheels.
 Use an existing private config/state directory to reopen existing cases. Without
 `--state-dir`, the default is `<configured output_root>/workbench`. No source images
 are copied. For an existing administrative relocation, export the same
-`VOLATILITY_MCP_RELOCATION` file and retain its compatibility symlink. Never change
-these roots merely because the source repositories were separated. `--project` is
+`VOLATILITY_MCP_RELOCATION` file. At startup Workbench restores its exact historical
+root symlink if that link is missing and the mapping is valid. It refuses to replace
+an existing directory or a link to another target. Keep the compatibility link for
+saved case references; do not change data roots merely because the repositories
+were separated. `--project` is
 accepted for old launchers but is no longer needed for packaged assets/contracts.
 
 See [workflow and limits](docs/LOCAL_UI.md), [validation](docs/UI_VALIDATION.md),

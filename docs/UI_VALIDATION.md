@@ -420,3 +420,20 @@ directly. No desktop application wrapper was added.
 
 The Workbench checkout now has its GitHub `origin` and `main` upstream configured.
 The earlier environment restriction on local Git configuration is resolved.
+
+## Historical alias launcher repair — 2026-10-15
+
+The Desktop launch had failed because the private relocation map still identified
+`~/Forensics` as the logical root but its exact symlink to `~/src/Forensics` was
+missing. Workbench startup now restores that link only when the explicit mapping
+and physical root validate; occupied or redirected paths fail without replacement.
+The original config, case state, images, runs and sealed reports were not rewritten.
+
+Seven synthetic launcher fixtures passed: missing/existing aliases, conflicting
+paths, invalid mapping, duplicate launch race, read-only help and no mapping. The full 44-test
+application suite passed, as did an isolated wheel installation and outside-checkout
+package smoke with 44 installed tests and zero analysis/model subprocesses. For the
+real Desktop check, the idle server was stopped, the exact link removed, and the
+Desktop `.command` opened via macOS Launch Services. It recreated the alias and
+served HTTP 200 with both saved cases and all 50 prior jobs; zero jobs were active.
+No memory image was analyzed or report regenerated.
