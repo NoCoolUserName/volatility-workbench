@@ -20,11 +20,7 @@ Terminal process running. Ctrl-C stops work and exits. `--no-open` prints the
 private launch URL without opening a browser; `--port 8765` requests a fixed port.
 Treat the launch URL as a local access credential; do not share it or put it in
 issues. Repeating the launch command for the same state directory opens the
-existing application instead of starting another queue. When an explicit
-`VOLATILITY_MCP_RELOCATION` mapping exists but its old-root symlink has been
-removed, startup restores only that exact alias before loading case state.
-A conflicting directory or redirected link stops launch with an error; source
-images and saved outputs are not moved or rewritten.
+existing application instead of starting another queue.
 
 Default private storage is `<configured output_root>/workbench`. To use another
 private output directory outside the repository, add:
