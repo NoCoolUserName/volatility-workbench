@@ -420,3 +420,20 @@ directly. No desktop application wrapper was added.
 
 The Workbench checkout now has its GitHub `origin` and `main` upstream configured.
 The earlier environment restriction on local Git configuration is resolved.
+
+## Physical-root launcher correction — 2026-10-15
+
+The symlink auto-repair added earlier was removed after the operator clarified
+that the case root had moved physically and no alias was desired. With the
+Workbench idle, private configuration, the Desktop command, two registered image
+paths and two scoped MCP configurations were pointed at the physical root. A
+backed-up, offline path-only migration updated 327 mutable run/inspection manifests;
+historical argv, raw outputs, source images and sealed report bundles were not
+rewritten. Inspection identity digests were updated to match the rebased run
+manifests. This migration was local private maintenance, not a general installer.
+
+A cold launch returned two existing cases and 50 prior jobs. The sealed report
+reader returned its saved Markdown. Coverage returned saved attempts for both
+images with no migration-related issues; one preexisting unsupported XP result
+remained unparseable and was not treated as empty. The old path was absent before
+and after launch. No Volatility command or investigation job was started.
