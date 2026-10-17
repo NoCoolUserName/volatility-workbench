@@ -1,0 +1,17 @@
+{
+  "enabled": false,
+  "blocked_reason": "Core dependencies use the existing compatibility-tested updater; Dependabot only updates workflows, which cannot auto-merge.",
+  "allow_dev_minor": false,
+  "dependency_files": [],
+  "required_workflows": [
+    ".github/workflows/code-quality.yml",
+    ".github/workflows/ci.yml",
+    ".github/workflows/security.yml"
+  ],
+  "required_checks": [
+    "quality / Lint, tests and secrets",
+    "compatibility (3.12)",
+    "compatibility (3.13)",
+    "security / Security / CodeQL"
+  ]
+}

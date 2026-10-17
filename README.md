@@ -36,9 +36,11 @@ the presentation template, and the core report contract ship in the wheels.
 
 Use an existing private config/state directory to reopen existing cases. Without
 `--state-dir`, the default is `<configured output_root>/workbench`. No source images
-are copied. For an existing administrative relocation, export the same
-`VOLATILITY_MCP_RELOCATION` file and retain its compatibility symlink. Never change
-these roots merely because the source repositories were separated. `--project` is
+are copied. Point private configuration and launchers at the actual evidence and
+output directories. If those directories were physically moved, back up and
+rebase mutable saved-case path metadata before relying on saved-result queries;
+sealed report bundles and recorded command lines remain historical records. The
+launcher does not create filesystem aliases. `--project` is
 accepted for old launchers but is no longer needed for packaged assets/contracts.
 
 See [workflow and limits](docs/LOCAL_UI.md), [validation](docs/UI_VALIDATION.md),

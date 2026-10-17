@@ -14,8 +14,9 @@ Do not start real investigations to test application changes.
 Read the installed `volatility_mcp.api.report_spec()` contract only when preparing
 an investigation/report workflow. Its authoritative source is in the core repository.
 Update relevant documentation; inspect staged contents before publication.
-Do not restart active work. Preserve original case roots, conversations and relocation
-mapping. See docs/SEPARATION.md and docs/LOCAL_UI.md.
+Do not restart active work. Preserve case identities, conversations and sealed
+reports. If a physical root moves, back up and validate mutable path metadata;
+do not create filesystem aliases implicitly. See docs/SEPARATION.md and docs/LOCAL_UI.md.
 
 Run `python -m unittest discover -s tests -v`, package smoke checks and browser
 checks appropriate to a change. Verify installed assets from outside the checkout.
