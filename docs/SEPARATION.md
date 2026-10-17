@@ -12,10 +12,11 @@ No history filtering or force push is used.
 | Core | `scoped.py` (case confinement), `files.py` (saved-file confinement), `api.py` (supported integration surface) |
 | Workbench | app/controller, HTTP, Codex adapter, storage/report packaging, coins, static assets, presentation template, app fixtures/tests and documentation |
 
-No data migration is needed. Keep the same `--config`, `--state-dir`, and
-`VOLATILITY_MCP_RELOCATION` when present. Keep an existing administrative old-root
-symlink while historical manifests depend on it. Case IDs, thread IDs, report paths,
-run namespaces and manifests retain their existing meanings. Workbench's optional
+Separating the source repositories did not require moving case data. If the
+physical case root later moves, point configuration and launchers at the real
+directory and rebase mutable saved-path metadata offline with backups. Workbench
+does not create a filesystem alias. Preserve case IDs, thread IDs and sealed
+report bundles. Workbench's optional
 legacy `--project` argument only excludes case storage under that source directory;
 the report contract now comes from the installed core package.
 

@@ -26,7 +26,7 @@ Default private storage is `<configured output_root>/workbench`. To use another
 private output directory outside the repository, add:
 
 ```sh
---state-dir "$HOME/Forensics/reports/workbench"
+--state-dir /absolute/path/to/private/workbench
 ```
 
 The chosen directory is the UI's configured case output root. Keep the same
@@ -34,6 +34,10 @@ argument on later launches to reopen those cases. Do not put UI state under Git.
 Source images remain in the configured evidence root; output and source roots
 must not overlap in a way that makes the output directory contain the evidence.
 No migration or rewrite of previous reports is performed.
+Use the physical location in both `--config` and `--state-dir`. Moving a case
+root requires an offline, backed-up rebase of mutable saved paths; changing only
+the launcher path does not repair old absolute references inside run manifests.
+The launcher never creates a symlink or other filesystem alias.
 
 A fresh clone follows the existing MCP setup first. Install the project normally
 or with the optional separate Workbench distribution. The
