@@ -96,3 +96,20 @@ All decorative assets are packaged locally. Core PR #12 converts remaining
 displayed binary unit labels to accurate decimal KB/MB without changing page
 arithmetic, limits, adapter hashes or plugin inventory. These presentation changes
 do not implement any proposed investigation mode or broaden forensic validation.
+
+## Runtime addon integration
+
+Core compatibility revision 6 adds BitLocker AES-schedule candidates, ten Go
+runtime commands and twelve Python runtime commands. The configured analyzer
+discovers 237 commands, retaining all prior 214 names with no import failures.
+All additions are manually selected, forced offline by core, and carry bounded
+argument/layout requirements and source attribution in the existing catalog.
+Workbench contains no upstream plugin implementations or new investigation mode.
+
+The three installed fixture suites and prior-addon regressions pass. This does
+not establish real-image support across OS/runtime builds: Python uses an explicitly
+verified pinned CPython 3.8 research layout, Go supports only version-gated candidate
+layouts, and BitLocker reports AES candidates without guessing cipher mode/key role.
+See [core's runtime addon record](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/RUNTIME_ADDONS.md)
+for pins, validation and remaining representative-image work. SwapEnumerator,
+parent-spoof checks, Docker and alternate EVTX carving remain separately scoped.

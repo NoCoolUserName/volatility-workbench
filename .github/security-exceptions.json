@@ -6,7 +6,7 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/build_macos.py",
       "line": 23,
-      "source_sha256": "b2fd3fa6eb8ba973ce73a308b25a2c6dcd1a71e41dd7e24f038b40dd853204d6",
+      "source_sha256": "a183e2843e53e39dff760cafd0f7e5a64ea52dea5ab4ee9b342873ada6e6eafb",
       "reason": "Build helper receives argv from fixed build/signing commands and explicit developer-selected paths; shell=False is explicit. No recovered data enters executable selection."
     },
     {
@@ -26,8 +26,8 @@
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/package_smoke.py",
-      "line": 15,
-      "source_sha256": "26ab67bf9642d25b7ab27fe077dd1147123f5d34bb62c490cb75683e02b0da48",
+      "line": 16,
+      "source_sha256": "d7fffbacb813df0b6f2eceee56ef7dad8721c6fd3c84235f706abdc3218bcb84",
       "reason": "All callers supply fixed isolated wheel-install/test argv tuples; subprocess default shell=False, and no caller supplies shell=True. Developer test runner, no recovered input."
     },
     {

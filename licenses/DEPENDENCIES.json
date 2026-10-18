@@ -1,0 +1,4377 @@
+{
+  "repository": "NoCoolUserName/volatility-workbench",
+  "source_commit": "9cb5aa7b61ffe7bacf087ac8e7c6f1e3c22be7c0",
+  "audit_date": "2026-10-18",
+  "scope": "Dependency source/lock snapshot and selected package archives; not certification of a built release.",
+  "components": [
+    {
+      "ecosystem": "pypi",
+      "name": "aesedb",
+      "version": "0.1.8",
+      "license_declared": "Modified Apache Software License 1.1",
+      "license_classifiers": [],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/aesedb"
+      },
+      "metadata_url": "https://pypi.org/pypi/aesedb/0.1.8/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/13/2e/b802e59d54a14e9cf8bda8a4fc4b5ed32568323cce7c1475bb01fdd7ab1c/aesedb-0.1.8-py3-none-any.whl",
+      "artifact_sha256": "e6a3bc77ab9187d79cfeca27620ae21e331ebb66f5ea9254a136e3e29dd8b23a",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "aesedb-0.1.8.dist-info/licenses/LICENSE",
+          "sha256": "76c7f9aaaad049f9aa16c497b1d670e73c8077162e79862796b2e1d51dfbb6ca",
+          "notice_text_sha256": "76c7f9aaaad049f9aa16c497b1d670e73c8077162e79862796b2e1d51dfbb6ca",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "Modified Apache Software License 1.1",
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.6",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "aiosmb",
+      "version": "0.4.14",
+      "license_declared": "Modified Apache Software License 1.1",
+      "license_classifiers": [],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/aiosmb"
+      },
+      "metadata_url": "https://pypi.org/pypi/aiosmb/0.4.14/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/70/20/cf6e04f9615d73537a1129155870ba064af8e9005709e519ddd67301d05a/aiosmb-0.4.14-py3-none-any.whl",
+      "artifact_sha256": "613e6ffc4f2c1d56e48e69943064946403a5c12d43198d9d556e4b04912c0f60",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "aiosmb-0.4.14.dist-info/LICENSE.md",
+          "sha256": "9a6695bdb52b9e02e778d3d5eb67d962b90d6498ab9d452242c4ad93e4da8404",
+          "notice_text_sha256": "9a6695bdb52b9e02e778d3d5eb67d962b90d6498ab9d452242c4ad93e4da8404",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "Modified Apache Software License 1.1",
+        "license_files": [
+          "LICENSE.md"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.7",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "aiowinreg",
+      "version": "0.0.13",
+      "license_declared": null,
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/aiowinreg"
+      },
+      "metadata_url": "https://pypi.org/pypi/aiowinreg/0.0.13/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/42/37/22118ef661a287ca99d46b43e6206bca95cc7c268fa820b4334b2b66d7b7/aiowinreg-0.0.13-py3-none-any.whl",
+      "artifact_sha256": "2e0809f05d62337cb2218d11dcf7ee08eb8c319382dd564293425f03cd332c9b",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "aiowinreg-0.0.13.dist-info/licenses/LICENSE",
+          "sha256": "041e7bea415b8d7382349014d39a7f04854020bd10c5b00329942ff4e8100b9f",
+          "notice_text_sha256": "041e7bea415b8d7382349014d39a7f04854020bd10c5b00329942ff4e8100b9f",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.6",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "license_declared": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Changelog": "https://github.com/annotated-types/annotated-types/releases",
+        "Homepage": "https://github.com/annotated-types/annotated-types",
+        "Source": "https://github.com/annotated-types/annotated-types"
+      },
+      "metadata_url": "https://pypi.org/pypi/annotated-types/0.8.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/99/91/8acff4f5e50511b911bbccb72b8628a49c68ce14148cd9f6431094859a90/annotated_types-0.8.0-py3-none-any.whl",
+      "artifact_sha256": "f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "annotated_types-0.8.0.dist-info/licenses/LICENSE",
+          "sha256": "fe1049884b1a0d9342901e88e07f32925d24b3121d9972b6a6805fb9824b095d",
+          "notice_text_sha256": "fe1049884b1a0d9342901e88e07f32925d24b3121d9972b6a6805fb9824b095d",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 4 - Beta",
+          "Environment :: Console",
+          "Environment :: MacOS X",
+          "Intended Audience :: Developers",
+          "Intended Audience :: Information Technology",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: POSIX :: Linux",
+          "Operating System :: Unix",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Typing :: Typed"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "anyio",
+      "version": "4.15.1",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://anyio.readthedocs.io/en/stable/versionhistory.html",
+        "Documentation": "https://anyio.readthedocs.io/en/latest/",
+        "Issue tracker": "https://github.com/agronholm/anyio/issues",
+        "Source code": "https://github.com/agronholm/anyio"
+      },
+      "metadata_url": "https://pypi.org/pypi/anyio/4.15.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/12/b8/4bd346e22b28902df4d651910f5242c28d84e4a5c2435ca5c3f797ed7e2e/anyio-4.15.1-py3-none-any.whl",
+      "artifact_sha256": "6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "anyio-4.15.1.dist-info/licenses/LICENSE",
+          "sha256": "5361ac9dc58f2ef5fd2e9b09c68297c17f04950909bbc8023bdb82eacf22c2b0",
+          "notice_text_sha256": "5361ac9dc58f2ef5fd2e9b09c68297c17f04950909bbc8023bdb82eacf22c2b0",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Framework :: AnyIO",
+          "Typing :: Typed",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Free Threading :: 2 - Beta"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "asn1crypto",
+      "version": "1.5.1",
+      "license_declared": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/wbond/asn1crypto"
+      },
+      "metadata_url": "https://pypi.org/pypi/asn1crypto/1.5.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/c9/7f/09065fd9e27da0eda08b4d6897f1c13535066174cc023af248fc2a8d5e5a/asn1crypto-1.5.1-py2.py3-none-any.whl",
+      "artifact_sha256": "db4e40728b728508912cbb3d44f19ce188f218e9eba635821bb4b68564f8fd67",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "asn1crypto-1.5.1.dist-info/LICENSE",
+          "sha256": "29c3425e5da53ab842273e5f2f2f068ce2e35df4260f7fa156aa1ac6bed02433",
+          "notice_text_sha256": "29c3425e5da53ab842273e5f2f2f068ce2e35df4260f7fa156aa1ac6bed02433",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.6",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.2",
+          "Programming Language :: Python :: 3.3",
+          "Programming Language :: Python :: 3.4",
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Security :: Cryptography"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "asyauth",
+      "version": "0.0.23",
+      "license_declared": null,
+      "license_classifiers": [],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/asyauth"
+      },
+      "metadata_url": "https://pypi.org/pypi/asyauth/0.0.23/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/26/ca/6d909a8bfff38ad3c1477d502c7ebf61288ac790d16eeb8bfbe2dcfcb4f0/asyauth-0.0.23-py3-none-any.whl",
+      "artifact_sha256": "bbca62d10c4b0d2585103791d7451adda325c3d654114253638456fe84d39b0e",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "asyauth-0.0.23.dist-info/LICENSE",
+          "sha256": "1fef21262c964212c274da41043d2968948e4d061b1911f805d0820ebef38e00",
+          "notice_text_sha256": "1fef21262c964212c274da41043d2968948e4d061b1911f805d0820ebef38e00",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "asysocks",
+      "version": "0.2.18",
+      "license_declared": null,
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/asysocks"
+      },
+      "metadata_url": "https://pypi.org/pypi/asysocks/0.2.18/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/71/b5/abf85f5444b264bf9f943eb1f6f577ebf3af34c8c4f66c1629d1f063eaa0/asysocks-0.2.18-py3-none-any.whl",
+      "artifact_sha256": "a881536456d922a9fde44031aba262bc34ee39a9d14749ded1e8a4820602a37d",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "asysocks-0.2.18.dist-info/LICENSE",
+          "sha256": "2ea729a370e5d72ac81384ec8fd78c5465266c0d50b412042129a76e171bfeb5",
+          "notice_text_sha256": "2ea729a370e5d72ac81384ec8fd78c5465266c0d50b412042129a76e171bfeb5",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.6",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "attrs",
+      "version": "26.1.0",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://www.attrs.org/en/stable/changelog.html",
+        "Documentation": "https://www.attrs.org/",
+        "Funding": "https://github.com/sponsors/hynek",
+        "GitHub": "https://github.com/python-attrs/attrs",
+        "Tidelift": "https://tidelift.com/subscription/pkg/pypi-attrs?utm_source=pypi-attrs&utm_medium=pypi"
+      },
+      "metadata_url": "https://pypi.org/pypi/attrs/26.1.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl",
+      "artifact_sha256": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "attrs-26.1.0.dist-info/licenses/LICENSE",
+          "sha256": "882115c95dfc2af1eeb6714f8ec6d5cbcabf667caff8729f42420da63f714e9f",
+          "notice_text_sha256": "882115c95dfc2af1eeb6714f8ec6d5cbcabf667caff8729f42420da63f714e9f",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Typing :: Typed"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "bottle",
+      "version": "0.13.4",
+      "license_declared": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "http://bottlepy.org/",
+        "Source": "https://github.com/bottlepy/bottle"
+      },
+      "metadata_url": "https://pypi.org/pypi/bottle/0.13.4/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/83/f6/b55ec74cfe68c6584163faa311503c20b0da4c09883a41e8e00d6726c954/bottle-0.13.4-py2.py3-none-any.whl",
+      "artifact_sha256": "045684fbd2764eac9cdeb824861d1551d113e8b683d8d26e296898d3dd99a12e",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "bottle-0.13.4.dist-info/licenses/LICENSE",
+          "sha256": "af150257b1f7cce92b6207854f2e8f90ea9ae52d7cac758d13a47bd12e2a2443",
+          "notice_text_sha256": "af150257b1f7cce92b6207854f2e8f90ea9ae52d7cac758d13a47bd12e2a2443",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 4 - Beta",
+          "Operating System :: OS Independent",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries",
+          "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+          "Topic :: Internet :: WWW/HTTP :: WSGI",
+          "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+          "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",
+          "Topic :: Internet :: WWW/HTTP :: WSGI :: Server",
+          "Topic :: Software Development :: Libraries :: Application Frameworks",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/desktop.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "capstone",
+      "version": "5.0.9",
+      "license_declared": null,
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "project_urls": {
+        "Homepage": "https://www.capstone-engine.org"
+      },
+      "metadata_url": "https://pypi.org/pypi/capstone/5.0.9/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/da/f3/43f4dbfc36c7740d512621a9d42b276ac21bb6ca7cb974d4c8a19060d387/capstone-5.0.9-py3-none-macosx_10_9_universal2.whl",
+      "artifact_sha256": "58a874d9a6cb15122135b1385a782e5b54c8a4d9396161b6498465046d2e0442",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "capstone-5.0.9.dist-info/LICENSE.TXT",
+          "sha256": "65e9ed46a59976eda8f5bd1ea79a680dea38dd299c760bc9a8d87a764ef5029b",
+          "notice_text_sha256": "65e9ed46a59976eda8f5bd1ea79a680dea38dd299c760bc9a8d87a764ef5029b",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE.TXT"
+        ],
+        "classifiers": [
+          "License :: OSI Approved :: BSD License",
+          "Programming Language :: Python :: 3"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "cffi",
+      "version": "2.1.1",
+      "license_declared": "MIT-0",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://cffi.readthedocs.io/en/latest/whatsnew.html",
+        "Contact": "https://groups.google.com/forum/#!forum/python-cffi",
+        "Documentation": "https://cffi.readthedocs.io/",
+        "Download": "https://github.com/python-cffi/cffi/releases",
+        "Issue Tracker": "https://github.com/python-cffi/cffi/issues",
+        "Source Code": "https://github.com/python-cffi/cffi"
+      },
+      "metadata_url": "https://pypi.org/pypi/cffi/2.1.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/54/7d/16e5a096677b5e313ca80cd5e5170efa3ea44624a82bb111925522da64b1/cffi-2.1.1-cp312-cp312-macosx_11_0_arm64.whl",
+      "artifact_sha256": "f81b3b8f3d4e343550fa4baa0e479bba9f2d29ce9c2e9b51d1ce1718d7442fcf",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "cffi-2.1.1.dist-info/licenses/LICENSE",
+          "sha256": "5ba24ddc57067f9249add644c3afc41a5d6dc37e23433ef759d95df370b0af63",
+          "notice_text_sha256": "5ba24ddc57067f9249add644c3afc41a5d6dc37e23433ef759d95df370b0af63",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "cffi-2.1.1.dist-info/licenses/LICENSE",
+          "sha256": "5ba24ddc57067f9249add644c3afc41a5d6dc37e23433ef759d95df370b0af63",
+          "source_url": "https://files.pythonhosted.org/packages/b1/db/dceb9dd5b231e1da801793f8acc9f3c52a7e1afe40bb1aae37e02b0faad5/cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+          "notice_text_sha256": "5ba24ddc57067f9249add644c3afc41a5d6dc37e23433ef759d95df370b0af63",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT-0",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Free Threading :: 2 - Beta",
+          "Programming Language :: Python :: Implementation :: CPython"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "additional_audited_artifacts": [
+        {
+          "url": "https://files.pythonhosted.org/packages/b1/db/dceb9dd5b231e1da801793f8acc9f3c52a7e1afe40bb1aae37e02b0faad5/cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+          "sha256": "c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf",
+          "resolution_hash_verified": true,
+          "notice_files": 1
+        }
+      ],
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        },
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "click",
+      "version": "8.5.0",
+      "license_declared": "BSD-3-Clause",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changes": "https://click.palletsprojects.com/page/changes/",
+        "Chat": "https://discord.gg/pallets",
+        "Documentation": "https://click.palletsprojects.com/",
+        "Donate": "https://palletsprojects.com/donate",
+        "Source": "https://github.com/pallets/click/"
+      },
+      "metadata_url": "https://pypi.org/pypi/click/8.5.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/58/50/6c0d534c5f134586a8e1ba4e330569e32f057e33372ae556463212fb4cd3/click-8.5.0-py3-none-any.whl",
+      "artifact_sha256": "255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "click-8.5.0.dist-info/licenses/LICENSE.txt",
+          "sha256": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+          "notice_text_sha256": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "BSD-3-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE.txt"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Typing :: Typed"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "colorama",
+      "version": "0.4.6",
+      "license_declared": "",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/tartley/colorama"
+      },
+      "metadata_url": "https://pypi.org/pypi/colorama/0.4.6/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl",
+      "artifact_sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "colorama-0.4.6.dist-info/licenses/LICENSE.txt",
+          "sha256": "cac35c02686e5d04a5a7140bfb3b36e73aed496656e891102e428886d7930318",
+          "notice_text_sha256": "cac35c02686e5d04a5a7140bfb3b36e73aed496656e891102e428886d7930318",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE.txt"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Console",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: BSD License",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Terminals"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "cryptography",
+      "version": "50.0.2",
+      "license_declared": "Apache-2.0 OR BSD-3-Clause",
+      "license_classifiers": [],
+      "project_urls": {
+        "changelog": "https://cryptography.io/en/latest/changelog/",
+        "documentation": "https://cryptography.io/",
+        "homepage": "https://github.com/pyca/cryptography",
+        "issues": "https://github.com/pyca/cryptography/issues",
+        "source": "https://github.com/pyca/cryptography/"
+      },
+      "metadata_url": "https://pypi.org/pypi/cryptography/50.0.2/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/e5/56/d194340cc4a57535e82e1bee9e89667ac4b7c13b5d3f59686deae3094dd5/cryptography-50.0.2-cp311-abi3-macosx_11_0_arm64.whl",
+      "artifact_sha256": "fa8f5efb344d6908a1ce62f4a24e2e5780f825d6f53f5f50ec5ffacac72936cb",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "cryptography-50.0.2.dist-info/licenses/LICENSE",
+          "sha256": "3e0c7c091a948b82533ba98fd7cbb40432d6f1a9acbf85f5922d2f99a93ae6bb",
+          "notice_text_sha256": "3e0c7c091a948b82533ba98fd7cbb40432d6f1a9acbf85f5922d2f99a93ae6bb",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "cryptography-50.0.2.dist-info/licenses/LICENSE.APACHE",
+          "sha256": "aac73b3148f6d1d7111dbca32099f68d26c644c6813ae1e4f05f6579aa2663fe",
+          "notice_text_sha256": "aac73b3148f6d1d7111dbca32099f68d26c644c6813ae1e4f05f6579aa2663fe",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "cryptography-50.0.2.dist-info/licenses/LICENSE.BSD",
+          "sha256": "602c4c7482de6479dd2e9793cda275e5e63d773dacd1eca689232ab7008fb4fb",
+          "notice_text_sha256": "602c4c7482de6479dd2e9793cda275e5e63d773dacd1eca689232ab7008fb4fb",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "cryptography-50.0.2.dist-info/licenses/LICENSE",
+          "sha256": "3e0c7c091a948b82533ba98fd7cbb40432d6f1a9acbf85f5922d2f99a93ae6bb",
+          "source_url": "https://files.pythonhosted.org/packages/d3/69/2c833a049475e0a3444e94c7d0aca0aa51d166374a449b09e92ac98138de/cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl",
+          "notice_text_sha256": "3e0c7c091a948b82533ba98fd7cbb40432d6f1a9acbf85f5922d2f99a93ae6bb",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "cryptography-50.0.2.dist-info/licenses/LICENSE.APACHE",
+          "sha256": "aac73b3148f6d1d7111dbca32099f68d26c644c6813ae1e4f05f6579aa2663fe",
+          "source_url": "https://files.pythonhosted.org/packages/d3/69/2c833a049475e0a3444e94c7d0aca0aa51d166374a449b09e92ac98138de/cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl",
+          "notice_text_sha256": "aac73b3148f6d1d7111dbca32099f68d26c644c6813ae1e4f05f6579aa2663fe",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "cryptography-50.0.2.dist-info/licenses/LICENSE.BSD",
+          "sha256": "602c4c7482de6479dd2e9793cda275e5e63d773dacd1eca689232ab7008fb4fb",
+          "source_url": "https://files.pythonhosted.org/packages/d3/69/2c833a049475e0a3444e94c7d0aca0aa51d166374a449b09e92ac98138de/cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl",
+          "notice_text_sha256": "602c4c7482de6479dd2e9793cda275e5e63d773dacd1eca689232ab7008fb4fb",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "Apache-2.0 OR BSD-3-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE",
+          "LICENSE.APACHE",
+          "LICENSE.BSD"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Natural Language :: English",
+          "Operating System :: MacOS :: MacOS X",
+          "Operating System :: POSIX",
+          "Operating System :: POSIX :: BSD",
+          "Operating System :: POSIX :: Linux",
+          "Operating System :: Microsoft :: Windows",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Programming Language :: Python :: Free Threading :: 3 - Stable",
+          "Topic :: Security :: Cryptography"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "additional_audited_artifacts": [
+        {
+          "url": "https://files.pythonhosted.org/packages/d3/69/2c833a049475e0a3444e94c7d0aca0aa51d166374a449b09e92ac98138de/cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl",
+          "sha256": "9dab55f57c74c3cad24c323bacbbd04be4705ba6eb0d92e920b1fc4837ed5079",
+          "resolution_hash_verified": true,
+          "notice_files": 3
+        }
+      ],
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        },
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "future",
+      "version": "1.0.0",
+      "license_declared": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved",
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://python-future.org",
+        "Source": "https://github.com/PythonCharmers/python-future"
+      },
+      "metadata_url": "https://pypi.org/pypi/future/1.0.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/da/71/ae30dadffc90b9006d77af76b393cb9dfbfc9629f339fc1574a1c52e6806/future-1.0.0-py3-none-any.whl",
+      "artifact_sha256": "929292d34f5872e70396626ef385ec22355a1fae8ad29e1a734c3e43f9fbc216",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "future-1.0.0.dist-info/LICENSE.txt",
+          "sha256": "beba04103c3a9fff928b59c77d5fbeb03a3e4bd0d7ac3d1e1f8994a21e30ee3b",
+          "notice_text_sha256": "beba04103c3a9fff928b59c77d5fbeb03a3e4bd0d7ac3d1e1f8994a21e30ee3b",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [
+          "LICENSE.txt"
+        ],
+        "classifiers": [
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.6",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.3",
+          "Programming Language :: Python :: 3.4",
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "License :: OSI Approved",
+          "License :: OSI Approved :: MIT License",
+          "Development Status :: 6 - Mature",
+          "Intended Audience :: Developers"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "h11",
+      "version": "0.16.0",
+      "license_declared": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/python-hyper/h11"
+      },
+      "metadata_url": "https://pypi.org/pypi/h11/0.16.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl",
+      "artifact_sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "h11-0.16.0.dist-info/licenses/LICENSE.txt",
+          "sha256": "37db5bb85926db28a427a25867f10b1232003aea1be69ccb851138adb8e6f361",
+          "notice_text_sha256": "37db5bb85926db28a427a25867f10b1232003aea1be69ccb851138adb8e6f361",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [
+          "LICENSE.txt"
+        ],
+        "classifiers": [
+          "Development Status :: 3 - Alpha",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Topic :: Internet :: WWW/HTTP",
+          "Topic :: System :: Networking"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        },
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "hexdump",
+      "version": "3.3",
+      "license_declared": "Public Domain",
+      "license_classifiers": [
+        "License :: Public Domain"
+      ],
+      "project_urls": {
+        "Download": "UNKNOWN",
+        "Homepage": "https://bitbucket.org/techtonik/hexdump/"
+      },
+      "metadata_url": "https://pypi.org/pypi/hexdump/3.3/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/55/b3/279b1d57fa3681725d0db8820405cdcb4e62a9239c205e4ceac4391c78e4/hexdump-3.3.zip",
+      "artifact_sha256": "d781a43b0c16ace3f9366aade73e8ad3a7bd5137d58f0b45ab2d3f54876f20db",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "hexdump.py:authorship-and-dedication",
+          "sha256": "3a0049b156200c23d2da459e996b58b76ce84be6a4b9c16432887f3f1fe3c471",
+          "source_url": "https://files.pythonhosted.org/packages/55/b3/279b1d57fa3681725d0db8820405cdcb4e62a9239c205e4ceac4391c78e4/hexdump-3.3.zip",
+          "notice_text_sha256": "3a0049b156200c23d2da459e996b58b76ce84be6a4b9c16432887f3f1fe3c471",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "Public Domain",
+        "license_files": [],
+        "classifiers": [
+          "License :: Public Domain",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 3",
+          "Topic :: Software Development",
+          "Topic :: Software Development :: Libraries :: Python Modules"
+        ]
+      },
+      "status": "upstream-notices-recovered",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "httpcore2",
+      "version": "2.13.1",
+      "license_declared": "BSD-3-Clause",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "project_urls": {
+        "Changelog": "https://github.com/pydantic/httpx2/blob/main/src/httpcore2/CHANGELOG.md",
+        "Homepage": "https://github.com/pydantic/httpx2",
+        "Source": "https://github.com/pydantic/httpx2/blob/main/src/httpcore2"
+      },
+      "metadata_url": "https://pypi.org/pypi/httpcore2/2.13.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/09/ba/a4568248771ce81957bfb7cc600264a40fbcda092391ee1c415c50be4bea/httpcore2-2.13.1-py3-none-any.whl",
+      "artifact_sha256": "e1e05d4f25f7d7d496bfb96748f6f4b67657b03da069b3a68c36069f3db73d0a",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "httpcore2-2.13.1.dist-info/licenses/LICENSE.md",
+          "sha256": "c4df125c807b0613501e943a5c92496dd11d2c16604ce396097a8dde396304d9",
+          "notice_text_sha256": "c4df125c807b0613501e943a5c92496dd11d2c16604ce396097a8dde396304d9",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "BSD-3-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE.md"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Web Environment",
+          "Framework :: AnyIO",
+          "Framework :: AsyncIO",
+          "Framework :: Trio",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: BSD License",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Topic :: Internet :: WWW/HTTP"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "httpx2",
+      "version": "2.13.1",
+      "license_declared": "BSD-3-Clause",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "project_urls": {
+        "Changelog": "https://github.com/pydantic/httpx2/blob/main/src/httpx2/CHANGELOG.md",
+        "Homepage": "https://github.com/pydantic/httpx2",
+        "Source": "https://github.com/pydantic/httpx2"
+      },
+      "metadata_url": "https://pypi.org/pypi/httpx2/2.13.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/d8/9c/6fe8931fd9f381042a9e4c7d5a7b4cbf7016b252bec0c99a49fce42c3326/httpx2-2.13.1-py3-none-any.whl",
+      "artifact_sha256": "6dff50fabc270ee5fd25d845d0b078ed20564579744d6d962850975996d2f9a4",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "httpx2-2.13.1.dist-info/licenses/LICENSE.md",
+          "sha256": "7e7d6dbaf7fe160d39fd6e84fd02c33cab96bcbea34d36998d545bceb4a19c30",
+          "notice_text_sha256": "7e7d6dbaf7fe160d39fd6e84fd02c33cab96bcbea34d36998d545bceb4a19c30",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "BSD-3-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE.md"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Web Environment",
+          "Framework :: AnyIO",
+          "Framework :: AsyncIO",
+          "Framework :: Trio",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: BSD License",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Topic :: Internet :: WWW/HTTP"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "idna",
+      "version": "3.20",
+      "license_declared": "BSD-3-Clause",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://github.com/kjd/idna/blob/master/HISTORY.md",
+        "Issue tracker": "https://github.com/kjd/idna/issues",
+        "Source": "https://github.com/kjd/idna"
+      },
+      "metadata_url": "https://pypi.org/pypi/idna/3.20/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/58/a2/bb081bab032533a855d44de1d56f8e8426114ff1ba5d1f07a438a0a654f8/idna-3.20-py3-none-any.whl",
+      "artifact_sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "idna-3.20.dist-info/licenses/LICENSE.md",
+          "sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04",
+          "notice_text_sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "BSD-3-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE.md"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Intended Audience :: System Administrators",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Internet :: Name Service (DNS)",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Utilities"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://github.com/python-jsonschema/jsonschema/blob/main/CHANGELOG.rst",
+        "Documentation": "https://python-jsonschema.readthedocs.io/",
+        "Funding": "https://github.com/sponsors/Julian",
+        "Homepage": "https://github.com/python-jsonschema/jsonschema",
+        "Issues": "https://github.com/python-jsonschema/jsonschema/issues/",
+        "Source": "https://github.com/python-jsonschema/jsonschema",
+        "Tidelift": "https://tidelift.com/subscription/pkg/pypi-jsonschema?utm_source=pypi-jsonschema&utm_medium=referral&utm_campaign=pypi-link"
+      },
+      "metadata_url": "https://pypi.org/pypi/jsonschema/4.26.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/69/90/f63fb5873511e014207a475e2bb4e8b2e570d655b00ac19a9a0ca0a385ee/jsonschema-4.26.0-py3-none-any.whl",
+      "artifact_sha256": "d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "jsonschema-4.26.0.dist-info/licenses/COPYING",
+          "sha256": "4f92a015a13c4d1a040bef018aa13430b4f1bc73b41b16bb846c346766de7439",
+          "notice_text_sha256": "4f92a015a13c4d1a040bef018aa13430b4f1bc73b41b16bb846c346766de7439",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "COPYING"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: File Formats :: JSON",
+          "Topic :: File Formats :: JSON :: JSON Schema"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Documentation": "https://jsonschema-specifications.readthedocs.io/",
+        "Funding": "https://github.com/sponsors/Julian",
+        "Homepage": "https://github.com/python-jsonschema/jsonschema-specifications",
+        "Issues": "https://github.com/python-jsonschema/jsonschema-specifications/issues/",
+        "Source": "https://github.com/python-jsonschema/jsonschema-specifications",
+        "Tidelift": "https://tidelift.com/subscription/pkg/pypi-jsonschema-specifications?utm_source=pypi-jsonschema-specifications&utm_medium=referral&utm_campaign=pypi-link"
+      },
+      "metadata_url": "https://pypi.org/pypi/jsonschema-specifications/2025.9.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl",
+      "artifact_sha256": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "jsonschema_specifications-2025.9.1.dist-info/licenses/COPYING",
+          "sha256": "42dcd63495f87b4eb7c7757afa379bb55a53f94afd7a5f657d9adf57236e515c",
+          "notice_text_sha256": "42dcd63495f87b4eb7c7757afa379bb55a53f94afd7a5f657d9adf57236e515c",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "COPYING"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: File Formats :: JSON",
+          "Topic :: File Formats :: JSON :: JSON Schema"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "mcp",
+      "version": "2.3.0",
+      "license_declared": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Documentation": "https://py.sdk.modelcontextprotocol.io/",
+        "Homepage": "https://modelcontextprotocol.io",
+        "Issues": "https://github.com/modelcontextprotocol/python-sdk/issues",
+        "Repository": "https://github.com/modelcontextprotocol/python-sdk"
+      },
+      "metadata_url": "https://pypi.org/pypi/mcp/2.3.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/20/d7/4a2878f128df729db3ca04e71bfce26405cc2e0c9ebe19c592feeb4c61b9/mcp-2.3.0-py3-none-any.whl",
+      "artifact_sha256": "dd0c44c089d16453e8ae31a3877a0054d7a2314caaa81f5e0541b9b1734b2377",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "mcp-2.3.0.dist-info/licenses/LICENSE",
+          "sha256": "5e13dbbc1d120fc2a03cecde7c91424ae2d7de11b63d58ded2f4431e261ee50d",
+          "notice_text_sha256": "5e13dbbc1d120fc2a03cecde7c91424ae2d7de11b63d58ded2f4431e261ee50d",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "mcp-types",
+      "version": "2.3.0",
+      "license_declared": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Documentation": "https://py.sdk.modelcontextprotocol.io/",
+        "Homepage": "https://modelcontextprotocol.io",
+        "Issues": "https://github.com/modelcontextprotocol/python-sdk/issues",
+        "Repository": "https://github.com/modelcontextprotocol/python-sdk"
+      },
+      "metadata_url": "https://pypi.org/pypi/mcp-types/2.3.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/ce/48/32583066b155bb5d4507e7887dc88ee23118cc4de8e2a12870c49719e2a8/mcp_types-2.3.0-py3-none-any.whl",
+      "artifact_sha256": "968efdbdaedfab06adae40d378a34395f1090c5921d4be3c9cde283aaf76d91d",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "mcp_types-2.3.0.dist-info/licenses/LICENSE",
+          "sha256": "5e13dbbc1d120fc2a03cecde7c91424ae2d7de11b63d58ded2f4431e261ee50d",
+          "notice_text_sha256": "5e13dbbc1d120fc2a03cecde7c91424ae2d7de11b63d58ded2f4431e261ee50d",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "minidump",
+      "version": "0.0.24",
+      "license_declared": null,
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/minidump"
+      },
+      "metadata_url": "https://pypi.org/pypi/minidump/0.0.24/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/da/8b/3a148750e6d65f4fe6e249f6d0d6c497eeadd867a63ed69cee3fa17e7c83/minidump-0.0.24-py3-none-any.whl",
+      "artifact_sha256": "9c016e35c8fe37c82a01b0a266f5416a0b0138934d92affb436ac2e72372bec6",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "minidump-0.0.24.dist-info/LICENSE",
+          "sha256": "484b8992e7a7c97cb6e5dbfbe539ea6ac785816e8f09862a22e7513cccd6a6b2",
+          "notice_text_sha256": "484b8992e7a7c97cb6e5dbfbe539ea6ac785816e8f09862a22e7513cccd6a6b2",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.6",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "minikerberos",
+      "version": "0.4.9",
+      "license_declared": null,
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/minikerberos"
+      },
+      "metadata_url": "https://pypi.org/pypi/minikerberos/0.4.9/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/90/24/ebe89493824e99be641faddb355594782b634af093866f2b19f398c60ecc/minikerberos-0.4.9-py3-none-any.whl",
+      "artifact_sha256": "3c3a422541bc66719bd495f89cb6f9e149fba8f1499b9f550aa88cd9aa532ffa",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "minikerberos-0.4.9.dist-info/licenses/LICENSE",
+          "sha256": "f59ae9d80c9f7176c3d0d6847c5c70635581d635613a5b263c25a86fed8a3423",
+          "notice_text_sha256": "f59ae9d80c9f7176c3d0d6847c5c70635581d635613a5b263c25a86fed8a3423",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.6",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "msldap",
+      "version": "0.5.15",
+      "license_declared": null,
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/msldap"
+      },
+      "metadata_url": "https://pypi.org/pypi/msldap/0.5.15/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/78/de/1b22d94542bb9e6145aa7ed1a8bb2bd24137140645749bbf38f3634d8da4/msldap-0.5.15-py3-none-any.whl",
+      "artifact_sha256": "ee4224cf3964c386a52424a4b6d763a866b4d7ae6d5597a0af58611588668531",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "msldap-0.5.15.dist-info/LICENSE",
+          "sha256": "a3233be4f8a8ad0a73bcc6462e718a511f5938ac17a3547f3499b5d701922c2a",
+          "notice_text_sha256": "a3233be4f8a8ad0a73bcc6462e718a511f5938ac17a3547f3499b5d701922c2a",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "opentelemetry-api",
+      "version": "1.45.1",
+      "license_declared": "Apache-2.0",
+      "license_classifiers": [],
+      "project_urls": {
+        "Homepage": "https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-api",
+        "Repository": "https://github.com/open-telemetry/opentelemetry-python"
+      },
+      "metadata_url": "https://pypi.org/pypi/opentelemetry-api/1.45.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/1e/41/f7dcf80b81ee8e71c1a2b59f14208bc723edbd89ed027a73b175abf6348e/opentelemetry_api-1.45.1-py3-none-any.whl",
+      "artifact_sha256": "b31553efa588ae44bc306f863c785c5333a9ecc091248c6ee68b4b6c87fdedfb",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "opentelemetry_api-1.45.1.dist-info/licenses/LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "notice_text_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "Apache-2.0",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Framework :: OpenTelemetry",
+          "Intended Audience :: Developers",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Typing :: Typed"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "oscrypto",
+      "version": "1.3.0",
+      "license_declared": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/wbond/oscrypto"
+      },
+      "metadata_url": "https://pypi.org/pypi/oscrypto/1.3.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/01/7c/fa07d3da2b6253eb8474be16eab2eadf670460e364ccc895ca7ff388ee30/oscrypto-1.3.0-py2.py3-none-any.whl",
+      "artifact_sha256": "2b2f1d2d42ec152ca90ccb5682f3e051fb55986e1b170ebde472b133713e7085",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "oscrypto-1.3.0.dist-info/LICENSE",
+          "sha256": "29c3425e5da53ab842273e5f2f2f068ce2e35df4260f7fa156aa1ac6bed02433",
+          "notice_text_sha256": "29c3425e5da53ab842273e5f2f2f068ce2e35df4260f7fa156aa1ac6bed02433",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.6",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.2",
+          "Programming Language :: Python :: 3.3",
+          "Programming Language :: Python :: 3.4",
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Security :: Cryptography"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "packaging",
+      "version": "26.3",
+      "license_declared": "Apache-2.0 OR BSD-2-Clause",
+      "license_classifiers": [],
+      "project_urls": {
+        "Documentation": "https://packaging.pypa.io/",
+        "Source": "https://github.com/pypa/packaging"
+      },
+      "metadata_url": "https://pypi.org/pypi/packaging/26.3/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl",
+      "artifact_sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "packaging/licenses/__init__.py",
+          "sha256": "590d12eee73ddbec53b4e9ee5bfc64d9cb3aacb4940e8ebcba260757ce56740b",
+          "notice_text_sha256": "590d12eee73ddbec53b4e9ee5bfc64d9cb3aacb4940e8ebcba260757ce56740b",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "packaging/licenses/_spdx.py",
+          "sha256": "596ec35e2ca0ebcba9fd8343ff0a51625af548786257815f24b41f7e08613314",
+          "notice_text_sha256": "596ec35e2ca0ebcba9fd8343ff0a51625af548786257815f24b41f7e08613314",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "packaging-26.3.dist-info/licenses/LICENSE",
+          "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48",
+          "notice_text_sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "packaging-26.3.dist-info/licenses/LICENSE.APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "notice_text_sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "packaging-26.3.dist-info/licenses/LICENSE.BSD",
+          "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5",
+          "notice_text_sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "Apache-2.0 OR BSD-2-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE",
+          "LICENSE.APACHE",
+          "LICENSE.BSD"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Programming Language :: Python :: Free Threading :: 4 - Resilient",
+          "Typing :: Typed"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pefile",
+      "version": "2024.8.26",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Download": "https://github.com/erocarrera/pefile/releases/download/v2024.8.26/pefile-2024.8.26.tar.gz",
+        "Homepage": "https://github.com/erocarrera/pefile"
+      },
+      "metadata_url": "https://pypi.org/pypi/pefile/2024.8.26/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/54/16/12b82f791c7f50ddec566873d5bdd245baa1491bac11d15ffb98aecc8f8b/pefile-2024.8.26-py3-none-any.whl",
+      "artifact_sha256": "76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pefile-2024.8.26.dist-info/LICENSE",
+          "sha256": "b44409c067c6da52bfb54bb6624fb11a7b52157c3a13ae1400232f8196e86ad3",
+          "notice_text_sha256": "b44409c067c6da52bfb54bb6624fb11a7b52157c3a13ae1400232f8196e86ad3",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Intended Audience :: Science/Research",
+          "Natural Language :: English",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Topic :: Software Development :: Libraries :: Python Modules"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        },
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pillow",
+      "version": "10.4.0",
+      "license_declared": "HPND",
+      "license_classifiers": [
+        "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)"
+      ],
+      "project_urls": {
+        "Changelog": "https://github.com/python-pillow/Pillow/blob/main/CHANGES.rst",
+        "Documentation": "https://pillow.readthedocs.io",
+        "Funding": "https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi",
+        "Homepage": "https://python-pillow.org",
+        "Mastodon": "https://fosstodon.org/@pillow",
+        "Release notes": "https://pillow.readthedocs.io/en/stable/releasenotes/index.html",
+        "Source": "https://github.com/python-pillow/Pillow"
+      },
+      "metadata_url": "https://pypi.org/pypi/pillow/10.4.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/e7/cf/5c558a0f247e0bf9cec92bff9b46ae6474dd736f6d906315e60e4075f737/pillow-10.4.0-cp312-cp312-macosx_11_0_arm64.whl",
+      "artifact_sha256": "866b6942a92f56300012f5fbac71f2d610312ee65e22f1aa2609e491284e5597",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pillow-10.4.0.dist-info/LICENSE",
+          "sha256": "0cef99f9dfd4f7522c38333595416ffb96023db2b8338fe1088a5bfc977052e4",
+          "notice_text_sha256": "0cef99f9dfd4f7522c38333595416ffb96023db2b8338fe1088a5bfc977052e4",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "HPND",
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 6 - Mature",
+          "License :: OSI Approved :: Historical Permission Notice and Disclaimer (HPND)",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Multimedia :: Graphics",
+          "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+          "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+          "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+          "Topic :: Multimedia :: Graphics :: Viewers",
+          "Typing :: Typed"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "prompt_toolkit",
+      "version": "3.0.53",
+      "license_declared": null,
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "project_urls": {
+        "Documentation": "https://python-prompt-toolkit.readthedocs.io/en/stable/",
+        "Homepage": "https://github.com/prompt-toolkit/python-prompt-toolkit"
+      },
+      "metadata_url": "https://pypi.org/pypi/prompt_toolkit/3.0.53/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/54/6f/84908cad2d6aa5144abcf7b42709fe4fdb459bc640ec7ac5786e7693dabc/prompt_toolkit-3.0.53-py3-none-any.whl",
+      "artifact_sha256": "01c0891d7f9237d5e339f7d3e42cdae80b7534abb1c7c0e3352efba6231492f2",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "prompt_toolkit-3.0.53.dist-info/licenses/AUTHORS.rst",
+          "sha256": "d3dc62c6bc8436658495ab89aea37511e7fa9391d282657239c9cfb80dbd42e5",
+          "notice_text_sha256": "d3dc62c6bc8436658495ab89aea37511e7fa9391d282657239c9cfb80dbd42e5",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "prompt_toolkit-3.0.53.dist-info/licenses/LICENSE",
+          "sha256": "303574d9bdd85c757d6025017942bf17baeedf2778f62bd7f425d07d880f4c4a",
+          "notice_text_sha256": "303574d9bdd85c757d6025017942bf17baeedf2778f62bd7f425d07d880f4c4a",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE",
+          "AUTHORS.rst"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: BSD License",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: Free Threading :: 3 - Stable",
+          "Programming Language :: Python",
+          "Topic :: Software Development"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "proxy_tools",
+      "version": "0.1.0",
+      "license_declared": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Download": "UNKNOWN",
+        "Homepage": "http://github.com/jtushman/proxy_tools"
+      },
+      "metadata_url": "https://pypi.org/pypi/proxy_tools/0.1.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/f2/cf/77d3e19b7fabd03895caca7857ef51e4c409e0ca6b37ee6e9f7daa50b642/proxy_tools-0.1.0.tar.gz",
+      "artifact_sha256": "ccb3751f529c047e2d8a58440d86b205303cf0fe8146f784d1cbcd94f0a28010",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "proxy_tools-0.1.0/proxy_tools/__init__.py:BSD-attribution",
+          "sha256": "21595df12acb61c2d31decdb56bf10472020ca7bf158b2e70323059eb6265b49",
+          "source_url": "https://files.pythonhosted.org/packages/f2/cf/77d3e19b7fabd03895caca7857ef51e4c409e0ca6b37ee6e9f7daa50b642/proxy_tools-0.1.0.tar.gz",
+          "notice_text_sha256": "21595df12acb61c2d31decdb56bf10472020ca7bf158b2e70323059eb6265b49",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [],
+        "classifiers": [
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3"
+        ]
+      },
+      "status": "license-conflict",
+      "license_conflict": "PyPI metadata says MIT, but the source identifies BSD and credits Armin Ronacher/Werkzeug. Missing referenced LICENSE; confirm upstream terms before redistribution.",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/desktop.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pycparser",
+      "version": "3.0",
+      "license_declared": "BSD-3-Clause",
+      "license_classifiers": [],
+      "project_urls": {
+        "Homepage": "https://github.com/eliben/pycparser"
+      },
+      "metadata_url": "https://pypi.org/pypi/pycparser/3.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl",
+      "artifact_sha256": "b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "pycparser-3.0.dist-info/licenses/LICENSE",
+          "sha256": "0c846399369ea76ddd7b5c44fe6d16497415fcf015f5cbb508c24bf98b81c5b1",
+          "notice_text_sha256": "0c846399369ea76ddd7b5c44fe6d16497415fcf015f5cbb508c24bf98b81c5b1",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "BSD-3-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pycparser",
+      "version": "3.11",
+      "license_declared": "BSD-3-Clause",
+      "license_classifiers": [],
+      "project_urls": {
+        "Homepage": "https://github.com/eliben/pycparser"
+      },
+      "metadata_url": "https://pypi.org/pypi/pycparser/3.11/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/90/11/0e6f11117525ff0eec40ebac3d313376f102df93ca44ad9e893ee85e4f89/pycparser-3.11-py3-none-any.whl",
+      "artifact_sha256": "51d5a8ba2be0bbe440b99d2112604c95bbbc3c2748a64260186c541e1729cd80",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "pycparser-3.11.dist-info/licenses/LICENSE",
+          "sha256": "0a9e78156ae8b96caf1b4f11ac2df424b83de29736f9e757630548a6272fdf90",
+          "notice_text_sha256": "0a9e78156ae8b96caf1b4f11ac2df424b83de29736f9e757630548a6272fdf90",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "BSD-3-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pycryptodome",
+      "version": "3.23.0",
+      "license_declared": "BSD, Public Domain",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License",
+        "License :: Public Domain"
+      ],
+      "project_urls": {
+        "Changelog": "https://www.pycryptodome.org/src/changelog",
+        "Homepage": "https://www.pycryptodome.org",
+        "Source": "https://github.com/Legrandin/pycryptodome/"
+      },
+      "metadata_url": "https://pypi.org/pypi/pycryptodome/3.23.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/db/6c/a1f71542c969912bb0e106f64f60a56cc1f0fabecf9396f45accbe63fa68/pycryptodome-3.23.0-cp37-abi3-macosx_10_9_universal2.whl",
+      "artifact_sha256": "187058ab80b3281b1de11c2e6842a357a1f71b42cb1e15bce373f3d238135c27",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pycryptodome-3.23.0.dist-info/LICENSE.rst",
+          "sha256": "4e04660d77c1c64e89d79537919fb8240fa21484a7e3db29f358b2c7f84ea073",
+          "notice_text_sha256": "4e04660d77c1c64e89d79537919fb8240fa21484a7e3db29f358b2c7f84ea073",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "pycryptodome-3.23.0.dist-info/AUTHORS.rst",
+          "sha256": "1cb670b6cc5bc3a1c38d7e12cdf944442ca790425cf2a628ffbe3012445fe1e4",
+          "notice_text_sha256": "1cb670b6cc5bc3a1c38d7e12cdf944442ca790425cf2a628ffbe3012445fe1e4",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "BSD, Public Domain",
+        "license_files": [
+          "LICENSE.rst",
+          "AUTHORS.rst"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "License :: OSI Approved :: BSD License",
+          "License :: Public Domain",
+          "Intended Audience :: Developers",
+          "Operating System :: Unix",
+          "Operating System :: Microsoft :: Windows",
+          "Operating System :: MacOS :: MacOS X",
+          "Topic :: Security :: Cryptography",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pycryptodomex",
+      "version": "3.24.0",
+      "license_declared": "BSD, Public Domain",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License",
+        "License :: Public Domain"
+      ],
+      "project_urls": {
+        "Changelog": "https://www.pycryptodome.org/src/changelog",
+        "Homepage": "https://www.pycryptodome.org",
+        "Source": "https://github.com/Legrandin/pycryptodome/"
+      },
+      "metadata_url": "https://pypi.org/pypi/pycryptodomex/3.24.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/bc/fd/b9186cea5e823f91f40904373cff30cdaea5dfe1863b4be0ed3bf51e4db6/pycryptodomex-3.24.0-cp37-abi3-macosx_10_9_universal2.whl",
+      "artifact_sha256": "ef2bd306328a8447d4d2af6037efddd67ef16630876ed3ec84babd16ca558941",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pycryptodomex-3.24.0.dist-info/LICENSE.rst",
+          "sha256": "4e04660d77c1c64e89d79537919fb8240fa21484a7e3db29f358b2c7f84ea073",
+          "notice_text_sha256": "4e04660d77c1c64e89d79537919fb8240fa21484a7e3db29f358b2c7f84ea073",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "pycryptodomex-3.24.0.dist-info/AUTHORS.rst",
+          "sha256": "1cb670b6cc5bc3a1c38d7e12cdf944442ca790425cf2a628ffbe3012445fe1e4",
+          "notice_text_sha256": "1cb670b6cc5bc3a1c38d7e12cdf944442ca790425cf2a628ffbe3012445fe1e4",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "BSD, Public Domain",
+        "license_files": [
+          "LICENSE.rst",
+          "AUTHORS.rst"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "License :: OSI Approved :: BSD License",
+          "License :: Public Domain",
+          "Intended Audience :: Developers",
+          "Operating System :: Unix",
+          "Operating System :: Microsoft :: Windows",
+          "Operating System :: MacOS :: MacOS X",
+          "Topic :: Security :: Cryptography",
+          "Typing :: Typed",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pydantic",
+      "version": "2.14.1",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://pydantic.dev/docs/validation/latest/get-started/changelog/",
+        "Documentation": "https://pydantic.dev/docs/validation/latest/get-started/",
+        "Funding": "https://github.com/sponsors/samuelcolvin",
+        "Homepage": "https://github.com/pydantic/pydantic",
+        "Source": "https://github.com/pydantic/pydantic"
+      },
+      "metadata_url": "https://pypi.org/pypi/pydantic/2.14.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/35/ea/a56b9fe5066f3537b7882f77e9c5dfb26d8c2eefdaed9b5fc73d57b4dc22/pydantic-2.14.1-py3-none-any.whl",
+      "artifact_sha256": "9195d967ec791692a04438115466764fb8b9a27b31f14a760437694f40d6b454",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "pydantic-2.14.1.dist-info/licenses/LICENSE",
+          "sha256": "a9e186f3ca16b5eef84318e7a701721351a00cb7b8ae3a4394b67b49e3529ef3",
+          "notice_text_sha256": "a9e186f3ca16b5eef84318e7a701721351a00cb7b8ae3a4394b67b49e3529ef3",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Framework :: Hypothesis",
+          "Framework :: Pydantic",
+          "Intended Audience :: Developers",
+          "Intended Audience :: Information Technology",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Internet",
+          "Topic :: Software Development :: Libraries :: Python Modules"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pydantic-core",
+      "version": "2.50.1",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Funding": "https://github.com/sponsors/samuelcolvin",
+        "Homepage": "https://github.com/pydantic",
+        "Source": "https://github.com/pydantic/pydantic/tree/main/pydantic-core"
+      },
+      "metadata_url": "https://pypi.org/pypi/pydantic-core/2.50.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/db/a3/f8b1b39349c33037c73d7a1b794c9c29d8f07d5bd2b74399c1375a529cc6/pydantic_core-2.50.1-cp312-cp312-macosx_11_0_arm64.whl",
+      "artifact_sha256": "e8e1d6ce820aa23317e8209a86bd65a540973c12dc7552b48a4f6c8e9926815e",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "pydantic_core-2.50.1.dist-info/licenses/LICENSE",
+          "sha256": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a",
+          "notice_text_sha256": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "pydantic_core-2.50.1.dist-info/licenses/LICENSE",
+          "sha256": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a",
+          "source_url": "https://files.pythonhosted.org/packages/90/24/48cd98388e4ac2c08d0800af36d15413db15e20387f1038123a2c86cb2f6/pydantic_core-2.50.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "notice_text_sha256": "2afdd30d54b4d62b6f488a6bcc1546e84ec5061f13f4209c03d012348783795a",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 3 - Alpha",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Programming Language :: Python :: Implementation :: GraalPy",
+          "Programming Language :: Rust",
+          "Framework :: Pydantic",
+          "Intended Audience :: Developers",
+          "Intended Audience :: Information Technology",
+          "Operating System :: POSIX :: Linux",
+          "Operating System :: Microsoft :: Windows",
+          "Operating System :: MacOS",
+          "Typing :: Typed"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "additional_audited_artifacts": [
+        {
+          "url": "https://files.pythonhosted.org/packages/90/24/48cd98388e4ac2c08d0800af36d15413db15e20387f1038123a2c86cb2f6/pydantic_core-2.50.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "sha256": "93ba4e9d8210d941c200431a56b2c0400b131865947903937ed3ec5404307d2e",
+          "resolution_hash_verified": true,
+          "notice_files": 1
+        }
+      ],
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pyjwt",
+      "version": "2.15.1",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Homepage": "https://github.com/jpadilla/pyjwt"
+      },
+      "metadata_url": "https://pypi.org/pypi/pyjwt/2.15.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/50/ca/44de4e75f8aadc457f0634be3b542815078ded46dca30efb960edeecad6e/pyjwt-2.15.1-py3-none-any.whl",
+      "artifact_sha256": "42d59d631f7768a1028a64c7ff581a9bf7519804daf91fc5b6c56e30eec5e193",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "pyjwt-2.15.1.dist-info/licenses/AUTHORS.rst",
+          "sha256": "925ce43461029eedbf558ec0b7cf7fc4b045def5120ebb97937c70814071cf07",
+          "notice_text_sha256": "925ce43461029eedbf558ec0b7cf7fc4b045def5120ebb97937c70814071cf07",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "pyjwt-2.15.1.dist-info/licenses/LICENSE",
+          "sha256": "797a7a20231d4c433e9f1911db1731d06b5828b98f499819a034f7c0f56f5ce5",
+          "notice_text_sha256": "797a7a20231d4c433e9f1911db1731d06b5828b98f499819a034f7c0f56f5ce5",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE",
+          "AUTHORS.rst"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Natural Language :: English",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Topic :: Utilities"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pyobjc-core",
+      "version": "12.2.2",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Documentation": "https://pyobjc.readthedocs.io/en/latest/",
+        "Homepage": "https://github.com/ronaldoussoren/pyobjc",
+        "Issue tracker": "https://github.com/ronaldoussoren/pyobjc/issues",
+        "Repository": "https://github.com/ronaldoussoren/pyobjc"
+      },
+      "metadata_url": "https://pypi.org/pypi/pyobjc-core/12.2.2/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/86/b2/bbf7f049880ab40d110e66f25122342a1f6c98d6fe3c59bb98985503c660/pyobjc_core-12.2.2-cp312-cp312-macosx_10_13_universal2.whl",
+      "artifact_sha256": "122e6ad302a2abf5d4d4adb0156db751600ddf2768441696cba17b31323085e7",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "PyObjCTest/copying.cpython-312-darwin.so.dSYM/Contents/Resources/Relocations/aarch64/copying.cpython-312-darwin.so.yml",
+          "sha256": "0d98b56eae62e097bcddd76e37255b62db25d67f5f5667c9f9c6391dd64d2d98",
+          "notice_text_sha256": "0d98b56eae62e097bcddd76e37255b62db25d67f5f5667c9f9c6391dd64d2d98",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "PyObjCTest/copying.cpython-312-darwin.so.dSYM/Contents/Resources/Relocations/x86_64/copying.cpython-312-darwin.so.yml",
+          "sha256": "847c16aaf0f525f9da783cf469651a0110dd6c329d7be0e22ab5b33df41892ee",
+          "notice_text_sha256": "847c16aaf0f525f9da783cf469651a0110dd6c329d7be0e22ab5b33df41892ee",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Console",
+          "Environment :: MacOS X :: Cocoa",
+          "Intended Audience :: Developers",
+          "Natural Language :: English",
+          "Operating System :: MacOS :: MacOS X",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Free Threading :: 3 - Stable",
+          "Programming Language :: Objective C",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Software Development :: User Interfaces"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/desktop.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pyobjc-framework-Cocoa",
+      "version": "12.2.2",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Documentation": "https://pyobjc.readthedocs.io/en/latest/",
+        "Homepage": "https://github.com/ronaldoussoren/pyobjc",
+        "Issue tracker": "https://github.com/ronaldoussoren/pyobjc/issues",
+        "Repository": "https://github.com/ronaldoussoren/pyobjc"
+      },
+      "metadata_url": "https://pypi.org/pypi/pyobjc-framework-Cocoa/12.2.2/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/fd/2f/b67e73d8bc367e03fe7861cd9c49fff9dcfa6db83bc0630c0adcfb25b7fa/pyobjc_framework_cocoa-12.2.2-cp312-cp312-macosx_10_13_universal2.whl",
+      "artifact_sha256": "e106f395531e67694376b0f1184612cbeea3ec8b9bf56b55ef41d026171d2a2d",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pyobjc_framework_cocoa-12.2.2.dist-info/licenses/LICENSE.txt",
+          "sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff",
+          "notice_text_sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [
+          "LICENSE.txt"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Console",
+          "Environment :: MacOS X :: Cocoa",
+          "Intended Audience :: Developers",
+          "Natural Language :: English",
+          "Operating System :: MacOS :: MacOS X",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Free Threading :: 3 - Stable",
+          "Programming Language :: Objective C",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Software Development :: User Interfaces"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/desktop.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pyobjc-framework-Quartz",
+      "version": "12.2.2",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Documentation": "https://pyobjc.readthedocs.io/en/latest/",
+        "Homepage": "https://github.com/ronaldoussoren/pyobjc",
+        "Issue tracker": "https://github.com/ronaldoussoren/pyobjc/issues",
+        "Repository": "https://github.com/ronaldoussoren/pyobjc"
+      },
+      "metadata_url": "https://pypi.org/pypi/pyobjc-framework-Quartz/12.2.2/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/ed/e4/8be95d2ff850f82fb55b44c63333a00a920bf8a73642e7d9c2f3638a26d2/pyobjc_framework_quartz-12.2.2-cp312-cp312-macosx_10_13_universal2.whl",
+      "artifact_sha256": "7f668979d0c7320bf8f7ed6e030da578f93ab0f5dd619b295ec735cd8d5faa34",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pyobjc_framework_quartz-12.2.2.dist-info/licenses/LICENSE.txt",
+          "sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff",
+          "notice_text_sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [
+          "LICENSE.txt"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Console",
+          "Environment :: MacOS X :: Cocoa",
+          "Intended Audience :: Developers",
+          "Natural Language :: English",
+          "Operating System :: MacOS :: MacOS X",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Free Threading :: 3 - Stable",
+          "Programming Language :: Objective C",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Software Development :: User Interfaces"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/desktop.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pyobjc-framework-Security",
+      "version": "12.2.2",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Documentation": "https://pyobjc.readthedocs.io/en/latest/",
+        "Homepage": "https://github.com/ronaldoussoren/pyobjc",
+        "Issue tracker": "https://github.com/ronaldoussoren/pyobjc/issues",
+        "Repository": "https://github.com/ronaldoussoren/pyobjc"
+      },
+      "metadata_url": "https://pypi.org/pypi/pyobjc-framework-Security/12.2.2/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/15/59/79722efbbb5cf6a313d364bb4faff39f9c165740e46acaa4d0a3d71c0f8c/pyobjc_framework_security-12.2.2-cp312-cp312-macosx_10_13_universal2.whl",
+      "artifact_sha256": "266f41995f2fc80660c8451bdb199a7e259a6cad02fbc1e0e2f69dd5576e2203",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pyobjc_framework_security-12.2.2/License.txt",
+          "sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff",
+          "source_url": "https://files.pythonhosted.org/packages/c2/92/c304b7fc3a0fe7484a2a3cf25711e70c8fa2b6969d82f4010e35b9af2164/pyobjc_framework_security-12.2.2.tar.gz",
+          "notice_text_sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Console",
+          "Environment :: MacOS X :: Cocoa",
+          "Intended Audience :: Developers",
+          "Natural Language :: English",
+          "Operating System :: MacOS :: MacOS X",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Free Threading :: 3 - Stable",
+          "Programming Language :: Objective C",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Software Development :: User Interfaces"
+        ]
+      },
+      "status": "upstream-notices-recovered",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/desktop.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pyobjc-framework-UniformTypeIdentifiers",
+      "version": "12.2.2",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Documentation": "https://pyobjc.readthedocs.io/en/latest/",
+        "Homepage": "https://github.com/ronaldoussoren/pyobjc",
+        "Issue tracker": "https://github.com/ronaldoussoren/pyobjc/issues",
+        "Repository": "https://github.com/ronaldoussoren/pyobjc"
+      },
+      "metadata_url": "https://pypi.org/pypi/pyobjc-framework-UniformTypeIdentifiers/12.2.2/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/79/c3/45ec69ed9fdcde5d0f229a031b610127c592d2c4674c3ff0e184d7f2741b/pyobjc_framework_uniformtypeidentifiers-12.2.2-py2.py3-none-any.whl",
+      "artifact_sha256": "1dc6a538df07c410e4bfd6457adcb0b663a5e0df331905dbe135bcfd3f89ae57",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pyobjc_framework_uniformtypeidentifiers-12.2.2/License.txt",
+          "sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff",
+          "source_url": "https://files.pythonhosted.org/packages/70/c6/31ac40c4d918baa36ca06d196bfec0f47f804a74684988cf424060469d98/pyobjc_framework_uniformtypeidentifiers-12.2.2.tar.gz",
+          "notice_text_sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Console",
+          "Environment :: MacOS X :: Cocoa",
+          "Intended Audience :: Developers",
+          "Natural Language :: English",
+          "Operating System :: MacOS :: MacOS X",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Free Threading :: 3 - Stable",
+          "Programming Language :: Objective C",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Software Development :: User Interfaces"
+        ]
+      },
+      "status": "upstream-notices-recovered",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/desktop.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pyobjc-framework-WebKit",
+      "version": "12.2.2",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Documentation": "https://pyobjc.readthedocs.io/en/latest/",
+        "Homepage": "https://github.com/ronaldoussoren/pyobjc",
+        "Issue tracker": "https://github.com/ronaldoussoren/pyobjc/issues",
+        "Repository": "https://github.com/ronaldoussoren/pyobjc"
+      },
+      "metadata_url": "https://pypi.org/pypi/pyobjc-framework-WebKit/12.2.2/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/b9/76/344b197a89878e8b103727984f2815bc38393515be5bf63aa7b847c414e0/pyobjc_framework_webkit-12.2.2-cp312-cp312-macosx_10_13_universal2.whl",
+      "artifact_sha256": "ef37692f0280151bf8164a718e334a9b3cb0abfc5455be14172280de7e277505",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pyobjc_framework_webkit-12.2.2.dist-info/licenses/LICENSE.txt",
+          "sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff",
+          "notice_text_sha256": "0ca04b07928d4872b9d9bb22187ca0426dd8bfab08f26eada0999a71dc81aaff",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [
+          "LICENSE.txt"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Console",
+          "Environment :: MacOS X :: Cocoa",
+          "Intended Audience :: Developers",
+          "Natural Language :: English",
+          "Operating System :: MacOS :: MacOS X",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Free Threading :: 3 - Stable",
+          "Programming Language :: Objective C",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Software Development :: User Interfaces"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/desktop.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pypykatz",
+      "version": "0.6.13",
+      "license_declared": null,
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/pypykatz"
+      },
+      "metadata_url": "https://pypi.org/pypi/pypykatz/0.6.13/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/99/e1/d56d0f65a572b2cdce100207aa0dc07f68f3a8897fa9941cd69b51d476f6/pypykatz-0.6.13-py3-none-any.whl",
+      "artifact_sha256": "c715fc22af49b893dc15e4e376ff167107ad602e1f91a5a2320c3aa7a7e41e3c",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pypykatz-0.6.13.dist-info/LICENSE",
+          "sha256": "484b8992e7a7c97cb6e5dbfbe539ea6ac785816e8f09862a22e7513cccd6a6b2",
+          "notice_text_sha256": "484b8992e7a7c97cb6e5dbfbe539ea6ac785816e8f09862a22e7513cccd6a6b2",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.6",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "python-evtx",
+      "version": "0.8.1",
+      "license_declared": "Apache-2.0",
+      "license_classifiers": [],
+      "project_urls": {
+        "Bug-Tracker": "https://github.com/williballenthin/python-evtx/issues",
+        "Homepage": "https://github.com/williballenthin/python-evtx",
+        "Repository": "https://github.com/williballenthin/python-evtx"
+      },
+      "metadata_url": "https://pypi.org/pypi/python-evtx/0.8.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/32/12/f16a7a2f118a07649633b8f72803b932c8d9f0d24a2822cc08a1879ddf6f/python_evtx-0.8.1-py3-none-any.whl",
+      "artifact_sha256": "46336b854dbe0a1e75873ae30db5f583c9d2262ff1d21bdb6b1e624ecfa18ddb",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "python_evtx-0.8.1.dist-info/licenses/LICENSE.TXT",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "notice_text_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "Apache-2.0",
+        "license": null,
+        "license_files": [
+          "LICENSE.TXT"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Intended Audience :: Information Technology",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Topic :: System :: Logging",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Security"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "python-multipart",
+      "version": "0.0.32",
+      "license_declared": "Apache-2.0",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "project_urls": {
+        "Changelog": "https://github.com/Kludex/python-multipart/blob/master/CHANGELOG.md",
+        "Documentation": "https://kludex.github.io/python-multipart/",
+        "Homepage": "https://github.com/Kludex/python-multipart",
+        "Source": "https://github.com/Kludex/python-multipart"
+      },
+      "metadata_url": "https://pypi.org/pypi/python-multipart/0.0.32/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/e1/04/e8135ebd1ad02c56ec633277529b2602ff99ff634be76cdba5744cf554fd/python_multipart-0.0.32-py3-none-any.whl",
+      "artifact_sha256": "ff6d3f776f16878c894e52e107296ffc890e913c611b1a4ec6c44e2821fe2e23",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "python_multipart-0.0.32.dist-info/licenses/LICENSE.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "notice_text_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "Apache-2.0",
+        "license": null,
+        "license_files": [
+          "LICENSE.txt"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Web Environment",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: Apache Software License",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Topic :: Software Development :: Libraries :: Python Modules"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pywebview",
+      "version": "6.2.1",
+      "license_declared": "BSD 3-Clause License\n        \n        Copyright (c) 2014-2017, Roman Sirokov\n        All rights reserved.\n        \n        Redistribution and use in source and binary forms, with or without\n        modification, are permitted provided that the following conditions are met:\n        \n        * Redistributions of source code must retain the above copyright notice, this\n          list of conditions and the following disclaimer.\n        \n        * Redistributions in binary form must reproduce the above copyright notice,\n          this list of conditions and the following disclaimer in the documentation\n          and/or other materials provided with the distribution.\n        \n        * Neither the name of the copyright holder nor the names of its\n          contributors may be used to endorse or promote products derived from\n          this software without specific prior written permission.\n        \n        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n        AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE\n        IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\n        DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE\n        FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL\n        DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR\n        SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER\n        CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,\n        OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n        OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n        ",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "project_urls": {
+        "Homepage": "https://pywebview.flowrl.com/",
+        "Repository": "https://github.com/r0x0r/pywebview"
+      },
+      "metadata_url": "https://pypi.org/pypi/pywebview/6.2.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/3d/25/9491695c22c4842c5b3903b4dc172e0eecf67a27c0af34a71512c9b76a0a/pywebview-6.2.1-py3-none-any.whl",
+      "artifact_sha256": "9d07275f53894ab4d5e2e0e996227193e7187dec276d9b624dccbce029216b46",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "pywebview-6.2.1.dist-info/licenses/LICENSE",
+          "sha256": "4a988dd3598832cd3653de20dc33cb677d0fb53ab5551c879ca31280ae653675",
+          "notice_text_sha256": "4a988dd3598832cd3653de20dc33cb677d0fb53ab5551c879ca31280ae653675",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "BSD 3-Clause License\n        \n        Copyright (c) 2014-2017, Roman Sirokov\n        All rights reserved.\n        \n        Redistribution and use in source and binary forms, with or without\n        modification, are permitted provided that the following conditions are met:\n        \n        * Redistributions of source code must retain the above copyright notice, this\n          list of conditions and the following disclaimer.\n        \n        * Redistributions in binary form must reproduce the above copyright notice,\n          this list of conditions and the following disclaimer in the documentation\n          and/or other materials provided with the distribution.\n        \n        * Neither the name of the copyright holder nor the names of its\n          contributors may be used to endorse or promote products derived from\n          this software without specific prior written permission.\n        \n        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"\n        AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE\n        IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\n        DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE\n        FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL\n        DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR\n        SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER\n        CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,\n        OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n        OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n        ",
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: BSD License",
+          "Operating System :: OS Independent",
+          "Environment :: MacOS X",
+          "Environment :: Win32 (MS Windows)",
+          "Environment :: X11 Applications :: GTK",
+          "Environment :: X11 Applications :: Qt",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Topic :: Software Development :: Libraries :: Application Frameworks",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Software Development :: User Interfaces"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/desktop.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "referencing",
+      "version": "0.37.0",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://referencing.readthedocs.io/en/stable/changes/",
+        "Documentation": "https://referencing.readthedocs.io/",
+        "Funding": "https://github.com/sponsors/Julian",
+        "Homepage": "https://github.com/python-jsonschema/referencing",
+        "Issues": "https://github.com/python-jsonschema/referencing/issues/",
+        "Source": "https://github.com/python-jsonschema/referencing",
+        "Tidelift": "https://tidelift.com/subscription/pkg/pypi-referencing?utm_source=pypi-referencing&utm_medium=referral&utm_campaign=pypi-link"
+      },
+      "metadata_url": "https://pypi.org/pypi/referencing/0.37.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/2c/58/ca301544e1fa93ed4f80d724bf5b194f6e4b945841c5bfd555878eea9fcb/referencing-0.37.0-py3-none-any.whl",
+      "artifact_sha256": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "referencing-0.37.0.dist-info/licenses/COPYING",
+          "sha256": "42dcd63495f87b4eb7c7757afa379bb55a53f94afd7a5f657d9adf57236e515c",
+          "notice_text_sha256": "42dcd63495f87b4eb7c7757afa379bb55a53f94afd7a5f657d9adf57236e515c",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "COPYING"
+        ],
+        "classifiers": [
+          "Development Status :: 3 - Alpha",
+          "Intended Audience :: Developers",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: File Formats :: JSON",
+          "Topic :: File Formats :: JSON :: JSON Schema"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "rpds-py",
+      "version": "2026.9.1",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Documentation": "https://rpds.readthedocs.io/",
+        "Funding": "https://github.com/sponsors/Julian",
+        "Homepage": "https://github.com/crate-py/rpds",
+        "Issues": "https://github.com/crate-py/rpds/issues/",
+        "Source": "https://github.com/crate-py/rpds",
+        "Tidelift": "https://tidelift.com/subscription/pkg/pypi-rpds-py?utm_source=pypi-rpds-py&utm_medium=referral&utm_campaign=pypi-link",
+        "Upstream": "https://github.com/orium/rpds"
+      },
+      "metadata_url": "https://pypi.org/pypi/rpds-py/2026.9.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/90/81/ac6a0d064982251856ce009c9e1dd51a34110b3c055aa7d1aad18b4899a3/rpds_py-2026.9.1-cp312-cp312-macosx_11_0_arm64.whl",
+      "artifact_sha256": "e21c1429e205828ea886a2293a4a2c8e01f4c25d9893ca330e97a6cf73f52e7b",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "rpds_py-2026.9.1.dist-info/licenses/LICENSE",
+          "sha256": "314e4e91be3baa93c0fb4bccc9e4e97cd643eb839b065af921782c2175fe9909",
+          "notice_text_sha256": "314e4e91be3baa93c0fb4bccc9e4e97cd643eb839b065af921782c2175fe9909",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "rpds_py-2026.9.1.dist-info/licenses/LICENSE",
+          "sha256": "314e4e91be3baa93c0fb4bccc9e4e97cd643eb839b065af921782c2175fe9909",
+          "source_url": "https://files.pythonhosted.org/packages/1d/6d/b26eb1e75395925b3a142ed351cbed2ec8212f5c9d937aee3df32c701baa/rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "notice_text_sha256": "314e4e91be3baa93c0fb4bccc9e4e97cd643eb839b065af921782c2175fe9909",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 3 - Alpha",
+          "Intended Audience :: Developers",
+          "Operating System :: OS Independent",
+          "Programming Language :: Rust",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "additional_audited_artifacts": [
+        {
+          "url": "https://files.pythonhosted.org/packages/1d/6d/b26eb1e75395925b3a142ed351cbed2ec8212f5c9d937aee3df32c701baa/rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "sha256": "addeda51556dac7c1a2f14cda62db8b621cd12afba3091d03a96c72932387eab",
+          "resolution_hash_verified": true,
+          "notice_files": 1
+        }
+      ],
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "setuptools",
+      "version": "84.0.0",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://setuptools.pypa.io/en/stable/history.html",
+        "Documentation": "https://setuptools.pypa.io/",
+        "Source": "https://github.com/pypa/setuptools"
+      },
+      "metadata_url": "https://pypi.org/pypi/setuptools/84.0.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/95/9c/c510029fc6ef33a6275cd2c5d3cecd6613dfd6aa401d57c54f1c18852ccf/setuptools-84.0.0-py3-none-any.whl",
+      "artifact_sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "setuptools/_vendor/importlib_metadata-8.7.1.dist-info/licenses/LICENSE",
+          "sha256": "458502e12d97bbf64438606a20044aa85eb05fb0a8a807bb35dbec253fd1fc04",
+          "notice_text_sha256": "458502e12d97bbf64438606a20044aa85eb05fb0a8a807bb35dbec253fd1fc04",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/jaraco_context-6.1.0.dist-info/licenses/LICENSE",
+          "sha256": "9755a18519666e5f0f4cae3daad3d7012bcae48a600b31237d75e9fe134e6683",
+          "notice_text_sha256": "9755a18519666e5f0f4cae3daad3d7012bcae48a600b31237d75e9fe134e6683",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/jaraco_functools-4.4.0.dist-info/licenses/LICENSE",
+          "sha256": "5a57cb4db85e2a2dd88c290628908add57e3451449e0a9a71fdfb38776fd759d",
+          "notice_text_sha256": "5a57cb4db85e2a2dd88c290628908add57e3451449e0a9a71fdfb38776fd759d",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/more_itertools-10.8.0.dist-info/licenses/LICENSE",
+          "sha256": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+          "notice_text_sha256": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/packaging/licenses/__init__.py",
+          "sha256": "4f05cb1d9097c1281d17044b3f15bad364fa99289eba74851cce9fa7ca605bbf",
+          "notice_text_sha256": "4f05cb1d9097c1281d17044b3f15bad364fa99289eba74851cce9fa7ca605bbf",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/packaging/licenses/_spdx.py",
+          "sha256": "596ec35e2ca0ebcba9fd8343ff0a51625af548786257815f24b41f7e08613314",
+          "notice_text_sha256": "596ec35e2ca0ebcba9fd8343ff0a51625af548786257815f24b41f7e08613314",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE",
+          "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48",
+          "notice_text_sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE.APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "notice_text_sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE.BSD",
+          "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5",
+          "notice_text_sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/platformdirs-4.4.0.dist-info/licenses/LICENSE",
+          "sha256": "29e0fd62e929850e86eb28c3fdccf0cefdf4fa94879011cffb3d0d4bed6d4db6",
+          "notice_text_sha256": "29e0fd62e929850e86eb28c3fdccf0cefdf4fa94879011cffb3d0d4bed6d4db6",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/tomli-2.4.0.dist-info/licenses/LICENSE",
+          "sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe",
+          "notice_text_sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/wheel-0.46.3.dist-info/licenses/LICENSE.txt",
+          "sha256": "30c23618679108f3e8ea1d2a658c7ca417bdfc891c98ef1a89fa4ff0c9828654",
+          "notice_text_sha256": "30c23618679108f3e8ea1d2a658c7ca417bdfc891c98ef1a89fa4ff0c9828654",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/zipp-3.23.0.dist-info/licenses/LICENSE",
+          "sha256": "5a57cb4db85e2a2dd88c290628908add57e3451449e0a9a71fdfb38776fd759d",
+          "notice_text_sha256": "5a57cb4db85e2a2dd88c290628908add57e3451449e0a9a71fdfb38776fd759d",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/config/NOTICE",
+          "sha256": "2dddf08818297a3b89d43d95ff659d8da85741108c9136dfa3a4d856c0623bd8",
+          "notice_text_sha256": "2dddf08818297a3b89d43d95ff659d8da85741108c9136dfa3a4d856c0623bd8",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/config/_validate_pyproject/NOTICE",
+          "sha256": "09c9bcea95ca086f8bc5bed174e40bc835b297d40fb5f86bbbb570fe0a5581a7",
+          "notice_text_sha256": "09c9bcea95ca086f8bc5bed174e40bc835b297d40fb5f86bbbb570fe0a5581a7",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools-84.0.0.dist-info/licenses/LICENSE",
+          "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+          "notice_text_sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/autocommand-2.2.2.dist-info/LICENSE",
+          "sha256": "ade78d04982d69972d444a8e14a94f87a2334dd3855cc80348ea8e240aa0df2d",
+          "notice_text_sha256": "ade78d04982d69972d444a8e14a94f87a2334dd3855cc80348ea8e240aa0df2d",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/backports.tarfile-1.2.0.dist-info/LICENSE",
+          "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+          "notice_text_sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "setuptools/_vendor/jaraco.text-4.0.0.dist-info/LICENSE",
+          "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+          "notice_text_sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: System :: Archiving :: Packaging",
+          "Topic :: System :: Systems Administration",
+          "Topic :: Utilities"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "build-system.requires",
+          "version_basis": "audit-time resolution; not committed lock",
+          "requested": true,
+          "environment": {
+            "implementation_name": "cpython",
+            "implementation_version": "3.12.13",
+            "os_name": "posix",
+            "platform_machine": "arm64",
+            "platform_release": "25.4.0",
+            "platform_system": "Darwin",
+            "platform_version": "Darwin Kernel Version 25.4.0: Thu Mar 19 19:33:43 PDT 2026; root:xnu-12377.101.15~1/RELEASE_ARM64_T8142",
+            "python_full_version": "3.12.13",
+            "platform_python_implementation": "CPython",
+            "python_version": "3.12",
+            "sys_platform": "darwin"
+          },
+          "build_only": true
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "six",
+      "version": "1.17.0",
+      "license_declared": "MIT",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/benjaminp/six"
+      },
+      "metadata_url": "https://pypi.org/pypi/six/1.17.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl",
+      "artifact_sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "six-1.17.0.dist-info/LICENSE",
+          "sha256": "4375ba20e2b9c6c4e7cad2940a628fd90e95cc3d50ee92aae755715d8ba1fbd0",
+          "notice_text_sha256": "4375ba20e2b9c6c4e7cad2940a628fd90e95cc3d50ee92aae755715d8ba1fbd0",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MIT",
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Programming Language :: Python :: 2",
+          "Programming Language :: Python :: 3",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Topic :: Software Development :: Libraries",
+          "Topic :: Utilities"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "sse-starlette",
+      "version": "3.5.0",
+      "license_declared": "BSD-3-Clause",
+      "license_classifiers": [],
+      "project_urls": {
+        "Homepage": "https://github.com/sysid/sse-starlette",
+        "Issues": "https://github.com/sysid/sse-starlette/issues",
+        "Repository": "https://github.com/sysid/sse-starlette",
+        "Source": "https://github.com/sysid/sse-starlette"
+      },
+      "metadata_url": "https://pypi.org/pypi/sse-starlette/3.5.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/be/e4/cdda14023c316d71493bc54fdffc3dd006631b88866145c9d3cc33e0f1df/sse_starlette-3.5.0-py3-none-any.whl",
+      "artifact_sha256": "3e6e1070df3f0f5d9cea81496de92dbb72f6721871d99748ece67441dd8b7997",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "sse_starlette-3.5.0.dist-info/licenses/AUTHORS",
+          "sha256": "c2ff63d2ecf128bbda8ab1b2016830a5da124202fbb97168685bb9946aed3f1a",
+          "notice_text_sha256": "c2ff63d2ecf128bbda8ab1b2016830a5da124202fbb97168685bb9946aed3f1a",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "sse_starlette-3.5.0.dist-info/licenses/LICENSE",
+          "sha256": "80af6bfccbebd2c14d4aab96695cab9950e177190cc80f5ef819e99996883e8e",
+          "notice_text_sha256": "80af6bfccbebd2c14d4aab96695cab9950e177190cc80f5ef819e99996883e8e",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "BSD-3-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE",
+          "AUTHORS"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Web Environment",
+          "Intended Audience :: Developers",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Topic :: Internet :: WWW/HTTP"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "starlette",
+      "version": "1.7.0",
+      "license_declared": "BSD-3-Clause",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://starlette.dev/release-notes/",
+        "Documentation": "https://starlette.dev/",
+        "Funding": "https://github.com/sponsors/Kludex",
+        "Homepage": "https://github.com/Kludex/starlette",
+        "Source": "https://github.com/Kludex/starlette"
+      },
+      "metadata_url": "https://pypi.org/pypi/starlette/1.7.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/4e/d6/1ec1b290f9e0fb067899b61e1d37a30c923068bad260b216dbe37a7d2967/starlette-1.7.0-py3-none-any.whl",
+      "artifact_sha256": "67f8e99895493dd2911a03f11314af6ceebeae4e704bb9f43dfc6a9db151c93e",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "starlette-1.7.0.dist-info/licenses/LICENSE.md",
+          "sha256": "dcb95677a02240243187e964f941847d19b17821cf99e5afae684fab328c19bf",
+          "notice_text_sha256": "dcb95677a02240243187e964f941847d19b17821cf99e5afae684fab328c19bf",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "BSD-3-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE.md"
+        ],
+        "classifiers": [
+          "Development Status :: 3 - Alpha",
+          "Environment :: Web Environment",
+          "Framework :: AnyIO",
+          "Intended Audience :: Developers",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Topic :: Internet :: WWW/HTTP"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "tabulate",
+      "version": "0.10.0",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Homepage": "https://github.com/astanin/python-tabulate"
+      },
+      "metadata_url": "https://pypi.org/pypi/tabulate/0.10.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/99/55/db07de81b5c630da5cbf5c7df646580ca26dfaefa593667fc6f2fe016d2e/tabulate-0.10.0-py3-none-any.whl",
+      "artifact_sha256": "f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "tabulate-0.10.0.dist-info/licenses/LICENSE",
+          "sha256": "cdfab50d37d8ead06468fb76a3abafcd05c16749ec8a18eebfa50fd48c7cb2d2",
+          "notice_text_sha256": "cdfab50d37d8ead06468fb76a3abafcd05c16749ec8a18eebfa50fd48c7cb2d2",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 4 - Beta",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Topic :: Software Development :: Libraries"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "tqdm",
+      "version": "4.70.1",
+      "license_declared": "MPL-2.0 AND MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "changelog": "https://tqdm.github.io/releases",
+        "homepage": "https://tqdm.github.io",
+        "repository": "https://github.com/tqdm/tqdm",
+        "wiki": "https://github.com/tqdm/tqdm/wiki"
+      },
+      "metadata_url": "https://pypi.org/pypi/tqdm/4.70.1/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/a7/03/921a3d3c75785aca9ebfbfcabfbc3a1be12e2ab5265deb026d55a5a3f83e/tqdm-4.70.1-py3-none-any.whl",
+      "artifact_sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "tqdm-4.70.1.dist-info/licenses/LICENCE",
+          "sha256": "fcff87c3a47ce8028a8512aa182d4fcf0ad1c90544ee75cf9b343684cac194de",
+          "notice_text_sha256": "fcff87c3a47ce8028a8512aa182d4fcf0ad1c90544ee75cf9b343684cac194de",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "MPL-2.0 AND MIT",
+        "license_files": [
+          "LICENCE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Console",
+          "Environment :: MacOS X",
+          "Environment :: Other Environment",
+          "Environment :: Win32 (MS Windows)",
+          "Environment :: X11 Applications",
+          "Framework :: IPython",
+          "Framework :: Jupyter",
+          "Intended Audience :: Developers",
+          "Intended Audience :: Education",
+          "Intended Audience :: End Users/Desktop",
+          "Intended Audience :: Other Audience",
+          "Intended Audience :: System Administrators",
+          "Operating System :: MacOS",
+          "Operating System :: MacOS :: MacOS X",
+          "Operating System :: Microsoft",
+          "Operating System :: Microsoft :: MS-DOS",
+          "Operating System :: Microsoft :: Windows",
+          "Operating System :: POSIX",
+          "Operating System :: POSIX :: BSD",
+          "Operating System :: POSIX :: BSD :: FreeBSD",
+          "Operating System :: POSIX :: Linux",
+          "Operating System :: POSIX :: SunOS/Solaris",
+          "Operating System :: Unix",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.8",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: Implementation",
+          "Programming Language :: Python :: Implementation :: IronPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Programming Language :: Unix Shell",
+          "Topic :: Desktop Environment",
+          "Topic :: Education :: Computer Aided Instruction (CAI)",
+          "Topic :: Education :: Testing",
+          "Topic :: Office/Business",
+          "Topic :: Other/Nonlisted Topic",
+          "Topic :: Software Development :: Build Tools",
+          "Topic :: Software Development :: Libraries",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Software Development :: Pre-processors",
+          "Topic :: Software Development :: User Interfaces",
+          "Topic :: System :: Installation/Setup",
+          "Topic :: System :: Logging",
+          "Topic :: System :: Monitoring",
+          "Topic :: System :: Shells",
+          "Topic :: Terminals",
+          "Topic :: Utilities"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "truststore",
+      "version": "0.10.5",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Documentation": "https://truststore.readthedocs.io",
+        "Source": "https://github.com/sethmlarson/truststore"
+      },
+      "metadata_url": "https://pypi.org/pypi/truststore/0.10.5/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/51/e9/3a7820be2bb0fe53b6bc9c3be26d3d1158004e4c3ab953aa6840b955b1e9/truststore-0.10.5-py3-none-any.whl",
+      "artifact_sha256": "9aaaedaefaf06d8b206278cf8b5012bc897f485a874503501e12d776df78951c",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "truststore-0.10.5.dist-info/licenses/LICENSE",
+          "sha256": "33be7b7e8fa4fd19b1760e1a8ed8a668bdab852c91b692dd41424bcb725a9fca",
+          "notice_text_sha256": "33be7b7e8fa4fd19b1760e1a8ed8a668bdab852c91b692dd41424bcb725a9fca",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Intended Audience :: Developers",
+          "Operating System :: MacOS",
+          "Operating System :: Microsoft",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "license_declared": "PSF-2.0",
+      "license_classifiers": [],
+      "project_urls": {
+        "Bug Tracker": "https://github.com/python/typing_extensions/issues",
+        "Changes": "https://github.com/python/typing_extensions/blob/main/CHANGELOG.md",
+        "Documentation": "https://typing-extensions.readthedocs.io/",
+        "Home": "https://github.com/python/typing_extensions",
+        "Q & A": "https://github.com/python/typing/discussions",
+        "Repository": "https://github.com/python/typing_extensions"
+      },
+      "metadata_url": "https://pypi.org/pypi/typing-extensions/4.16.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+      "artifact_sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "typing_extensions-4.16.0.dist-info/licenses/LICENSE",
+          "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf",
+          "notice_text_sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "PSF-2.0",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Console",
+          "Intended Audience :: Developers",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Topic :: Software Development"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "license_declared": "MIT",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://github.com/pydantic/typing-inspection/blob/main/HISTORY.md",
+        "Documentation": "https://pydantic.github.io/typing-inspection/dev/",
+        "Homepage": "https://github.com/pydantic/typing-inspection",
+        "Source": "https://github.com/pydantic/typing-inspection"
+      },
+      "metadata_url": "https://pypi.org/pypi/typing-inspection/0.4.4/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/67/81/4add07e5172b7ac40d8ed5ff580409a7801a4fe26d529bdd915401dabfbe/typing_inspection-0.4.4-py3-none-any.whl",
+      "artifact_sha256": "65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "typing_inspection-0.4.4.dist-info/licenses/LICENSE",
+          "sha256": "804b59b25f2c31bd278f9202a19ae49a3945aa2664387e2d0a128c7cacc61ec3",
+          "notice_text_sha256": "804b59b25f2c31bd278f9202a19ae49a3945aa2664387e2d0a128c7cacc61ec3",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "MIT",
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 3 - Alpha",
+          "Intended Audience :: Developers",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Typing :: Typed"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "unicrypto",
+      "version": "0.0.12",
+      "license_declared": null,
+      "license_classifiers": [],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/unicrypto"
+      },
+      "metadata_url": "https://pypi.org/pypi/unicrypto/0.0.12/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/f4/1c/9964cd41f3240cfcc33076f49565d583033a5628f1804bf3de7ea3d2f6bc/unicrypto-0.0.12-py3-none-any.whl",
+      "artifact_sha256": "6fb7e9bbaa60c49128ad6584201290ead99b703ae834c28911c82ddca38a0d6f",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "unicrypto-0.0.12.dist-info/LICENSE",
+          "sha256": "1fef21262c964212c274da41043d2968948e4d061b1911f805d0820ebef38e00",
+          "notice_text_sha256": "1fef21262c964212c274da41043d2968948e4d061b1911f805d0820ebef38e00",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.6",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "license_declared": "BSD-3-Clause",
+      "license_classifiers": [],
+      "project_urls": {
+        "Changelog": "https://uvicorn.dev/release-notes",
+        "Funding": "https://github.com/sponsors/Kludex",
+        "Homepage": "https://uvicorn.dev/",
+        "Source": "https://github.com/Kludex/uvicorn"
+      },
+      "metadata_url": "https://pypi.org/pypi/uvicorn/0.54.0/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/38/0c/b54a4fdd7f90a3af8b02ebc9ce6712c2c208b7926a2f7bad95c33ebbe943/uvicorn-0.54.0-py3-none-any.whl",
+      "artifact_sha256": "505bdb0f318731d45f1f712071fc781a8981f6847a31c902c9f5e652d4f67faf",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": true,
+      "license_files": [
+        {
+          "path": "uvicorn-0.54.0.dist-info/licenses/LICENSE.md",
+          "sha256": "efe1acf3e62fb99c288b0ec73e5a773b7268ef4320fe757ea994214e4b63c371",
+          "notice_text_sha256": "efe1acf3e62fb99c288b0ec73e5a773b7268ef4320fe757ea994214e4b63c371",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": "BSD-3-Clause",
+        "license": null,
+        "license_files": [
+          "LICENSE.md"
+        ],
+        "classifiers": [
+          "Development Status :: 4 - Beta",
+          "Environment :: Web Environment",
+          "Intended Audience :: Developers",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: Implementation :: CPython",
+          "Programming Language :: Python :: Implementation :: PyPy",
+          "Topic :: Internet :: WWW/HTTP"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "requirements.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "volatility3",
+      "version": "2.28.2",
+      "license_declared": "VSL",
+      "license_classifiers": [],
+      "project_urls": {
+        "documentation": "https://volatility3.readthedocs.io/",
+        "homepage": "https://github.com/volatilityfoundation/volatility3/",
+        "issues": "https://github.com/volatilityfoundation/volatility3/issues",
+        "repository": "https://github.com/volatilityfoundation/volatility3"
+      },
+      "metadata_url": "https://pypi.org/pypi/volatility3/2.28.2/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/8a/26/548439f5192e496fff7f54d41d8762fa8f3712d53c8441b9f57d7c7a8310/volatility3-2.28.2-py3-none-any.whl",
+      "artifact_sha256": "0461d6dd71b9ddbaf70c96e079c06efdf174ac65383b3dcf10dd165181fbd3c3",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "volatility3-2.28.2.dist-info/LICENSE.txt",
+          "sha256": "6e905a859f6d5ebf23d4b7cdfb8ac425c4ec5dd02b3b274901a967f3e452eb37",
+          "notice_text_sha256": "6e905a859f6d5ebf23d4b7cdfb8ac425c4ec5dd02b3b274901a967f3e452eb37",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "VSL",
+        "license_files": [
+          "LICENSE.txt"
+        ],
+        "classifiers": []
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "wcwidth",
+      "version": "0.9.2",
+      "license_declared": null,
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/jquast/wcwidth"
+      },
+      "metadata_url": "https://pypi.org/pypi/wcwidth/0.9.2/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/9c/b4/0bfa065af506540d9d558e3e5548cff00bc1f9b24e6e2a8512498e8628de/wcwidth-0.9.2-py3-none-any.whl",
+      "artifact_sha256": "89ca642c5bf0101157a09366be69fad0379db1f700ae39a920e103234573670e",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "wcwidth-0.9.2.dist-info/licenses/LICENSE",
+          "sha256": "70b98a95a2144eb70af8017fa8c6d95ce247e40867436e8bc649e137fe13d21a",
+          "notice_text_sha256": "70b98a95a2144eb70af8017fa8c6d95ce247e40867436e8bc649e137fe13d21a",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Development Status :: 5 - Production/Stable",
+          "Environment :: Console",
+          "Intended Audience :: Developers",
+          "License :: OSI Approved :: MIT License",
+          "Natural Language :: English",
+          "Operating System :: POSIX",
+          "Programming Language :: Python :: 3 :: Only",
+          "Programming Language :: Python :: 3.9",
+          "Programming Language :: Python :: 3.10",
+          "Programming Language :: Python :: 3.11",
+          "Programming Language :: Python :: 3.12",
+          "Programming Language :: Python :: 3.13",
+          "Programming Language :: Python :: 3.14",
+          "Programming Language :: Python :: 3.15",
+          "Topic :: Software Development :: Internationalization",
+          "Topic :: Software Development :: Libraries",
+          "Topic :: Software Development :: Localization",
+          "Topic :: Terminals",
+          "Typing :: Typed"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "winacl",
+      "version": "0.1.9",
+      "license_declared": null,
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/skelsec/winacl"
+      },
+      "metadata_url": "https://pypi.org/pypi/winacl/0.1.9/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/64/82/9be45ef89488ad87870da83271cb734f410373ca86dde76d6907d74cf0e0/winacl-0.1.9-py3-none-any.whl",
+      "artifact_sha256": "31ba781a35f3b1bd3c2ece994816c0a5fe113c73018689ab6118010ac0d15099",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "winacl-0.1.9.dist-info/LICENSE",
+          "sha256": "2ea729a370e5d72ac81384ec8fd78c5465266c0d50b412042129a76e171bfeb5",
+          "notice_text_sha256": "2ea729a370e5d72ac81384ec8fd78c5465266c0d50b412042129a76e171bfeb5",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": null,
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python :: 3.6",
+          "License :: OSI Approved :: MIT License",
+          "Operating System :: OS Independent"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "yara-python",
+      "version": "4.5.4",
+      "license_declared": "Apache 2.0",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "project_urls": {
+        "Homepage": "https://github.com/VirusTotal/yara-python"
+      },
+      "metadata_url": "https://pypi.org/pypi/yara-python/4.5.4/json",
+      "artifact_url": "https://files.pythonhosted.org/packages/5a/cc/deaf10b6b31ee81842176affce79d57c3b6df50e894cf6cdbb1f0eb12af2/yara_python-4.5.4-cp312-cp312-macosx_14_0_arm64.whl",
+      "artifact_sha256": "ade234700c492bce0efda96c1cdcd763425016e40df4a8d30c4c4e6897be5ace",
+      "registry_hash_verified": true,
+      "matching_lock_or_resolution_hash_verified": false,
+      "license_files": [
+        {
+          "path": "yara_python-4.5.4.dist-info/licenses/LICENSE",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "notice_text_sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "wheel_metadata": {
+        "license_expression": null,
+        "license": "Apache 2.0",
+        "license_files": [
+          "LICENSE"
+        ],
+        "classifiers": [
+          "Programming Language :: Python",
+          "License :: OSI Approved :: Apache Software License",
+          "Operating System :: OS Independent",
+          "Development Status :: 5 - Production/Stable"
+        ]
+      },
+      "status": "notice-files-collected",
+      "notice_scan_version": 2,
+      "uses": [
+        {
+          "source": "packaging/macos/analyzer.lock.txt",
+          "version_basis": "committed exact pin"
+        }
+      ]
+    },
+    {
+      "ecosystem": "github-action",
+      "name": "actions/checkout",
+      "version": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "uses": [
+        {
+          "source": ".github/workflows/update-core.yml",
+          "reference": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "scope": "CI-only execution; not bundled application code"
+        }
+      ],
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "source_url": "https://raw.githubusercontent.com/actions/checkout/3d3c42e5aac5ba805825da76410c181273ba90b1/LICENSE",
+          "sha256": "3e855ffa704114a51628ef8f0bf3aeb41728adf9d9070e263bf58aa5640b0eb5",
+          "notice_text_sha256": "3e855ffa704114a51628ef8f0bf3aeb41728adf9d9070e263bf58aa5640b0eb5",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "status": "notice-files-collected",
+      "source_url": "https://github.com/actions/checkout/tree/3d3c42e5aac5ba805825da76410c181273ba90b1"
+    },
+    {
+      "ecosystem": "github-action",
+      "name": "actions/checkout",
+      "version": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "uses": [
+        {
+          "source": ".github/workflows/update-core.yml",
+          "reference": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "scope": "CI-only execution; not bundled application code"
+        }
+      ],
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "source_url": "https://raw.githubusercontent.com/actions/checkout/3d3c42e5aac5ba805825da76410c181273ba90b1/LICENSE",
+          "sha256": "3e855ffa704114a51628ef8f0bf3aeb41728adf9d9070e263bf58aa5640b0eb5",
+          "notice_text_sha256": "3e855ffa704114a51628ef8f0bf3aeb41728adf9d9070e263bf58aa5640b0eb5",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "status": "notice-files-collected",
+      "source_url": "https://github.com/actions/checkout/tree/3d3c42e5aac5ba805825da76410c181273ba90b1"
+    },
+    {
+      "ecosystem": "github-action",
+      "name": "actions/checkout",
+      "version": "3d3c42e5aac5ba805825da76410c181273ba90b1",
+      "uses": [
+        {
+          "source": ".github/workflows/ci.yml",
+          "reference": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "scope": "CI-only execution; not bundled application code"
+        }
+      ],
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "source_url": "https://raw.githubusercontent.com/actions/checkout/3d3c42e5aac5ba805825da76410c181273ba90b1/LICENSE",
+          "sha256": "3e855ffa704114a51628ef8f0bf3aeb41728adf9d9070e263bf58aa5640b0eb5",
+          "notice_text_sha256": "3e855ffa704114a51628ef8f0bf3aeb41728adf9d9070e263bf58aa5640b0eb5",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "status": "notice-files-collected",
+      "source_url": "https://github.com/actions/checkout/tree/3d3c42e5aac5ba805825da76410c181273ba90b1"
+    },
+    {
+      "ecosystem": "github-action",
+      "name": "actions/setup-python",
+      "version": "5fda3b95a4ea91299a34e894583c3862153e4b97",
+      "uses": [
+        {
+          "source": ".github/workflows/update-core.yml",
+          "reference": "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+          "scope": "CI-only execution; not bundled application code"
+        }
+      ],
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "source_url": "https://raw.githubusercontent.com/actions/setup-python/5fda3b95a4ea91299a34e894583c3862153e4b97/LICENSE",
+          "sha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32",
+          "notice_text_sha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "status": "notice-files-collected",
+      "source_url": "https://github.com/actions/setup-python/tree/5fda3b95a4ea91299a34e894583c3862153e4b97"
+    },
+    {
+      "ecosystem": "github-action",
+      "name": "actions/setup-python",
+      "version": "5fda3b95a4ea91299a34e894583c3862153e4b97",
+      "uses": [
+        {
+          "source": ".github/workflows/ci.yml",
+          "reference": "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+          "scope": "CI-only execution; not bundled application code"
+        }
+      ],
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "source_url": "https://raw.githubusercontent.com/actions/setup-python/5fda3b95a4ea91299a34e894583c3862153e4b97/LICENSE",
+          "sha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32",
+          "notice_text_sha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "status": "notice-files-collected",
+      "source_url": "https://github.com/actions/setup-python/tree/5fda3b95a4ea91299a34e894583c3862153e4b97"
+    },
+    {
+      "ecosystem": "github-action",
+      "name": "actions/setup-node",
+      "version": "949feb2413d6458794dcd2491c4babbbce0c15c1",
+      "uses": [
+        {
+          "source": ".github/workflows/update-core.yml",
+          "reference": "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "scope": "CI-only execution; not bundled application code"
+        }
+      ],
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "source_url": "https://raw.githubusercontent.com/actions/setup-node/949feb2413d6458794dcd2491c4babbbce0c15c1/LICENSE",
+          "sha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32",
+          "notice_text_sha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "status": "notice-files-collected",
+      "source_url": "https://github.com/actions/setup-node/tree/949feb2413d6458794dcd2491c4babbbce0c15c1"
+    },
+    {
+      "ecosystem": "github-action",
+      "name": "actions/setup-node",
+      "version": "949feb2413d6458794dcd2491c4babbbce0c15c1",
+      "uses": [
+        {
+          "source": ".github/workflows/ci.yml",
+          "reference": "actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+          "scope": "CI-only execution; not bundled application code"
+        }
+      ],
+      "license_files": [
+        {
+          "path": "LICENSE",
+          "source_url": "https://raw.githubusercontent.com/actions/setup-node/949feb2413d6458794dcd2491c4babbbce0c15c1/LICENSE",
+          "sha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32",
+          "notice_text_sha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        }
+      ],
+      "status": "notice-files-collected",
+      "source_url": "https://github.com/actions/setup-node/tree/949feb2413d6458794dcd2491c4babbbce0c15c1"
+    },
+    {
+      "ecosystem": "github-action",
+      "name": "NoCoolUserName/code-quality",
+      "version": "7301db3486bf182012a0ab8005207dd9b35f471c",
+      "uses": [
+        {
+          "source": ".github/workflows/security.yml",
+          "reference": "NoCoolUserName/code-quality/.github/workflows/codeql.yml@7301db3486bf182012a0ab8005207dd9b35f471c",
+          "scope": "CI-only execution; not bundled application code"
+        }
+      ],
+      "license_files": [],
+      "status": "separate-project-reference",
+      "source_url": "https://github.com/NoCoolUserName/code-quality/tree/7301db3486bf182012a0ab8005207dd9b35f471c"
+    },
+    {
+      "ecosystem": "github-action",
+      "name": "NoCoolUserName/code-quality",
+      "version": "3e2c62bef33c74904a7700d79e72c13a6d8cee74",
+      "uses": [
+        {
+          "source": ".github/workflows/code-quality.yml",
+          "reference": "NoCoolUserName/code-quality/.github/workflows/quality.yml@3e2c62bef33c74904a7700d79e72c13a6d8cee74",
+          "scope": "CI-only execution; not bundled application code"
+        }
+      ],
+      "license_files": [],
+      "status": "separate-project-reference",
+      "source_url": "https://github.com/NoCoolUserName/code-quality/tree/3e2c62bef33c74904a7700d79e72c13a6d8cee74"
+    },
+    {
+      "ecosystem": "embedded-runtime",
+      "name": "CPython/python-build-standalone",
+      "version": "3.12.15",
+      "artifact_url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.12.15%2B20261013-aarch64-apple-darwin-install_only_stripped.tar.gz",
+      "artifact_sha256": "9866e11cf2ae9caa1e671383786f248859a52dd8bfb702fb4c0dc2c65f1d36de",
+      "notices_archive": {
+        "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.12.15%2B20261013-aarch64-apple-darwin-pgo%2Blto-full.tar.zst",
+        "sha256": "8c7ac5f091c64111247e595c9fc8fecc38453e94a60323a3b66dbfca3c01414a"
+      },
+      "status": "notices-retained-by-build",
+      "license_files": [],
+      "note": "Build verifies archive hash and copies python/licenses and PYTHON.json from the matching full distribution. This audit did not rebuild the signed macOS app."
+    },
+    {
+      "ecosystem": "git-dependency",
+      "name": "volatility-mcp",
+      "version": "e49244fd753826c83ae581e371fd2ff7d24580a1",
+      "source_url": "https://github.com/NoCoolUserName/volatility-mcp/tree/e49244fd753826c83ae581e371fd2ff7d24580a1",
+      "status": "integration-scope-unresolved",
+      "license_files": [],
+      "note": "Exact VCS dependency; existing MIT grant does not settle VSL wrapper requirements. See LICENSING.md."
+    },
+    {
+      "ecosystem": "optional-plugins",
+      "name": "community Volatility plugins",
+      "version": "community-2026-10",
+      "source": "src/volatility_mcp/resources/addons.json at the applicable core revision",
+      "status": "mixed-and-unresolved",
+      "license_files": [],
+      "note": "Workbench bundles only its allowlisted sources and already copies their notices. Missing-license/GPL-derived optional sources remain separate; no permission inferred."
+    }
+  ],
+  "gaps": [],
+  "method": {
+    "python": "Committed uv/requirements exact pins when available; otherwise pip --dry-run --ignore-installed --only-binary=:all: on CPython 3.12/macOS arm64. CI scanners resolved for Linux. Build requirements separately resolved. No dependency changes or installs into user checkouts.",
+    "javascript": "All packages in committed npm locks, including optional platform packages; Research-Engine uses an ephemeral lock consistent with repo policy. Attack Flow Builder lock fetched at 5c8bf4ca9ff64ef9b55c38a2505db318750cbcda.",
+    "notice_evidence": "Registry hashes verified; lock/resolution hashes checked when selected artifact matched. Archive license files, embedded license headers, and matching upstream references retained. Nonstandard filenames and native notices were checked.",
+    "limits": "Selected wheel/sdist evidence is not a complete platform-specific built-release inventory. External host tools, optional browser downloads, native source/relinking obligations, unknown upstream terms and VSL integration remain separately flagged. No binary release was rebuilt or published."
+  },
+  "manifest_sha256": {
+    "pyproject.toml": "d743a10b167f37aba55219c26c985f2093b8b190879c442bdd985b56ff2ded77",
+    "requirements.lock.txt": "2d98128b7a3282ad8a101d180b1cb08777e858cfb8b0165f0ce25df0926d1025",
+    "packaging/macos/analyzer.lock.txt": "0839aca1eddd6f8fc8e741fc4d9ff4ecec2cb6dc4ecb7363b588452a1808f0a7",
+    "packaging/macos/desktop.lock.txt": "9bcefc6b1d1893431781d5648c03cab8676a95cf26e0fe68d82cc7c4cddded2d",
+    "core-dependency.json": "f3677bd4b45fad1950902f9c0bb4cc93f2f17bdbb01ebca14e8ba0732c08e465",
+    "packaging/distribution.json": "b050a3820dd57fdbdeda90e56fa751da1a94ce0885678ef64d0dbaadeeca0865"
+  },
+  "review_items": [
+    {
+      "name": "proxy_tools",
+      "version": "0.1.0",
+      "status": "license-conflict",
+      "detail": "PyPI metadata says MIT, but the source identifies BSD and credits Armin Ronacher/Werkzeug. Missing referenced LICENSE; confirm upstream terms before redistribution."
+    },
+    {
+      "name": "CPython/python-build-standalone",
+      "version": "3.12.15",
+      "status": "notices-retained-by-build",
+      "detail": "Build verifies archive hash and copies python/licenses and PYTHON.json from the matching full distribution. This audit did not rebuild the signed macOS app."
+    },
+    {
+      "name": "volatility-mcp",
+      "version": "5ffbbdf791fd7fdc1083fdd8b99c3a0d135f6105",
+      "status": "integration-scope-unresolved",
+      "detail": "Exact VCS dependency; existing MIT grant does not settle VSL wrapper requirements. See LICENSING.md."
+    },
+    {
+      "name": "community Volatility plugins",
+      "version": "community-2026-10",
+      "status": "mixed-and-unresolved",
+      "detail": "Workbench bundles only its allowlisted sources and already copies their notices. Missing-license/GPL-derived optional sources remain separate; no permission inferred."
+    }
+  ],
+  "runtime_addon_core_supplement": {
+    "date": "2026-10-18",
+    "core_commit": "e49244fd753826c83ae581e371fd2ff7d24580a1",
+    "profile_revision": 6,
+    "scope": "Core runtime-addon inventory and source-license text supplement; configured analyzer 237 commands, public bundle allowlist unchanged. Exact source/installed hashes and GPL/Apache/AGPL notices are maintained by the pinned core."
+  }
+}

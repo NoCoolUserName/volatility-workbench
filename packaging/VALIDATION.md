@@ -146,3 +146,25 @@ The final server-route repair removes request text from filesystem path assembly
 only packaged SVG names enter the static asset map. An authenticated HTTP fixture
 covers a valid scene plus missing and plain/encoded traversal names. This followed
 CodeQL's path-injection warning; the gate remains enforced.
+
+## Runtime-addon core revision 6 — 2026-10-18
+
+Workbench pins merged core `e49244fd753826c83ae581e371fd2ff7d24580a1`.
+A fresh installed-wheel package smoke passed all 174 Workbench tests, dependency
+checks, real ten-tool MCP negotiation in both modes, HTTP/assets and startup
+outside the checkout. The smoke used temporary synthetic state and prohibited
+analysis/model subprocesses. Its HTTP fixture logged a client-disconnect broken
+pipe; all assertions and the command completed successfully.
+
+The separately configured analyzer now discovers 237 commands with zero import
+failures and retains all prior 214 names. Checks verified all 46 inventory file
+hashes, help and missing-required-argument behavior for all 23 added commands,
+source attribution and manual/offline policy. Core's three installed addon suites
+passed 35 fixtures; the preinstallation-only deterministic adapter check passed
+separately. Prior addon regressions and core installed-package checks also passed.
+No private images, existing cases or saved results were used as test fixtures.
+
+The portable public bundle allowlist remains unchanged. Native build/installation
+results are recorded with each artifact's exact commits. Synthetic checks establish
+parser/API/bounds behavior, not accuracy across real OS and runtime builds; see
+core's `docs/RUNTIME_ADDONS.md` for the explicit version/layout limitations.
