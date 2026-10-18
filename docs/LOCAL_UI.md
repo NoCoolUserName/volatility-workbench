@@ -529,3 +529,18 @@ disabled state from the current prompt text, so bulk additions disable individua
 controls and removing a request re-enables it. Requests remain scoped to their
 selected report and case. Manual-only extraction plugins are excluded from the
 unused-plugins bulk OS action.
+
+### Visible work from report startup
+
+Current work is above all case/report and plugin-catalog content, so a long saved
+report cannot bury the DOS progress indicator or live tool console. Report/update
+progress starts while the job is connecting, before a draft ID exists, and stays
+visible when an older sealed report is selected. A draft points to this single
+progress display. Known timings still describe planned plugin work; unknown plans
+and durations use the existing indeterminate animation. The console remains a
+bounded read-only feed of tool events, not an interactive shell.
+
+The latest failed or interrupted report request has a dismissible notice above the
+case, with its recorded error and a link to Activity & failures. This also covers
+failure before any draft exists. A new request replaces that notice; old sealed
+reports remain accessible. Blank exception strings retain their exception type.

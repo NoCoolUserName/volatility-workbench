@@ -347,7 +347,9 @@ class Workbench:
         return result
 
     async def connect(self, configuration=None):
-        if self.agent is None or self.agent.proc.returncode is not None:
+        if self.agent is None or not getattr(self.agent, 'connected', True) or self.agent.proc.returncode is not None:
+            if self.agent is not None:
+                await self.agent.close()
             self.loaded_threads.clear()
             configured=configuration or self.provider
             if self.factory is CodexClient and configured.get('codex_executable'):
@@ -491,9 +493,10 @@ class Workbench:
             except asyncio.CancelledError:
                 job.update(status='incomplete',error='Stopped. Completed evidence retained; no clean result is implied.')
             except Exception as exc:
-                job.update(status='incomplete' if self.cancel.is_set() else 'failed',error=str(exc))
+                message=str(exc).strip() or type(exc).__name__
+                job.update(status='incomplete' if self.cancel.is_set() else 'failed',error=message)
                 if job['kind']=='readiness':
-                    case['readiness']={'status':'Blocked','reasons':[str(exc)]}
+                    case['readiness']={'status':'Blocked','reasons':[message]}
             finally:
                 if self.dynamic_tasks:
                     await asyncio.gather(*tuple(self.dynamic_tasks), return_exceptions=True)
@@ -670,7 +673,7 @@ REPORT_SPEC follows:\n'''+spec
             'model':selected['model']}
         new_thread=not case['thread_id']
         if case['thread_id']:
-            result=await self.agent.call('thread/resume',{'threadId':case['thread_id'],**params},timeout=180)
+            result=await self.agent.call('thread/resume',{'threadId':case['thread_id'],'excludeTurns':True,**params},timeout=180)
         else:
             result=await self.agent.call('thread/start',{**params,'dynamicTools':TOOLS,'ephemeral':False},timeout=180)
             case['thread_id']=result['thread']['id']

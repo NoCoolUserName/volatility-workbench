@@ -49,6 +49,13 @@ def discover_codex(explicit=None):
     raise CodexError('Codex executable was not found. Select an installed Codex CLI in Settings; no account or billing configuration was changed.')
 
 
+# JSON-RPC records can contain large saved tool results. Read bounded chunks rather
+# than StreamReader.readline(), whose small transport limit also limits a record.
+# Reject oversized records explicitly; never truncate JSON or conversation history.
+MAX_MESSAGE_BYTES = 128 * 1024 * 1024
+READ_CHUNK_BYTES = 64 * 1024
+
+
 class CodexError(RuntimeError):
     pass
 
@@ -62,6 +69,14 @@ class CodexClient:
         self.proc = None
         self.tasks = set()
         self.stderr_tail = ''
+        self.failure = None
+        self._closing = False
+
+    @property
+    def connected(self):
+        return (self.proc is not None and self.proc.returncode is None
+                and not self.failure and not self._closing
+                and hasattr(self, 'reader') and not self.reader.done())
 
     async def start(self):
         # Reuse the user's supported login/provider. Do not set API keys, provider,
@@ -69,19 +84,26 @@ class CodexClient:
         self.proc = await asyncio.create_subprocess_exec(
             self.executable, 'app-server', '--listen', 'stdio://',
             stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE, limit=16 * 1024 * 1024, env=child_environment())
+            stderr=asyncio.subprocess.PIPE, limit=READ_CHUNK_BYTES, env=child_environment())
         self.reader = asyncio.create_task(self._read())
         self.errors = asyncio.create_task(self._stderr())
-        await self.call('initialize', {'clientInfo': {'name': 'volatility_workbench',
-            'title': 'Volatility Workbench', 'version': '0.1.0'},
-            'capabilities': {'experimentalApi': True}})
-        await self.send({'method': 'initialized', 'params': {}})
+        try:
+            await self.call('initialize', {'clientInfo': {'name': 'volatility_workbench',
+                'title': 'Volatility Workbench', 'version': '0.1.0'},
+                'capabilities': {'experimentalApi': True}})
+            await self.send({'method': 'initialized', 'params': {}})
+        except BaseException:
+            await self.close()
+            raise
 
     async def send(self, message):
-        if self.proc is None or self.proc.returncode is not None:
-            raise CodexError('Codex app-server stopped. Restart the UI; saved case work is retained.')
-        self.proc.stdin.write((json.dumps(message) + '\n').encode())
-        await self.proc.stdin.drain()
+        if not self.connected:
+            raise CodexError(self.failure or 'Codex app-server is disconnected; retry to reconnect. Saved case work is retained.')
+        try:
+            self.proc.stdin.write((json.dumps(message) + '\n').encode())
+            await self.proc.stdin.drain()
+        except (BrokenPipeError, ConnectionResetError) as exc:
+            raise CodexError('Codex app-server closed its input connection') from exc
 
     async def call(self, method, params=None, timeout=120):
         self.counter += 1
@@ -90,35 +112,74 @@ class CodexClient:
         self.pending[ident] = future
         try:
             await self.send({'id': ident, 'method': method, 'params': params or {}})
-            return await asyncio.wait_for(future, timeout)
+            try:
+                return await asyncio.wait_for(future, timeout)
+            except asyncio.TimeoutError as exc:
+                raise CodexError(f'Codex {method} timed out after {timeout:g} seconds waiting for the app-server response') from exc
         finally:
             self.pending.pop(ident, None)
 
+    async def _message(self, line):
+        message = json.loads(line)
+        if not isinstance(message, dict):
+            raise CodexError('Expected a JSON-RPC object')
+        if 'method' in message:
+            if 'id' in message:
+                task = asyncio.create_task(self._request(message))
+                self.tasks.add(task)
+                task.add_done_callback(self.tasks.discard)
+            else:
+                await self.event(message['method'], message.get('params', {}))
+        elif message.get('id') in self.pending:
+            future = self.pending[message['id']]
+            if not future.done():
+                if 'error' in message:
+                    future.set_exception(CodexError(json.dumps(message['error'])))
+                else:
+                    future.set_result(message.get('result', {}))
+
     async def _read(self):
+        record = bytearray()
+        reason = 'Codex app-server closed its output connection'
         try:
-            while line := await self.proc.stdout.readline():
-                message = json.loads(line)
-                if 'method' in message:
-                    if 'id' in message:
-                        task = asyncio.create_task(self._request(message))
-                        self.tasks.add(task)
-                        task.add_done_callback(self.tasks.discard)
-                    else:
-                        await self.event(message['method'], message.get('params', {}))
-                elif message.get('id') in self.pending:
-                    future = self.pending[message['id']]
-                    if not future.done():
-                        if 'error' in message:
-                            future.set_exception(CodexError(json.dumps(message['error'])))
-                        else:
-                            future.set_result(message.get('result', {}))
+            while chunk := await self.proc.stdout.read(READ_CHUNK_BYTES):
+                # Split only the new chunk, avoiding repeated scans of a growing
+                # multi-megabyte record. At most one bounded record is buffered.
+                parts = chunk.split(b'\n')
+                for index, part in enumerate(parts):
+                    if len(record) + len(part) > MAX_MESSAGE_BYTES:
+                        raise CodexError(f'JSON-RPC record exceeds the {MAX_MESSAGE_BYTES:,}-byte limit')
+                    record.extend(part)
+                    if index < len(parts) - 1:
+                        await self._message(record)
+                        record.clear()
+            if record:
+                raise CodexError('Incomplete JSON-RPC record at end of connection')
         except Exception as exc:
-            self.stderr_tail += '\nProtocol error: ' + str(exc)
+            reason = 'Codex protocol error: ' + (str(exc) or type(exc).__name__)
         finally:
-            for future in list(self.pending.values()):
-                if not future.done():
-                    future.set_exception(CodexError('Codex connection closed: ' + self.stderr_tail[-2000:]))
-            await self.event('workbench/disconnected', {'error': self.stderr_tail[-2000:]})
+            if not self._closing:
+                self.failure = reason + (': ' + self.stderr_tail[-2000:] if self.stderr_tail else '')
+                # A live subprocess with a dead reader cannot answer future calls.
+                # Stop it immediately; connect() creates a fresh transport on retry.
+                if self.proc.returncode is None:
+                    try:
+                        self.proc.kill()
+                    except ProcessLookupError:
+                        pass
+                for future in list(self.pending.values()):
+                    if not future.done():
+                        future.set_exception(CodexError(self.failure))
+                # Drain remaining pipe bytes after killing, without accumulating
+                # them, so paused StreamReader buffers cannot delay process exit.
+                try:
+                    async def discard():
+                        while await self.proc.stdout.read(READ_CHUNK_BYTES):
+                            pass
+                    await asyncio.wait_for(discard(), 2)
+                except (OSError, asyncio.TimeoutError):
+                    pass
+                await self.event('workbench/disconnected', {'error': self.failure})
 
     async def _request(self, message):
         try:
@@ -132,6 +193,10 @@ class CodexClient:
             self.stderr_tail = (self.stderr_tail + data.decode(errors='replace'))[-16000:]
 
     async def close(self):
+        self._closing = True
+        for future in list(self.pending.values()):
+            if not future.done():
+                future.set_exception(CodexError(self.failure or 'Codex app-server connection was closed'))
         if self.proc:
             if self.proc.returncode is None:
                 self.proc.stdin.close()

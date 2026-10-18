@@ -42,6 +42,9 @@ let state,
   artifact = null;
 let consoleJob = null;
 const consoleNodes = new Map();
+const dismissedReportFailures = new Set();
+let shownReportFailure = "";
+let shownReportProgress = "";
 const el = (tag, text, cls) => {
   const n = document.createElement(tag);
   if (text !== undefined) n.textContent = text;
@@ -935,10 +938,9 @@ function showReportPlugins(version) {
     loadReportPlugins(record);
   } else renderReportPlugins(record);
 }
-function renderRunningReport(version) {
-  const job = state.jobs.find(j => j.case_id === selected && j.report_id === version.id);
-  const root = $("reportView");
-  const title = el("h2", job?.status === "stopping" ? "Stopping report…" : "Report running…");
+function reportProgress(job) {
+  const root = el("div");
+  const title = el("h3", job?.status === "stopping" ? "Stopping report…" : "Report running…");
   const stage = el("p", job?.progress ? "Current step: " + readableTime(job.progress) : "Preparing the report.", "subtle");
   const planned = job?.planned_plugins || [];
   const completed = [...(job?.completed_plugins || [])];
@@ -968,7 +970,13 @@ function renderRunningReport(version) {
       : "Investigating and writing the report. The plugin plan is adaptive, so completion time cannot yet be estimated.";
   }
   progress.setAttribute("aria-label", "Estimated plugin work");
-  root.replaceChildren(title, stage, progress, note);
+  root.append(title, stage, progress, note);
+  return root;
+}
+function renderRunningReport(version) {
+  const job = state.jobs.find(j => j.case_id === selected && j.report_id === version.id);
+  const title = el("h2", job?.status === "stopping" ? "Stopping report…" : "Report running…");
+  $("reportView").replaceChildren(title, el("p", "Progress and live tool output appear in Current work above this case.", "subtle"));
   $("toc").replaceChildren();
 }
 async function showReport(version) {
@@ -1277,6 +1285,16 @@ function render() {
   }
   const pending = state.jobs.filter(j => ["queued", "running", "stopping"].includes(j.status));
   $("queueSection").hidden = pending.length === 0;
+  const reportJob = pending.find(j => j.id === state.active_job && ["report", "update"].includes(j.kind)) ||
+    pending.find(j => ["running", "stopping"].includes(j.status) && ["report", "update"].includes(j.kind));
+  const activeProgress = $("activeReportProgress");
+  activeProgress.hidden = !reportJob;
+  const progressKey = reportJob ? JSON.stringify([reportJob.id, reportJob.status, reportJob.progress,
+    reportJob.planned_plugins, reportJob.completed_plugins, state.plugin_speed_summary]) : "";
+  if (shownReportProgress !== progressKey) {
+    activeProgress.replaceChildren(...(reportJob ? [reportProgress(reportJob)] : []));
+    shownReportProgress = progressKey;
+  }
   const queueItems = pending.map(j => ({
     id: j.id,
     title: state.cases.find(c => c.id === j.case_id)?.title || j.case_id,
@@ -1293,7 +1311,25 @@ function render() {
     shownQueue = queueKey;
   }
   renderLiveConsole();
+  renderReportFailure(c);
   updateBackToTop();
+}
+function renderReportFailure(c) {
+  const host = $("reportJobFailure");
+  const latest = c ? [...state.jobs].reverse().find(j => j.case_id === c.id && ["report", "update"].includes(j.kind)) : null;
+  const visible = activeView === "case" && latest && ["failed", "incomplete"].includes(latest.status) && !dismissedReportFailures.has(latest.id);
+  host.hidden = !visible;
+  if (!visible) { shownReportFailure = ""; return; }
+  const key = JSON.stringify([latest.id, latest.status, latest.error]);
+  if (shownReportFailure === key) return;
+  shownReportFailure = key;
+  host.replaceChildren(el("h3", latest.kind === "update" ? "Report update did not finish" : "Report generation did not finish"),
+    el("p", latest.error || "The report request ended before completion. Open Activity & failures for the saved details."),
+    el("p", "Earlier sealed reports remain available." + (!latest.report_id ? " No new report draft was created." : ""), "subtle"));
+  const activity = el("button", "View Activity & failures"), dismiss = el("button", "Dismiss");
+  activity.onclick = () => setTab("activity");
+  dismiss.onclick = () => { dismissedReportFailures.add(latest.id); renderReportFailure(c); };
+  host.append(activity, dismiss);
 }
 function renderLiveConsole() {
   const stream = state.live_console, pre = $("liveConsole");
