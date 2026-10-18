@@ -1,5 +1,7 @@
 # Volatility Workbench
 
+*11,372 lines of code*
+
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
 cases, sequential analysis jobs, resumable case conversations, versioned reports,

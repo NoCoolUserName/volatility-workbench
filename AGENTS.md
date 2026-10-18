@@ -17,6 +17,9 @@ shared analysis, history and unrelated revisions. Report edits still use new ver
 Read the installed `volatility_mcp.api.report_spec()` contract only when preparing
 an investigation/report workflow. Its authoritative source is in the core repository.
 Update relevant documentation; inspect staged contents before publication.
+Before every code push, run `python3 scripts/update_readme_loc.py` and stage the
+italicized README line count. CI checks that it matches nonblank tracked source
+and test lines.
 Do not restart active work. Preserve case identities, conversations and sealed
 reports. If a physical root moves, back up and validate mutable path metadata;
 do not create filesystem aliases implicitly. See docs/SEPARATION.md and docs/LOCAL_UI.md.

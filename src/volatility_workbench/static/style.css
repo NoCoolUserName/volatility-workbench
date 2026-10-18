@@ -262,6 +262,17 @@ article h2 {
 article h2:first-child {
   margin-top: 0;
 }
+.report-determinations { margin: 12px 0 22px; }
+.determination-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 7px 0; }
+.determination-row strong { color: var(--text); }
+.determination-value, #humanDetermination { font-weight: 700; }
+.determination-value[data-determination="Benign"],
+#humanDetermination[data-determination="Benign"] { color: #86e6a5; }
+.determination-value[data-determination="Malicious"],
+#humanDetermination[data-determination="Malicious"] { color: #ff8989; }
+.determination-value[data-determination="Undetermined"],
+#humanDetermination[data-determination="Undetermined"] { color: #fff; }
+.determination-save-status { color: var(--muted); font-size: 13px; }
 article p {
   white-space: pre-wrap;
 }
@@ -325,6 +336,35 @@ pre {
 #operation {
   color: var(--status);
   white-space: pre-wrap;
+}
+#reportView .dos-progress {
+  display: block;
+  width: min(100%, 620px);
+  height: 22px;
+  margin: 18px 0 10px;
+  padding: 3px;
+  border: 1px solid var(--accent);
+  border-radius: 0;
+  background: var(--control-bg);
+  box-shadow: inset 1px 1px 0 var(--border);
+  overflow: hidden;
+}
+#reportView .dos-progress-fill {
+  display: block;
+  width: var(--completion, 0%);
+  height: 100%;
+  background: repeating-linear-gradient(90deg, var(--accent) 0 12px, transparent 12px 16px);
+}
+#reportView .dos-progress.indeterminate .dos-progress-fill {
+  width: 30%;
+  animation: dos-progress-scan 1.5s linear infinite alternate;
+}
+@keyframes dos-progress-scan {
+  from { transform: translateX(0); }
+  to { transform: translateX(230%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #reportView .dos-progress.indeterminate .dos-progress-fill { animation: none; }
 }
 #messages .message {
   background: var(--panel);
