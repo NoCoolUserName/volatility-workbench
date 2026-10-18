@@ -424,19 +424,58 @@ function pluginSpeed(entry) {
   }
   return parts.join(" ");
 }
-function addPluginToFocus(name, record) {
-  if (reportPluginKey !== record.key || selected !== record.caseId) return;
+function imageOS(value) {
+  const os = String(value || "").trim().toLowerCase();
+  return ["macos", "darwin"].includes(os) ? "mac" : ["windows", "linux", "mac"].includes(os) ? os : null;
+}
+function bulkPluginRequest(record) {
+  const images = caseNow()?.images || [];
+  const executed = record.data?.executed_plugin_names;
+  if (!reportPluginCatalog || !Array.isArray(executed) || record.data.source_status === "unavailable") return {text:"", note:"Plugin inventory is unavailable."};
+  const groups = [];
+  let unknown = 0, count = 0;
+  for (const image of images) {
+    const os = imageOS(image.discovery?.detected_os);
+    if (!os) { unknown++; continue; }
+    const plugins = reportPluginCatalog.plugins.filter(plugin => imageOS(plugin.target_os) === os && !executed.includes(plugin.name))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    if (!plugins.length) continue;
+    count += plugins.length;
+    groups.push(`${image.id} (${os === "mac" ? "macOS" : os}): ${plugins.map(plugin => "`" + plugin.name + "`").join(", ")}.`);
+  }
+  const note = `${count} plugin/image request(s) matched using saved OS discovery and installed plugin target OS.` +
+    (unknown ? ` ${unknown} image(s) have unresolved OS discovery and are excluded; run Check Readiness to identify them.` : "") +
+    " Plugins with an unspecified target OS remain available individually. OS matching does not establish support for a particular build.";
+  return {note, text:groups.length ? "Update the report in a new version using these additional OS-relevant plugins that have no recorded execution in the selected report snapshot:\n" +
+    groups.join("\n") + "\nCheck each image's saved OS, build, architecture, symbols and each plugin's installed requirements before attempting it. Use appropriate arguments from the actual plugin schema; do not invent required inputs. Attempt each compatible plugin on its listed image; record a specific reason for every skip, failure or unsupported plugin. Query existing results first and label any reuse. Incorporate supported findings and coverage limitations into the updated report, preserving previous reports and evidence." : ""};
+}
+function updateBulkPluginAction() {
+  const button = $("addAllOSPlugins"), record = reportPluginCache.get(reportPluginKey);
+  if (!button || !record) return;
+  const request = bulkPluginRequest(record);
+  const added = !!request.text && $("focus").value.includes(request.text);
+  button.disabled = !request.text || added;
+  $("bulkPluginStatus").textContent = added ? "Added to the investigation prompt. Select Update report when ready." : request.note;
+}
+function appendFocus(instruction, record) {
+  if (reportPluginKey !== record.key || selected !== record.caseId || !instruction) return;
   const focus = $("focus");
-  const instruction = `Attempt Volatility plugin \`${name}\` on applicable evidence, record its result or failure, and include that in the updated report.`;
   const current = focus.value.trim();
   const next = current.includes(instruction) ? current : current ? current + "\n" + instruction : instruction;
-  if (next.length > 20000) { error(Error("The investigation focus is full. Shorten it before adding another plugin.")); return; }
+  if (next.length > 20000) { error(Error("The investigation focus is full. Shorten it before adding more plugins.")); return; }
   focus.value = next;
   focusDrafts.set(record.caseId, next);
   sizeFocus();
+  updateBulkPluginAction();
   focus.focus();
   focus.setSelectionRange(next.length, next.length);
 }
+function addPluginToFocus(name, record) {
+  if (reportPluginKey !== record.key || selected !== record.caseId) return;
+  const instruction = `Attempt Volatility plugin \`${name}\` on applicable evidence, record its result or failure, and include that in the updated report.`;
+  appendFocus(instruction, record);
+}
+
 function inventoryTable(headings, rows, caption, className = "report-plugin-table") {
   const region = el("div", undefined, "report-plugin-scroll");
   region.tabIndex = 0; region.setAttribute("role", "region");
@@ -454,7 +493,7 @@ function inventoryPath(source) {
     source.split("/").every(part => part && part !== "." && part !== "..") ? source : null;
 }
 function renderReportPlugins(record) {
-  if (reportPluginKey !== record.key) return;
+  if (reportPluginKey !== record.key || reportPluginCache.get(record.key) !== record) return;
   const host = $("reportPluginInventory");
   host.hidden = false;
   const details = el("details", undefined, "report-plugin-inventory");
@@ -563,6 +602,18 @@ function renderReportPlugins(record) {
       const row = el("tr"), outcome = el("td");
       outcome.append(el("strong", entry.status || "Failed request"), el("p", entry.kind === "request_failure" ? "No plugin execution recorded" : "Saved plugin run", "subtle"));
       if (entry.reason) outcome.append(el("p", entry.reason));
+      const compatibility = reportPluginCatalog?.plugins.find(plugin => plugin.name === entry.plugin)?.compatibility_note;
+      if (compatibility) outcome.append(el("p", compatibility, "subtle"));
+      for (const source of entry.error_sources || []) {
+        const path = inventoryPath(source.path);
+        if (!path) continue;
+        const link = el("a", source.label || "Saved error"); link.href = "#evidence";
+        link.onclick = act(async () => {
+          if (reportPluginKey !== record.key || selected !== record.caseId) return;
+          await visitReportEvidence(link, isCurrent => viewArtifact("reports/" + record.reportId + "/" + path, 0, isCurrent));
+        });
+        const line = el("p"); line.append(link); outcome.append(line);
+      }
       row.append(el("td", entry.plugin || "Plugin name not recorded"), el("td", pluginDescription(entry.plugin)),
         el("td", entry.image_id || "Image not recorded"), outcome,
         el("td", "Run: " + (entry.run_id || "Not recorded") + " · Call: " + (entry.call_id || "Not recorded")));
@@ -587,6 +638,11 @@ function renderReportPlugins(record) {
   else {
     unused.append(el("p", "Current installed catalog minus plugins with a recorded physical execution in this report snapshot. This does not establish forensic coverage or image compatibility." +
       (data.source_status === "partial" ? " Saved metadata is partial, so this list may include plugins that ran." : ""), "subtle"));
+    const bulk = el("button", "Add all OS-relevant to prompt");
+    bulk.id = "addAllOSPlugins"; bulk.type = "button";
+    bulk.onclick = () => appendFocus(bulkPluginRequest(record).text, record);
+    const bulkStatus = el("p", "", "subtle"); bulkStatus.id = "bulkPluginStatus"; bulkStatus.setAttribute("role", "status");
+    unused.append(bulk, bulkStatus);
     const rows = unusedPlugins.map(plugin => {
       const row = el("tr"), action = el("td"), add = el("button", "Add to prompt");
       add.type = "button";
@@ -600,6 +656,7 @@ function renderReportPlugins(record) {
     else unused.append(el("p", "Every currently installed plugin has a recorded physical execution in this snapshot."));
   }
   host.replaceChildren(details, errors, unused);
+  updateBulkPluginAction();
   if (!record.loading && record.restoreFocus) {
     const target = record.restoreFocus === "more" ? [...details.querySelectorAll("button")].find(button => button.textContent === "More plugin records") : refresh;
     if (target) target.focus(); else { live.textContent = "All saved plugin records loaded."; live.tabIndex = -1; live.focus(); }
@@ -864,9 +921,13 @@ function render() {
         .filter((r) => r !== "Ready means ready to attempt analysis; plugin compatibility and forensic conclusions still require review.")
         .map((r) => el("p", r, "subtle")),
     );
+    const hasSealedReport = c.reports.some(r => r.status === "sealed" && !r.deleted_at);
     $("report").disabled = !ready;
-    $("update").disabled =
-      !ready || !c.reports.some((r) => r.status === "sealed");
+    $("update").disabled = !ready || !hasSealedReport;
+    $("report").classList.toggle("primary", !hasSealedReport);
+    $("update").classList.toggle("primary", hasSealedReport);
+    const first = hasSealedReport ? $("update") : $("report"), second = hasSealedReport ? $("report") : $("update");
+    if (first.nextElementSibling !== second) second.parentNode.insertBefore(first, second);
     const running = state.jobs.find(
       (j) => j.case_id === c.id && ["running", "stopping"].includes(j.status),
     );
@@ -908,6 +969,7 @@ function render() {
       visibleReports.find((r) => r.id === selectedVersion) || visibleReports.at(-1);
     markSelectedReport(v?.id || null);
     showReport(v);
+    updateBulkPluginAction();
     const mkey = JSON.stringify(c.messages);
     if (shownMessages !== mkey) {
       $("messages").replaceChildren(
@@ -1222,7 +1284,26 @@ async function browse(path = "", location = "") {
   $("files").replaceChildren(...nodes);
 }
 async function refresh() {
+  const previous = state;
   state = await api("state");
+  if (previous) {
+    const active = status => ["queued", "running", "stopping"].includes(status);
+    for (const job of state.jobs) {
+      if (!["report", "update"].includes(job.kind) || !job.report_id || active(job.status)) continue;
+      const before = previous.jobs.find(old => old.id === job.id);
+      if (before && !active(before.status)) continue;
+      // A completed Generate/Update job owns a new snapshot, even when the user
+      // was reading an older version. Never reuse draft/partial inventory data.
+      for (const [key, record] of reportPluginCache) {
+        if (record.caseId === job.case_id && record.reportId === job.report_id) {
+          reportPluginCache.delete(key);
+          if (reportPluginKey === key) reportPluginKey = "";
+        }
+      }
+      const version = state.cases.find(c => c.id === job.case_id)?.reports.find(r => r.id === job.report_id && !r.hidden && !r.deleted_at);
+      if (selected === job.case_id && version) { selectedVersion = version.id; shownReport = ""; }
+    }
+  }
   if (!caseNow()) choose(orderedCases()[0]?.id || null, false);
   else render();
 }
@@ -1258,6 +1339,7 @@ $("update").onclick = act(() => job("update", $("focus").value));
 $("focus").oninput = () => {
   if (selected) focusDrafts.set(selected, $("focus").value);
   if ($("focus").scrollHeight > $("focus").clientHeight) sizeFocus();
+  updateBulkPluginAction();
 };
 $("stop").onclick = act(async () => {
   await api("stop", {});

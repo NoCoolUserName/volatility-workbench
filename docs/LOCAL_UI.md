@@ -357,12 +357,31 @@ under Details. Missing or invalid timestamps are labelled rather than estimated.
 Pages keep large inventories manageable.
 
 Below the used records, **Plugins that errored** lists saved failed runs and failed
-or denied requests, distinguishing requests that never executed a plugin. **Plugins
+or denied requests, distinguishing requests that never executed a plugin. Links
+open registered stderr/run metadata or the saved request error in Evidence, with
+Back to report preserving the origin. Small request diagnostics are hash checked
+and matched by call ID and plugin before display; catalog compatibility notes add
+context without changing the saved outcome. **Plugins
 not used** compares the current installed catalog with the full snapshot's recorded
 physical executions and shows each remaining plugin with an **Add to prompt** button
 and quick description. The button appends a request for that plugin to the current
 case's investigation focus without starting work. Review the accumulated focus and
 choose **Update report** when ready; that action creates the new report version.
+**Add all OS-relevant to prompt** uses each case image's saved discovery
+`detected_os` and the installed catalog's `target_os` to group unused plugins by
+image. Windows, Linux and macOS are matched explicitly; the host OS and case title
+are never used. Unknown/mixed image OS and unspecified plugin targets are excluded
+with an explanation. The draft asks for OS/build/architecture/symbol checks, actual
+required arguments, explicit skips/failures, and a new report with coverage limits.
+It preserves existing prompt text and starts no work. The button is disabled while
+its full request is present; editing/removing that request re-enables it.
+
+Once a case has a sealed report, **Update report** moves before **Generate report**
+and receives the primary fill. A case without a sealed report keeps Generate first.
+When either job finishes, the UI selects its new revision and reads fresh used,
+errored and unused inventories, including when an older revision was selected or
+the new revision's draft had been viewed. Historical snapshots stay unchanged.
+
 The focus box keeps at least three readable lines, grows with added plugin requests,
 and is vertically resizable. Sizing waits until the selected case is visible. Focus
 drafts stay separate when switching cases during the app session.

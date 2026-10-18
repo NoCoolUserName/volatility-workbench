@@ -387,6 +387,47 @@ def derive(root, case_id, report_id):
     return result
 
 
+def _error_sources(root, manifest, entries):
+    """Link only registered, same-run diagnostics; read small request metadata only."""
+    reader = Reader(root)
+    artifacts = manifest.get('artifacts', []) if isinstance(manifest, dict) else []
+    registered = {a['path']: a for a in artifacts[:MAX_RECORDS * 16]
+                  if isinstance(a, dict) and isinstance(a.get('path'), str)}
+    for entry in entries:
+        entry['error_sources'] = []
+        rid, cid = entry.get('run_id'), entry.get('call_id')
+        if entry['kind'] == 'plugin_run' and rid:
+            candidates = [a for a in registered.values() if a.get('run_id') == rid
+                          and a['path'].startswith('artifacts/') and
+                          (a['path'].endswith('/stderr.txt') or a['path'].endswith('/manifest.json'))]
+            for item in candidates[:8]:
+                path = _path(item['path'])
+                safe_file(root, path)
+                entry['error_sources'].append({'path': path, 'label': 'Saved stderr' if path.endswith('/stderr.txt') else 'Run manifest'})
+        elif entry['kind'] == 'request_failure' and isinstance(cid, str) and re.fullmatch(r'UI-[\w-]+', cid):
+            path = 'artifacts/' + cid + '.json'
+            if path not in registered:
+                continue
+            event = reader.json(path, registered[path])
+            detail = event.get('detail') if isinstance(event, dict) else None
+            if not isinstance(detail, dict) or 'UI-' + str(event.get('id')) != cid:
+                continue
+            args = detail.get('arguments')
+            if isinstance(args, str):
+                try: args = json.loads(args)
+                except ValueError: args = None
+            if not isinstance(args, dict) or args.get('plugin') != entry.get('plugin'):
+                continue
+            entry['error_sources'].append({'path':path, 'label':'Saved request error'})
+            result = detail.get('result')
+            content = result.get('content') if isinstance(result, dict) else None
+            messages = [_text(c.get('text')) for c in content[:8] if isinstance(c, dict) and c.get('type') == 'text'] if isinstance(content, list) else []
+            message = _text(detail.get('error')) or _text('\n'.join(m for m in messages if m))
+            if message:
+                entry['reason'] = message
+    return reader.warnings
+
+
 def read(root, case_id, report_id, offset=0, limit=20):
     if type(offset) is not int or not 0 <= offset <= 100000 or type(limit) is not int or not 1 <= limit <= 100:
         raise ValueError('Invalid report-plugin inventory page bounds')
@@ -483,7 +524,9 @@ def read(root, case_id, report_id, offset=0, limit=20):
                for e in entries if e.get('kind') == 'request_failure' or
                (e.get('kind') == 'plugin_run' and isinstance(e.get('status'), str) and
                 re.search(r'fail|error|denied|cancel|timeout', e['status'], re.I))]
-    return {**snapshot, 'entries': entries[offset:offset + limit],
+    diagnostic_warnings = _error_sources(root, manifest, errored)
+    return {**snapshot, 'warnings': list(dict.fromkeys(snapshot['warnings'] + diagnostic_warnings)),
+            'entries': entries[offset:offset + limit],
             'next_offset': offset + limit if offset + limit < len(entries) else None,
             'executed_plugin_names': executed_names, 'errored_entries': errored}
 
