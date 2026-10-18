@@ -25,7 +25,9 @@ The distribution manifest selects pinned core, Volatility and optional addon
 profiles. Public bundles contain redistributable additions; optional community
 sources are downloaded explicitly into a separate managed environment. Catalog
 counts come from the configured runtime. Local builds are ad-hoc signed unless
-an explicit release identity is supplied; notarization is a separate release step.
+an explicit release identity is supplied. The optional [release machinery](docs/MACOS_RELEASE.md)
+provides package auditing, a read-only plan, and staged notarization/stapling with
+operator-supplied Apple credentials. No credentialed release has been validated yet.
 
 ## Browser / CLI install and launch
 

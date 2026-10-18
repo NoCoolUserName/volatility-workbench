@@ -83,6 +83,10 @@ def main():
     args = parser.parse_args()
     if sys.platform != 'darwin' or platform.machine() != 'arm64':
         raise SystemExit('This release profile requires an ARM64 Mac build host')
+    if args.sign_identity != '-':
+        if args.allow_dirty:
+            raise SystemExit('Developer ID builds require clean source; omit --allow-dirty')
+        run([sys.executable, ROOT/'scripts/release_macos.py', 'identity', '--identity', args.sign_identity])
     manifest = json.loads((ROOT/'packaging/distribution.json').read_text())
     pin = json.loads((ROOT/manifest['core_pin']).read_text())
     revision = run(['git', '-C', ROOT, 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
@@ -207,7 +211,7 @@ for name,expected in ((p['file'],p['sha256']),('LICENSE',p['license_sha256'])):
                  '-d','/__bundled_python__/'+runtime,str(library)])
         # Retain a dependency/source inventory and exact wheel hashes for the build.
         write_json(resources/'wheel-hashes.json',{str(p.relative_to(wheelhouse)):digest(p) for p in sorted(wheelhouse.rglob('*.whl'))})
-        run(['/usr/bin/codesign','--force','--deep','--sign',args.sign_identity,app])
+        run([sys.executable,ROOT/'scripts/release_macos.py','sign-nested',app,'--identity',args.sign_identity])
         # Signing native libraries and normalizing console entry shebangs changes
         # installed bytes. Preserve original wheel hashes; update only preexisting
         # RECORD entries (never classify added community sources as official files).
@@ -222,7 +226,7 @@ for name,expected in ((p['file'],p['sha256']),('LICENSE',p['license_sha256'])):
                 elif item.resolve()==record.resolve(): row[1:]=['','']
             with record.open('w',newline='') as stream: csv.writer(stream).writerows(rows)
         # Re-seal the outer bundle after RECORD updates without altering nested code.
-        run(['/usr/bin/codesign','--force','--sign',args.sign_identity,app])
+        run([sys.executable,ROOT/'scripts/release_macos.py','seal',app,'--identity',args.sign_identity])
         run(['/usr/bin/codesign','--verify','--deep','--strict',app])
         target=output/app.name
         if target.exists(): shutil.rmtree(target)
