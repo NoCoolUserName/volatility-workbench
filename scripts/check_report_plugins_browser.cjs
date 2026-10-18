@@ -24,10 +24,20 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
  const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
  try{
   const page=await browser.newPage({viewport:{width:1400,height:1000}});
-  const calls=[],errors=[],policies=[];let delayedRelease=null,failCurrent=false,failAcknowledgment=false;
+  const calls=[],errors=[],policies=[];let delayedRelease=null,failCurrent=false,failAcknowledgment=false,holdBulk=false,bulkRelease=null;
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/Content Security Policy|violates the following/.test(m.text()))policies.push(m.text());});
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());assert.equal(u.origin,'http://localhost');calls.push(u.pathname+u.search);
+   if(u.pathname==='/api/reports/acknowledge-all-errors'){
+    assert.equal(route.request().method(),'POST');
+    const body=route.request().postDataJSON(),c=state.cases.find(c=>c.id===body.case_id);
+    if(holdBulk)await new Promise(resolve=>{bulkRelease=resolve;});
+    if(failAcknowledgment){failAcknowledgment=false;return route.fulfill({status:500,json:{error:'Synthetic bulk save failure'}});}
+    const ids=payload(body.report_id,[]).errored_entries.map(e=>e.error_id);
+    c.plugin_error_acknowledgments ||= {};
+    for(const id of ids)c.plugin_error_acknowledgments[id] ||= {acknowledged_at:'2026-10-18T12:00:00Z'};
+    return route.fulfill({json:{error_ids:ids,acknowledgments:c.plugin_error_acknowledgments}});
+   }
    if(u.pathname==='/api/reports/error-acknowledgment'){
     assert.equal(route.request().method(),'POST');
     if(failAcknowledgment){failAcknowledgment=false;return route.fulfill({status:500,json:{error:'Synthetic save failure'}});}
@@ -105,6 +115,41 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   await inventory.locator('> details').nth(1).locator('> summary').click();
   assert.equal(await checks.nth(1).isChecked(),true,'Acknowledgments survive reload');
   assert.equal(await checks.first().isChecked(),false);
+  const hideReviewed=page.getByLabel('Hide acknowledged/resolved',{exact:true});
+  const acknowledgeAll=page.getByRole('button',{name:'Acknowledge all',exact:true});
+  const visibleErrors=inventory.locator('.report-plugin-errors-table tbody tr:visible');
+  await hideReviewed.check();assert.equal(await visibleErrors.count(),1);
+  await page.locator('#erroredPluginSearch').fill('Plugin2');assert.equal(await visibleErrors.count(),0);
+  assert.equal(await inventory.getByText('No unacknowledged errors match these filters.',{exact:true}).isVisible(),true);
+  assert.match(await badge.innerText(),/50%/,'Hide and search do not change the percentage');
+  failAcknowledgment=true;await acknowledgeAll.click();
+  await page.waitForFunction(()=>document.querySelector('#errorAcknowledgmentStatus').textContent.includes('not saved'));
+  await page.locator('#erroredPluginSearch').fill('');assert.equal(await visibleErrors.count(),1,'Failed bulk leaves unresolved rows visible');
+  await page.locator('#erroredPluginSearch').fill('Plugin2');
+  holdBulk=true;const beforeBulk=calls.filter(x=>x==='/api/reports/acknowledge-all-errors').length;
+  await acknowledgeAll.click();await page.waitForFunction(()=>document.querySelector('#acknowledgeAllErrors').textContent.includes('Acknowledging'));
+  assert.equal(await checks.first().isDisabled(),true);assert.equal(await checks.nth(1).isDisabled(),true);
+  await page.evaluate(()=>acknowledgeAllErrors(reportPluginCache.get(reportPluginKey)));
+  assert.equal(calls.filter(x=>x==='/api/reports/acknowledge-all-errors').length,beforeBulk+1,'Pending bulk cannot be submitted twice');
+  await choose('partial');
+  await inventory.locator('> details').nth(1).locator('> summary').click();
+  assert.equal(await hideReviewed.isChecked(),false,'Hide preference is scoped to a report');
+  assert.equal(await checks.first().isDisabled(),true,'Bulk locks acknowledgment controls across snapshots in the same case');
+  holdBulk=false;bulkRelease();
+  await page.waitForFunction(()=>document.querySelector('#errorAcknowledgmentProgress').textContent.includes('100%'));
+  assert.equal(await acknowledgeAll.isDisabled(),true);
+  await choose('current');
+  assert.equal(await hideReviewed.isChecked(),true,'Hide preference survives snapshot switches');
+  assert.equal(await page.locator('#erroredPluginSearch').inputValue(),'Plugin2');
+  assert.equal(await visibleErrors.count(),0);assert.match(await badge.innerText(),/100%/);
+  await hideReviewed.uncheck();await page.locator('#erroredPluginSearch').fill('');
+  assert.equal(await visibleErrors.count(),2);assert.equal(await checks.first().isChecked(),true,'Bulk acknowledges search-hidden errors');
+  await checks.first().uncheck();await page.waitForFunction(()=>document.querySelector('#errorAcknowledgmentProgress').textContent.includes('50%'));
+  await hideReviewed.check();await checks.first().check();
+  await page.waitForFunction(()=>document.querySelectorAll('.report-plugin-errors-table tbody tr:not([hidden])').length===0);
+  assert.match(await badge.innerText(),/100%/,'Single saves immediately update the hide filter');
+  await hideReviewed.uncheck();await checks.first().uncheck();
+  await page.waitForFunction(()=>document.querySelector('#errorAcknowledgmentProgress').textContent.includes('50%'));
   await inventory.locator('> details').nth(2).locator('> summary').click();
   await page.waitForFunction(()=>document.querySelector('.report-plugin-unused-table')?.textContent.includes('Shows a harmless unused fixture.'));
   // Ten total records, one checked: red 10%; exact thirds switch evenly.

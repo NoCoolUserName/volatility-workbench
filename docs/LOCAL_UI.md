@@ -588,6 +588,15 @@ snapshot, including rows hidden by search. The percentage uses red for the first
 third, orange for the middle third, and green for the final third. Zero-error
 snapshots do not show an acknowledgment percentage.
 
+**Acknowledge all** marks every recorded error in the selected snapshot, including
+rows hidden by search or the **Hide acknowledged/resolved** filter. It saves the
+batch together and preserves earlier acknowledgment timestamps. The button disables
+while an acknowledgment is saving and when all errors are already acknowledged.
+The hide filter combines with text search and remembers its setting per snapshot
+while that snapshot is cached. Successfully acknowledged rows disappear immediately
+when the filter is on; a failed save leaves them visible. Clear the filter to see
+and uncheck reviewed rows. The heading percentage always counts the full snapshot.
+
 Acknowledgments are saved as case review metadata and survive restart and report
 updates. They follow the saved run/call identity, so a new failure from the same
 plugin starts unchecked; previous acknowledgments remain checked. Legacy errors

@@ -594,3 +594,5 @@ dialog.approval pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .error-acknowledgment-progress[data-level="orange"] { color: #ffb45e; }
 .error-acknowledgment-progress[data-level="green"] { color: #7fe4a3; }
 .report-plugin-errors-table input[type="checkbox"] { width: 1.2em; height: 1.2em; accent-color: var(--accent); }
+.plugin-filters > .error-acknowledgment-filter { display: flex; align-items: center; gap: 8px; flex-basis: 100%; }
+.error-acknowledgment-filter input { width: 1.2em; height: 1.2em; accent-color: var(--accent); }
