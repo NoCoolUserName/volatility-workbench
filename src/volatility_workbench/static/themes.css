@@ -45,7 +45,7 @@
 .case-button.selected, .tabs .selected, .plugin-nav.selected,
 .report-version.selected > button:first-child {
   background: var(--panel);
-  box-shadow: inset 3px 0 0 var(--accent);
+  border-color: var(--accent);
   font-weight: 650;
 }
 a:focus-visible, button:focus-visible, select:focus-visible,

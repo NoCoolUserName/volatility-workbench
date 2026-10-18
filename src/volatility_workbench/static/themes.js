@@ -4,10 +4,11 @@
 (() => {
   'use strict';
   const key = 'volatility-workbench-theme';
-  const defaultTheme = 'halloween';
+  const defaultTheme = 'matrix';
   // Dark, opaque work surfaces keep decoration out of forensic content. Each
   // tuple is background, panel, control, border, text, muted, accent, on-accent.
   const catalog = [
+    ['matrix','Matrix green','Classic','#0d1418 #141f25 #0c171c #526d70 #e5eeee #9fb2bb #9cddb7 #102219','Classic charcoal and phosphor green.','plain'],
     ['halloween','Halloween · pumpkin night','Seasonal','#05060b #13121c #151620 #73637c #f8eee3 #c5b8c9 #ffc17b #2b190d','A friendly moonlit pumpkin patch.','rounded'],
     ['halloween-noir','Halloween · midnight orchard','Seasonal','#0d0b0b #1b1616 #211b1a #7e675c #f5e8db #c9b6aa #eebc8c #29180e','Bare branches, harvest light and autumn mist.','serif'],
     ['nightmare','The Nightmare Before Christmas','Seasonal','#100f18 #1d1929 #231e30 #786984 #f4eee4 #c5b8d2 #dbc69a #241c2c','A curled hill and a moonlit, crooked silhouette.','serif'],
@@ -30,7 +31,6 @@
     ['elevator','Elevator Action · NES','Arcade & adventure','#101b24 #1f303e #283a4b #8784a5 #f2f0da #bfcbd1 #cab5e6 #282137','Teal office walls, purple doors and stacked elevator shafts.','pixel'],
     ['vaporwave','Vaporwave · marble sunset','Neon & terminals','#191329 #2c2240 #34294b #8c6fa2 #fff0f8 #d4b8dc #f2b9d1 #3a2037','Pastel marble, a striped sun and an endless lavender grid.','serif'],
     ['retrowave','Retrowave · night drive','Neon & terminals','#120e23 #241b37 #2d2142 #92659c #fce9fb #d3b2d1 #f3abd4 #32162c','A neon road, low silhouette and a coral sunset.','industrial'],
-    ['matrix','The Matrix · green','Neon & terminals','#0d1418 #141f25 #0c171c #526d70 #e5eeee #b2c4c9 #9cddb7 #102219','Falling code, deep charcoal and phosphor green.','terminal'],
     ['hacker','Hacker · secure terminal','Neon & terminals','#0a151c #152731 #1a303b #51808c #e4f0ef #aecbd0 #9cddc5 #112c25','A quiet terminal, amber lock and cyan instrument lines.','terminal'],
     ['top-gun','Top Gun','Cinema & anime','#111b26 #1e2d3b #253646 #688396 #f1f0e7 #c1ced1 #e9bd99 #2e2118','Swept wings, a carrier horizon and warm flight-deck light.','industrial'],
     ['oedo','Cyber City Oedo 808','Cinema & anime','#121322 #22223b #2b2c46 #7579a0 #f7e9ed #c4bfd7 #ecb0b4 #331e30','Rain over a dense skyline, analog cyan and warm red neon.','industrial'],
@@ -49,15 +49,16 @@
     root.dataset.themeShape = theme.shape;
     theme.palette.split(' ').forEach((color,i)=>root.style.setProperty('--'+tokens[i],color));
     root.style.setProperty('--theme-scene',theme.id==='halloween-noir' ? 'url("/halloween-night.png")' : `url("/theme-${theme.id}.svg")`);
-    root.style.setProperty('--privacy-bg', 'var(--panel)');
-    root.style.setProperty('--privacy-text', 'var(--text)');
-    root.style.setProperty('--code-bg', 'var(--bg)');
-    root.style.setProperty('--status', '#f3cf93');
-    root.style.setProperty('--danger', '#ffb6ad');
-    root.style.setProperty('--error-border', '#d79283');
-    root.style.setProperty('--error-text', '#ffc7bc');
-    root.style.setProperty('--zoom-bg', '#080d10f5');
-    root.style.setProperty('--zoom-text', '#f0f4ef');
+    const classic = theme.id==='matrix';
+    root.style.setProperty('--privacy-bg', classic ? '#1d2a27' : 'var(--panel)');
+    root.style.setProperty('--privacy-text', classic ? '#bed9c9' : 'var(--text)');
+    root.style.setProperty('--code-bg', classic ? '#091014' : 'var(--bg)');
+    root.style.setProperty('--status', classic ? '#e9c889' : '#f3cf93');
+    root.style.setProperty('--danger', classic ? '#ffb6a5' : '#ffb6ad');
+    root.style.setProperty('--error-border', classic ? '#b46955' : '#d79283');
+    root.style.setProperty('--error-text', classic ? '#ffc3b4' : '#ffc7bc');
+    root.style.setProperty('--zoom-bg', classic ? '#080d10ed' : '#080d10f5');
+    root.style.setProperty('--zoom-text', classic ? '#e6eee9' : '#f0f4ef');
     document.querySelectorAll('[data-theme-picker]').forEach(select=>{ select.value=theme.id; });
     if(persist) { try {localStorage.setItem(key,theme.id);} catch {} }
     return theme.id;
