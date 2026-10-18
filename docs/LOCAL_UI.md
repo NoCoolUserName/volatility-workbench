@@ -544,3 +544,9 @@ The latest failed or interrupted report request has a dismissible notice above t
 case, with its recorded error and a link to Activity & failures. This also covers
 failure before any draft exists. A new request replaces that notice; old sealed
 reports remain accessible. Blank exception strings retain their exception type.
+
+The notice's Rerun button submits a new job with the failed request's original
+report/update kind and investigation focus. It keeps any newly typed prompt and
+all previous report versions. The button disables while submitting, while other
+case work is queued/active, during report cleanup, or when readiness is blocked.
+Existing generation, update and extraction checks still apply.

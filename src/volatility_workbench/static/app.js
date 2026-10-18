@@ -43,6 +43,7 @@ let state,
 let consoleJob = null;
 const consoleNodes = new Map();
 const dismissedReportFailures = new Set();
+const rerunningReportFailures = new Set();
 let shownReportFailure = "";
 let shownReportProgress = "";
 const el = (tag, text, cls) => {
@@ -1320,16 +1321,33 @@ function renderReportFailure(c) {
   const visible = activeView === "case" && latest && ["failed", "incomplete"].includes(latest.status) && !dismissedReportFailures.has(latest.id);
   host.hidden = !visible;
   if (!visible) { shownReportFailure = ""; return; }
-  const key = JSON.stringify([latest.id, latest.status, latest.error]);
+  const ready = ["Ready", "Ready with limitations"].includes(c.readiness.status);
+  const busy = state.jobs.some(j => j.case_id === c.id && ["queued", "running", "stopping"].includes(j.status));
+  const blocked = !ready || busy || rerunningReportFailures.has(latest.id) || state.report_cleanup_cases?.includes(c.id);
+  const key = JSON.stringify([latest.id, latest.kind, latest.status, latest.error, !!blocked]);
   if (shownReportFailure === key) return;
   shownReportFailure = key;
   host.replaceChildren(el("h3", latest.kind === "update" ? "Report update did not finish" : "Report generation did not finish"),
     el("p", latest.error || "The report request ended before completion. Open Activity & failures for the saved details."),
     el("p", "Earlier sealed reports remain available." + (!latest.report_id ? " No new report draft was created." : ""), "subtle"));
-  const activity = el("button", "View Activity & failures"), dismiss = el("button", "Dismiss");
+  const activity = el("button", "View Activity & failures"), rerun = el("button", "Rerun"), dismiss = el("button", "Dismiss");
+  rerun.disabled = !!blocked;
+  rerun.title = "Retry the original report request. Your current investigation focus is kept.";
+  rerun.onclick = act(async () => {
+    rerunningReportFailures.add(latest.id);
+    rerun.disabled = true;
+    try {
+      await api("jobs", {case_id:c.id, kind:latest.kind, text:latest.text || "", request_id:crypto.randomUUID()});
+      await refresh();
+    } finally {
+      rerunningReportFailures.delete(latest.id);
+      shownReportFailure = "";
+      renderReportFailure(caseNow());
+    }
+  });
   activity.onclick = () => setTab("activity");
   dismiss.onclick = () => { dismissedReportFailures.add(latest.id); renderReportFailure(c); };
-  host.append(activity, dismiss);
+  host.append(activity, rerun, dismiss);
 }
 function renderLiveConsole() {
   const stream = state.live_console, pre = $("liveConsole");
