@@ -84,8 +84,10 @@ outside this release.
 
 The current public bundle contains CPython 3.12.15, pywebview 6.2.1, the pinned
 core recorded by `core-dependency.json`, and Volatility3 2.28.2 with locked analysis
-dependencies. Its actual catalog contains 200 plugins (197 official, XP addon,
-pypykatz and EVTX), with no import failures in packaged discovery. Discovery is
+dependencies. The release builder refuses a core pin that disagrees with
+`pyproject.toml` or `requirements.lock.txt`. Its actual catalog contains 200
+plugins (197 official, XP addon, pypykatz and EVTX), with no import failures
+in packaged discovery. Discovery is
 not a claim that every plugin works against every memory image.
 
 The remaining supported community profile is an explicit upstream download into

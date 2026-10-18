@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import tomllib
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -74,6 +75,15 @@ def write_json(path, data):
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + '\n')
 
 
+def verify_core_sources(root, pin):
+    expected = f"volatility-mcp @ git+https://github.com/{pin['repository']}.git@{pin['commit']}"
+    dependencies = tomllib.loads((root/'pyproject.toml').read_text())['project']['dependencies']
+    locked = [line.strip() for line in (root/'requirements.lock.txt').read_text().splitlines()
+              if line.startswith('volatility-mcp @')]
+    if dependencies.count(expected) != 1 or locked != [expected]:
+        raise ValueError('Core dependency, package metadata, and lock file disagree; refusing release build')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=ROOT/'dist'/'macos')
@@ -89,6 +99,7 @@ def main():
         run([sys.executable, ROOT/'scripts/release_macos.py', 'identity', '--identity', args.sign_identity])
     manifest = json.loads((ROOT/'packaging/distribution.json').read_text())
     pin = json.loads((ROOT/manifest['core_pin']).read_text())
+    verify_core_sources(ROOT, pin)
     revision = run(['git', '-C', ROOT, 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()
     dirty = bool(run(['git', '-C', ROOT, 'status', '--porcelain'], capture_output=True, text=True).stdout.strip())
     if dirty and not args.allow_dirty:

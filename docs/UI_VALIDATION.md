@@ -616,3 +616,10 @@ each passed 110 tests with the merged core pin; the package smoke exercised
 ten MCP tools and launched zero analysis/model subprocesses. No private image
 was rehashed or analyzed for these checks. The private case's incomplete
 revision was inspected read-only; its files and status were not changed.
+
+The first native build revealed that `core-dependency.json` still named the
+previous core commit even though package metadata and the lock file had been
+updated. No app was installed from that build. The release pin was corrected
+and the builder now fails before downloads if these three sources disagree;
+an offline regression checks both metadata and lock mismatches. The subsequent
+native build and installer validation use the merged core commit.
