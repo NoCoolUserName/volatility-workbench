@@ -56,3 +56,8 @@ its recognized bundled analyzer; global and case-scoped MCP configs agreed. The
 coin Save image action opened NSSavePanel and wrote byte-identical SVG output.
 This is an explicit fallback alongside WebKit context menus; automated right-click
 menu selection itself was not established by the native control harness.
+
+The native build-information dialog was observed to show application/core/Python/
+WebView versions and exact source/core revisions. The standard About menu routes
+to this information in the final application. The installed-wheel check was
+repeated after the final settings and save-link asset changes: all 76 tests passed.

@@ -185,6 +185,9 @@ def install_cocoa_hooks(controller):
             return None
 
     class WorkbenchApplicationDelegate(AppKit.NSObject):
+        @objc.typedSelector(b'v@:@')
+        def workbenchAbout_(self,sender):controller.about()
+
         def applicationShouldTerminate_(self, app):
             if controller.quitting:return AppKit.NSTerminateCancel
             state=controller.host.activity()
@@ -293,10 +296,13 @@ class Desktop:
             def setup_native():
                 native=self.window.native
                 native.setCollectionBehavior_(native.collectionBehavior() | AppKit.NSWindowCollectionBehaviorFullScreenPrimary)
-                AppKit.NSApplication.sharedApplication().activateIgnoringOtherApps_(True)
+                app=AppKit.NSApplication.sharedApplication()
+                about=app.mainMenu().itemAtIndex_(0).submenu().itemAtIndex_(0)
+                about.setTarget_(app.delegate());about.setAction_('workbenchAbout:')
+                app.activateIgnoringOtherApps_(True)
             AppHelper.callAfter(setup_native)
         icon=str(self.resources/'Workbench.icns') if self.resources and (self.resources/'Workbench.icns').exists() else None
-        webview.start(ready,private_mode=False,storage_path=str(private_dir(self.preferences/'webview')),menu=[Menu('__app__',[MenuAction('Build information…',self.about),MenuAction('Settings…',self.settings)])],icon=icon)
+        webview.start(ready,private_mode=False,storage_path=str(private_dir(self.preferences/'webview')),menu=[Menu('__app__',[MenuAction('Settings…',self.settings)])],icon=icon)
         # A stopped WebKit event loop is not approval to abandon a live backend.
         # All normal termination paths go through the delegate above.
         while not self.quitting:
