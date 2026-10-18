@@ -155,6 +155,83 @@ class WorkbenchProviderTests(unittest.IsolatedAsyncioTestCase):
         self.case=self.app.add([str(self.fixture.image)])[0]
     async def asyncTearDown(self):await self.app.close()
 
+    async def wait_until(self, predicate, job):
+        async def wait():
+            while not predicate():
+                if job['status'] in ('failed','incomplete','cancelled'):
+                    self.fail('Synthetic provider job ended before the expected state: '+str(job))
+                await asyncio.sleep(.025)
+        await asyncio.wait_for(wait(),15)
+
+    async def configure_extraction_provider(self):
+        cfg={'provider':'compatible','endpoint':'http://127.0.0.1:9876/v1','model':'synthetic',
+             'allow_case_content':True,'case_id':self.case['id']}
+        await self.app.configure_provider(cfg)
+        self.case['provider']['capability_check']='passed'
+        requests=[];tool_results=[]
+        def handler(request):
+            data=json.loads(request.content);requests.append(data)
+            if data['messages'][-1]['role']=='tool':
+                tool_results.append(json.loads(data['messages'][-1]['content']))
+                return response({'role':'assistant','content':'SYNTHETIC extraction request handled.'})
+            return response({'role':'assistant','content':None,'tool_calls':[call('run_plugin',{
+                'image':str(self.fixture.image),'plugin':'windows.pslist.PsList','arguments':['--dump']},
+                'synthetic-dump-'+str(len(requests)))]})
+        self.app.compatible_factory=lambda config,secrets:CompatibleClient(config,secrets,httpx.MockTransport(handler))
+        return requests,tool_results
+
+    async def test_compatible_extraction_waits_for_exact_human_consent(self):
+        requests,results=await self.configure_extraction_provider()
+        count_path=self.fixture.root/'analysis-count.jsonl'
+        # Decline and an unchecked acknowledgement must both prevent execution.
+        # A later explicit approval permits one harmless fake-analyzer run only.
+        for index,answer in enumerate(({'action':'decline','content':{}},
+                {'action':'accept','content':{'confirm':False}},
+                {'action':'accept','content':{'confirm':True}})):
+            job=self.app.enqueue(self.case['id'],'question','SYNTHETIC dump request '+str(index))
+            await self.wait_until(lambda:bool(self.app.approvals),job)
+            pending=next(iter(self.app.approvals.values()))
+            self.assertEqual(pending['method'],'mcpServer/elicitation/request')
+            self.assertEqual(pending['case_id'],self.case['id'])
+            self.assertIn('windows.pslist.PsList',pending['params']['message'])
+            self.assertIn('--dump',pending['params']['message'])
+            self.assertIn(str(self.fixture.image),pending['params']['message'])
+            self.assertFalse(count_path.exists(),'Even a valid tool call must wait for the human decision')
+            self.assertFalse(list(self.app.directory(self.case).rglob('synthetic-dump.txt')))
+            self.assertFalse(pending['future'].done())
+            pending['future'].set_result(answer)
+            await self.wait_until(lambda:job['status']=='completed' and self.app.active is None,job)
+            self.assertFalse(self.app.approvals)
+            self.assertEqual(len(requests),(index+1)*2)
+            if index<2:
+                self.assertFalse(count_path.exists())
+                self.assertIn('not approved',json.dumps(results[-1]))
+            else:
+                executions=[json.loads(line) for line in count_path.read_text().splitlines()]
+                self.assertEqual(len(executions),1)
+                self.assertIn('--dump',executions[0]['argv'])
+                self.assertEqual(len(list(self.app.directory(self.case).rglob('synthetic-dump.txt'))),1)
+                self.assertNotIn('error',results[-1])
+
+    async def test_compatible_stop_while_extraction_consent_pending_never_runs(self):
+        requests,results=await self.configure_extraction_provider()
+        job=self.app.enqueue(self.case['id'],'question','SYNTHETIC pending dump to cancel')
+        await self.wait_until(lambda:bool(self.app.approvals),job)
+        pending=next(iter(self.app.approvals.values()))
+        self.assertFalse((self.fixture.root/'analysis-count.jsonl').exists())
+        await self.app.stop()
+        async def finished():
+            while self.app.active is not None:await asyncio.sleep(.025)
+        await asyncio.wait_for(finished(),15)
+        self.assertEqual(job['status'],'incomplete')
+        self.assertFalse(self.app.approvals)
+        self.assertTrue(pending['future'].done())
+        self.assertEqual(pending['future'].result(),'decline')
+        self.assertFalse((self.fixture.root/'analysis-count.jsonl').exists())
+        self.assertFalse(list(self.app.directory(self.case).rglob('synthetic-dump.txt')))
+        self.assertEqual(len(requests),1)
+        self.assertEqual(results,[])
+
     async def test_switch_is_explicit_preserves_codex_and_secrets_private(self):
         self.case['thread_id']='saved-codex-thread'
         cfg={'provider':'compatible','endpoint':'http://127.0.0.1:9876/v1','model':'synthetic'}
