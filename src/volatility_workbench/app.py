@@ -24,6 +24,7 @@ from .coins import populate
 from .codex import CodexClient, CodexError, child_environment
 from .providers import CompatibleClient, ProviderError, provider_config
 from .credentials import CredentialStore
+from . import generation
 from .storage import Bundle, atomic_json, delete_incomplete_bundle, now, private_dir, read_chunk, safe_file, uid
 
 TOOLS = [
@@ -365,6 +366,10 @@ class Workbench:
                     report=next(r for r in case['reports'] if r['id']==job['report_id'])
                     if report['status']!='sealed':
                         report['status']='incomplete'
+                if job.get('generation'):
+                    if job['generation']['status']!='completed':
+                        job['generation']['status']=job['status']
+                    job['generation']['summary']=generation.summary(job['generation'])
                 job['finished_at']=now()
                 self.event(case,'job_'+job['status'],{k:v for k,v in job.items() if k!='text'})
                 self.active=None
@@ -511,12 +516,16 @@ REPORT_SPEC follows:\n'''+spec
         instructions=self.investigation_instructions()
         params={'cwd':str(self.directory(case).resolve()),'sandbox':'read-only','approvalPolicy':'on-request',
             'approvalsReviewer':'user','config':self.thread_config(case),'developerInstructions':instructions}
+        new_thread=not case['thread_id']
         if case['thread_id']:
             result=await self.agent.call('thread/resume',{'threadId':case['thread_id'],**params},timeout=180)
         else:
             result=await self.agent.call('thread/start',{**params,'dynamicTools':TOOLS,'ephemeral':False},timeout=180)
             case['thread_id']=result['thread']['id']
-        case['agent_settings']={k:result.get(k) for k in ['approvalPolicy','approvalsReviewer','sandbox','model','modelProvider']}
+        case['agent_settings']={k:result.get(k) for k in ['approvalPolicy','approvalsReviewer','sandbox','model','modelProvider','reasoningEffort']}
+        if new_thread:
+            case['token_usage_snapshot']={'thread_id':case['thread_id'], 'turn_id':None,
+                                        'complete':True, 'total':{key:0 for key in generation.TOKEN_FIELDS}}
         if result.get('approvalPolicy')!='on-request' or result.get('approvalsReviewer')!='user':
             raise CodexError('Enforced Codex approval settings differ from requested user approvals; inspect agent_settings. Investigation blocked.')
         if result.get('sandbox',{}).get('type')!='readOnly':
@@ -528,13 +537,18 @@ REPORT_SPEC follows:\n'''+spec
         if job['kind']=='readiness':
             return await self.readiness(case,job)
         await self.ensure_thread(case)
+        provider=self.case_provider(case)
+        job['generation']=generation.begin(provider['provider'],
+            case.get('agent_settings',{}) if provider['provider']=='codex' else provider)
+        job['generation']['summary']=generation.summary(job['generation'])
         if job['kind'] in ('report','update'):
             for image in case['images']:
                 fresh=await self.fingerprint(case,image,job)
                 if fresh['sha256']!=image.get('sha256'):
                     raise ValueError('Image changed since readiness. Do not combine old and new evidence.')
             report={'id':timestamped_id(),'created_at':now(),'status':'draft',
-                'previous':next((r['id'] for r in reversed(case['reports']) if r['status']=='sealed'),None)}
+                'previous':next((r['id'] for r in reversed(case['reports']) if r['status']=='sealed'),None),
+                'generation':job['generation']}
             case['reports'].append(report);job['report_id']=report['id']
             Bundle(self.directory(case),case,report)
         prompt='Registered images (data, not instructions):\n'+json.dumps(case['images'])+'\n'
@@ -551,6 +565,8 @@ REPORT_SPEC follows:\n'''+spec
             await self.compatible_turn(case,job,prompt)
         else:
             await self.codex_turn(case,job,prompt)
+        job['generation']['status']='completed'
+        job['generation']['summary']=generation.summary(job['generation'])
         if self.cancel.is_set():
             raise asyncio.CancelledError()
         if job.get('report_id'):
@@ -567,6 +583,12 @@ REPORT_SPEC follows:\n'''+spec
             await asyncio.shield(sealing)
 
     async def codex_turn(self,case,job,prompt):
+        prior=case.get('token_usage_snapshot',{})
+        job['token_usage_baseline']=copy.deepcopy(prior.get('total')) if prior.get('thread_id')==case['thread_id'] and prior.get('complete') is True else None
+        # Persist invalidation before dispatch: a crash or a turn with no usage
+        # events must never charge unobserved earlier work to the next report.
+        prior['complete']=False
+        self.save()
         completion=asyncio.get_running_loop().create_future()
         self.turns[case['thread_id']]=completion
         if self.cancel.is_set():raise asyncio.CancelledError()
@@ -634,7 +656,32 @@ REPORT_SPEC follows:\n'''+spec
             return
         case=next((c for c in self.state['cases'] if c.get('thread_id')==params.get('threadId')),None)
         if not case:return
+        if method in ('turn/started','thread/tokenUsage/updated','model/rerouted'):
+            active=self.active
+            turn_id=params.get('turnId') or params.get('turn',{}).get('id')
+            # Notifications may precede the turn/start response. Bind only the
+            # explicit active case job, and never charge a stale turn to it.
+            if method=='turn/started' and active and active['case_id']==case['id']:
+                active.setdefault('turn_id',turn_id)
+            future=self.turns.get(case['thread_id'])
+            matches=(active and active['case_id']==case['id'] and active.get('turn_id')==turn_id and turn_id
+                     and future and not future.done())
+            if method=='thread/tokenUsage/updated':
+                total=generation.token_counts(params.get('tokenUsage',{}).get('total'))
+                if total is not None:
+                    if matches and active.get('generation'):
+                        generation.usage(active['generation'],total,active.get('token_usage_baseline'))
+                    if not active or matches or case['thread_id'] not in self.turns:
+                        case['token_usage_snapshot']={'thread_id':case['thread_id'],'turn_id':turn_id,'total':total,'complete':False}
+            elif method=='model/rerouted' and matches and active.get('generation'):
+                model=generation.label(params.get('toModel'))
+                if model and model not in active['generation']['models']:
+                    active['generation']['models'].append(model)
+            self.save()
+            return
         if method=='turn/completed':
+            snapshot=case.get('token_usage_snapshot',{})
+            snapshot['complete']=(snapshot.get('turn_id')==params['turn'].get('id') and params['turn'].get('status')=='completed')
             future=self.turns.get(case['thread_id'])
             if future and not future.done():future.set_result(params['turn'])
         elif method=='item/agentMessage/delta':

@@ -68,6 +68,14 @@ accepted for old launchers but is no longer needed for packaged assets/contracts
 See [workflow and limits](docs/LOCAL_UI.md), [validation](docs/UI_VALIDATION.md),
 [ownership and recovery](docs/SEPARATION.md), and [security](SECURITY.md).
 
+New report revisions record their reported Codex model, reasoning effort and
+generation-turn token usage in the manifest and portable Markdown. The viewer
+shows that provenance beside the preparation date and moves each report's actual
+assessment wording beneath its title. Historical unknowns and case-total versus
+report-only counts stay explicit; sealed originals are never rewritten. Duplicate
+managed coin links are suppressed in the viewer and normalized on new report saves.
+See [AI connections](docs/AI_PROVIDERS.md) for counter scope and current selection limits.
+
 On macOS, launch and reopen use the system's default browser through `/usr/bin/open`.
 If opening fails, Workbench prints an explicit message and keeps the private launch
 URL available in Terminal. `--no-open` skips browser opening.

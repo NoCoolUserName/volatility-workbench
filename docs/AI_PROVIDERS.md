@@ -20,6 +20,30 @@ Readiness calls `initialize` and `account/read`; it does not make a model reques
 Case conversations retain their saved thread IDs, supported approval handling and
 restricted case MCP configuration. See the [official app-server documentation](https://learn.chatgpt.com/docs/app-server).
 
+There is currently no Codex model/effort picker in Workbench. It does not mirror
+another live TUI/chat's per-thread changes. Codex resolves the case thread's model
+and effort from its own configuration/session. Workbench now records the effective
+`model` and `reasoningEffort` returned by thread start/resume, including reported
+model reroutes, for each new report-generation turn. An omitted/null effort stays
+unknown; no default is guessed. The compatible API Settings has an exact model
+input but no reasoning-effort control; its unreported effective settings stay unknown.
+
+New report versions and their manifests retain `generation` (`report-generation/1`).
+Codex cumulative token counters are differenced against a saved pre-turn counter;
+duplicate events are not summed. Fresh threads start at zero. The baseline and
+latest counters survive normal restart. A counter snapshot becomes a usable next
+baseline only after its observed turn completes; missing usage, interruption and
+dispatch-time crashes invalidate it. A resumed legacy thread without a recorded
+baseline displays its reported **case thread total**, explicitly not report-only
+usage. Missing, malformed or reset counters produce unknown report-only usage.
+Counts cover the generation turn, including model tool rounds and repeated input
+context, not all earlier investigation turns, a price estimate or forensic CPU work.
+Provider cached-input/reasoning counts are subsets and are not added again.
+Final metadata is sealed with the new report; late events cannot change it.
+Compatible API counts remain unreported in this version. The configured model is
+labeled as requested rather than independently confirmed. Old report bundles are
+untouched and never inherit the case's latest model or an invented token count.
+
 ## Compatible chat API (experimental)
 
 Enter an API base endpoint and an exact model identifier in Settings. The endpoint

@@ -5,6 +5,7 @@ import hashlib
 import json
 import mimetypes
 import os
+import re
 from pathlib import Path
 from volatility_mcp.api import logical_path, check_components, resolved_path, private_dir, safe_file
 import shutil
@@ -15,6 +16,7 @@ from volatility_mcp.api import check_bundle
 from volatility_mcp.api import source_identity
 from volatility_mcp.api import utc_now as now
 from .coins import populate
+from . import generation
 
 
 def uid():
@@ -276,6 +278,8 @@ class Bundle:
             'synthetic': False, 'status': 'in_progress', 'created_at': self.version['created_at'], 'completed_at': None,
             'evidence': evidence, 'tools': versions, 'runs': runs, 'artifacts': artifacts, 'findings': [],
             'previous_report_version': self.version.get('previous'), 'codex_thread_id': self.case.get('thread_id')}
+        if self.version.get('generation'):
+            manifest['generation']=self.version['generation']
         from volatility_mcp.api import snapshot, job_view, request_failures
         views=[]
         for image in self.case['images']:
@@ -327,7 +331,13 @@ class Bundle:
         manifest['findings'] = findings
         atomic_json(self.root / 'case-manifest.json', manifest)
         badges='\n'.join(f"![Decorative coin for {c['image_id']}]({c['path']})" for c in manifest['coins'] if 'path' in c)
-        markdown=self.coverage_markdown(markdown)
+        # The agent may carry a prior report's managed badges into a revision.
+        # The packager owns those lines; keep other report images untouched.
+        coin_paths={c['path'] for c in manifest['coins'] if 'path' in c}
+        markdown='\n'.join(line for line in markdown.splitlines()
+            if not ((match:=re.fullmatch(r'!\[Decorative coin for [^\]]+\]\((assets/coins/[a-f0-9]{64}\.(?:png|svg))\)',line))
+                    and match[1] in coin_paths))
+        markdown=generation.markdown(self.coverage_markdown(markdown), self.version.get('generation'))
         (self.root / 'report.md').write_text((badges+'\n\n' if badges else '')+markdown)
         fields = ['type','value','evidence_ref','confidence','relevance','status','context']
         with (self.root / 'iocs.csv').open('w', newline='') as stream:
@@ -344,7 +354,6 @@ class Bundle:
         coverage=json.loads((self.root/'coverage.json').read_text())
         marker='<!-- coverage-summary -->'
         end_marker='<!-- /coverage-summary -->'
-        import re
         markdown=re.sub(re.escape(marker)+r'.*?'+re.escape(end_marker),'',markdown,flags=re.S)
         heading=re.search(r'^## Limitations[^\n]*$',markdown,re.M)
         if heading:
@@ -363,7 +372,7 @@ class Bundle:
             review_status='AI-assisted draft; human forensic review required')
         atomic_json(self.root / 'case-manifest.json', manifest)
         report_path=safe_file(self.root,'report.md')
-        report_path.write_text(self.coverage_markdown(report_path.read_text()))
+        report_path.write_text(generation.markdown(self.coverage_markdown(report_path.read_text()), self.version.get('generation')))
         lines = []
         for path in sorted(self.root.rglob('*')):
             self.check_cancel()
