@@ -387,6 +387,8 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([method for method,_ in calls],['thread/start','thread/resume'])
         for _,params in calls:
             settings=params['config']
+            self.assertEqual(params['model'],'gpt-6-astra')
+            self.assertEqual(settings['model_reasoning_effort'],'high')
             self.assertEqual(settings['mcp_servers.volatility']['default_tools_approval_mode'],'approve')
             self.assertEqual(params['sandbox'],'read-only')
             self.assertFalse(settings['features.shell_tool'])
@@ -431,6 +433,9 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         for _ in range(100):
             if self.app.agent and any(c[0]=='turn/start' for c in self.app.agent.calls):break
             await asyncio.sleep(.01)
+        turns=[params for method,params in self.app.agent.calls if method=='turn/start']
+        self.assertEqual(turns[0]['model'],'gpt-6-astra')
+        self.assertEqual(turns[0]['effort'],'high')
         await self.app.stop();await self.wait_job(job)
         self.assertEqual(job['status'],'incomplete',job)
         self.assertTrue(any(c[0]=='turn/interrupt' for c in self.app.agent.calls))

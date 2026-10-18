@@ -30,6 +30,8 @@ from . import plugin_speeds
 from .storage import Bundle, atomic_json, delete_report_bundle, now, private_dir, read_chunk, safe_file, uid
 
 MAX_JOB_PLUGIN_RUNS = 500
+FORENSIC_MODEL = 'gpt-6-astra'
+FORENSIC_EFFORT = 'high'
 
 TOOLS = [
     {'type':'function','name':'case_set_plan','description':'Explicitly record declared investigative scope for a registered image, not completion. Never invent a historical plan. Does not submit analysis.',
@@ -517,7 +519,8 @@ class Workbench:
             'web_search':'disabled','features.shell_tool':False,'features.unified_exec':False,
             'features.multi_agent':False,'features.multi_agent_v2':False,'features.apps':False,
             'features.plugins':False,'features.hooks':False,'features.browser_use':False,
-            'features.computer_use':False,'features.image_generation':False})
+            'features.computer_use':False,'features.image_generation':False,
+            'model_reasoning_effort':FORENSIC_EFFORT})
         settings.pop('mcp_servers.volatility.enabled',None)
         return settings
 
@@ -589,7 +592,8 @@ REPORT_SPEC follows:\n'''+spec
             return
         instructions=self.investigation_instructions()
         params={'cwd':str(self.directory(case).resolve()),'sandbox':'read-only','approvalPolicy':'on-request',
-            'approvalsReviewer':'user','config':self.thread_config(case),'developerInstructions':instructions}
+            'approvalsReviewer':'user','config':self.thread_config(case),'developerInstructions':instructions,
+            'model':FORENSIC_MODEL}
         new_thread=not case['thread_id']
         if case['thread_id']:
             result=await self.agent.call('thread/resume',{'threadId':case['thread_id'],**params},timeout=180)
@@ -666,7 +670,8 @@ REPORT_SPEC follows:\n'''+spec
         completion=asyncio.get_running_loop().create_future()
         self.turns[case['thread_id']]=completion
         if self.cancel.is_set():raise asyncio.CancelledError()
-        starting=asyncio.create_task(self.agent.call('turn/start',{'threadId':case['thread_id'],'input':[{'type':'text','text':prompt}]}))
+        starting=asyncio.create_task(self.agent.call('turn/start',{'threadId':case['thread_id'],
+            'input':[{'type':'text','text':prompt}], 'model':FORENSIC_MODEL, 'effort':FORENSIC_EFFORT}))
         try:
             result=await asyncio.shield(starting)
         except asyncio.CancelledError:
