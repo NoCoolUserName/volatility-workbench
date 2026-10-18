@@ -407,7 +407,8 @@ footer {
 #coinZoom img { width: min(85vw, 80vh, 1000px); height: min(85vw, 80vh, 1000px); object-fit: contain; }
 #coinZoom p { margin: 0; text-align: center; font-size: 13px; }
 
-.plugin-nav { margin-top: 18px; }
+.plugin-nav { margin-top: 10px; }
+.plugin-nav.selected { border-color: var(--accent); color: var(--accent); }
 .plugin-filters { display: flex; flex-wrap: wrap; gap: 16px; }
 .plugin-filters label:first-child { flex: 1 1 220px; }
 .plugin-filters select { display: block; width: 100%; }
