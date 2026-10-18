@@ -141,3 +141,8 @@ shared assets. Browser checks under production CSP loaded every scene with no
 external requests or policy violations; UI_VALIDATION.md records interaction and
 contrast checks. The only later runtime change was the readiness annotation's CSS
 alignment, covered by the original header and all-theme browser checks.
+
+The final server-route repair removes request text from filesystem path assembly:
+only packaged SVG names enter the static asset map. An authenticated HTTP fixture
+covers a valid scene plus missing and plain/encoded traversal names. This followed
+CodeQL's path-injection warning; the gate remains enforced.

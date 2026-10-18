@@ -738,3 +738,12 @@ revision-4 hashes/policies, 214 configured commands and the public 200-command
 baseline are unchanged. No private case, source image or saved report was used as
 a fixture or modified by validation. Broader assistive-technology, OS/image
 compatibility and forensic-accuracy limits remain those in ROADMAP.md.
+
+CI's CodeQL gate then flagged the request-derived SVG filename even though it was
+bounded by a filename pattern. The final route now builds its asset map entirely
+from packaged filenames and only looks up request keys. A real authenticated HTTP
+regression checks the valid scene and rejects missing/plain/encoded traversal
+names. Security gates and CSP were not disabled or relaxed. The installed-wheel
+smoke was repeated after this server-code repair and again passed all 118 tests,
+dependency/protocol checks and every theme asset route with zero analysis/model
+subprocesses.

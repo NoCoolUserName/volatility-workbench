@@ -88,13 +88,17 @@ class BackendHostTests(unittest.TestCase):
                 def request(method,path,body=None,headers=None):
                     connection=http.client.HTTPConnection(parsed.hostname,parsed.port,timeout=5)
                     connection.request(method,path,json.dumps(body) if body is not None else None,headers or {})
-                    response=connection.getresponse();status=response.status;data=response.read();connection.close()
-                    return status,json.loads(data)
+                    response=connection.getresponse();status=response.status;mime=response.getheader('Content-Type');data=response.read();connection.close()
+                    return status,json.loads(data) if mime=='application/json' else data
                 try:
                     self.assertEqual(request('GET','/api/settings')[0],403)
                     origin=f'http://{parsed.netloc}'
                     self.assertEqual(request('POST','/api/unlock',{'token':parsed.fragment},{'Content-Type':'application/json','Origin':origin})[0],200)
                     headers={'Cookie':'volatility_ui='+parsed.fragment}
+                    status,scene=request('GET','/theme-halloween.svg',headers=headers)
+                    self.assertEqual(status,200);self.assertIn(b'<svg',scene)
+                    for unknown in ('/theme-missing.svg','/theme-../../AGENTS.md.svg','/theme-%2e%2e%2fAGENTS.md.svg'):
+                        self.assertEqual(request('GET',unknown,headers=headers)[0],400)
                     self.assertEqual(request('GET','/api/settings',headers=headers)[0],200)
                     bad=headers|{'Origin':'https://evil.example','Content-Type':'application/json'}
                     self.assertEqual(request('POST','/api/settings/save',{},bad)[0],403)

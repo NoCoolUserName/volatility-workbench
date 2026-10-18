@@ -149,8 +149,9 @@ class Handler(BaseHTTPRequestHandler):
                 '/themes.js':('themes.js','text/javascript; charset=utf-8'),
                 '/themes.css':('themes.css','text/css; charset=utf-8'),
                 '/halloween-night.png':('halloween-night.png','image/png')})
-            if re.fullmatch(r'/theme-[a-z0-9-]+\.svg',url.path) and (Path(__file__).parent/'static'/url.path[1:]).is_file():
-                assets[url.path]=(url.path[1:],'image/svg+xml')
+            # Asset paths originate only in the package, never in request text.
+            assets.update({'/'+p.name:(p.name,'image/svg+xml')
+                for p in (Path(__file__).parent/'static').glob('theme-*.svg') if p.is_file()})
             if url.path in assets:
                 name,mime=assets[url.path]
                 return self.send(200,(Path(__file__).parent/'static'/name).read_bytes(),mime)
