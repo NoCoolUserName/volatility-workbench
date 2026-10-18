@@ -35,6 +35,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
     {name:'windows.synthetic.NotUsed2',target_os:'windows',description:'Checks another synthetic fixture.'},
     {name:'windows.synthetic.Plugin5',description:'Describes another saved run.'}],import_failures:[]}});
    if(u.pathname==='/api/artifacts')return route.fulfill({json:{files:[],truncated:false}});
+   if(u.pathname==='/api/report-console'){const j=state.jobs.find(j=>j.id===u.searchParams.get('job'));return route.fulfill({json:{job_id:j.id,case_id:j.case_id,status:j.status,entries:[],earlier_entries:0}});}
    if(u.pathname==='/api/file')return route.fulfill({json:{text:u.searchParams.get('path').endsWith('manifest.json')?'{"synthetic":"manifest only"}':'# Synthetic report\n## Investigative workflow\n<!-- report-plugin-inventory -->\nDuplicate generated inventory text\n<!-- /report-plugin-inventory -->\n## Observation\nHarmless fixture only.',size:128,next_offset:128,truncated:false}});
    if(u.pathname==='/api/report-plugins'){
     const id=u.searchParams.get('report'),offset=Number(u.searchParams.get('offset'));assert.equal(u.searchParams.get('limit'),'20');
@@ -147,7 +148,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
       {name:'unknown.Scan',description:'Unclassified utility <img src=x>'}]};
     renderReportPlugins(reportPluginCache.get(reportPluginKey));
   });
-  const search=page.getByRole('searchbox',{name:'Search plugins'});
+  const search=page.getByRole('searchbox',{name:'Search plugins',exact:true});
   const filters=page.getByRole('group',{name:'Filter plugins by target OS'});
   const visibleRows=()=>inventory.locator('.report-plugin-unused-table tbody tr:visible');
   assert.equal(await visibleRows().count(),6);
@@ -310,6 +311,29 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
    assert.doesNotMatch(await inventory.locator('.report-plugin-unused-table').innerText(),/windows.synthetic.NotUsed\s/);
    assert.match(await inventory.locator('.report-plugin-unused-table').innerText(),/windows.synthetic.NotUsed2/);
   }
+  await choose('current');
+  const usedPanel=inventory.locator('> details').first(),errorPanel=inventory.locator('> details').nth(1);
+  if(!await usedPanel.evaluate(n=>n.open))await usedPanel.locator('> summary').click();
+  const usedSearch=page.getByRole('searchbox',{name:'Search plugins used',exact:true});
+  const originalPrompt=await focus.inputValue();
+  await usedSearch.fill('pLuGiN20');
+  await page.waitForFunction(()=>document.querySelectorAll('.report-plugin-used-table tbody tr:not([hidden])').length===1&&document.querySelectorAll('.report-plugin-used-table tbody tr').length===21);
+  assert.match(await table.locator('tr:visible').innerText(),/Plugin20/,'Search includes records beyond the first page');
+  assert.equal(await usedSearch.evaluate(n=>n===document.activeElement),true,'Auto paging preserves search focus');
+  await usedSearch.fill('Lists synthetic processes');assert.equal(await table.locator('tr:visible').count(),1,'Description search works');
+  await usedSearch.fill('no such synthetic plugin');assert.equal(await table.locator('tr:visible').count(),0);
+  assert.equal(await usedPanel.getByText('No plugin records match this search.',{exact:true}).isVisible(),true);
+  await usedSearch.fill('Plugin20');await choose('partial');await choose('current');
+  assert.equal(await usedSearch.inputValue(),'Plugin20','Search persists per report');
+  await usedSearch.fill('');assert.equal(await table.locator('tr:visible').count(),21,'Clearing restores loaded rows');
+  if(!await errorPanel.evaluate(n=>n.open))await errorPanel.locator('> summary').click();
+  const errorSearch=page.getByRole('searchbox',{name:'Search plugins that errored',exact:true});
+  await errorSearch.fill('DeNiEd');assert.equal(await errorPanel.locator('tbody tr:visible').count(),1,'Error status search is case insensitive');
+  await errorSearch.fill('call-2');assert.equal(await errorPanel.locator('tbody tr:visible').count(),1,'Error provenance is searchable');
+  await errorSearch.fill('no such error');assert.equal(await errorPanel.locator('tbody tr:visible').count(),0);
+  await errorSearch.fill('');assert.equal(await errorPanel.locator('tbody tr:visible').count(),2);
+  assert.equal(await focus.inputValue(),originalPrompt,'Filtering never changes investigation prompts');
+  assert.equal(await table.locator('tr:visible').count(),21,'Error search leaves used rows alone');
   state.cases[0].reports=[];await page.evaluate(()=>refresh());
   assert.equal(await page.locator('#report').evaluate(n=>n.nextElementSibling.id),'update');
   assert.equal(await page.locator('#report').getAttribute('class'),'primary');

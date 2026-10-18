@@ -550,8 +550,24 @@ resolution-independent CSS CRT casing, recessed screen, vents and power indicato
 It moves the existing read-only console rather than duplicating the feed. Output
 keeps updating with the same theme colors, follow state and scrolling controls.
 Collapse or Escape restores the inline console and focus; background page scrolling
-is locked while expanded. The view closes when its job ends or changes. No shell
+is locked while expanded. The view closes when its job changes. No shell
 input or additional analysis request is introduced.
+
+After a report completes, fails or stops, its console remains expandable and an
+already expanded CRT stays open. The title/status changes to Saved investigation
+console; progress and Stop disappear when idle. The selected case's latest finished
+report request is reconstructed from its existing activity.jsonl after reload or
+restart, without rewriting the log, evidence or sealed report. Completed console
+views are cached in memory; changing case never shows another case's saved output.
+The existing 100-entry/128,000-character display bounds still apply. Unreadable or
+oversized log records are reported, and missing logs fall back to recent activity.
+
+Used and errored plugin tables each have an instant search across displayed record
+text, including names, descriptions, status and provenance. A used-plugin search
+loads remaining saved pages to find matches beyond the initial page; clearing the
+query stops further automatic paging. Queries persist independently per report and
+section. Search only filters rows: it neither edits the prompt nor changes bulk
+retry scope, counts of recorded executions, saved metadata or analysis work.
 
 The latest failed or interrupted report request has a dismissible notice above the
 case, with its recorded error and a link to Activity & failures. This also covers

@@ -331,6 +331,14 @@ class UITests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(status,400)
             self.assertEqual(manifest_path.read_bytes(),original)
             self.assertEqual(list(report_root.iterdir()),[manifest_path])
+            self.app.state['jobs'].append({'id':'saved-console','case_id':self.case['id'],'kind':'report','status':'completed'})
+            console_url='/api/report-console?case='+self.case['id']+'&job=saved-console'
+            status,_,_=await asyncio.to_thread(request,console_url);self.assertEqual(status,403)
+            status,body,_=await asyncio.to_thread(request,console_url,None,{'Cookie':cookie})
+            self.assertEqual(status,200);self.assertEqual(json.loads(body)['status'],'completed')
+            status,_,_=await asyncio.to_thread(request,console_url.replace('saved-console','missing'),None,{'Cookie':cookie})
+            self.assertEqual(status,400)
+            self.app.state['jobs'].clear()
             from volatility_workbench.coins import ensure_coin
             coin=ensure_coin(self.app.directory(self.case),{**self.case['images'][0],'sha256':'a'*64})
             url='/api/coin?case='+self.case['id']+'&path='+coin['path']

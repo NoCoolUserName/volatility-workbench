@@ -79,6 +79,7 @@ class Workbench:
             history = {}
         self.plugin_speed_history = plugin_speeds.valid_history(history)
         self.plugin_speed_runs = {}
+        self.console_cache = {}
         self.plugin_speed_mtime = {}
         self.plugin_speed_checked_at = 0.0
         for job in self.state['jobs']:
@@ -974,6 +975,19 @@ REPORT_SPEC follows:\n'''+spec
         result['request_failures']=request_failures(case['activity'])
         result['image_id']=image_id
         return result
+
+    def report_console(self, case, job_id):
+        job = next((j for j in self.state['jobs'] if j['id'] == job_id and j['case_id'] == case['id']
+                    and j['kind'] in ('report','update') and j['status'] in ('completed','failed','incomplete')), None)
+        if job is None:
+            raise ValueError('Select a finished report request in this case')
+        key = (case['id'], job['id'], job['status'], job.get('finished_at'))
+        if key not in self.console_cache:
+            path = safe_file(self.directory(case), 'activity.jsonl')
+            result = live_console.saved_snapshot(job, path, case.get('activity', []))
+            self.console_cache[key] = result
+            if len(self.console_cache) > 8:self.console_cache.pop(next(iter(self.console_cache)))
+        return self.console_cache[key]
 
     def report_plugins(self, case, report_id, offset=0, limit=20):
         from . import report_plugins
