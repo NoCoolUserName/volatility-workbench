@@ -230,6 +230,10 @@ New run/report folders and registration backups use portable names such as
 Existing folders, sealed reports, and raw evidence remain unchanged. Evidence
 buttons retain their original link targets (hover to see the actual path), and
 the raw artifact preview preserves source content and timestamp precision.
+Opening a report citation, saved result or plugin manifest shows a sticky
+**Back to report** button in Evidence. It restores the clicked link's position
+and keyboard focus in the same report; the Reports tab also restores that
+position. Switching cases or report versions clears the return location.
 
 Other supported command/file approvals and scoped Volatility MCP form requests are
 shown with details and approve-once/decline/cancel choices; user-input requests

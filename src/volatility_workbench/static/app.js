@@ -73,6 +73,35 @@ function act(fn) {
   };
 }
 let activeView = "case", pluginCatalog = null, pluginsLoading = false;
+let reportReturn = null, evidenceNavigation = 0;
+function clearReportReturn() {
+  ++evidenceNavigation;
+  reportReturn = null;
+  $("reportReturn").hidden = true;
+}
+async function visitReportEvidence(source, open) {
+  const point = {caseId:selected, reportKey:shownReport, source,
+    top:source.getBoundingClientRect().top, x:window.scrollX, y:window.scrollY};
+  const navigation = ++evidenceNavigation;
+  const isCurrent = () => navigation === evidenceNavigation &&
+    activeView === "case" && selected === point.caseId && shownReport === point.reportKey;
+  await open(isCurrent);
+  if (!isCurrent()) return;
+  reportReturn = point;
+  $("reportReturn").hidden = false;
+  $("backToReport").focus({preventScroll:true});
+  $("reportReturn").scrollIntoView({block:"start", behavior:"instant"});
+}
+function restoreReportPosition() {
+  const point = reportReturn;
+  clearReportReturn();
+  if (!point || point.caseId !== selected || point.reportKey !== shownReport) return;
+  // Keep the clicked link at its original viewport position, even if content above it changed.
+  const y = point.source.isConnected
+    ? window.scrollY + point.source.getBoundingClientRect().top - point.top : point.y;
+  if (point.source.isConnected) point.source.focus({preventScroll:true});
+  window.scrollTo({left:point.x, top:y, behavior:"instant"});
+}
 const focusDrafts = new Map();
 function sizeFocus() {
   const focus = $("focus");
@@ -82,6 +111,7 @@ function sizeFocus() {
 let submittingReadiness = false;
 let selectedPluginSources = new Set(), allPluginSourcesSelected = true, availablePluginSources = [];
 function choose(id, activate = true) {
+  clearReportReturn();
   if (activate) activeView = "case";
   if (id !== selected) {
     if (selected) focusDrafts.set(selected, $("focus").value);
@@ -120,12 +150,14 @@ async function job(kind, text = "") {
   await refresh();
 }
 function setTab(name) {
+  if (name !== "evidence") ++evidenceNavigation;
   document.querySelectorAll(".tab").forEach((n) => (n.hidden = n.id !== name));
   document
     .querySelectorAll("[data-tab]")
     .forEach((n) => n.classList.toggle("selected", n.dataset.tab === name));
   if (name === "evidence") loadArtifacts().catch(error);
   if (name === "coverage") loadCoverage().catch(error);
+  if (name === "reports") restoreReportPosition();
 }
 function inline(node, text, base) {
   const re = /\*\*([^*\n]+)\*\*|\[([^\]]+)\]\(([^)]+)\)/g;
@@ -153,21 +185,22 @@ function inline(node, text, base) {
     ) {
       const a = el("a", m[2]);
       a.href = "#evidence";
-      a.onclick = act(async () => {
+      a.onclick = act(() => visitReportEvidence(a, async (isCurrent) => {
         const citation = new URLSearchParams(value.split("#")[1] || "").get("citation");
         if (citation && base.startsWith("reports/")) {
           const match = /^(.*):(\d+)$/.exec(citation);
           if (!match) throw Error("Invalid citation link");
           const resolved = await api("citations?case=" + encodeURIComponent(selected) +
             "&report=" + encodeURIComponent(base.slice(8)) + "&finding=" + encodeURIComponent(match[1]) + "&index=" + match[2]);
+          if (!isCurrent()) return;
           if (resolved.artifact_path !== base + "/" + value.split("#")[0]) throw Error("Citation link targets a different artifact");
-          await viewArtifact(resolved.artifact_path);
+          await viewArtifact(resolved.artifact_path, 0, isCurrent);
+          if (!isCurrent()) return;
           $("artifactView").textContent = JSON.stringify(resolved, null, 2) + "\n\nRaw artifact preview:\n" + $("artifactView").textContent;
         } else {
-          await viewArtifact(base + "/" + value.split("#")[0]);
+          await viewArtifact(base + "/" + value.split("#")[0], 0, isCurrent);
         }
-        setTab("evidence");
-      });
+      }));
       node.append(a);
     } else {
       node.append(document.createTextNode(m[2] + " [" + value + "]"));
@@ -491,8 +524,7 @@ function renderReportPlugins(record) {
           link.href = "#evidence";
           link.onclick = act(async () => {
             if (reportPluginKey !== record.key || selected !== record.caseId) return;
-            await viewArtifact("reports/" + record.reportId + "/" + localPath, 0, () => reportPluginKey === record.key);
-            if (reportPluginKey === record.key && selected === record.caseId) setTab("evidence");
+            await visitReportEvidence(link, isCurrent => viewArtifact("reports/" + record.reportId + "/" + localPath, 0, isCurrent));
           }); source.append(link);
         } else source.append(el("span", "Not recorded", "subtle"));
         row.append(source); rows.push(row);
@@ -614,6 +646,7 @@ function showReportPlugins(version) {
 async function showReport(version) {
   showReportPlugins(version);
   if (!version) {
+    clearReportReturn();
     shownReport = "";
     $("reportView").replaceChildren(el("p", caseNow()?.reports.length
       ? "No visible reports. Incomplete revisions may have been hidden or deleted."
@@ -623,6 +656,7 @@ async function showReport(version) {
   }
   const key = selected + "/" + version.id + "/" + version.status;
   if (shownReport === key) return;
+  clearReportReturn();
   shownReport = key;
   $("reportView").replaceChildren(el("p", "Loading full saved report…"));
   $("toc").replaceChildren();
@@ -657,7 +691,7 @@ async function showReport(version) {
             const resolved = await api(base + "&finding=" + encodeURIComponent(ref.finding) + "&index=" + ref.index);
             const value = el("pre", JSON.stringify(resolved, null, 2));
             const raw = el("button", "Open supporting artifact");
-            raw.onclick = act(async () => { await viewArtifact(resolved.artifact_path); setTab("evidence"); });
+            raw.onclick = act(() => visitReportEvidence(raw, isCurrent => viewArtifact(resolved.artifact_path, 0, isCurrent)));
             panel.replaceChildren(value, raw);
           });
           panel.append(b);
@@ -1230,6 +1264,7 @@ $("questionForm").onsubmit = act(async () => {
   $("question").value = "";
 });
 $("more").onclick = act(() => viewArtifact(artifact.path, artifact.offset));
+$("backToReport").onclick = () => setTab("reports");
 document
   .querySelectorAll("[data-tab]")
   .forEach((b) => (b.onclick = () => setTab(b.dataset.tab)));
