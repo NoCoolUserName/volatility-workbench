@@ -23,13 +23,16 @@ git clone https://github.com/NoCoolUserName/volatility-workbench.git
 cd volatility-workbench
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -r requirements.lock.txt
+.venv/bin/python scripts/install_core_pin.py
 .venv/bin/python -m pip install .
 .venv/bin/python -m volatility_mcp setup --help
 .venv/bin/volatility-workbench --config /absolute/path/to/config.json --state-dir /absolute/path/to/private/workbench
 ```
 
 `pip install .` automatically installs its full-commit core dependency. The lock
-file also pins all runtime dependencies for the tested release. No PyPI publication
+file also pins all runtime dependencies for the tested release. The core-pin
+helper checks installed Git provenance and replaces a stale wheel even when two
+core commits share the same package version. No PyPI publication
 of either project is required. The console command or `python -m volatility_workbench`
 works from any directory; no source checkout is needed after installation. Assets,
 the presentation template, and the core report contract ship in the wheels.
@@ -62,6 +65,22 @@ To regenerate the packaged image, use `src/volatility_workbench/static/icon.png`
 as the output path and omit the launcher argument. The launcher remains a Terminal
 script, with no separate desktop application to install.
 
+## Optional analysis plugins
+
+The core dependency provides a pinned, opt-in community profile for PteMalfind /
+Ptenum, ImgMalfind, Prefetch, AnyDesk, EVTXLog, Browser History Extractor and
+KeePass. Install only while analysis clients are idle:
+
+```sh
+.venv/bin/python -m volatility_mcp plugins-install --config /absolute/path/to/config.json
+```
+
+Then refresh **Plugins**; restart idle clients that retain an older catalog. The
+profile installs into the configured analyzer, preserves official Volatility, and
+adds source labels/compatibility notes to the existing UI. It includes the callable
+SimplePteEnumerator and the supporting ApiSearch command. The app does not install
+plugins silently. See the [pinned profile, licenses and validation limits](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COMMUNITY_PLUGINS.md).
+
 ## Develop both repositories
 
 Place the two checkouts alongside each other, then use Workbench's environment:
@@ -69,6 +88,7 @@ Place the two checkouts alongside each other, then use Workbench's environment:
 ```sh
 cd volatility-workbench
 .venv/bin/python -m pip install -r requirements.lock.txt
+.venv/bin/python scripts/install_core_pin.py
 .venv/bin/python -m pip install --no-deps -e ../volatility-mcp -e .
 .venv/bin/python -m unittest discover -s tests -q
 ```
@@ -100,6 +120,7 @@ Manual equivalent:
 .venv/bin/python scripts/update_core.py --dry-run
 .venv/bin/python scripts/update_core.py
 .venv/bin/python -m pip install -r requirements.lock.txt
+.venv/bin/python scripts/install_core_pin.py
 .venv/bin/python -m pip install .
 .venv/bin/python -m unittest discover -s tests -q
 .venv/bin/python scripts/package_smoke.py

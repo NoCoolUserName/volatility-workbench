@@ -451,3 +451,28 @@ and after launch. No Volatility command or investigation job was started.
   Playwright is a development-only tool, not an application dependency.
 - Real Volatility 3 framework 2.28.2 discovery was separately exercised in core.
   This does not establish compatibility with any particular memory image.
+
+## Community analyzer profile — 2026-10-17
+
+- Core pin advanced to merged `e3a74a6e7861b66c6074510093d8b520f6657e16`
+  with its runtime lock. The opt-in core installer owns source/dependency hashes,
+  compatibility adaptations and notices; Workbench contains no plugin copy.
+- The updated analyzer exposes 208 commands and zero import failures on the Mac.
+  A real registered stdio MCP check queried all nine added command schemas and
+  source labels. No analysis-tool calls, private-image scans or report generation.
+- A disposable empty-case Workbench using the real analyzer was inspected in the
+  browser: 208 rows, seven source checkbox labels, subset filtering, search and
+  expanded Prefetch compatibility/provenance details. The actual plugin algorithms
+  were not exercised by the UI check. Existing user case storage was not used.
+- Found and repaired a same-version Git-pin upgrade defect: a plain pip install
+  left an older 0.1.0 core wheel despite a changed commit pin. The explicit
+  `scripts/install_core_pin.py` helper replaces only stale core code with no
+  dependency changes, checks installed Git provenance, and is idempotent. A mocked
+  regression covers stale revision replacement, a matching revision, and rejection
+  of mismatched post-install provenance. README install/update commands include it.
+- Workbench unit tests: 39 passed. Installed wheel/package integration passed.
+  Core's separate community-profile CI job also passed on Linux Python 3.12 with
+  pinned downloads and synthetic parser/API checks, not real memory images.
+- PTE algorithms and real-image plugin support remain unvalidated. Two upstream
+  source redistribution licenses remain unresolved; future public app/container
+  bundling must resolve permission or retain explicit operator download.

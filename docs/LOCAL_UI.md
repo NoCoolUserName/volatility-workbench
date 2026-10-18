@@ -284,3 +284,10 @@ shown separately; a failed refresh retains and explicitly labels the old invento
 Discovery success is not proof of image compatibility. Source unknown is explicit;
 `installed_volatility` alone does not mean Native. See the authoritative
 [core source contract](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/PUBLIC_API.md#plugin-catalog).
+
+The optional [community profile](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COMMUNITY_PLUGINS.md)
+adds its exact discovered names, upstream-source checkbox labels and compatibility
+notes automatically; no case migration or report regeneration is required.
+Ptenum's callable entry is `windows.simple_pteenum.SimplePteEnumerator`; the
+PTE-family requires 64-bit Windows. EVTXLog does not parse XP EVT. Installation
+and synthetic fixture checks do not establish runtime support for a chosen image.
