@@ -404,6 +404,7 @@ function recordedMillis(value) {
     .replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(?:[.-](\d+))?(Z|\+0000)$/, (_, y, m, d, h, min, s, fraction) =>
       `${y}-${m}-${d}T${h}:${min}:${s}${fraction ? "." + fraction : ""}Z`)
     .replace(/^(\d{4}-\d{2}-\d{2})_(\d{2})-(\d{2})-(\d{2})Z$/, "$1T$2:$3:$4Z")
+    .replace(/^(\d{4}-\d{2}-\d{2}) (?=\d{2}:\d{2}:\d{2})/, "$1T")
     .replace(/\+0000$/, "+00:00");
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(normalized)) return NaN;
   return Date.parse(normalized);

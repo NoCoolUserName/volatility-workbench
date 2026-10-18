@@ -225,6 +225,9 @@ Conversion uses `America/Chicago` for each timestamp, so CST/CDT and the local
 calendar date reflect daylight saving time at that instant. The leading date is
 the Central date; the parenthesized Zulu clock can belong to the next UTC day.
 Execution/state metadata remains seconds-resolution UTC (`YYYY-MM-DD HH:MM:SSZ`).
+Plugin **Speed** is the difference between the original Finished and Started
+timestamps, including this saved UTC format and ISO timestamps. Display-time
+conversion does not affect the calculation.
 New run/report folders and registration backups use portable names such as
 `2026-10-06_02-52-39Z-<unique suffix>`; the suffix prevents same-second collisions.
 Existing folders, sealed reports, and raw evidence remain unchanged. Evidence
