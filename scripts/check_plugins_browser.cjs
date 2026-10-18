@@ -58,7 +58,7 @@ let mode = 'normal', calls = [], errors = [];
     assert.match(await page.locator('#pluginRows').innerText(),/No plugins match/);
     await page.locator('#pluginSearch').fill('');
     await page.locator('#pluginRows summary').first().click();
-    assert.match(await page.locator('#pluginRows').innerText(),/<script>/);
+    assert.equal(await page.locator('#pluginRows details').first().locator('p').first().textContent(), plugins[3].description);
     assert.equal(await page.evaluate(() => window.injected),undefined);
     // Normal 1.5s state polling must preserve catalog, expansion, and cached discovery.
     const before = calls.filter(x => x.startsWith('/api/state')).length;
