@@ -18,7 +18,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   summary:status==='unavailable'?{executions:null,plugins:null,failures:null,reuse_receipts:null,request_failures:null}:{executions:18,plugins:20,failures:1,reuse_receipts:1,request_failures:1,unknown_execution_records:1,simulated_runs:1},
   entries:rows,next_offset:next,
   executed_plugin_names:status==='unavailable'?[]:entries.filter(e=>e.kind==='plugin_run'&&e.execution_recorded&&!e.synthetic).map(e=>e.plugin),
-  errored_entries:status==='unavailable'?[]:entries.filter(e=>e.kind==='request_failure'||/fail|error|denied/.test(e.status)).map(({plugin,image_id,status,kind,run_id,call_id})=>({plugin,image_id,status,kind,run_id,call_id})),
+  errored_entries:status==='unavailable'?[]:entries.filter(e=>e.kind==='request_failure'||/fail|error|denied/.test(e.status)).map(({plugin,image_id,status,kind,run_id,call_id,arguments:args})=>({plugin,image_id,status,kind,run_id,call_id,arguments:args,requested_image:kind==='request_failure'?'/synthetic/image.raw':null})),
   warnings:status==='partial'?['Synthetic missing manifest <script>window.injected=true</script>']:[]});
 (async()=>{
  const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
@@ -71,6 +71,29 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.match(await inventory.locator('.report-plugin-unused-table').innerText(),/windows\.synthetic\.NotUsed.*Shows a harmless unused fixture/s);
   assert.equal(await inventory.locator('> details').nth(2).getAttribute('open'),'','Catalog response preserves the expanded section');
   assert.doesNotMatch(await inventory.locator('.report-plugin-unused-table').innerText(),/windows\.synthetic\.Plugin4/);
+  const retryButtons=inventory.locator('.report-plugin-errors-table tbody button[data-retry-index]');
+  const retryAll=page.getByRole('button',{name:'Add all failed requests to prompt',exact:true});
+  assert.deepEqual(await inventory.locator('.report-plugin-errors-table thead th').allTextContents(),
+    ['Plugin','Add to prompt','Quick Description','Image','Recorded error','Run provenance','Source provenance']);
+  assert.equal(await retryButtons.count(),2);
+  await retryButtons.nth(1).click();
+  const oneRetry=await focus.inputValue();
+  assert.match(oneRetry,/"report":"current".*"requested_image":"\/synthetic\/image.raw".*"arguments":\["--pid","123",""\].*"run":"run-2","call":"call-2"/);
+  assert.match(oneRetry,/current installed plugin schema/);assert.match(oneRetry,/repeat unchanged failures/);
+  assert.equal(await retryButtons.nth(1).isDisabled(),true);assert.equal(await retryButtons.first().isEnabled(),true);
+  await retryAll.click();
+  const allRetries=await focus.inputValue();
+  assert.equal(allRetries.split('"call":"call-2"').length-1,1,'Bulk does not duplicate an individual request already added');
+  assert.equal(allRetries.split('"call":"call-0"').length-1,1);
+  assert.equal(await retryAll.isDisabled(),true);assert.equal(await retryButtons.first().isDisabled(),true);
+  assert.equal(await retryButtons.nth(1).isDisabled(),true);
+  await focus.fill(oneRetry);
+  assert.equal(await retryAll.isEnabled(),true);assert.equal(await retryButtons.first().isEnabled(),true);
+  assert.equal(await retryButtons.nth(1).isDisabled(),true,'Removing one request reenables only that request');
+  await page.evaluate(()=>renderReportPlugins(reportPluginCache.get(reportPluginKey)));
+  assert.equal(await retryButtons.nth(1).isDisabled(),true,'Inventory refresh keeps prompt-derived disabled state');
+  await focus.fill('');assert.equal(await retryButtons.nth(1).isEnabled(),true);
+  assert.equal(calls.filter(x=>x.startsWith('/api/jobs')).length,0,'Retry buttons only draft a prompt');
   await focus.fill('Investigate persistence.');
   const add=inventory.locator('.report-plugin-unused-table tbody button');
   assert.equal(await add.count(),2);
@@ -97,7 +120,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   const osChecks=await page.evaluate(()=>{
     const c=caseNow(),oldImages=c.images,oldCatalog=reportPluginCatalog;
     const record=reportPluginCache.get(reportPluginKey);
-    reportPluginCatalog={plugins:[{name:'windows.Test',target_os:'windows'},{name:'mac.Test',target_os:'mac'},
+    reportPluginCatalog={plugins:[{name:'windows.Test',target_os:'windows'},{name:'mac.Secret',target_os:'mac',manual_only:true},{name:'mac.Test',target_os:'mac'},
       {name:'linux.Test',target_os:'linux'},{name:'unknown.Test',target_os:'other'},
       {name:'windowsMisleading.Test',target_os:'mac'}]};
     c.images=[{id:'E002',discovery:{detected_os:'macos'}},{id:'E003',discovery:{detected_os:'linux'}},{id:'E004',discovery:{detected_os:'unknown'}}];
@@ -109,10 +132,53 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   });
   assert.match(osChecks.mixed.text,/E002 \(macOS\): `mac.Test`, `windowsMisleading.Test`/);
   assert.match(osChecks.mixed.text,/E003 \(linux\): `linux.Test`/);
-  assert.doesNotMatch(osChecks.mixed.text,/`windows.Test`|unknown.Test|E004/);
+  assert.doesNotMatch(osChecks.mixed.text,/`windows.Test`|mac.Secret|unknown.Test|E004/);
   assert.match(osChecks.mixed.note,/1 image\(s\) have unresolved/);
   assert.equal(osChecks.unknown.text,'');
   assert.equal(calls.filter(x=>x.startsWith('/api/jobs')).length,0);
+
+  // Filtering is local, combines OS and literal text, and preserves focus/caret and report scope.
+  await page.evaluate(()=>{
+    window.filterCatalog=reportPluginCatalog;
+    reportPluginCatalog={plugins:[...reportPluginCatalog.plugins,
+      {name:'linux.Scan',target_os:'linux',description:'Finds penguin processes'},
+      {name:'windowsMisleading.MacScan',target_os:'mac',description:'Apple process utility'},
+      {name:'generic.Scan',target_os:'other',description:'OS-independent utility'},
+      {name:'unknown.Scan',description:'Unclassified utility <img src=x>'}]};
+    renderReportPlugins(reportPluginCache.get(reportPluginKey));
+  });
+  const search=page.getByRole('searchbox',{name:'Search plugins'});
+  const filters=page.getByRole('group',{name:'Filter plugins by target OS'});
+  const visibleRows=()=>inventory.locator('.report-plugin-unused-table tbody tr:visible');
+  assert.equal(await visibleRows().count(),6);
+  await filters.getByRole('button',{name:'macOS',exact:true}).click();
+  assert.equal(await visibleRows().count(),1);assert.match(await visibleRows().innerText(),/windowsMisleading.MacScan/);
+  await filters.getByRole('button',{name:'Linux',exact:true}).click();
+  assert.match(await visibleRows().innerText(),/linux.Scan/);
+  await search.fill('APPLE');assert.equal(await visibleRows().count(),0);
+  await page.getByText('No plugins match these filters.',{exact:true}).waitFor();
+  await filters.getByRole('button',{name:'All',exact:true}).click();
+  assert.equal(await search.inputValue(),'APPLE');assert.match(await visibleRows().innerText(),/MacScan/);
+  await search.fill('');await filters.getByRole('button',{name:'Other / general',exact:true}).click();
+  assert.equal(await visibleRows().count(),2);
+  await search.pressSequentially('utility');
+  assert.equal(await search.evaluate(n=>document.activeElement===n&&n.selectionStart===n.value.length),true);
+  await page.waitForTimeout(1700);
+  assert.equal(await search.inputValue(),'utility');assert.equal(await search.evaluate(n=>document.activeElement===n),true);
+  assert.equal(await filters.getByRole('button',{name:'Other / general',exact:true}).getAttribute('aria-pressed'),'true');
+  await filters.getByRole('button',{name:'Windows',exact:true}).click();assert.equal(await visibleRows().count(),0);
+  await search.fill('harmless');assert.equal(await visibleRows().count(),1);
+  await visibleRows().getByRole('button',{name:'Add windows.synthetic.NotUsed to investigation prompt',exact:true}).click();
+  assert.match(await focus.inputValue(),/windows.synthetic.NotUsed`/);
+  await page.evaluate(()=>renderReportPlugins(reportPluginCache.get(reportPluginKey)));
+  assert.equal(await search.inputValue(),'harmless');assert.equal(await visibleRows().count(),1);
+  await search.fill('<img');await filters.getByRole('button',{name:'All',exact:true}).click();
+  assert.equal(await visibleRows().count(),1);assert.equal(await inventory.locator('img').count(),0);
+  assert.equal(calls.filter(x=>x.startsWith('/api/jobs')).length,0);
+  await page.evaluate(()=>{
+    reportPluginCatalog=window.filterCatalog;
+    const record=reportPluginCache.get(reportPluginKey);record.unusedSearch='';record.unusedOS='all';renderReportPlugins(record);
+  });
 
   if(process.env.WORKBENCH_REPORT_PLUGIN_UNUSED_SCREENSHOT)await page.screenshot({path:process.env.WORKBENCH_REPORT_PLUGIN_UNUSED_SCREENSHOT,fullPage:true});
   await inventory.locator('> details').nth(1).locator('> summary').click();
@@ -175,11 +241,14 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   await page.waitForFunction(()=>document.querySelectorAll('#reportPluginInventory .report-plugin-used-table tbody tr').length===21);
   assert.equal(await inventory.getByRole('button',{name:'More plugin records'}).count(),0);
   assert.match(await page.evaluate(()=>document.activeElement.textContent),/All saved plugin records loaded/);
+  await page.evaluate(()=>{window.staleFailedRetry=document.querySelector('button[data-retry-index]').onclick;});
+  const preservedDraft=await focus.inputValue();
   await choose('legacy');
   await page.waitForFunction(()=>document.querySelector('#reportPluginInventory summary')?.textContent.includes('Inventory unavailable'));
   await inventory.locator('> details > summary').first().click();
   assert.match(await inventory.innerText(),/does not mean no plugins ran/);assert.equal(await inventory.locator('table').count(),0);
   assert.doesNotMatch(await inventory.innerText(),/0 recorded executions/);
+  await page.evaluate(()=>window.staleFailedRetry());assert.equal(await focus.inputValue(),preservedDraft,'A stale retry cannot alter another selected report');
   await choose('partial');await page.waitForFunction(()=>document.querySelector('#reportPluginInventory .inventory-warning')?.textContent.includes('Partial'));
   await inventory.locator('> details > summary').first().click();assert.match(await inventory.innerText(),/Synthetic missing manifest <script>/);assert.equal(await inventory.locator('script').count(),0);
   await choose('delayed');await page.waitForFunction(()=>document.querySelector('#reportPluginInventory summary')?.textContent.includes('Loading'));
@@ -188,6 +257,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.doesNotMatch(await inventory.innerText(),/delayed-plugin/,'Stale reply never replaces current report');
   await page.getByRole('button',{name:'Synthetic B',exact:true}).click();
   assert.equal(await focus.inputValue(),'','Focus drafts stay with their case');
+  await page.evaluate(()=>window.staleFailedRetry());assert.equal(await focus.inputValue(),'','A stale retry cannot alter another case draft');
   await assertReadableFocus();
   await page.waitForFunction(()=>document.querySelector('#reportPluginInventory tbody')?.textContent.includes('other-plugin'));
   await page.getByRole('button',{name:'Synthetic A',exact:true}).click();assert.equal(await table.locator('tr').count(),21);
@@ -245,6 +315,6 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.equal(await page.locator('#report').getAttribute('class'),'primary');
   assert.equal(await page.locator('#update').isDisabled(),true);
   assert.deepEqual(errors,[]);assert.deepEqual(policies,[]);assert.equal(await page.evaluate(()=>window.injected),undefined);
-  console.log('Report plugins browser: counts/scope, errors/unused, descriptions/timing/details, OS-matched bulk prompts/disabled state, primary action order, completion refresh, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, 31 themes passed; only synthetic local GETs.');
+  console.log('Report plugins browser: counts/scope, errors/unused, failed-request retry drafts/exact metadata/dedup/disabled state, descriptions/timing/details, OS-matched bulk prompts, primary action order, completion refresh, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, 31 themes passed; only synthetic local GETs.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

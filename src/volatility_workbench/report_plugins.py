@@ -318,6 +318,7 @@ def derive(root, case_id, report_id):
         entries.append({'kind': 'request_failure', 'run_id': None, 'call_id': _text(step.get('call_id')),
             'image_id': _text(step.get('image_id')), 'plugin': _text(plugin), 'status': 'request_failed',
             'arguments': _array(args.get('arguments')) if isinstance(args, dict) else _array(args),
+            'requested_image': _text(args.get('image')) if isinstance(args, dict) else None,
             'argv': None, 'started_at': _text(step.get('timestamp')), 'finished_at': None,
             'reuse_count': 0, 'source_path': 'investigation.jsonl', 'execution_recorded': False,
             'synthetic': step.get('synthetic') is True or step.get('execution_kind') == 'simulated',
@@ -387,6 +388,27 @@ def derive(root, case_id, report_id):
     return result
 
 
+def error_explanation(text):
+    """Explain recognized saved diagnostics without treating failure as a finding."""
+    if 'file_offset' in text and 'NameError' in text:
+        return 'Plugin implementation defect: reconstruction referenced an unassigned file offset. The updated compatibility adapter repairs it; this historical run still failed.'
+    if 'forbidden shell metacharacters' in text:
+        return 'Request rejected before execution by argument validation. Installed regex-aware schemas support the VadRegExScan pattern and DumpFiles filter; use those exact options with valid regex syntax.'
+    if 'This version of Windows is not supported' in text:
+        return 'The installed plugin does not support this Windows version. For XP x86 network pool recovery, xpnet.XpNetScan is a separate limited alternative; it does not prove active connections or traffic.'
+    if 'only supports x64 versions of Windows' in text:
+        return 'The installed GUI plugin requires Windows x64. It cannot analyze an x86 image; rerunning unchanged will not resolve it.'
+    if 'Template guessing is not applicable for NT5' in text or 'LSA signature' in text:
+        return 'The credential parser could not resolve the NT5 LSA layout or required pages. This is a parser/acquisition limitation, not evidence that credentials are absent.'
+    if 'Page error' in text or 'InvalidAddressException' in text:
+        return 'A required memory page was unreadable. Acquisition gaps, an invalid pointer or a plugin defect can cause this; recovered rows may be incomplete and unchanged retries are not a repair.'
+    if 'Unable to validate the plugin requirements' in text:
+        return 'Required kernel layer or symbols could not be validated for this plugin. Check its guest OS, architecture and exact symbol requirements; installation alone does not establish compatibility.'
+    if '_MI_SYSTEM_VA_TYPE' in text and 'Enumeration not found' in text:
+        return 'The plugin requires a kernel enumeration missing from this symbol table. Its expected layout is unavailable for this image; do not substitute symbols from another build.'
+    return None
+
+
 def _error_sources(root, manifest, entries):
     """Link only registered, same-run diagnostics; read small request metadata only."""
     reader = Reader(root)
@@ -404,6 +426,11 @@ def _error_sources(root, manifest, entries):
                 path = _path(item['path'])
                 safe_file(root, path)
                 entry['error_sources'].append({'path': path, 'label': 'Saved stderr' if path.endswith('/stderr.txt') else 'Run manifest'})
+                if path.endswith('/stderr.txt'):
+                    raw=reader.read(path,item,maximum=256*1024)
+                    if raw is not None:
+                        entry['diagnosis']=error_explanation(raw.decode('utf-8',errors='replace'))
+
         elif entry['kind'] == 'request_failure' and isinstance(cid, str) and re.fullmatch(r'UI-[\w-]+', cid):
             path = 'artifacts/' + cid + '.json'
             if path not in registered:
@@ -418,6 +445,9 @@ def _error_sources(root, manifest, entries):
                 except ValueError: args = None
             if not isinstance(args, dict) or args.get('plugin') != entry.get('plugin'):
                 continue
+            entry['requested_image'] = _text(args.get('image'))
+            if entry.get('arguments') is None:
+                entry['arguments'] = _array(args.get('arguments'))
             entry['error_sources'].append({'path':path, 'label':'Saved request error'})
             result = detail.get('result')
             content = result.get('content') if isinstance(result, dict) else None
@@ -425,6 +455,7 @@ def _error_sources(root, manifest, entries):
             message = _text(detail.get('error')) or _text('\n'.join(m for m in messages if m))
             if message:
                 entry['reason'] = message
+                entry['diagnosis'] = error_explanation(message)
     return reader.warnings
 
 
@@ -520,7 +551,7 @@ def read(root, case_id, report_id, offset=0, limit=20):
                              if e.get('kind') == 'plugin_run' and e.get('execution_recorded') is True
                              and e.get('synthetic') is not True and e.get('execution_kind') != 'simulated'
                              and isinstance(e.get('plugin'), str)})
-    errored = [{key: e.get(key) for key in ('plugin', 'image_id', 'status', 'kind', 'run_id', 'call_id', 'reason')}
+    errored = [{key: e.get(key) for key in ('plugin', 'image_id', 'requested_image', 'arguments', 'status', 'kind', 'run_id', 'call_id', 'reason')}
                for e in entries if e.get('kind') == 'request_failure' or
                (e.get('kind') == 'plugin_run' and isinstance(e.get('status'), str) and
                 re.search(r'fail|error|denied|cancel|timeout', e['status'], re.I))]

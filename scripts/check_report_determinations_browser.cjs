@@ -11,7 +11,7 @@ const state={cases:[{id:'synthetic',title:'Synthetic case',created_at:'2026-10-1
 const narratives={
   legacy:'# Synthetic report\n## Executive summary\nThe evidence supports a high-confidence assessment of host compromise.\n## Scope and evidence\nSynthetic only.',
   explicit:'# Synthetic report\n## Executive summary\nAI Determination: Benign\nThe evidence supports a benign explanation.\n## Scope and evidence\nSynthetic only.',
-  uncertain:'# Synthetic report\n## Executive summary\nAI Determination: Undetermined\nAvailable evidence is inconclusive.\n## Scope and evidence\nSynthetic only.',
+  uncertain:'# Synthetic report\n## Executive summary\nAI Determination: Undetermined\nAvailable evidence is inconclusive (F2–F3, F11). Unknown F99 stays plain.\n## Scope and evidence\nSynthetic only.\n## Findings\n### F2 — Synthetic finding\nFixture text.\n### F3: Another finding\nFixture text.\n### F11 — Last finding\nFixture text.',
 };
 (async()=>{
   const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
@@ -52,6 +52,23 @@ const narratives={
     await ai.waitFor();
     assert.equal(await ai.innerText(),'Undetermined');
     assert.equal(await human.inputValue(),'');
+    const findingLinks=page.locator('#reportView > p a[aria-label^="Jump to finding"]');
+    assert.deepEqual(await findingLinks.allTextContents(),['F2','F3','F11']);
+    const headingForms=await page.evaluate(()=>{
+      const saved=Array.from(document.querySelector('#reportView').childNodes);
+      renderMarkdown('## Executive summary\nReferences F1, SYN-F001, F2 and F99.\n## Findings\n### SYN-F001 — Prefixed fixture\nText\n### **F2** — Bold fixture\nText','reports/synthetic');
+      const links=Array.from(document.querySelectorAll('#reportView a[aria-label^="Jump to finding"]')).map(n=>n.textContent);
+      renderMarkdown('## Executive summary\nAmbiguous F1.\n## Findings\n### A-F001 — One\n### B-F001 — Two','reports/synthetic');
+      const ambiguous=document.querySelectorAll('#reportView a[aria-label^="Jump to finding"]').length;
+      document.querySelector('#reportView').replaceChildren(...saved);return {links,ambiguous};
+    });
+    assert.deepEqual(headingForms,{links:['F1','SYN-F001','F2'],ambiguous:0});
+    const target=await findingLinks.first().getAttribute('href');
+    await findingLinks.first().click();
+    assert.equal(await page.evaluate(()=>document.activeElement.id),target.slice(1));
+    assert.equal(await page.locator('#reports').isVisible(),true);
+    assert.equal(await page.getByRole('link',{name:'Jump to finding F99'}).count(),0);
+
     assert.equal(await ai.evaluate(node=>getComputedStyle(node).color),'rgb(255, 255, 255)');
     assert.equal(await ai.evaluate(node=>getComputedStyle(node).fontWeight),'700');
     assert.equal(await page.locator('#reportView h2').first().innerText(),'Executive summary');
@@ -73,6 +90,17 @@ const narratives={
     assert.equal(await human.evaluate(node=>getComputedStyle(node).color),'rgb(134, 230, 165)');
     assert.equal(await human.evaluate(node=>getComputedStyle(node).fontWeight),'700');
     assert.equal(versions[0].human_determination,'Benign','Human and AI opinions can differ');
+    // The extraction dialog blocks accidental approval until its acknowledgement is checked.
+    state.approvals=[{id:'synthetic-consent',case_id:'synthetic',method:'mcpServer/elicitation/request',params:{
+      serverName:'volatility',mode:'form',message:'Potentially hazardous extraction\nPlugin: synthetic.dump.Plugin\nRecovered files may contain malware.',
+      requestedSchema:{type:'object',properties:{confirm:{type:'boolean',title:'Approve this extraction once'}},required:['confirm']}}}];
+    await page.evaluate(()=>refresh());
+    const dialog=page.getByRole('dialog',{name:'Confirm potentially hazardous extraction'});
+    await dialog.waitFor();assert.equal(await dialog.evaluate(n=>n.open),true);
+    const approve=dialog.getByRole('button',{name:'Approve / submit once'});
+    assert.equal(await approve.isDisabled(),true);
+    await dialog.getByRole('checkbox').check();assert.equal(await approve.isEnabled(),true);
+    state.approvals=[];await page.evaluate(()=>refresh());assert.equal(await dialog.count(),0);
     if(process.env.WORKBENCH_DETERMINATIONS_SCREENSHOT){
       await ai.scrollIntoViewIfNeeded();
       await page.screenshot({path:process.env.WORKBENCH_DETERMINATIONS_SCREENSHOT});

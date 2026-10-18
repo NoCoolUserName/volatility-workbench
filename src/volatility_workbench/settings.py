@@ -22,6 +22,7 @@ class SettingsManager:
         self.busy=False
         self.operation={'status':'idle'}
         self.task=None
+        self.symbol_status_cache={}
         self.operation_path=self.root/'settings-operation.json'
         if self.operation_path.exists():
             self.operation=json.loads(self.operation_path.read_text())
@@ -37,6 +38,8 @@ class SettingsManager:
     def snapshot(self):
         config=self.app.config
         symbol_root=config.symbols or self.root/'symbols'
+        symbol_profile=symbols.profile()
+        installed={p['id']:bool(symbols.installed_pack(p,symbol_root,self.symbol_status_cache)) for p in symbol_profile['packs']}
         problems=[]
         for label,path in (('Analyzer Python',config.vol_python),('Volatility executable',config.vol_executable)):
             if not path.is_file() or not os.access(path,os.X_OK):
@@ -49,7 +52,7 @@ class SettingsManager:
         return {'config':config.to_dict(),'state_dir':str(self.app.root),'has_cases':bool(self.app.state['cases']),
             'evidence_locations':self.app.evidence_locations() if hasattr(self.app,'evidence_locations') else [],
             'native_folder_picker':bool(self.folder_picker),'managed_runtime_available':bool(self.resources and (self.resources/'analyzer/bin/python3').exists()),
-            'symbols':{'directory':str(symbol_root),'cache':str(config.cache_path),'profile':symbols.profile(),
+            'symbols':{'directory':str(symbol_root),'cache':str(config.cache_path),'profile':symbol_profile,'installed':installed,
                 'matching':'Windows uses the exact PDB GUID/age when collection requests symbols. Linux/macOS need matching banners. Installed files do not establish image readiness.'},
             'provider':provider,
             'operation':dict(self.operation),'readiness':readiness}

@@ -8,7 +8,7 @@ const settings = {
   config:{evidence_root:'/synthetic/default',output_root:'/synthetic/outputs',vol_python:'/synthetic/python'},
   state_dir:'/synthetic/state',has_cases:true,native_folder_picker:false,managed_runtime_available:false,
   evidence_locations:[{path:'/synthetic/default',default:true,image_count:1,case_count:1}],
-  symbols:{directory:'/synthetic/symbols',cache:'/synthetic/cache',matching:'Synthetic symbols only',profile:{packs:[{id:'synthetic',label:'Synthetic pack',version:'1',size:8388608,limitations:'Fixture only',url:'https://example.test/pack',sha256:'a'.repeat(64)}],macos_status:'Synthetic fixture'}},
+  symbols:{installed:{synthetic:false},directory:'/synthetic/symbols',cache:'/synthetic/cache',matching:'Synthetic symbols only',profile:{packs:[{id:'synthetic',label:'Synthetic pack',version:'1',size:8388608,limitations:'Fixture only',url:'https://example.test/pack',sha256:'a'.repeat(64)}],macos_status:'Synthetic fixture'}},
   provider:{default_provider:{provider:'codex',model:'gpt-6-astra',reasoning_effort:'high'},cases:[
     {case_id:'case-a',title:'Synthetic Codex case',provider:{provider:'codex',model:'gpt-6-astra',reasoning_effort:'high'}},
     {case_id:'case-b',title:'Synthetic compatible case',provider:{provider:'compatible',endpoint:'https://synthetic.example/v1',model:'synthetic',reasoning_effort:null}}]},operation:{status:'idle'},
@@ -58,6 +58,19 @@ const settings = {
     assert.equal(await page.locator('#evidence-root').inputValue(),'/synthetic/default');
     assert.match(await page.locator('#symbol-packs').innerText(),/Synthetic pack · 1 · 8\.39 MB/);
     assert.doesNotMatch(await page.locator('#symbol-packs').innerText(),/MiB/);
+    const packButton=page.locator('#symbol-packs button');
+    assert.equal(await packButton.textContent(),'Download this pack');
+    assert.equal(await packButton.isEnabled(),true);
+    settings.operation.status='running';await page.evaluate(()=>refresh());
+    assert.equal(await packButton.isDisabled(),true);assert.equal(await page.locator('#all-symbols').isDisabled(),true);
+    settings.symbols.installed.synthetic=true;settings.operation.status='succeeded';await page.evaluate(()=>refresh());
+    assert.equal(await packButton.textContent(),'Installed');assert.equal(await packButton.isDisabled(),true);
+    assert.equal(await page.locator('#all-symbols').textContent(),'Installed');assert.equal(await page.locator('#all-symbols').isDisabled(),true);
+    settings.symbols.installed.synthetic=false;await page.evaluate(()=>refresh());
+    assert.equal(await packButton.textContent(),'Download this pack');assert.equal(await packButton.isEnabled(),true);
+    assert.equal(await page.locator('#all-symbols').textContent(),'Download all supported packs');
+    settings.symbols.installed.synthetic=true;
+
     assert.equal(await page.locator('#model').inputValue(),'gpt-6-astra');
     assert.equal(await page.locator('#reasoning-effort').inputValue(),'high');
     assert.equal(calls.filter(item=>item.endsWith('/models')).length,0,'Opening Settings never contacts a model catalog');
@@ -90,6 +103,8 @@ const settings = {
     assert.equal(saved[2].codex_executable,undefined);
     await page.reload();
     await page.waitForFunction(()=>document.querySelectorAll('#evidence-locations li').length===2);
+    assert.equal(await page.locator('#symbol-packs button').textContent(),'Installed');
+    assert.equal(await page.locator('#symbol-packs button').isDisabled(),true);
     assert.deepEqual(errors,[]);
     assert.ok(calls.length>=3);
     if(process.env.WORKBENCH_BROWSER_SCREENSHOT)await page.screenshot({path:process.env.WORKBENCH_BROWSER_SCREENSHOT,fullPage:true});
