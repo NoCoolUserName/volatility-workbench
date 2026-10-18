@@ -41,6 +41,10 @@ const state={cases:[{id:'synthetic-case',title:'Synthetic case',created_at:'2026
     await page.waitForFunction(()=>document.querySelectorAll('.report-version').length===3);
     assert.equal(await page.locator('.report-remove').count(),3);
     const sealed=page.locator('.report-version').first();
+    await page.waitForFunction(()=>document.querySelector('#reportView').textContent.includes('Synthetic sealed'));
+    assert.equal(await sealed.getAttribute('class'),'report-version removable selected');
+    assert.equal(await sealed.locator('button').first().getAttribute('aria-current'),'true');
+    assert.equal(await sealed.locator('button').first().evaluate(e=>getComputedStyle(e).borderTopColor===getComputedStyle(e).color),true);
     await sealed.hover();await sealed.locator('.report-remove').click();
     assert.equal(await page.locator('#reportRemovalTitle').innerText(),'Remove sealed report?');
     await page.keyboard.press('Escape');
@@ -59,12 +63,18 @@ const state={cases:[{id:'synthetic-case',title:'Synthetic case',created_at:'2026
     assert.equal(actions.length,0,'Dismissing options must not remove anything');
     await draft.locator('button').first().click();
     await page.waitForFunction(()=>document.querySelector('#reportView').textContent.includes('Synthetic draft-two'));
+    assert.equal(await draft.locator('button').first().getAttribute('aria-current'),'true');
+    assert.equal(await sealed.locator('button').first().getAttribute('aria-current'),null);
+    await page.waitForTimeout(1650); // Background state refresh keeps the selected revision.
+    assert.equal(await draft.locator('button').first().getAttribute('aria-current'),'true');
     await remove.focus();
     assert.equal(await remove.evaluate(e=>getComputedStyle(e).opacity),'1','Keyboard focus reveals removal control');
     await page.keyboard.press('Enter');
     if(process.env.WORKBENCH_BROWSER_SCREENSHOT)await page.screenshot({path:process.env.WORKBENCH_BROWSER_SCREENSHOT,fullPage:true});
     await dialog.getByRole('button',{name:'Hide from UI',exact:true}).click();
     await page.waitForFunction(()=>document.querySelectorAll('.report-version').length===2 && document.querySelector('#reportView').textContent.includes('Synthetic sealed'));
+    assert.equal(await page.locator('.report-version.selected').count(),1);
+    assert.equal(await page.locator('.report-version.selected').locator('button').first().getAttribute('aria-current'),'true');
     assert.equal(reports[1].hidden,true);assert.equal(reports[1].deleted_at,undefined);
     await page.reload();
     await page.waitForFunction(()=>document.querySelectorAll('.report-version').length===2);
@@ -96,6 +106,6 @@ const state={cases:[{id:'synthetic-case',title:'Synthetic case',created_at:'2026
     assert.ok(reports.find(r=>r.id==='sealed').deleted_at);
     assert.deepEqual(actions.map(a=>a.action),['hide','delete','delete','hide','delete']);
     assert.deepEqual(errors,[]);assert.ok(!calls.some(p=>/jobs|stop|plugins/.test(p)));
-    console.log('Report removal browser: incomplete/sealed controls, hover/keyboard, dismiss, hide/reload/fallback, delete/error/retry; zero analysis requests.');
+    console.log('Report removal browser: selected revision on load/click/refresh/fallback, incomplete/sealed controls, hide/delete/retry; zero analysis requests.');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

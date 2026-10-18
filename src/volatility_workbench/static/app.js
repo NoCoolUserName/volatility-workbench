@@ -404,6 +404,15 @@ function removeReportDialog(c, report) {
   dialog.showModal();
   hide.focus();
 }
+function markSelectedReport(versionId) {
+  for (const card of $("versions").querySelectorAll(".report-version")) {
+    const active = card.dataset.reportId === versionId;
+    card.classList.toggle("selected", active);
+    const button = card.querySelector("button");
+    if (active) button.setAttribute("aria-current", "true");
+    else button.removeAttribute("aria-current");
+  }
+}
 function render() {
   if (!state) return;
   const connectedProvider = state.account.provider || (state.account.type ? "codex" : state.default_provider);
@@ -503,10 +512,12 @@ function render() {
     for (const r of [...visibleReports].reverse()) {
       const removable = ["incomplete", "sealed"].includes(r.status);
       const card = el("div", undefined, "report-version" + (removable ? " removable" : ""));
+      card.dataset.reportId = r.id;
       const b = el("button", readableTime(r.created_at) + " · " + r.status);
       b.onclick = () => {
         selectedVersion = r.id;
         shownReport = "";
+        markSelectedReport(r.id);
         showReport(r);
       };
       card.append(b);
@@ -522,6 +533,7 @@ function render() {
     }
     const v =
       visibleReports.find((r) => r.id === selectedVersion) || visibleReports.at(-1);
+    markSelectedReport(v?.id || null);
     showReport(v);
     const mkey = JSON.stringify(c.messages);
     if (shownMessages !== mkey) {
