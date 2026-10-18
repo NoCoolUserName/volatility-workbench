@@ -23,7 +23,8 @@ compatible-provider turn. Default-only saves do not switch existing cases.
 ## Locations and maintenance
 
 The configured evidence folder is the default for relative paths and folder
-browsing; it is not the only physical location an explicitly selected image may
+browsing by default; Browse folder can switch among registered image folders.
+It is not the only physical location an explicitly selected image may
 use. Add evidence in Workbench by absolute path or the native picker, including
 images on other mounted disks. **Registered image folders** in Settings lists
 each unique image parent folder, unique image count and case count, alongside the

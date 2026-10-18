@@ -323,7 +323,7 @@ function render() {
     : (connectedProvider === "compatible"
       ? "Local UI connected · Check API connection in Settings"
       : "Local UI connected · Codex checked on readiness");
-  $("root").textContent = "Evidence root: " + state.evidence_root;
+  $("root").textContent = "Default evidence folder: " + state.evidence_root;
   $("pick").disabled = !state.native_picker;
   const cases = $("cases");
   cases.replaceChildren();
@@ -685,18 +685,28 @@ async function loadCoverage() {
 }
 $("loadCoverage").onclick = act(loadCoverage);
 
-async function browse(path = "") {
-  const data = await api("browse?path=" + encodeURIComponent(path));
-  const nodes = [];
+async function browse(path = "", location = "") {
+  const data = await api("browse?path=" + encodeURIComponent(path) + "&location=" + encodeURIComponent(location));
+  const label = el("label", "Evidence folder");
+  const folders = el("select");
+  folders.setAttribute("aria-label", "Browse evidence location");
+  for (const item of data.locations || [{path:data.root,default:true}]) {
+    const option = el("option", (item.default ? "Default — " : "Registered — ") + item.path);
+    option.value = item.path; folders.append(option);
+  }
+  folders.value = data.root;
+  folders.onchange = act(() => browse("", folders.value));
+  label.append(folders);
+  const nodes = [label];
   if (path) {
     const b = el("button", "↑ Parent folder");
-    b.onclick = act(() => browse(path.split("/").slice(0, -1).join("/")));
+    b.onclick = act(() => browse(path.split("/").slice(0, -1).join("/"), data.root));
     nodes.push(b);
   }
   for (const f of data.entries) {
     const b = el("button", (f.directory ? "▸ " : "+ ") + f.name);
     b.onclick = act(async () => {
-      if (f.directory) return browse(f.relative);
+      if (f.directory) return browse(f.relative, data.root);
       const paths = $("paths").value.split("\n").filter(Boolean);
       if (!paths.includes(f.path)) paths.push(f.path);
       $("paths").value = paths.join("\n");
@@ -727,6 +737,7 @@ $("add").onclick = act(async () => {
 $("browse").onclick = act(() => browse());
 $("pick").onclick = act(async () => {
   const r = await api("pick", {});
+  if (r.cancelled) return;
   $("paths").value = r.paths.join("\n");
 });
 $("readiness").onclick = act(() => job("readiness"));

@@ -348,6 +348,10 @@ footer {
   max-height: 240px;
   overflow: auto;
 }
+#files select {
+  width: 100%;
+  max-width: 100%;
+}
 #files button {
   display: block;
   text-align: left;

@@ -181,23 +181,31 @@ class Workbench:
         if not self.account['connected']:
             raise CodexError('Codex is not signed in. Run codex login in Terminal, then retry. The UI never switches billing modes.')
 
-    def browse(self, relative=''):
-        path = self.config.evidence_root / relative
+    def browse(self, relative='', location=None):
+        locations = self.evidence_locations()
+        root = Path(location or self.config.evidence_root)
+        if str(root) not in {item['path'] for item in locations}:
+            raise ValueError('Choose the default evidence folder or a registered image folder')
+        path = root / relative
         if Path(relative).is_absolute() or '..' in Path(relative).parts or '\\' in relative:
-            raise ValueError('Browse paths must remain inside the configured evidence folder')
+            raise ValueError('Browse paths must remain inside the selected registered evidence folder')
         check_components(path)
-        if not resolved_path(path).is_relative_to(self.config.evidence_root) or path.is_relative_to(self.root):
+        if (not resolved_path(path).is_relative_to(root) or path.is_relative_to(self.root)
+                or path.is_relative_to(self.config.output_root) or '_outputs' in path.parts
+                or '__MACOSX' in path.parts or self.project and path.is_relative_to(self.project)):
             raise ValueError('Evidence browsing excludes UI outputs')
         entries = []
         for p in sorted(path.iterdir(),key=lambda p:(not p.is_dir(),p.name.lower())):
-            if p.is_symlink() or p.is_relative_to(self.config.output_root) or p.is_relative_to(self.root) or p.name.startswith('.'):
+            if (p.is_symlink() or p.is_relative_to(self.config.output_root) or p.is_relative_to(self.root)
+                    or p.name.startswith('.') or p.name in ('_outputs', '__MACOSX')
+                    or self.project and p.is_relative_to(self.project)):
                 continue
             if p.is_dir() or p.suffix.lower() in SUPPORTED_EXTENSIONS:
-                entries.append({'name':p.name,'relative':str(p.relative_to(self.config.evidence_root)),
+                entries.append({'name':p.name,'relative':str(p.relative_to(root)),
                     'path':str(p),'directory':p.is_dir(),'size_bytes':p.stat().st_size if p.is_file() else None})
             if len(entries)>=500:
                 break
-        return {'root':str(self.config.evidence_root),'relative':relative,'entries':entries,'limit':500}
+        return {'root':str(root),'relative':relative,'entries':entries,'limit':500,'locations':locations}
 
     def selected_image(self, value):
         """An explicit UI selection may establish a new location, never a scan."""
@@ -763,14 +771,17 @@ REPORT_SPEC follows:\n'''+spec
 
     async def native_pick(self):
         if platform.system()!='Darwin':raise ValueError('Native selection is supported on macOS; use path entry or folder browsing here.')
-        script='set chosen to choose file with prompt "Select source memory images (files remain in their current folders)" with multiple selections allowed\nset paths to {}\nrepeat with f in chosen\nset end of paths to POSIX path of f\nend repeat\nset AppleScript\'s text item delimiters to linefeed\nreturn paths as text'
+        script='try\nset chosen to choose file with prompt "Select source memory images (files remain in their current folders)" with multiple selections allowed\nset paths to {}\nrepeat with f in chosen\nset end of paths to POSIX path of f\nend repeat\nset AppleScript\'s text item delimiters to linefeed\nreturn paths as text\non error number -128\nreturn \"\"\nend try'
         proc=await asyncio.create_subprocess_exec('osascript','-e',script,stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE)
-        try:out,err=await asyncio.wait_for(proc.communicate(),180)
+        try:out,_=await asyncio.wait_for(proc.communicate(),180)
         except BaseException:
             proc.kill();await proc.wait();raise
         if proc.returncode:
-            raise ValueError('Selection cancelled or unavailable: '+err.decode(errors='replace')[:300])
-        return {'paths':[str(self.backend.resolve_input(p)) for p in out.decode().splitlines()]}
+            raise ValueError('Could not open the file chooser. Enter image paths directly or use Browse folder.')
+        paths = [path for path in out.decode().splitlines() if path.strip()]
+        if not paths:
+            return {'paths': [], 'cancelled': True}
+        return {'paths':[str(self.selected_image(p)) for p in paths], 'cancelled': False}
 
     def snapshot(self):
         view=copy.deepcopy(self.state)
