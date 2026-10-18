@@ -284,6 +284,16 @@ pre {
     12px/1.65 ui-monospace,
     monospace;
 }
+#reportReturn {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 10px 0;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+#reportReturn .subtle { display: inline-block; margin: 6px 10px; }
 #artifacts {
   max-height: 280px;
   overflow: auto;
