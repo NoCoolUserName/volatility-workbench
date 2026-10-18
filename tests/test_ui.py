@@ -329,6 +329,18 @@ class UITests(unittest.IsolatedAsyncioTestCase):
                 status,_,_=await asyncio.to_thread(request,
                     '/api/report-plugins?case='+self.case['id']+'&report='+invalid,None,{'Cookie':cookie})
                 self.assertEqual(status,400)
+            acknowledgment={'case_id':self.case['id'],'report_id':report_id,'error_id':'a'*64,'acknowledged':True}
+            status,_,_=await asyncio.to_thread(request,'/api/reports/error-acknowledgment',acknowledgment)
+            self.assertEqual(status,403)
+            status,_,_=await asyncio.to_thread(request,'/api/reports/error-acknowledgment',acknowledgment,{'Cookie':cookie,'Origin':'https://evil.example'})
+            self.assertEqual(status,403)
+            status,_,_=await asyncio.to_thread(request,'/api/reports/error-acknowledgment',acknowledgment,{'Cookie':cookie,'Origin':server.origin})
+            self.assertEqual(status,400, 'Unknown error cannot be acknowledged')
+            with patch.object(self.app,'report_plugins',return_value={'errored_entries':[{'error_id':'a'*64}]}):
+                status,body,_=await asyncio.to_thread(request,'/api/reports/error-acknowledgment',acknowledgment,{'Cookie':cookie,'Origin':server.origin})
+            self.assertEqual(status,200);self.assertTrue(json.loads(body)['acknowledged'])
+            self.assertIn('a'*64,self.case['plugin_error_acknowledgments'])
+
             self.assertEqual(manifest_path.read_bytes(),original)
             self.assertEqual(list(report_root.iterdir()),[manifest_path])
             self.app.state['jobs'].append({'id':'saved-console','case_id':self.case['id'],'kind':'report','status':'completed'})

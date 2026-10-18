@@ -2,7 +2,7 @@
 
 Licensing scope is under review: see [LICENSING.md](LICENSING.md). The existing MIT notice does not establish MIT-only licensing for the Volatility integration.
 
-*13,481 lines of code*
+*13,692 lines of code*
 
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
