@@ -62,11 +62,17 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.equal(await page.locator('.settings-link svg').evaluate(e=>getComputedStyle(e).color),'rgb(192, 192, 192)','Settings gear must be silver');
     assert.ok(stop.y>=connection.y+connection.height,'Stop must sit below the connection status');
     assert.equal(await page.locator('#stop').isDisabled(),true,'Idle Stop must be disabled');
+    assert.equal(await page.locator('#queueSection').isHidden(),true,'Idle queue must not show completed history');
     await control.click();
     await page.waitForFunction(()=>document.querySelector('#readiness').textContent==='Queued…');
     assert.equal(await control.isDisabled(),true);
     assert.equal(await page.locator('#readyDetails').textContent(),'','Prior timestamp must not imply the new check is complete');
     assert.equal(await page.locator('#stop').isEnabled(),true,'Queued work can be stopped');
+    await page.waitForFunction(()=>document.querySelector('#queue').textContent.includes('queued'));
+    assert.equal(await page.locator('#queue li').count(),1);
+    await page.locator('#queue li').evaluate(item=>item.dataset.stable='yes');
+    await page.waitForResponse(response=>response.url().endsWith('/api/state'));
+    assert.equal(await page.locator('#queue li').getAttribute('data-stable'),'yes','Unchanged queue must not be rebuilt on refresh');
     assert.equal(requests.length,1);
     const job=state.jobs[0];
     job.status='running';job.started_at=new Date().toISOString();
@@ -75,6 +81,7 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
       await page.waitForFunction(text=>document.querySelector('#readinessProgress').textContent.startsWith(text),progress);
       assert.equal(await control.innerText(),'Checking…');
     }
+    assert.match(await page.locator('#queue').innerText(),/OS\/symbol discovery: example\.vmem/);
     const check=await control.boundingBox(),progress=await page.locator('#readinessProgress').boundingBox();
     assert.ok(progress.x>=check.x+check.width,'Live progress must sit to right of control');
     assert.equal(await page.locator('#operation').textContent(),'');
@@ -89,6 +96,8 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     await page.waitForFunction(()=>document.querySelector('#readiness').textContent==='Ready');
     assert.equal(await control.isEnabled(),true);
     assert.equal(await page.locator('#stop').isDisabled(),true,'Completed work must disable Stop');
+    await page.waitForFunction(()=>document.querySelector('#queueSection').hidden);
+    assert.equal(await page.locator('#queue li').count(),0,'Completed jobs remain in Activity, not Current work');
     assert.doesNotMatch(await page.locator('#reasons').innerText(),/Ready means ready to attempt analysis/);
     assert.match(await page.locator('#readyDetails').innerText(),/Last checked .* image access and SHA-256 verified then/);
     const readyBox=await control.boundingBox(),checkedBox=await page.locator('#readyDetails').boundingBox();

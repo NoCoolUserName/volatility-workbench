@@ -349,6 +349,12 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         (folder/'large.txt').write_text('x'*100000)
         result=self.app.read_file(self.case,'analysis/large.txt')
         self.assertTrue(result['truncated']);self.assertEqual(result['next_offset'],32768)
+        unicode_text='a'*32767+'—'+'saved report tail'
+        (folder/'unicode.txt').write_text(unicode_text)
+        first=self.app.read_file(self.case,'analysis/unicode.txt')
+        second=self.app.read_file(self.case,'analysis/unicode.txt',first['next_offset'])
+        self.assertEqual(first['next_offset'],32770)
+        self.assertEqual(first['text']+second['text'],unicode_text)
         (folder/'escape.txt').symlink_to(self.config)
         with self.assertRaises(ValueError):self.app.read_file(self.case,'analysis/escape.txt')
     async def test_effective_policy_override_blocks(self):

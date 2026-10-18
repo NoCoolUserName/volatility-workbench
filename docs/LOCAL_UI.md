@@ -111,6 +111,11 @@ saved evidence, and reports are unaffected.
    readable text views, JSON/JSONL, activity, failures, current operation and elapsed
    time are accessible in the other tabs. Large files are read in bounded chunks;
    complete originals remain on disk. Recovered HTML is never executed.
+   The report viewer loads the complete saved report in bounded chunks. Pipe-formatted
+   Markdown tables in Scope and evidence and Technical findings
+   display as grouped **Label:** value lines. Dense run/call lists display as
+   actual tables without visible pipe syntax. This presentation does not
+   rewrite a sealed report or its checksums.
    The report's actual assessment wording moves from its metadata preamble directly
    beneath its title in the viewer; it is not a fixed readiness/verdict label.
    Report preparation metadata shows the recorded model, reasoning effort and
@@ -145,6 +150,8 @@ saved evidence, and reports are unaffected.
    existing state and cannot start a scan. **Stop all work** interrupts the active
    turn/readiness operation and cancels all queued follow-on work. It sits below
    the connection status and is disabled when no work is queued or running.
+   The **Current work** panel appears only while jobs are queued, running, or
+   stopping; completed and failed job history remains in the case's Activity tab.
    Completed artifacts remain, and interrupted jobs/drafts are marked incomplete. An app
    restart marks unfinished jobs incomplete; it never automatically restarts them.
    Explicitly queue a new question/report operation to continue a saved completed
@@ -345,7 +352,7 @@ visible. Missing or partial historical metadata is labelled; an absent inventory
 is not evidence that no plugin ran. Refreshing this view reads saved metadata
 only and never analyzes or hashes a source image.
 
-New bundles retain a machine-readable plugin inventory and a generated table
+New bundles retain a machine-readable plugin inventory and generated labeled entries
 inside the existing investigative-workflow section of their portable Markdown.
 The generated section is synchronized before sealing and included in checksums.
 Existing sealed reports remain byte-identical; their UI inventory is derived

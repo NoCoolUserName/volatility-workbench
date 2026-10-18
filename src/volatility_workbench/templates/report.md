@@ -16,22 +16,33 @@ initial access or an intrusion story.}}
 
 ## Scope and evidence
 
-| Item | Value and uncertainty |
-| --- | --- |
-| Source evidence ID | {{EVIDENCE_ID}} |
-| SHA-256; size | {{SHA256}}; {{SIZE_BYTES}} bytes |
-| Provenance; source/archive identity | {{SOURCE_OR_UNKNOWN}} |
-| Acquisition method/time | {{KNOWN_VALUE_WITH_TIMEZONE_OR_UNKNOWN}} |
-| Guest OS/build/architecture; symbols | {{ACTUAL_DISCOVERY_REFERENCE}} |
-| Analysis host and tool versions | {{ACTUAL_VERSIONS_NOT_ASSUMPTIONS}} |
-| Before/after integrity | {{HASH_VERIFICATION_AND_REFERENCE}} |
-| Scope/handling | {{TRAINING_OR_OPERATIONAL_STATUS_AND_LIMITS}} |
+**Source evidence ID:** {{EVIDENCE_ID}}
+
+**SHA-256; size:** {{SHA256}}; {{SIZE_BYTES}} bytes
+
+**Provenance; source/archive identity:** {{SOURCE_OR_UNKNOWN}}
+
+**Acquisition method/time:** {{KNOWN_VALUE_WITH_TIMEZONE_OR_UNKNOWN}}
+
+**Guest OS/build/architecture; symbols:** {{ACTUAL_DISCOVERY_REFERENCE}}
+
+**Analysis host and tool versions:** {{ACTUAL_VERSIONS_NOT_ASSUMPTIONS}}
+
+**Before/after integrity:** {{HASH_VERIFICATION_AND_REFERENCE}}
+
+**Scope/handling:** {{TRAINING_OR_OPERATIONAL_STATUS_AND_LIMITS}}
 
 ## Reconstructed event timeline
 
-| Original time; timezone/uncertainty | Artifact meaning/event | Evidence/finding | Confidence |
-| --- | --- | --- | --- |
-| {{TIME_OR_UNKNOWN}} | {{EVENT_WITH_LIMITS}} | {{ARTIFACT_LOCATOR}} | {{QUALITATIVE_CONFIDENCE}} |
+Repeat these labeled fields for each event:
+
+**Original time; timezone/uncertainty:** {{TIME_OR_UNKNOWN}}
+
+**Artifact meaning/event:** {{EVENT_WITH_LIMITS}}
+
+**Evidence/finding:** {{ARTIFACT_LOCATOR}}
+
+**Confidence:** {{QUALITATIVE_CONFIDENCE}}
 
 {{EXPLAIN_WHAT_CANNOT_BE_ORDERED_AND_KEEP_ANALYST_CALL_TIMES_SEPARATE}}
 
@@ -56,9 +67,15 @@ initial access or an intrusion story.}}
 execution metadata. Keep it distinct from the installed catalog and do not invent
 commands or describe reused results as new scans. -->
 
-| Call; prerequisites | Question and tool/arguments | Evidence; status/result | Next-step rationale; hypothesis disposition |
-| --- | --- | --- | --- |
-| {{CALL_ID}}; {{PREREQUISITES_OR_NONE}} | {{QUESTION_AND_ACTUAL_CALL}} | {{ARTIFACT_AND_RESULT}} | {{RATIONALE_AND_DISPOSITION}} |
+Repeat these labeled fields for each recorded call:
+
+**Call; prerequisites:** {{CALL_ID}}; {{PREREQUISITES_OR_NONE}}
+
+**Question and tool/arguments:** {{QUESTION_AND_ACTUAL_CALL}}
+
+**Evidence; status/result:** {{ARTIFACT_AND_RESULT}}
+
+**Next-step rationale; hypothesis disposition:** {{RATIONALE_AND_DISPOSITION}}
 
 {{INCLUDE_MEANINGFUL_FAILURES_NEGATIVE_CONTRARY_AND_INCONCLUSIVE_EVIDENCE}}
 
@@ -82,8 +99,14 @@ commands or describe reused results as new scans. -->
 
 ## IOC appendix
 
-| Type; exact value | Evidence locator | Confidence; relevance | Observed/configured/carved; context |
-| --- | --- | --- | --- |
-| {{TYPE_AND_VALUE_OR_NO_JUSTIFIED_INDICATORS}} | {{ARTIFACT_ID_AND_LOCATOR}} | {{CONFIDENCE_AND_RELEVANCE}} | {{STATUS_AND_LIMITS}} |
+Repeat these labeled fields for each justified indicator, or state that none is justified:
+
+**Type; exact value:** {{TYPE_AND_VALUE_OR_NO_JUSTIFIED_INDICATORS}}
+
+**Evidence locator:** {{ARTIFACT_ID_AND_LOCATOR}}
+
+**Confidence; relevance:** {{CONFIDENCE_AND_RELEVANCE}}
+
+**Observed/configured/carved; context:** {{STATUS_AND_LIMITS}}
 
 Exact machine-readable values: [iocs.csv](iocs.csv). {{DISTINGUISH_CONTEXTUAL_VALUES_FROM_SUSPICIOUS_INDICATORS}}

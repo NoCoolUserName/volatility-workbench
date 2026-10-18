@@ -37,6 +37,7 @@ let state,
   shownActivity = "",
   shownMessages = "",
   shownImages = "",
+  shownQueue = "",
   approvalKey = "",
   artifact = null;
 const el = (tag, text, cls) => {
@@ -116,14 +117,21 @@ function setTab(name) {
   if (name === "coverage") loadCoverage().catch(error);
 }
 function inline(node, text, base) {
-  const re = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const re = /\*\*([^*\n]+)\*\*|\[([^\]]+)\]\(([^)]+)\)/g;
   let start = 0,
     m;
   while ((m = re.exec(text))) {
     node.append(document.createTextNode(text.slice(start, m.index)));
-    const value = m[2];
+    if (m[1]) {
+      const strong = el("strong");
+      inline(strong, m[1], base);
+      node.append(strong);
+      start = re.lastIndex;
+      continue;
+    }
+    const value = m[3];
     if (value.startsWith("#")) {
-      const a = el("a", m[1]);
+      const a = el("a", m[2]);
       a.href = value;
       node.append(a);
     } else if (
@@ -132,7 +140,7 @@ function inline(node, text, base) {
       !value.includes("\\") &&
       !value.split("/").includes("..")
     ) {
-      const a = el("a", m[1]);
+      const a = el("a", m[2]);
       a.href = "#evidence";
       a.onclick = act(async () => {
         const citation = new URLSearchParams(value.split("#")[1] || "").get("citation");
@@ -151,11 +159,32 @@ function inline(node, text, base) {
       });
       node.append(a);
     } else {
-      node.append(document.createTextNode(m[1] + " [" + value + "]"));
+      node.append(document.createTextNode(m[2] + " [" + value + "]"));
     }
     start = re.lastIndex;
   }
   node.append(document.createTextNode(text.slice(start)));
+}
+function pipeCells(line) {
+  const source = line.trim();
+  if (!source.startsWith("|") || !source.endsWith("|")) return null;
+  const cells = [];
+  let cell = "", inCode = false;
+  for (let i = 1; i < source.length - 1; i++) {
+    const char = source[i];
+    if (char === "\\" && source[i + 1] === "|") { cell += "|"; i++; }
+    else if (char === "`") { inCode = !inCode; cell += char; }
+    else if (char === "|" && !inCode) { cells.push(cell.trim()); cell = ""; }
+    else cell += char;
+  }
+  cells.push(cell.trim());
+  return cells.length >= 2 ? cells : null;
+}
+function reportField(group, label, value, base) {
+  const row = el("p", undefined, "report-field");
+  row.append(el("strong", label.replace(/:$/, "") + ":"), document.createTextNode(" "));
+  inline(row, value, base);
+  group.append(row);
 }
 function enlargeCoin(img) {
   let dialog = $("coinZoom");
@@ -233,7 +262,9 @@ function renderMarkdown(text, base) {
   let code = null,
     count = 0;
   const shownCoins = new Set();
-  for (const line of text.split("\n")) {
+  const lines = text.split("\n");
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
     const coin = /^!\[(Decorative coin for [^\]]+)\]\((assets\/coins\/[a-f0-9]{64}\.(?:png|svg))\)$/.exec(line);
     if (!code && coin) {
       if (shownCoins.has(coin[2])) continue;
@@ -250,6 +281,44 @@ function renderMarkdown(text, base) {
     }
     if (code) {
       code.textContent += line + "\n";
+      continue;
+    }
+    const headings = pipeCells(line), divider = pipeCells(lines[index + 1] || "");
+    if (headings && divider && headings.length === divider.length &&
+        divider.every(cell => /^:?-{3,}:?$/.test(cell))) {
+      const itemValues = headings.length === 2;
+      const runTable = headings.length === 3 && /^Run\s*\/\s*call$/i.test(headings[0]) &&
+        /^Saved result$/i.test(headings[2]);
+      const table = runTable ? el("table", undefined, "report-run-table") : null;
+      if (table) {
+        const thead = el("thead"), headerRow = el("tr");
+        headings.forEach(heading => { const cell = el("th", heading); cell.scope = "col"; headerRow.append(cell); });
+        thead.append(headerRow);
+        table.append(thead, el("tbody"));
+      }
+      index++;
+      while (index + 1 < lines.length) {
+        const values = pipeCells(lines[index + 1]);
+        if (!values || values.length !== headings.length) break;
+        index++;
+        if (table) {
+          const row = el("tr");
+          values.forEach(value => { const cell = el("td"); inline(cell, value, base); row.append(cell); });
+          table.tBodies[0].append(row);
+          continue;
+        }
+        const group = el("div", undefined, "report-field-group" + (itemValues ? " report-field-list" : ""));
+        if (itemValues) reportField(group, values[0], values[1], base);
+        else headings.forEach((heading, column) => reportField(group, heading, values[column], base));
+        article.append(group);
+      }
+      if (table) {
+        const scroll = el("div", undefined, "report-run-scroll");
+        scroll.tabIndex = 0;
+        scroll.setAttribute("aria-label", "Recorded plugin runs");
+        scroll.append(table);
+        article.append(scroll);
+      }
       continue;
     }
     const h = /^(#{1,6})\s+(.*)/.exec(line);
@@ -425,13 +494,25 @@ async function showReport(version) {
   const key = selected + "/" + version.id + "/" + version.status;
   if (shownReport === key) return;
   shownReport = key;
+  $("reportView").replaceChildren(el("p", "Loading full saved report…"));
+  $("toc").replaceChildren();
   try {
     const path = "reports/" + version.id + "/report.md";
-    const data = await api(
-      "file?case=" + selected + "&path=" + encodeURIComponent(path),
-    );
+    const request = "file?case=" + encodeURIComponent(selected) + "&path=" + encodeURIComponent(path);
+    const chunks = [];
+    let offset = 0;
+    for (;;) {
+      const data = await api(request + "&offset=" + offset);
+      if (shownReport !== key) return;
+      chunks.push(data.text);
+      if (!data.truncated) break;
+      if (!Number.isSafeInteger(data.next_offset) || data.next_offset <= offset)
+        throw Error("Saved report pagination did not advance");
+      offset = data.next_offset;
+      $("reportView").firstChild.textContent = "Loading full saved report… " + offset.toLocaleString() + " bytes";
+    }
     if (shownReport !== key) return;
-    renderMarkdown(reportPresentation(data.text, version.generation), "reports/" + version.id);
+    renderMarkdown(reportPresentation(chunks.join(""), version.generation), "reports/" + version.id);
     const citationCase = selected;
     const checks = el("button", "Inspect evidence citations");
     const panel = el("div");
@@ -461,14 +542,6 @@ async function showReport(version) {
       await page();
     });
     $("reportView").append(checks, panel);
-    if (data.truncated) {
-      const b = el(
-        "button",
-        "Report preview truncated — read remaining chunks",
-      );
-      b.onclick = act(() => viewArtifact(path));
-      $("reportView").append(b);
-    }
   } catch (e) {
     if (shownReport !== key) return;
     renderMarkdown("Report is not available yet: " + e.message, "reports/" + version.id);
@@ -696,24 +769,23 @@ function render() {
     }
     renderApprovals(c);
   }
-  $("queue").replaceChildren(
-    ...state.jobs
-      .slice(-30)
-      .reverse()
-      .map((j) => {
-        const title =
-          state.cases.find((c) => c.id === j.case_id)?.title || j.case_id;
-        return el(
-          "p",
-          title +
-            " · " +
-            j.kind +
-            " · " +
-            j.status +
-            (j.error ? " — " + j.error : ""),
-        );
-      }),
-  );
+  const pending = state.jobs.filter(j => ["queued", "running", "stopping"].includes(j.status));
+  $("queueSection").hidden = pending.length === 0;
+  const queueItems = pending.map(j => ({
+    id: j.id,
+    title: state.cases.find(c => c.id === j.case_id)?.title || j.case_id,
+    kind: j.kind, status: j.status, progress: j.progress || "",
+  }));
+  const queueKey = JSON.stringify(queueItems);
+  if (shownQueue !== queueKey) {
+    $("queue").replaceChildren(...queueItems.map(j => {
+      const item = el("li");
+      item.append(el("strong", j.title + " · " + j.kind),
+        el("span", j.status + (j.progress && j.status !== "queued" ? " · " + j.progress : "")));
+      return item;
+    }));
+    shownQueue = queueKey;
+  }
 }
 function renderApprovals(c) {
   const list = state.approvals.filter((a) => a.case_id === c.id),
