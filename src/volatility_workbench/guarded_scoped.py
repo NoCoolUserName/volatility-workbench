@@ -5,11 +5,16 @@ The core remains responsible for validation, cancellation and output confinement
 """
 import asyncio
 import json
+import os
 from pathlib import Path
 import re
 import sys
 import time
 import uuid
+import urllib.request
+import urllib.error
+from urllib.parse import urlsplit
+from typing import Literal
 
 from mcp_types import CallToolResult, TextContent, InputRequiredResult, ElicitRequest, ElicitRequestFormParams, ElicitResult
 from mcp.shared.exceptions import NoBackChannelError
@@ -97,12 +102,93 @@ class ExtractionGuard:
         return await call_next(ctx)
 
 
+def install_volshell_bridge(server, raw):
+    """Add Workbench's scoped interactive transport, leaving core tools intact."""
+    if not raw:
+        return
+    config = json.loads(raw)
+    url = urlsplit(config['url'])
+    if (url.scheme != 'http' or url.hostname != '127.0.0.1' or not url.port
+            or url.path != '/api/internal/volshell' or url.query or url.fragment
+            or url.username or url.password or not re.fullmatch(r'[a-f0-9]{64}', config['token'])
+            or not isinstance(config['case_id'], str) or not 0 < len(config['case_id']) <= 256):
+        raise ValueError('Invalid private VolShell bridge configuration')
+    origin = 'http://' + url.netloc
+
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+
+    def request(arguments, ident, cancel=False):
+        body = json.dumps({'case_id':config['case_id'], 'request_id':ident, 'arguments':arguments}).encode()
+        req = urllib.request.Request(config['url'] + ('/cancel' if cancel else ''), data=body, headers={
+            'Content-Type':'application/json', 'Origin':origin,
+            'Authorization':'Bearer ' + config['token']})
+        # Never send this per-launch capability through a configured proxy.
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+        try:
+            with opener.open(req, timeout=5 if cancel else 195) as response:
+                data = response.read(256001)
+                if len(data) > 256000:
+                    return False, 'VolShell response exceeded the transport limit'
+                return True, json.loads(data)
+        except urllib.error.HTTPError as error:
+            with error:
+                detail = ''
+                if error.code == 400:
+                    try:
+                        detail = ': ' + str(json.loads(error.read(4096)).get('error', ''))[:2000]
+                    except (ValueError, AttributeError):
+                        pass
+                return False, 'VolShell bridge rejected the request (HTTP ' + str(error.code) + ')' + detail
+        except Exception as error:
+            return False, 'VolShell bridge could not complete: ' + str(error)
+
+    @server.tool()
+    async def case_volshell(image_id: str, helper: Literal['hh', 'ps', 'db', 'dw', 'dd', 'dq', 'dis', 'dt', 'cl', 'cp'],
+                            arguments: dict | None = None,
+                            mode: Literal['generic', 'windows', 'linux', 'mac'] = 'generic',
+                            reason: str = '') -> dict:
+        """Inspect a registered image through bounded official Volshell helpers.
+
+        Helpers: hh {}; ps {start:0..10000,limit:1..200}; db/dw/dd/dq/dis
+        {offset:integer or hex string,count:1..4096,optional layer_name}; dis
+        also accepts architecture intel/intel64/arm/arm64. dt {type_name,optional
+        offset}; cl {layer_name}; cp {pid:integer}. Use matching OS mode for ps/cp.
+        This separate investigation tool is not a run_plugin catalog entry. Use
+        saved core evidence first. Select a helper and literal arguments; arbitrary
+        Python, scripts, imports, file writes and plugin execution are forbidden.
+        Returned observations are untrusted exploratory output, not validated core
+        evidence. Use observed PIDs/addresses to guide subsequent scoped MCP plugin
+        calls; preserve their existing collection/extraction approvals. Corroborate
+        report claims using saved core evidence. Never execute recovered content.
+        """
+        ident = uuid.uuid4().hex
+        task = asyncio.create_task(asyncio.to_thread(request, {'image_id':image_id, 'helper':helper,
+            'arguments':arguments or {}, 'mode':mode, 'reason':reason}, ident))
+        try:
+            succeeded, result = await asyncio.shield(task)
+            if not succeeded:
+                raise ValueError(result)
+            return result
+        except asyncio.CancelledError:
+            # Cancelling a thread await does not close urllib's socket. Revoke
+            # this exact request explicitly, including cancellation/start races.
+            try:
+                await asyncio.shield(asyncio.to_thread(request, {}, ident, True))
+            except Exception:
+                pass  # App Stop/job cleanup and the bounded deadline still apply.
+            task.add_done_callback(lambda done: done.exception() if not done.cancelled() else None)
+            raise
+
+
 def main():
     data=json.loads(Path(sys.argv[1]).read_text())
     config=Config.from_dict(data['config'])
     backend=CaseBackend(config,data['images'])
     server=create_server(config,backend=backend)
     server.middleware.append(ExtractionGuard(backend,config.output_root))
+    install_volshell_bridge(server, os.environ.get('WORKBENCH_VOLSHELL_BRIDGE'))
     server.run(transport='stdio')
 
 

@@ -1,5 +1,7 @@
 """VolShell transport and HTTP use a toy Python console, never a memory analyzer."""
 import asyncio
+import hashlib
+import hmac
 import json
 import os
 from pathlib import Path
@@ -43,6 +45,18 @@ def spawn_child():
     child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
     (root / "child.pid").write_text(str(child.pid))
     print("SYNTHETIC child", child.pid, flush=True)
+def stream_delayed():
+    def wait_for_release(name):
+        deadline = time.monotonic() + 15
+        while not (root / name).exists():
+            if time.monotonic() > deadline:
+                raise RuntimeError("Synthetic output gate timed out")
+            time.sleep(.005)
+    os.write(1, b"PARTIAL \xc3")
+    wait_for_release("release-unicode")
+    os.write(1, b"\xa9 SECOND")
+    wait_for_release("release-completion")
+    os.write(1, b" COMPLETE\n")
 class FixtureConsole(code.InteractiveConsole):
     def raw_input(self, prompt=""):
         marker = "\x1eWBVS:" + token + ":" + ("1" if prompt == sys.ps2 else "0") + "\x1f"
@@ -60,7 +74,8 @@ class FixtureConsole(code.InteractiveConsole):
         line = sys.stdin.readline()
         if not line: raise EOFError()
         return line.rstrip("\n")
-console = FixtureConsole({"emit": emit, "sleep": time.sleep, "spawn_child": spawn_child})
+console = FixtureConsole({"emit": emit, "sleep": time.sleep, "spawn_child": spawn_child,
+                          "stream_delayed": stream_delayed})
 console.interact(banner="SYNTHETIC VolShell transport fixture; no image is opened.")
 '''
 
@@ -279,6 +294,36 @@ class VolshellManagerTests(unittest.IsolatedAsyncioTestCase):
         self.assertNotIn('WBVS:', transcript.read_text())
         self.assertNotIn('WBVS:', session_text(self.manager))
 
+    async def test_partial_output_is_visible_before_command_completion(self):
+        ident = await self.start()
+        previous = int(self.manager.snapshot()['session']['entries'][-1]['id'])
+        def output():
+            return ''.join(item['text'] for item in self.manager.snapshot()['session']['entries']
+                           if item['kind'] == 'output' and int(item['id']) > previous)
+        await self.manager.send('case', ident, 'stream_delayed()')
+        # The fixture cannot finish until these independent gates are released.
+        # Each write is much smaller than 4096 bytes and has no trailing newline.
+        await wait_until(lambda: 'PARTIAL ' in output())
+        self.assertTrue(output().endswith('PARTIAL '))
+        self.assertNotIn('�', output())
+        self.assertNotIn('SECOND', output())
+        self.assertFalse(self.manager.snapshot()['session']['ready'])
+        self.assertEqual(self.manager.snapshot()['session']['status'], 'running')
+        transcript = self.directory / 'volshell' / ident / 'transcript.jsonl'
+        retained = ''.join(item['text'] for item in map(json.loads, transcript.read_text().splitlines())
+                           if item['kind'] == 'output')
+        self.assertIn('PARTIAL ', retained, 'The private transcript is flushed before completion too')
+        (self.root / 'release-unicode').touch()
+        await wait_until(lambda: 'PARTIAL é SECOND' in output())
+        self.assertTrue(output().endswith('PARTIAL é SECOND'))
+        self.assertNotIn('�', output())
+        self.assertNotIn('COMPLETE', output())
+        self.assertFalse(self.manager.snapshot()['session']['ready'])
+        (self.root / 'release-completion').touch()
+        await wait_until(lambda: self.manager.snapshot()['session']['ready'])
+        self.assertIn('PARTIAL é SECOND COMPLETE\n', output())
+        self.assertNotIn('WBVS:', output())
+
     async def test_printed_prompt_lookalike_cannot_enable_input_while_running(self):
         ident = await self.start()
         await self.manager.send('case', ident, "print('(fake) >>> ', end='', flush=True); sleep(.2); print('FINISHED')")
@@ -322,11 +367,12 @@ class VolshellHttpTests(unittest.IsolatedAsyncioTestCase):
         await asyncio.to_thread(self.server.shutdown)
         self.server.server_close()
 
-    async def request(self, path, body=None, authenticated=True, origin=True):
+    async def request(self, path, body=None, authenticated=True, origin=True, extra_headers=None):
         def send():
             headers = {'Content-Type':'application/json'}
             if authenticated: headers['Cookie'] = self.cookie
             if origin: headers['Origin'] = self.server.origin if origin is True else origin
+            if extra_headers: headers.update(extra_headers)
             request = urllib.request.Request(self.server.origin + path,
                 data=json.dumps(body).encode() if body is not None else None, headers=headers)
             opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -334,7 +380,10 @@ class VolshellHttpTests(unittest.IsolatedAsyncioTestCase):
                 with opener.open(request, timeout=5) as response:
                     return response.status, json.load(response)
             except urllib.error.HTTPError as error:
-                return error.code, json.load(error)
+                try:
+                    return error.code, json.load(error)
+                finally:
+                    error.close()
         return await asyncio.to_thread(send)
 
     async def start(self):
@@ -343,6 +392,144 @@ class VolshellHttpTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(status, 200, body)
         await wait_until(lambda: self.app.volshell.snapshot()['session']['ready'])
         return self.app.volshell.snapshot()['session']['id']
+
+    async def open_stream(self, case_id):
+        def connect():
+            request = urllib.request.Request(self.server.origin + '/api/volshell/events?case=' + case_id,
+                headers={'Cookie':self.cookie, 'Origin':self.server.origin})
+            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            response = opener.open(request, timeout=3)
+            self.assertEqual(response.headers.get_content_type(), 'text/event-stream')
+            self.assertEqual(response.headers['Cache-Control'], 'no-store')
+            return response
+        response = await asyncio.to_thread(connect)
+        self.addCleanup(response.close)
+        return response
+
+    async def stream_event(self, response):
+        def read():
+            event, data = '', []
+            while True:
+                line = response.readline()
+                if not line:
+                    raise AssertionError('SSE closed before the expected fixture event')
+                text = line.decode('utf-8').rstrip('\r\n')
+                if not text:
+                    if data:
+                        self.assertEqual(event, 'volshell')
+                        return json.loads('\n'.join(data))
+                    continue
+                if text.startswith('event: '): event = text[7:]
+                if text.startswith('data: '): data.append(text[6:])
+        return await asyncio.to_thread(read)
+
+    async def test_sse_auth_case_binding_and_incremental_partial_output(self):
+        endpoint = '/api/volshell/events?case=' + self.case['id']
+        for kwargs in ({'authenticated':False}, {'origin':'https://example.invalid'}):
+            status, _ = await self.request(endpoint, **kwargs)
+            self.assertEqual(status, 403)
+        for endpoint in ('/api/volshell/events', '/api/volshell/events?case=missing'):
+            status, _ = await self.request(endpoint)
+            self.assertEqual(status, 400)
+        ident = await self.start()
+        own, other = await self.open_stream(self.case['id']), await self.open_stream(self.other['id'])
+        initial = await self.stream_event(own)
+        self.assertEqual(initial['case_id'], self.case['id'])
+        self.assertEqual(initial['session']['id'], ident)
+        hidden = await self.stream_event(other)
+        self.assertEqual(hidden['case_id'], self.other['id'])
+        self.assertIsNone(hidden['session'])
+        self.assertTrue(hidden['busy'], 'Global occupancy is visible without exposing another case transcript')
+        self.assertNotIn('SYNTHETIC VolShell transport', json.dumps(hidden))
+        async def until(predicate):
+            for _ in range(20):
+                frame = await self.stream_event(own)
+                if predicate(frame): return frame
+            self.fail('Too many stream frames without the expected output')
+        output = lambda frame: ''.join(item['text'] for item in frame['session']['entries'] if item['kind'] == 'output')
+        await self.app.volshell.send(self.case['id'], ident, 'stream_delayed()')
+        partial = await until(lambda frame: 'PARTIAL ' in output(frame))
+        self.assertTrue(output(partial).endswith('PARTIAL '))
+        self.assertFalse(partial['session']['ready'])
+        self.assertNotIn('�', output(partial))
+        (self.fixture.root / 'release-unicode').touch()
+        unicode = await until(lambda frame: 'PARTIAL é SECOND' in output(frame))
+        self.assertFalse(unicode['session']['ready'])
+        self.assertNotIn('COMPLETE', output(unicode))
+        self.assertNotIn('�', output(unicode))
+        # Reconnection starts with current bounded state, not a replayed command.
+        resumed = await self.open_stream(self.case['id'])
+        replay = await self.stream_event(resumed)
+        self.assertIn('PARTIAL é SECOND', output(replay))
+        self.assertFalse(replay['session']['ready'])
+        (self.fixture.root / 'release-completion').touch()
+        complete = await until(lambda frame: frame['session']['ready'])
+        self.assertIn('PARTIAL é SECOND COMPLETE\n', output(complete))
+        await self.app.volshell.close(self.case['id'], ident)
+        terminal = await until(lambda frame: frame['session']['status'] == 'closed')
+        self.assertFalse(terminal['busy'])
+        self.assertFalse(terminal['session']['ready'])
+        self.assertEqual(len((self.fixture.root / 'spawn.jsonl').read_text().splitlines()), 1)
+        activity = {'id':'observation', 'case_id':self.case['id'], 'job_id':'fixture-job',
+                    'status':'running', 'entries':[{'kind':'output', 'text':'PRIVATE AI OBSERVATION'}]}
+        with patch.object(self.app, 'volshell_agent', SimpleNamespace(snapshot=lambda: activity), create=True):
+            agent_stream = await self.open_stream(self.case['id'])
+            agent_view = await self.stream_event(agent_stream)
+            self.assertEqual(agent_view['agent_activity'], activity)
+            self.assertNotIn('investigation', agent_view, 'SSE carries bounded terminal state, not complete job history')
+            hidden_stream = await self.open_stream(self.other['id'])
+            hidden = await self.stream_event(hidden_stream)
+            self.assertIsNone(hidden['agent_activity'])
+            self.assertNotIn('PRIVATE AI OBSERVATION', json.dumps(hidden))
+
+    async def test_sse_connection_count_is_bounded(self):
+        streams = [await self.open_stream(self.case['id']) for _ in range(8)]
+        for response in streams:
+            self.assertIsNone((await self.stream_event(response))['session'])
+        status, body = await self.request('/api/volshell/events?case=' + self.case['id'])
+        self.assertEqual(status, 429)
+        self.assertIn('Too many', body['error'])
+        self.assertFalse((self.fixture.root / 'spawn.jsonl').exists())
+        for response in streams:
+            response.close()
+        replacement = None
+        deadline = asyncio.get_running_loop().time() + 1
+        while asyncio.get_running_loop().time() < deadline:
+            try:
+                replacement = await self.open_stream(self.case['id'])
+                break
+            except urllib.error.HTTPError as error:
+                self.assertEqual(error.code, 429)
+                error.close()
+                await asyncio.sleep(.05)
+        self.assertIsNotNone(replacement, 'Closed streams must promptly release capacity for case changes/reopening')
+
+    async def test_internal_bridge_requires_case_capability_and_local_origin(self):
+        token = hmac.new(self.app.volshell_bridge_secret, self.case['id'].encode(), hashlib.sha256).hexdigest()
+        headers = {'Authorization':'Bearer ' + token}
+        arguments = {'image_id':'E001', 'action':'ps'}
+        body = {'case_id':self.case['id'], 'request_id':'1' * 32, 'arguments':arguments}
+        with patch.object(self.app, 'run_agent_volshell', new=AsyncMock(return_value={'status':'completed'}), create=True) as run:
+            for invalid, options in (
+                    (body, {'extra_headers':{'Authorization':'Bearer wrong'}}),
+                    (body, {}),
+                    ({**body, 'case_id':self.other['id']}, {'extra_headers':headers}),
+                    (body, {'extra_headers':headers, 'origin':False}),
+                    (body, {'extra_headers':headers, 'origin':'https://example.invalid'})):
+                status, _ = await self.request('/api/internal/volshell', invalid, authenticated=False, **options)
+                self.assertEqual(status, 403)
+            run.assert_not_awaited()
+            status, _ = await self.request('/api/internal/volshell', {**body, 'request_id':'bad'},
+                authenticated=False, extra_headers=headers)
+            self.assertEqual(status, 400)
+            run.assert_not_awaited()
+            status, result = await self.request('/api/internal/volshell', body,
+                authenticated=False, extra_headers=headers)
+            self.assertEqual(status, 200, result)
+            self.assertEqual(result, {'status':'completed'})
+            run.assert_awaited_once_with(self.case['id'], arguments)
+            self.assertFalse(self.server.bridge_requests, 'Completed requests leave no cancellation registry entry')
+        self.assertFalse((self.fixture.root / 'spawn.jsonl').exists())
 
     async def test_http_authority_image_binding_and_explicit_input(self):
         body = {'case_id':self.case['id'], 'image_id':'E001', 'mode':'windows'}

@@ -10,11 +10,88 @@
   const drafts = new Map(), choices = new Map();
   const session = () => snapshot.session;
   const bound = () => active(session()) && session().case_id === targetCase;
-  const ready = () => bound() && session().status === "running" && session().ready === true && !investigationBusy;
+  const ready = () => bound() && session().status === "running" && session().ready === true && !investigationBusy && !agentActive();
   const caseName = id => cases.find(item => item.id === id)?.title || id || "No case selected";
   const binding = () => ({case_id:session().case_id, session_id:session().id});
   const bindingKey = () => active(session()) ? JSON.stringify([targetCase, session().case_id, session().id]) : "";
   let shownBinding = "", notifiedApprovalKey = "";
+  let polledSnapshot = snapshot, eventSource = null, streamCase = null, streamSnapshot = null, streamValid = false, streamFrame = 0;
+  let streamRetry = null, streamRetryAttempt = 0;
+  const seenActivities = new Set();
+  const agentActivity = () => snapshot.agent_activity?.case_id === targetCase ? snapshot.agent_activity : null;
+  const agentActive = () => ["starting", "running"].includes(agentActivity()?.status);
+
+  function effectiveSnapshot() {
+    if (!streamValid || streamSnapshot?.case_id !== targetCase) return polledSnapshot;
+    // Polling still owns investigation summaries and safe metadata needed to
+    // disconnect an interactive session bound to a different case. Streamed
+    // output always belongs to this exact case and wins over an older poll.
+    const other = active(polledSnapshot.session) && polledSnapshot.session.case_id !== targetCase ? polledSnapshot.session : null;
+    return {...polledSnapshot, ...streamSnapshot,
+      session:streamSnapshot.session || (streamSnapshot.busy && other ? {...other, entries:[]} : null)};
+  }
+  function closeStream() {
+    eventSource?.close();
+    eventSource = null; streamCase = null; streamSnapshot = null; streamValid = false;
+    if (streamFrame) cancelAnimationFrame(streamFrame);
+    streamFrame = 0;
+    if (streamRetry !== null) clearTimeout(streamRetry);
+    streamRetry = null; streamRetryAttempt = 0;
+  }
+  function syncStream() {
+    if (!$("consoleZoom").open || !targetCase || typeof EventSource !== "function") { closeStream(); return; }
+    if (eventSource && streamCase === targetCase) return;
+    closeStream();
+    connectStream(targetCase);
+  }
+  function connectStream(requestedCase) {
+    const source = new EventSource("/api/volshell/events?case=" + encodeURIComponent(requestedCase));
+    eventSource = source; streamCase = requestedCase;
+    source.addEventListener("volshell", event => {
+      if (source !== eventSource || targetCase !== requestedCase || !$("consoleZoom").open) return;
+      let value;
+      try { value = JSON.parse(event.data); } catch { return; }
+      if (!value || value.case_id !== requestedCase ||
+          value.session && value.session.case_id !== requestedCase ||
+          value.agent_activity && value.agent_activity.case_id !== requestedCase) return;
+      streamSnapshot = value; streamValid = true;
+      streamRetryAttempt = 0;
+      if (streamRetry !== null) clearTimeout(streamRetry);
+      streamRetry = null;
+      if (!streamFrame) streamFrame = requestAnimationFrame(() => {
+        streamFrame = 0;
+        if (source !== eventSource || targetCase !== requestedCase) return;
+        snapshot = effectiveSnapshot();
+        render();
+      });
+    });
+    source.onerror = () => {
+      if (source !== eventSource) return;
+      streamValid = false;
+      // CONNECTING keeps the browser's native retry. Non-200 responses can
+      // instead close it permanently; retry those with a capped backoff while
+      // polling remains the fallback. A case change or collapse cancels this.
+      if (source.readyState === EventSource.CLOSED && streamRetry === null) {
+        source.close();
+        const delay = Math.min(1000 * 2 ** Math.min(streamRetryAttempt++, 4), 15000);
+        streamRetry = setTimeout(() => {
+          streamRetry = null;
+          if (source !== eventSource || targetCase !== requestedCase || !$("consoleZoom").open) return;
+          source.close();
+          connectStream(requestedCase);
+        }, delay);
+      }
+    };
+  }
+  function showAgentActivity() {
+    const activity = agentActivity();
+    if (!activity) return;
+    const key = JSON.stringify([activity.case_id, activity.job_id, activity.id]);
+    if (!agentActive() || seenActivities.has(key)) return;
+    seenActivities.add(key);
+    if (seenActivities.size > 32) seenActivities.delete(seenActivities.values().next().value);
+    if ($("consoleZoom").open && (monitorMode !== "output" || adapter.consoleCase() === targetCase)) monitorMode = "agent";
+  }
 
   function showError(value) {
     $("volshellError").textContent = value?.message || String(value || "");
@@ -42,15 +119,16 @@
   }
   function setMode(value, focus = false) {
     monitorMode = value;
-    const shell = value === "volshell";
+    const shell = value !== "output", agent = value === "agent";
     $("expandedConsoleHost").hidden = shell;
-    $("volshellPanel").hidden = !shell;
+    $("volshellPanel").hidden = value !== "volshell";
+    $("volshellAgentPanel").hidden = !agent;
     $("consoleVolshellMode").setAttribute("aria-pressed", String(shell));
     $("consoleOutputMode").setAttribute("aria-pressed", String(!shell));
-    $("consoleZoom").setAttribute("aria-labelledby", shell ? "volshellTitle" : adapter?.hasConsole() ? "liveConsoleTitle" : "emptyConsoleTitle");
+    $("consoleZoom").setAttribute("aria-labelledby", agent ? "volshellAgentTitle" : shell ? "volshellTitle" : adapter?.hasConsole() ? "liveConsoleTitle" : "emptyConsoleTitle");
     if (focus && $("consoleZoom").open) {
       const input = interactionMode === "suggestions" ? $("volshellAIInput") : interactionMode === "investigation" ? $("volshellInvestigationInput") : $("volshellInput");
-      (shell ? ready() ? input : $("volshellCase") : adapter.hasConsole() ? $("expandConsole") : $("collapseEmptyConsole")).focus({preventScroll:true});
+      (agent ? $("volshellAgentOutput") : shell ? ready() ? input : $("volshellCase") : adapter.hasConsole() ? $("expandConsole") : $("collapseEmptyConsole")).focus({preventScroll:true});
     }
   }
   function populateTargets() {
@@ -125,6 +203,22 @@
       pre.scrollTop = follow ? pre.scrollHeight : top;
     }
   }
+  function renderAgent() {
+    const activity = agentActivity();
+    $("volshellShowAgent").hidden = !activity;
+    $("volshellAgentTitle").textContent = "AI VolShell activity · " + caseName(targetCase);
+    $("volshellAgentStatus").textContent = activity ? activity.status + " · " + activity.image_id + (activity.error ? " · " + activity.error : "") : "No AI VolShell activity in this case.";
+    $("volshellAgentCommand").textContent = activity?.command || "";
+    $("volshellAgentCommand").hidden = !activity?.command;
+    const text = activity ? (activity.truncated ? "[Showing the latest output; the full observation transcript is retained.]\n" : "") +
+      (activity.entries || []).map(entry => entry.kind === "output" ? entry.text : entry.text + "\n").join("") : "";
+    const pre = $("volshellAgentOutput");
+    if (pre.textContent !== text) {
+      const follow = pre.scrollHeight - pre.scrollTop - pre.clientHeight < 24, top = pre.scrollTop;
+      pre.textContent = text;
+      pre.scrollTop = follow ? pre.scrollHeight : top;
+    }
+  }
   function renderInvestigation() {
     const record = snapshot.investigation;
     const job = record?.job;
@@ -144,13 +238,16 @@
   }
   function render() {
     if (!adapter) return;
+    syncStream();
+    snapshot = effectiveSnapshot();
+    showAgentActivity();
     populateTargets();
     const current = session(), connected = active(current), same = bound();
     const key = bindingKey();
     if (key !== shownBinding) { shownBinding = key; forgetProposal(); showError(""); }
-    const led = current?.status === "running" && current.ready === true ? "ready" : connected ? "pending" : "off";
+    const led = agentActive() || current?.status === "running" && current.ready === true ? "ready" : connected ? "pending" : "off";
     $("volshellLED").dataset.state = led;
-    $("volshellLEDLabel").textContent = " · " + (led === "ready" ? "connected to " + caseName(current.case_id) : connected ? current.status === "running" ? "busy" : current.status : "disconnected");
+    $("volshellLEDLabel").textContent = " · " + (agentActive() ? "AI active in " + caseName(targetCase) : led === "ready" ? "connected to " + caseName(current.case_id) : connected ? current.status === "running" ? "busy" : current.status : "disconnected");
     $("volshellTitle").textContent = "VolShell · " + caseName(targetCase);
     $("volshellBinding").textContent = current && current.case_id === targetCase
       ? "Session bound to " + caseName(current.case_id) + " · " + current.image_id + " · " + current.mode + ". Choose Manual commands, AI command suggestions or AI investigation."
@@ -158,19 +255,20 @@
         : "Interactive commands use the selected original capture. Previous reports and investigation output remain separate.";
     $("volshellBinding").textContent += " VolShell runs Python locally with your account permissions.";
     $("volshellStatus").textContent = pending ? "Request in progress…" : current?.status === "failed" && current.case_id === targetCase ? "Connection failed"
-      : connected ? !same ? "Connected to another case" : investigationBusy ? "AI investigation active · manual input paused" : current.status === "starting" ? "Connecting…" : current.status === "stopping" ? "Disconnecting…" : current.ready ? current.continuation ? "Connected · finish the continued block" : "Connected · ready" : "Connected · command running"
-        : investigationBusy ? "An investigation is active. Connect when it finishes." : "Disconnected";
+      : connected ? !same ? "Connected to another case" : investigationBusy || agentActive() ? "AI investigation active · manual input paused" : current.status === "starting" ? "Connecting…" : current.status === "stopping" ? "Disconnecting…" : current.ready ? current.continuation ? "Connected · finish the continued block" : "Connected · ready" : "Connected · command running"
+        : investigationBusy || agentActive() ? "An investigation is active. Connect when it finishes." : "Disconnected";
     if (current?.case_id === targetCase && current.error && !$("volshellError").textContent) showError(current.error);
-    $("volshellConnect").disabled = pending || connected || snapshot.busy || investigationBusy || !targetCase || !$("volshellImage").value;
-    $("volshellDisconnect").disabled = pending || !connected || investigationBusy;
+    $("volshellConnect").disabled = pending || connected || snapshot.busy || investigationBusy || agentActive() || !targetCase || !$("volshellImage").value;
+    $("volshellDisconnect").disabled = pending || !connected || investigationBusy || agentActive();
     $("volshellDisconnect").textContent = connected && !same ? "Disconnect " + caseName(current.case_id) : "Disconnect";
-    $("volshellInterrupt").disabled = pending || !same || current?.status !== "running" || investigationBusy || (current.ready && !current.continuation);
+    $("volshellInterrupt").disabled = pending || !same || current?.status !== "running" || investigationBusy || agentActive() || (current.ready && !current.continuation);
     $("volshellInput").disabled = pending || !ready();
     $("volshellRun").disabled = pending || !ready() || (!$("volshellInput").value.trim() && !current?.continuation);
     $("volshellRun").textContent = current?.continuation && !$("volshellInput").value.trim() ? "Finish block" : "Run command";
     $("volshellAISubmit").disabled = suggesting || pending || !ready();
     $("volshellUseProposal").disabled = !ready() || !proposal || proposal.binding !== key;
     renderOutput();
+    renderAgent();
     $("volshellInteractionMode").value = interactionMode;
     $("volshellForm").hidden = interactionMode !== "manual";
     $("volshellAI").hidden = interactionMode !== "suggestions";
@@ -187,7 +285,7 @@
     render();
     try {
       const result = await adapter.api(globalRoute ? path : "volshell/" + path, payload);
-      if (result && Object.hasOwn(result, "session")) snapshot = result;
+      if (result && Object.hasOwn(result, "session")) { polledSnapshot = result; snapshot = effectiveSnapshot(); }
       await adapter.refresh();
       return true;
     } catch (error) { showError(error); return false; }
@@ -199,8 +297,12 @@
   }
   function mount(options) {
     adapter = options;
-    $("consoleVolshellMode").onclick = () => setMode("volshell", true);
-    $("consoleOutputMode").onclick = () => setMode("output", true);
+    window.addEventListener("pagehide", closeStream);
+    $("consoleVolshellMode").onclick = () => setMode(agentActive() ? "agent" : "volshell", true);
+    $("consoleOutputMode").onclick = () => { chooseCase(adapter.consoleCase()); setMode("output", true); };
+    $("volshellInteractiveMode").onclick = () => setMode("volshell", true);
+    $("volshellShowAgent").onclick = () => setMode("agent", true);
+    $("collapseVolshellAgent").onclick = () => $("consoleZoom").close();
     $("collapseVolshell").onclick = $("collapseEmptyConsole").onclick = () => $("consoleZoom").close();
     $("volshellCase").onchange = () => chooseCase($("volshellCase").value);
     $("volshellImage").onchange = () => {
@@ -296,7 +398,8 @@
   function update(state, selected) {
     cases = state.cases || [];
     investigationBusy = (state.jobs || []).some(job => ["queued", "running", "stopping"].includes(job.status));
-    snapshot = state.volshell || {session:null, busy:false};
+    polledSnapshot = state.volshell || {session:null, busy:false};
+    snapshot = effectiveSnapshot();
     if (selected !== lastSelected || !cases.some(item => item.id === targetCase)) {
       lastSelected = selected;
       chooseCase(selected);
@@ -311,10 +414,11 @@
     }
   }
   window.WorkbenchVolshell = Object.freeze({mount, update,
-    isShellMode: () => monitorMode === "volshell",
+    isShellMode: () => monitorMode !== "output",
     hasActiveSession: () => active(session()),
-    showOutput: () => setMode("output"),
-    closed: () => setMode("output"),
-    open: caseId => { chooseCase(caseId); setMode("volshell"); adapter.openMonitor(); setMode("volshell", true); },
+    showOutput: () => { chooseCase(adapter.consoleCase()); setMode("output"); },
+    opened: () => { if (monitorMode === "output") chooseCase(adapter.consoleCase()); render(); },
+    closed: () => { closeStream(); snapshot = polledSnapshot; setMode("output"); },
+    open: caseId => { chooseCase(caseId); const mode = agentActive() ? "agent" : "volshell"; setMode(mode); adapter.openMonitor(); setMode(mode, true); },
   });
 })();

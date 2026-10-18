@@ -14,13 +14,38 @@ let entryId=0;
  try{
   const page=await browser.newPage({viewport:{width:1400,height:1000}}),errors=[],posts=[];
   await page.addInitScript(()=>{Date.now=()=>Date.parse('2026-10-18T12:02:42Z');});
-  let suggestion={command:'ps()',explanation:'List processes in the selected Windows capture.'},heldSuggestion=null,holdSuggestion=false;
+  await page.addInitScript(()=>{
+   window.fixtureStreams=[];
+   window.fixtureRetries=new Map();let retryId=0;
+   class FixtureEventSource extends EventTarget {
+    static CONNECTING=0;static OPEN=1;static CLOSED=2;
+    constructor(url){super();this.url=new URL(url,location.href).href;this.readyState=1;this.closed=false;window.fixtureStreams.push(this);}
+    close(){this.closed=true;this.readyState=2;}
+    emit(value){this.dispatchEvent(new MessageEvent('volshell',{data:typeof value==='string'?value:JSON.stringify(value)}));}
+    fail(closed=false){this.readyState=closed?2:0;this.onerror?.(new Event('error'));}
+   }
+   window.EventSource=FixtureEventSource;
+   // Every full-state refresh in this test is explicit. Stream assertions cannot
+   // accidentally pass because the normal1500ms polling loop supplied output.
+   const interval=window.setInterval;
+   window.setInterval=(callback,delay,...args)=>delay===1500?0:interval(callback,delay,...args);
+   const timeout=window.setTimeout,clear=window.clearTimeout;
+   window.setTimeout=(callback,delay,...args)=>{
+    if([1000,2000,4000,8000,15000].includes(delay)){
+     const id=--retryId;fixtureRetries.set(id,{id,delay,fire:()=>callback(...args)});return id;
+    }
+    return timeout(callback,delay,...args);
+   };
+   window.clearTimeout=id=>fixtureRetries.has(id)?fixtureRetries.delete(id):clear(id);
+   window.fireFixtureRetry=id=>{const timer=fixtureRetries.get(id);fixtureRetries.delete(id);timer?.fire();};
+  });
+  let suggestion={command:'ps()',explanation:'List processes in the selected Windows capture.'},heldSuggestion=null,holdSuggestion=false,stateReads=0;
   page.on('pageerror',error=>errors.push(error.message));
   await page.route('**/*',async route=>{
    const request=route.request(),url=new URL(request.url());
    assert.equal(url.origin,'http://localhost','All requests remain inside the synthetic route handler');
    if(request.method()==='GET'){
-    if(url.pathname==='/api/state')return route.fulfill({json:state});
+    if(url.pathname==='/api/state'){stateReads++;return route.fulfill({json:state});}
     if(url.pathname==='/api/artifacts')return route.fulfill({json:{files:[],truncated:false}});
     if(url.pathname==='/api/report-console')return route.fulfill({json:null});
     assert.ok(!url.pathname.startsWith('/api/'),'Unexpected read '+url.pathname);
@@ -225,8 +250,126 @@ let entryId=0;
   await page.locator('#consoleOutputMode').click();assert.equal(await page.locator('#expandedConsoleHost').isVisible(),true);
   await page.locator('#consoleVolshellMode').click();assert.equal(await page.locator('#volshellPanel').isVisible(),true);
   await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  // Streaming transport is simulated independently of /api/state. The server's
+  // real authenticated SSE framing/flush behavior is exercised in test_volshell.
+  await page.waitForFunction(()=>fixtureStreams.every(source=>source.closed));
+  assert.equal(await page.evaluate(()=>fixtureStreams.every(source=>source.closed)),true,'Collapse releases every EventSource');
+  state.jobs=[];state.live_console=null;state.volshell={busy:true,session:{id:'stream-shell',case_id:'case-a',image_id:'E001',mode:'windows',status:'running',ready:false,continuation:false,entries:[entry('output','Older polled output')],earlier_entries:0}};
+  await refresh();await page.locator('#openCaseConsole').click();
+  const streamIndex=()=>page.evaluate(()=>fixtureStreams.length-1);
+  const deliver=async(value,index)=>{
+   if(index===undefined)index=await streamIndex();
+   await page.evaluate(({index,value})=>fixtureStreams[index].emit(value),{index,value});
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  };
+  const streamFrame=(text,ready=false)=>({case_id:'case-a',session:{...state.volshell.session,ready,entries:[entry('output',text)]},busy:true,agent_activity:null});
+  let source=await streamIndex(),readsBefore=stateReads;
+  assert.match(await page.evaluate(index=>fixtureStreams[index].url,source),/\/api\/volshell\/events\?case=case-a$/);
+  await deliver(streamFrame('Immediate fragment without newline'));
+  assert.equal(await page.locator('#volshellOutput').textContent(),'Immediate fragment without newline');
+  assert.equal(await input.isDisabled(),true);assert.equal(stateReads,readsBefore,'Partial output renders without a full-state poll');
+  await refresh();assert.equal(await page.locator('#volshellOutput').textContent(),'Immediate fragment without newline','Older polled output cannot overwrite the newer streamed snapshot');
+  const beforeInvalid=await page.locator('#volshellOutput').textContent();
+  for(const invalid of ['not json',{case_id:'case-b',session:null,busy:false},{...streamFrame('Wrong case'),session:{...state.volshell.session,case_id:'case-b'}},{...streamFrame('Wrong agent'),agent_activity:{case_id:'case-b',status:'running'}}])await deliver(invalid);
+  assert.equal(await page.locator('#volshellOutput').textContent(),beforeInvalid,'Malformed and cross-case stream frames are ignored');
+  const longOutput=Array.from({length:90},(_,i)=>'Streamed synthetic line '+i).join('\n');
+  await deliver(streamFrame(longOutput));
+  await page.locator('#volshellOutput').evaluate(node=>node.scrollTop=0);
+  await deliver(streamFrame(longOutput+'\nNew partial é'));
+  assert.equal(await page.locator('#volshellOutput').evaluate(node=>node.scrollTop),0,'Streaming preserves reading position in earlier output');
+  await page.evaluate(index=>fixtureStreams[index].fail(),source);await refresh();
+  assert.equal(await page.locator('#volshellOutput').textContent(),'Older polled output','A disconnected stream falls back to ordinary snapshots');
+  assert.equal(await page.evaluate(()=>fixtureRetries.size),0,'CONNECTING keeps native retry without a duplicate application timer');
+  await deliver(streamFrame('Reconnected complete snapshot',true),source);
+  assert.equal(await page.locator('#volshellOutput').textContent(),'Reconnected complete snapshot');assert.equal(await input.isDisabled(),false);
+  for(const delay of [1000,2000,4000,8000,15000,15000]){
+   const previousSource=source;
+   await page.evaluate(index=>{fixtureStreams[index].fail(true);fixtureStreams[index].fail(true);},source);
+   const timers=await page.evaluate(()=>[...fixtureRetries.values()].map(({id,delay})=>({id,delay})));
+   assert.equal(timers.length,1,'A fatal error schedules one retry timer');assert.equal(timers[0].delay,delay,'Fatal retries use capped exponential backoff');
+   await refresh();assert.equal(await streamIndex(),source,'Full-state refresh does not bypass retry backoff');
+   await page.evaluate(id=>fireFixtureRetry(id),timers[0].id);source=await streamIndex();
+   assert.equal(source,previousSource+1);assert.equal(await page.evaluate(index=>fixtureStreams[index].closed,previousSource),true);
+   await deliver(streamFrame('STALE closed-source frame',true),previousSource);
+   await page.evaluate(index=>fixtureStreams[index].fail(true),previousSource);
+   assert.equal(await page.evaluate(()=>fixtureRetries.size),0,'Stale source failures cannot schedule retries');
+   assert.doesNotMatch(await page.locator('#volshellOutput').textContent(),/STALE closed-source/);
+  }
+  await deliver(streamFrame('Recovered after fatal status',true),source);
+  await page.evaluate(index=>fixtureStreams[index].fail(true),source);
+  const resetTimer=await page.evaluate(()=>[...fixtureRetries.values()].map(({id,delay})=>({id,delay}))[0]);
+  assert.equal(resetTimer.delay,1000,'A successful snapshot resets retry backoff');
+  await page.evaluate(id=>fireFixtureRetry(id),resetTimer.id);source=await streamIndex();
+  await deliver(streamFrame('Recovered after fatal status',true),source);
+  // AI state can arrive before the next job snapshot and must still pause input.
+  const earlyActivity={id:'early-ai',case_id:'case-a',job_id:'early-job',image_id:'E001',mode:'windows',command:'ps()',status:'running',entries:[entry('output','Early AI tool fragment')],started_at:stamp,truncated:false};
+  await deliver({...streamFrame('Manual prompt remains idle',true),agent_activity:earlyActivity});
+  assert.equal(await page.locator('#volshellAgentPanel').isVisible(),true);
+  await page.locator('#volshellInteractiveMode').click();assert.equal(await input.isDisabled(),true,'Streamed AI activity pauses manual input before the jobs poll');
+  assert.equal(await page.locator('#volshellDisconnect').isDisabled(),true);assert.equal(await page.locator('#volshellInterrupt').isDisabled(),true);
+  await page.evaluate(index=>fixtureStreams[index].fail(true),source);
+  await page.locator('#volshellCase').selectOption('case-b');
+  assert.equal(await page.evaluate(()=>fixtureRetries.size),0,'Changing case cancels a pending retry');
+  assert.equal(await page.evaluate(index=>fixtureStreams[index].closed,source),true,'Changing selected case closes its stream');
+  const otherSource=await streamIndex();assert.notEqual(otherSource,source);
+  await deliver(streamFrame('Late old-case output',true),source);
+  await deliver({case_id:'case-b',session:null,busy:true,agent_activity:null},otherSource);
+  assert.doesNotMatch(await page.locator('#volshellOutput').textContent(),/Late old-case|Manual prompt|Reconnected/);
+  await page.evaluate(index=>fixtureStreams[index].fail(true),otherSource);
+  await page.locator('#collapseVolshell').click();
+  await page.waitForFunction(index=>fixtureStreams[index].closed,otherSource);
+  await page.waitForFunction(()=>fixtureRetries.size===0);
+  assert.equal(await page.evaluate(index=>fixtureStreams[index].closed,otherSource),true);
+  // A normal report job can expose AI-owned shell activity in its Output CRT.
+  const ordinaryJob={id:'ordinary-job',case_id:'case-a',kind:'report',status:'running',progress:'Reading saved evidence',started_at:stamp};
+  state.jobs=[ordinaryJob];state.volshell={session:null,busy:false,agent_activity:null};
+  state.live_console={job_id:ordinaryJob.id,case_id:'case-a',entries:[entry('output','Ordinary investigation output')],earlier_entries:0};
+  await refresh();await page.locator('#expandConsole').click();
+  assert.equal(await page.locator('#expandedConsoleHost').isVisible(),true);
+  source=await streamIndex();readsBefore=stateReads;
+  const activity={...earlyActivity,id:'observation-1',job_id:ordinaryJob.id,command:'db(0x1000, count=32)',entries:[entry('output','00001000  41 42 43 44  ABCD\nPartial synthetic observation')],observation_path:'volshell-observations/synthetic.json'};
+  await deliver({case_id:'case-a',session:null,busy:false,agent_activity:activity},source);
+  assert.equal(await page.locator('#volshellAgentPanel').isVisible(),true,'Active shell tool switches an already expanded matching case CRT');
+  assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'ready');assert.match(await page.locator('#volshellLEDLabel').textContent(),/AI active/);
+  assert.equal(await page.locator('#volshellAgentPanel input,#volshellAgentPanel textarea').count(),0,'AI output is read-only');
+  assert.equal(await page.locator('#volshellAgentOutput').evaluate(node=>getComputedStyle(node).color),await page.locator('#volshellOutput').evaluate(node=>getComputedStyle(node).color),'AI output shares the theme terminal color');
+  assert.equal(await page.locator('#volshellAgentOutput').evaluate(node=>getComputedStyle(node).fontSize),'13px');
+  assert.equal(stateReads,readsBefore,'AI tool output and LED update without polling');
+  await screenshot('volshell-agent-stream-desktop');
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.locator('#volshellAgentPanel').evaluate(node=>node.scrollWidth<=node.clientWidth+1),true,'AI activity fits a narrow screen');
+  await screenshot('volshell-agent-stream-390');
+  await page.evaluate(()=>window.WorkbenchThemes.apply('fallout-new-vegas'));await page.setViewportSize({width:320,height:844});
+  assert.equal(await page.locator('#volshellAgentPanel').evaluate(node=>node.scrollWidth<=node.clientWidth+1),true,'AI activity fits the New Vegas320 screen');
+  await screenshot('volshell-agent-stream-new-vegas-320');
+  await deliver({case_id:'case-a',session:null,busy:false,agent_activity:{...activity,command:'synthetic_long_command_'.repeat(40),error:'synthetic_long_error_'.repeat(40)}},source);
+  assert.equal(await page.locator('#volshellAgentPanel').evaluate(node=>node.scrollWidth<=node.clientWidth+1),true,'Long AI command and error remain contained in the New Vegas320 screen');
+  await deliver({case_id:'case-a',session:null,busy:false,agent_activity:activity},source);
+  await page.evaluate(()=>window.WorkbenchThemes.apply('fallout-2'));await page.setViewportSize({width:1400,height:1000});
+  await page.locator('#consoleOutputMode').click();
+  activity.entries.push(entry('output','\nMore output after choosing Output'));
+  await deliver({case_id:'case-a',session:null,busy:false,agent_activity:activity},source);
+  assert.equal(await page.locator('#expandedConsoleHost').isVisible(),true,'Further fragments do not repeatedly steal the selected pane');
+  activity.id='observation-2';activity.command='ps()';activity.entries=[entry('output','<img src=x onerror="window.injected=true">')];
+  await deliver({case_id:'case-a',session:null,busy:false,agent_activity:activity},source);
+  assert.equal(await page.locator('#volshellAgentPanel').isVisible(),true,'A new tool observation can switch to its own live output');
+  assert.equal(await page.locator('#volshellAgentOutput img,#volshellAgentOutput script').count(),0);
+  activity.status='completed';activity.finished_at=stamp;
+  await deliver({case_id:'case-a',session:null,busy:false,agent_activity:activity},source);
+  assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'off');assert.equal(await page.locator('#volshellAgentPanel').isVisible(),true,'Completed AI output remains reviewable');
+  state.approvals=[{id:'agent-only-approval',case_id:'case-a',method:'item/tool/requestUserInput',params:{questions:[{id:'decision',question:'Synthetic agent-only decision'}]}}];
+  await refresh();await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  assert.equal(await page.locator('#volshellApprovalNotice').isVisible(),true,'Agent-only approval is surfaced without a manual session');
+  assert.match(await page.locator('#approvals').innerText(),/Synthetic agent-only decision/);
+  await page.locator('#expandConsole').click();await refresh();assert.equal(await zoom.isVisible(),true,'The same agent-only approval does not repeatedly close review');
+  state.approvals=[];await refresh();await page.locator('#expandConsole').click();
+  await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  state.volshell.agent_activity={...activity,id:'closed-monitor-activity',status:'running'};await refresh();
+  assert.equal(await zoom.isVisible(),false,'New AI activity never opens a collapsed CRT');
+  await deliver({case_id:'case-a',session:null,busy:false,agent_activity:{...activity,status:'running'}},source);
+  assert.equal(await zoom.isVisible(),false,'Late events from a closed source cannot reopen the CRT');
   assert.equal(await page.evaluate(()=>window.injected),undefined);assert.deepEqual(errors,[]);
   if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)fs.writeFileSync(path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-contrast.json'),JSON.stringify(themeStyles,null,2)+'\n');
-  console.log('VolShell: explicit connection/input, readiness LED, editable ghost completion, continuation, case/session isolation, inert AI drafts and stale responses, three modes, explicit AI investigation/approval/manual pause/Stop all, desktop/mobile CRT, failure/EOF without restart; 31 distinct readable bezels and isolated static New Vegas sign; fully intercepted synthetic requests.');
+  console.log('VolShell: explicit connection/input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;31 distinct bezels/New Vegas desktop/mobile; fully synthetic requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

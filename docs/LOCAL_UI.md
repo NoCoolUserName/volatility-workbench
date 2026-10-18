@@ -565,8 +565,9 @@ LED. Open it from a selected case even when no report console exists, select a
 registered capture and operating-system mode, then Connect. The application
 launches the configured analyzer's official Volatility 3 Volshell locally, with
 installed symbols and offline symbol lookup. The LED becomes green only when the
-interpreter reaches its input prompt. A busy or starting session is amber; an
-ended session is off. Missing symbols and startup errors remain visible.
+manual interpreter reaches its input prompt. A busy or starting manual session is
+amber; an ended session is off. Active AI VolShell inspection also lights the LED
+green, with an accessible label identifying AI activity. Missing symbols and startup errors remain visible.
 
 VolShell offers three explicit modes:
 
@@ -585,7 +586,34 @@ VolShell offers three explicit modes:
   idle Python session and its variables remain available afterward. Pending
   approvals bring the operator back to the case approval controls.
 
-There is one interactive session at a time. Every input request carries its exact
+The case agent can also choose **case_volshell** during an investigation. Volshell
+is a separate upstream interface, so it is exposed as an investigation tool rather
+than inserted into the installed plugin catalog. AI calls select bounded official
+inspection helpers and literal arguments; they cannot submit arbitrary Python,
+imports, scripts, dump helpers or plugins through this route. Full Python remains
+available in Manual commands. The AI owns a separate interpreter and cannot adopt
+operator-defined functions from the manual session.
+
+The returned observation can guide the next plugin choice and exact PID/address
+arguments through the existing MCP tools. It is marked exploratory and carries
+its private transcript provenance, not a core run ID or a validated evidence claim.
+The agent must corroborate report findings with saved core evidence. Existing
+extraction approvals and saved-evidence-first rules still apply. Routine report
+investigations and explicit VolShell AI investigations may select ordinary helpers
+automatically; a general follow-up question requires approval for new memory
+inspection. Help and layer-context selection do not request a memory-read helper,
+though starting Volshell still opens the registered image.
+
+When the CRT is already expanded for that case, new AI VolShell activity appears
+in a read-only pane with the selected command, status and output. It does not open
+a closed CRT or redirect another case. Output and Interactive controls remain
+available. Terminal output uses a case-scoped live event stream: partial writes
+are flushed without waiting for a newline or command completion, with up to 50ms
+server dispatch cadence. Normal state polling is retained as a reconnection
+fallback. OS/browser scheduling and upstream computations can still introduce
+latency; the application does not invent output while an upstream helper is busy.
+
+There is one operator-controlled interactive session at a time. Every input request carries its exact
 case and session identity; selecting another case cannot redirect commands or
 inherit the previous transcript. Disconnect ends the session, Interrupt interrupts
 the current Python command, and Stop all work ends both AI work and VolShell.

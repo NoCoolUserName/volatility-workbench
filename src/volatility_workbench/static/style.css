@@ -313,6 +313,11 @@ article h2:first-child {
 .volshell-heading, .volshell-session-actions, .volshell-command-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .volshell-heading { justify-content: space-between; }
 .volshell-heading h3 { margin: 0; overflow-wrap: anywhere; }
+.volshell-heading > div { display: flex; flex-wrap: wrap; gap: 8px; }
+#volshellAgentStatus { color: var(--status); margin: 0; overflow-wrap: anywhere; }
+#volshellAgentCommand { flex: 0 0 auto; max-height: 120px; margin: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+#volshellAgentOutput { flex: 1 1 140px; min-height: 100px; margin: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+#volshellAgentCommand, #volshellAgentOutput { color: var(--accent); background: var(--bg); border: 1px solid var(--border); font: 13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .volshell-targets { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(110px, .6fr); gap: 12px; }
 .volshell-targets label { margin: 0; min-width: 0; }
 .volshell-targets select { display: block; width: 100%; max-width: 100%; }

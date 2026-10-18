@@ -17,6 +17,9 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
  const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
  try{
   const page=await browser.newPage({viewport:{width:1400,height:1000}}),errors=[],calls=[];
+  // Transport behavior has its own synthetic VolShell/SSE checks. This fixture
+  // keeps the optional terminal subscription offline while testing saved output.
+  await page.addInitScript(()=>{window.EventSource=class extends EventTarget {close(){}};});
   await page.addInitScript(now=>{window.fixtureNow=now;Date.now=()=>window.fixtureNow;},fixtureNow);
   let retained=null,rejectSaved=false;
   page.on('pageerror',error=>errors.push(error.message));

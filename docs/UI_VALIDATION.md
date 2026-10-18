@@ -823,3 +823,38 @@ Final theme checks passed all 31 palettes, Settings/mobile layout and CSP. The
 VolShell bezel audit measured minimum text contrast of 5.07:1 and verified distinct
 styles, keyboard focus and the ready LED. The existing live-console check also
 passed New Vegas with actual output at desktop and 320px widths.
+
+### AI-selected helpers and incremental terminal delivery
+
+The case MCP server exposes the separate `case_volshell` helper transport to both
+providers, including resumed Codex conversations. Fifteen synthetic controller
+checks cover the closed helper schema, literal quoting, active job/image binding,
+manual-session separation, exact question approvals, automatic report scope,
+errors/timeouts, Stop and job cleanup, and saved-observation confinement. A real
+MCP transport test returns a synthetic observed PID and feeds it into the next
+plugin call. Observations retain their exploratory classification and are never
+counted as validated core runs. A separate official Volatility 3 2.28.2 smoke used
+only a newly created 64 KiB zero fixture and verified the bounded `db` helper and
+its saved observation.
+
+Nineteen session/HTTP tests include a gated no-newline write and split UTF-8
+sequence visible before command completion, through both the pipe reader and
+authenticated SSE. Case filtering, reconnect snapshots, terminal status, stream
+capacity and immediate closed-connection reuse are covered. Bridge checks cover
+case-specific capabilities, Origin, redirects, exact-request cancellation and
+cancellation/start races. No credentials or case content are sent to a remote
+service by these tests.
+
+The browser stream check disables normal polling and verifies partial fragments,
+stale-case/source rejection, stale-poll protection, reconnect fallback, scroll
+retention, AI readiness LED, same-case expanded-only activity switching and
+approval access without a manual session. New Vegas at 320px and Fallout 2 at
+desktop/390px were visually reviewed again. The existing live-console and all-theme
+checks passed with explicit offline stream substitutes.
+
+The final installed-wheel smoke passed all **222 tests**, dependency checks and
+packaged routes. Four MCP bridge tests include redirect rejection, exact-request
+cancellation and pre-cancel/replay rejection. Closed streams release slots within
+the focused one-second bound; permanently closed EventSource connections retry at
+1/2/4/8/15-second capped intervals while polling remains available. The seven
+HTTP/SSE tests also passed with ResourceWarning promoted to an error.

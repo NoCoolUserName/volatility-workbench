@@ -197,8 +197,15 @@
         <div class="crt-top-vents" aria-hidden="true"></div>
         <div class="crt-recess"><div class="crt-screen">
           <div id="expandedConsoleHost" class="crt-console-pane"><div id="emptyConsole" hidden><h3 id="emptyConsoleTitle">Investigation output</h3><p>No live or saved investigation output is available. Select VolShell to open an interactive session for a registered capture.</p><button id="collapseEmptyConsole" type="button">Collapse</button></div></div>
+          <section id="volshellAgentPanel" class="crt-console-pane volshell-panel" aria-labelledby="volshellAgentTitle" hidden>
+            <div class="volshell-heading"><h3 id="volshellAgentTitle">AI VolShell activity</h3><div><button id="volshellInteractiveMode" type="button">Interactive controls</button><button id="collapseVolshellAgent" type="button">Collapse</button></div></div>
+            <p id="volshellAgentStatus" role="status" aria-live="polite"></p>
+            <p class="subtle">Read-only view of AI-selected VolShell activity. Exploratory observations guide the investigation; validated plugin results remain in Evidence.</p>
+            <pre id="volshellAgentCommand" aria-label="AI VolShell command" hidden></pre>
+            <pre id="volshellAgentOutput" tabindex="0" role="log" aria-label="AI VolShell output" aria-live="off"></pre>
+          </section>
           <section id="volshellPanel" class="crt-console-pane volshell-panel" aria-labelledby="volshellTitle" hidden>
-            <div class="volshell-heading"><h3 id="volshellTitle">VolShell</h3><button id="collapseVolshell" type="button">Collapse</button></div>
+            <div class="volshell-heading"><h3 id="volshellTitle">VolShell</h3><div><button id="volshellShowAgent" type="button" hidden>AI activity</button><button id="collapseVolshell" type="button">Collapse</button></div></div>
             <div class="volshell-targets">
               <label for="volshellCase">Case<select id="volshellCase"></select></label>
               <label for="volshellImage">Capture<select id="volshellImage"></select></label>

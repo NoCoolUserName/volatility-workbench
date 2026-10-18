@@ -1590,6 +1590,7 @@ function resizeConsoleView(expanded) {
     button.textContent = "Collapse";
     button.setAttribute("aria-expanded", "true");
     dialog.showModal();
+    window.WorkbenchVolshell.opened();
   } else {
     $("liveConsoleDock").append($("liveConsoleSection"));
     document.body.classList.remove("console-zoom-open");
@@ -1974,8 +1975,9 @@ window.addEventListener("scroll", updateBackToTop, {passive:true});
 window.addEventListener("resize", updateBackToTop);
 window.WorkbenchVolshell.mount({api, refresh, formatOperation: operationLabel, formatTime: readableTime,
   hasConsole: () => !!currentConsole, openMonitor: () => resizeConsoleView(true),
+  consoleCase: () => currentConsole?.case_id || selected,
   showApprovals: caseId => {
-    $("volshellApprovalNotice").textContent = "AI investigation needs your decision. Review the pending approval below; the VolShell session remains connected.";
+    $("volshellApprovalNotice").textContent = "AI investigation needs your decision. Review the pending approval below; you can reopen the console afterward.";
     $("volshellApprovalNotice").hidden = false;
     choose(caseId);
     $("approvals").scrollIntoView({block:"center"});

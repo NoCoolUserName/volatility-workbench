@@ -17,6 +17,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
   const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
   try{
     const page=await browser.newPage({viewport:{width:1400,height:1050}});
+    await page.addInitScript(()=>{window.EventSource=class extends EventTarget {close(){}};});
     async function chooseTheme(id){
       if(await page.locator('#theme').isHidden())await page.locator('#toggleTheme').click();
       await page.locator('#theme').selectOption(id);
