@@ -17,8 +17,10 @@ original Matrix green appearance; the three original preference values remain
 supported. Selection persists in browser/WebView local storage, and open
 same-origin tabs synchronize.
 Artwork stays in a decorative band outside opaque evidence/report surfaces.
+Fallout 2 uses a scalable CSS metal housing, compact ventilation rail, recessed
+green screens and brass controls, guided by the supplied inventory-screen reference.
 Theme changes do not submit jobs or modify cases, conversations or saved reports.
-The displayed report retains its selection stripe. See [the catalog and verified
+The displayed report retains its selection border. See [the catalog and verified
 references](THEMES.md), including the Punisher #53 artist correction.
 
 ## Launch

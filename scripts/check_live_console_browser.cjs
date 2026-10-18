@@ -87,13 +87,22 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   await page.waitForFunction(()=>document.querySelector('#expandConsole').getAttribute('aria-expanded')==='false');
   assert.equal(await zoom.isHidden(),true,'Escape closes the monitor');
   assert.equal(await page.locator('body').evaluate(node=>node.classList.contains('console-zoom-open')),false);
-  for(const theme of ['matrix','blue','8-bit']){
+  for(const theme of ['matrix','blue','8-bit','fallout-2']){
    if(await page.locator('#theme').isHidden())await page.locator('#toggleTheme').click();
    await page.locator('#theme').selectOption(theme);
    await expand.click();await zoom.waitFor();
-   assert.equal(await pre.evaluate(node=>getComputedStyle(node).backgroundColor),await page.locator('body').evaluate(node=>getComputedStyle(node).backgroundColor));
+   if(theme!=='fallout-2')assert.equal(await pre.evaluate(node=>getComputedStyle(node).backgroundColor),await page.locator('body').evaluate(node=>getComputedStyle(node).backgroundColor));
+   else assert.ok(await pre.evaluate(node=>{
+    const style=getComputedStyle(node),luminance=value=>{
+     const channels=value.match(/[\d.]+/g).slice(0,3).map(Number).map(n=>n/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);
+     return channels[0]*.2126+channels[1]*.7152+channels[2]*.0722;
+    };
+    const text=luminance(style.color),background=luminance(style.backgroundColor);
+    return(Math.max(text,background)+.05)/(Math.min(text,background)+.05)>=4.5;
+   }),'Fallout 2 phosphor console text stays readable on its recessed screen');
    assert.equal(await pre.evaluate(node=>getComputedStyle(node).color),await page.locator('header a').evaluate(node=>getComputedStyle(node).color));
    if(theme==='matrix'&&process.env.WORKBENCH_CRT_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_CRT_SCREENSHOT});
+   if(theme==='fallout-2'&&process.env.WORKBENCH_FALLOUT_CRT_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_FALLOUT_CRT_SCREENSHOT});
    await expand.click();await page.waitForFunction(()=>document.querySelector('#expandConsole').getAttribute('aria-expanded')==='false');
   }
   await page.setViewportSize({width:2560,height:1440});
@@ -120,7 +129,7 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   assert.equal(await page.locator('#consolePowerText').innerText(),'SAVED');
   assert.equal(await page.locator('#stop').isHidden(),true,'Saved output must not expose an active Stop button');
   assert.equal(await page.getByRole('progressbar').count(),0,'Saved output must not imply running work');
-  assert.equal(await page.locator('#workTitle').innerText(),'Report console');
+  assert.equal(await page.locator('#workTitle').textContent(),'Report console');
   await expand.click();await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
   rejectSaved=true;await page.reload();await page.getByRole('button',{name:'Retry loading',exact:true}).waitFor();
   assert.match(await page.locator('#consoleNote').innerText(),/Synthetic saved-console read failure/);

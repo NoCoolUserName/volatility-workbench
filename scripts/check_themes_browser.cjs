@@ -21,6 +21,26 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       if(await page.locator('#theme').isHidden())await page.locator('#toggleTheme').click();
       await page.locator('#theme').selectOption(id);
     }
+    async function presentationStyles(){
+      return page.locator('body, body > header, .layout, .layout > aside, .layout > main, #toggleTheme').evaluateAll(elements=>elements.map(element=>{
+        const style=getComputedStyle(element);
+        return Object.fromEntries(['backgroundColor','backgroundImage','borderTopWidth','borderRadius','boxShadow','fontFamily','color'].map(name=>[name,style[name]]));
+      }));
+    }
+    async function noPageOverflow(label){
+      const overflow=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,
+        elements:[...document.querySelectorAll('body *')].filter(element=>{const box=element.getBoundingClientRect();return box.width&&box.right>innerWidth+1;}).slice(0,8).map(element=>({tag:element.tagName,id:element.id,className:element.className,width:element.getBoundingClientRect().width,right:element.getBoundingClientRect().right}))}));
+      if(overflow.scrollWidth>overflow.width&&screenshotDir)await page.screenshot({path:path.join(screenshotDir,'overflow-'+label.replace(/\W+/g,'-')+'.png'),fullPage:true});
+      assert.ok(overflow.scrollWidth<=overflow.width,label+' must not overflow horizontally: '+JSON.stringify(overflow));
+    }
+    async function headerNoOverlap(label){
+      assert.ok(await page.locator('body > header').evaluate(header=>{
+        const settings=header.querySelector('.settings-link').getBoundingClientRect();
+        return [...header.querySelectorAll('.eyebrow,h1')].every(element=>{const text=element.getBoundingClientRect();
+          return settings.left>=text.right||settings.right<=text.left||settings.top>=text.bottom||settings.bottom<=text.top;
+        });
+      }),label+' Settings link must not cover the title or eyebrow');
+    }
     const errors=[],network=[],policyErrors=[];
     page.on('console',message=>{if(/Content Security Policy|violates the following/.test(message.text()))policyErrors.push(message.text());});
     page.on('pageerror',e=>errors.push(e.message));
@@ -54,6 +74,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     const screenshotDir=process.env.WORKBENCH_THEME_SCREENSHOTS;
     if(screenshotDir)fs.mkdirSync(screenshotDir,{recursive:true});
     const measurements=[];
+    const baselineStyles=new Map();
     for(const theme of catalog){
       await chooseTheme(theme.id);
       assert.equal(await page.locator('html').getAttribute('data-theme'),theme.id);
@@ -64,7 +85,33 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
         const style=getComputedStyle(element);return {shadow:style.boxShadow,left:style.borderLeftWidth,right:style.borderRightWidth};
       }));
       assert.ok(selectedStyles.length>0);
-      for(const style of selectedStyles){assert.equal(style.shadow,'none','Selected controls have no one-sided inset stripe');assert.equal(style.left,style.right,'Selected borders are even on both sides');}
+      for(const style of selectedStyles){
+        if(theme.id!=='fallout-2')assert.equal(style.shadow,'none','Selected controls have no one-sided inset stripe');
+        assert.equal(style.left,style.right,'Selected borders are even on both sides');
+      }
+      if(['matrix','fallout','fallout-3'].includes(theme.id))baselineStyles.set(theme.id,await presentationStyles());
+      if(theme.id==='fallout-2'){
+        const surfaces=await page.locator('body, body > header, .skin-scene, .layout, .layout > aside, .layout > main').evaluateAll(elements=>elements.map(element=>{
+          const style=getComputedStyle(element);return {backgroundImage:style.backgroundImage,backgroundColor:style.backgroundColor};
+        }));
+        for(const surface of surfaces)assert.doesNotMatch(surface.backgroundImage,/url\(/,'Fallout 2 chassis scales with CSS instead of image assets');
+        for(const surface of surfaces.slice(-2)){
+          assert.equal(surface.backgroundImage,'none','Dense case and report surfaces stay free of decorative textures');
+          assert.match(surface.backgroundColor,/^rgb\(/,'Screen wells have an opaque background');
+        }
+        const rail=await page.locator('.skin-scene').boundingBox();
+        assert.ok(rail.height>0&&rail.height<=32,'Fallout 2 has a compact CSS ventilation rail');
+        const primary=await page.locator('#update.primary').evaluate(element=>{
+          const style=getComputedStyle(element),channels=value=>value.match(/[\d.]+/g).slice(0,3).map(Number),
+            luminance=rgb=>{const c=rgb.map(n=>n/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);return c[0]*.2126+c[1]*.7152+c[2]*.0722;};
+          const text=luminance(channels(style.color)),stops=[...style.backgroundImage.matchAll(/rgb\([^)]+\)/g)].map(match=>channels(match[0]));
+          return {green:stops.length>0&&stops.every(([r,g,b])=>g>r&&g>b),minimumContrast:Math.min(...stops.map(stop=>{const bg=luminance(stop);return(Math.max(text,bg)+.05)/(Math.min(text,bg)+.05);} ))};
+        });
+        assert.ok(primary.green,'Update report keeps its primary green action');
+        assert.ok(primary.minimumContrast>=4.5,'Primary text remains readable across its green bevel');
+        await noPageOverflow('Fallout 2 desktop report');
+        await headerNoOverlap('Fallout 2 desktop');
+      }
       const image=theme.id==='halloween-noir'?'halloween-night.png':`theme-${theme.id}.svg`;
       assert.ok(fs.existsSync(path.join(assets,image)),'Every skin has a packaged scene');
       if(image.endsWith('.svg')){
@@ -87,6 +134,15 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       await page.locator('#theme').focus();
       assert.equal(await page.locator('#theme').evaluate(e=>getComputedStyle(e).outlineStyle),'solid');
       if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,theme.id+'.png'),fullPage:true});
+      if(screenshotDir&&theme.id==='fallout-2'){
+        await page.locator('#theme').press('Escape');
+        await page.screenshot({path:path.join(screenshotDir,'fallout-2-desktop-viewport.png')});
+      }
+    }
+    // The custom housing must disappear when returning to the default or adjacent skins.
+    for(const [id,styles] of baselineStyles){
+      await chooseTheme('fallout-2');await chooseTheme(id);
+      assert.deepEqual(await presentationStyles(),styles,`${id} must not retain Fallout 2 housing styles`);
     }
     // Every original preference remains honored on startup, including settings.
     for(const id of ['matrix','mono','blue']){
@@ -110,11 +166,34 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       assert.equal(await page.locator('#pluginRows').evaluate(e=>getComputedStyle(e).color),await page.locator('body').evaluate(e=>getComputedStyle(e).color));
     }
     await page.setViewportSize({width:390,height:844});
-    await chooseTheme('matrix');
-    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile must not overflow horizontally');
-    if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,'mobile.png'),fullPage:true});
+    for(const id of ['matrix','fallout-2']){
+      await chooseTheme(id);
+      await noPageOverflow(id+' mobile plugins');
+      await headerNoOverlap(id+' mobile');
+      if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,id+'-mobile-plugins.png'),fullPage:true});
+    }
+    await page.locator('#closePlugins').click();
+    for(const width of [390,320]){
+      await page.setViewportSize({width,height:844});
+      await noPageOverflow('Fallout 2 '+width+'px report');
+      await headerNoOverlap('Fallout 2 '+width+'px');
+      assert.equal(await page.locator('.report-version.selected').count(),1);
+      if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,'fallout-2-mobile-'+width+'.png'),fullPage:true});
+    }
+    await page.goto('http://localhost/settings.html');
+    assert.equal(await page.locator('#settings-theme').inputValue(),'fallout-2');
+    await noPageOverflow('Fallout 2 mobile Settings');
+    if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,'fallout-2-settings-mobile.png'),fullPage:true});
+    await page.setViewportSize({width:1400,height:1050});
+    await noPageOverflow('Fallout 2 desktop Settings');
+    if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,'fallout-2-settings-desktop.png'),fullPage:true});
+    await page.goto('http://localhost/');
+    await page.setViewportSize({width:390,height:844});
     await page.emulateMedia({reducedMotion:'reduce',contrast:'more'});
     assert.equal(await page.locator('html').evaluate(e=>getComputedStyle(e).getPropertyValue('--border').trim()),await page.locator('html').evaluate(e=>getComputedStyle(e).getPropertyValue('--muted').trim()));
+    await noPageOverflow('Fallout 2 mobile increased contrast');
+    if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,'fallout-2-increased-contrast.png'),fullPage:true});
+    await chooseTheme('matrix');
     // Storage unavailable and unknown future/removed IDs both keep a usable default.
     await page.evaluate(()=>localStorage.setItem('volatility-workbench-theme','unknown-theme'));
     await page.reload();assert.equal(await page.locator('#theme').inputValue(),'matrix');
@@ -124,7 +203,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     assert.equal(await page.locator('html').getAttribute('data-theme'),'8-bit');
     assert.deepEqual(errors,[]);
     assert.deepEqual(policyErrors,[],'Production CSP must allow all packaged artwork');
-    console.log(`Theme browser: ${catalog.length} skins, 12 Fallout choices, text/control contrast, selected report, focus, 3 legacy prefs, shared Settings, mobile, increased contrast and unavailable storage passed. ${network.length} local GET requests; zero analysis/mutation/external requests.`);
+    console.log(`Theme browser: ${catalog.length} skins, 12 Fallout choices, text/control contrast, selected report, focus, 3 legacy prefs, shared Settings, Fallout 2 CSS housing/isolation, 320px/390px mobile reports/plugins/Settings, increased contrast and unavailable storage passed. ${network.length} local GET requests; zero analysis/mutation/external requests.`);
     if(screenshotDir)fs.writeFileSync(path.join(screenshotDir,'contrast.json'),JSON.stringify(measurements,null,2)+'\n');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

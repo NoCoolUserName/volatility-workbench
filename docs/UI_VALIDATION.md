@@ -747,3 +747,33 @@ names. Security gates and CSP were not disabled or relaxed. The installed-wheel
 smoke was repeated after this server-code repair and again passed all 118 tests,
 dependency/protocol checks and every theme asset route with zero analysis/model
 subprocesses.
+
+## Fallout 2 CSS console skin — 2026-10-18
+
+The supplied inventory-screen concept now guides Fallout 2's CSS metal housing,
+rivets, ventilation rail, recessed dark screens, brass controls and green phosphor
+accents. The housing scales through CSS gradients, borders and shadows without
+loading the reference screenshot. Evidence and report text remains on opaque,
+untextured surfaces. Primary Update report stays green; danger and focus indicators
+retain their separate meanings. The overrides are scoped to Fallout 2.
+
+The expanded offline theme browser check passed all 31 palettes, the existing
+4.5:1 text and 3:1 control-border token checks, actual green-primary gradient text
+contrast, report selection, keyboard focus, legacy preference reloads, and shared
+Settings. It verifies that switching back to Matrix, Fallout and Fallout 3 restores
+their presentation, and that Fallout 2 uses CSS surfaces with a compact rail.
+Desktop layouts, reports at 320px and 390px, plugins at 390px and Settings at 320px
+were checked for page overflow, with explicit title/Settings overlap checks. The final run made 235 local
+GET requests, with no analysis, case/job mutations, external requests, page errors
+or CSP violations. Desktop, narrow-screen, Settings and expanded-console captures
+were visually reviewed using synthetic fixtures stored outside the repository.
+
+The affected report-plugin and case-header browser regressions passed, covering
+bulk and failed-plugin actions, persistent acknowledgments, selection, readiness
+and header alignment. The live/saved-console check now includes Fallout 2 at
+desktop, 2560px and 390px widths; it passed actual console text contrast, modal
+focus, follow/pause/collapse, saved output reload and case isolation with zero work
+requests. Its heading-state assertion reads text content so the skin's uppercase
+presentation does not alter the expected application state. Mobile review caught
+and resolved a theme-dropdown overflow and a Settings/eyebrow overlap before the
+final checks. No real investigation, evidence or saved report was used.
