@@ -99,6 +99,16 @@ saved evidence, and reports are unaffected.
    readable text views, JSON/JSONL, activity, failures, current operation and elapsed
    time are accessible in the other tabs. Large files are read in bounded chunks;
    complete originals remain on disk. Recovered HTML is never executed.
+   The report's actual assessment wording moves from its metadata preamble directly
+   beneath its title in the viewer; it is not a fixed readiness/verdict label.
+   Report preparation metadata shows the recorded model, reasoning effort and
+   generation-turn token usage where reported. Historical unknowns and case-total
+   versus report-only counts are labeled explicitly. The canonical new Markdown
+   and manifest retain portable generation provenance; old bundles are not rewritten.
+   See [AI connections](AI_PROVIDERS.md) for counter scope and limitations.
+   Duplicate managed coin links copied from an older narrative are suppressed by
+   the viewer; the packager normalizes managed badges on new saves, retaining
+   distinct image coins and leaving other report images intact.
    Incomplete report cards reveal **×** on hover or keyboard focus (always visible
    on touch devices). Its popup offers **Hide from UI**, which persistently hides
    the revision without changing files, or **Delete**, which permanently removes

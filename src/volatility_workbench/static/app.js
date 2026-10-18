@@ -206,6 +206,29 @@ function coinImage(path, label) {
   };
   return img;
 }
+function reportPresentation(text, generation) {
+  // Presentation only: historical Markdown/checksums remain byte-for-byte intact.
+  const lines = text.split("\n");
+  const section = lines.findIndex(line => line.startsWith("## "));
+  const end = section < 0 ? lines.length : section;
+  const preamble = lines.slice(0, end).filter(line => !line.startsWith("AI generation: "));
+  let subtitle = "";
+  for (let i = 0; i < preamble.length; i++) {
+    const parts = /^(Report specification[^\n]*?manifest schema \d+(?:\.\d+)*\.)\s+(.+?)\s+((?:Prepared|Revised) \d{4}-\d{2}-\d{2} UTC.*)$/.exec(preamble[i]);
+    if (parts) { subtitle = parts[2]; preamble[i] = parts[1] + " " + parts[3]; break; }
+  }
+  const title = preamble.findIndex(line => /^#\s/.test(line));
+  if (subtitle && title >= 0) preamble.splice(title + 1, 0, "", subtitle);
+  const detail = generation?.summary || "Model, reasoning effort and token usage were not recorded for this report.";
+  const metadata = preamble.findIndex(line => line.startsWith("Report specification"));
+  if (metadata >= 0) {
+    const dated = /(?:Prepared|Revised) \d{4}-\d{2}-\d{2} UTC\./;
+    preamble[metadata] = generation && dated.test(preamble[metadata])
+      ? preamble[metadata].replace(dated, value => value.slice(0, -1) + " " + detail)
+      : preamble[metadata] + " " + detail;
+  } else preamble.push("", "AI generation: " + detail, "");
+  return preamble.concat(lines.slice(end)).join("\n");
+}
 function renderMarkdown(text, base) {
   const article = $("reportView"),
     toc = $("toc");
@@ -220,9 +243,12 @@ function renderMarkdown(text, base) {
   }
   let code = null,
     count = 0;
+  const shownCoins = new Set();
   for (const line of text.split("\n")) {
     const coin = /^!\[(Decorative coin for [^\]]+)\]\((assets\/coins\/[a-f0-9]{64}\.(?:png|svg))\)$/.exec(line);
     if (!code && coin) {
+      if (shownCoins.has(coin[2])) continue;
+      shownCoins.add(coin[2]);
       article.append(coinImage(base + "/" + coin[2], coin[1]));
       continue;
     }
@@ -273,7 +299,7 @@ async function showReport(version) {
       "file?case=" + selected + "&path=" + encodeURIComponent(path),
     );
     if (shownReport !== key) return;
-    renderMarkdown(data.text, "reports/" + version.id);
+    renderMarkdown(reportPresentation(data.text, version.generation), "reports/" + version.id);
     const citationCase = selected;
     const checks = el("button", "Inspect evidence citations");
     const panel = el("div");

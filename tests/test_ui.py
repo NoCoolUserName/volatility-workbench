@@ -41,6 +41,7 @@ class FakeCodex:
         self.threads=0
         self.tasks=[]
         self.turn=0
+        self.total_tokens=0
     async def start(self):pass
     async def close(self):
         for t in self.tasks:t.cancel()
@@ -51,7 +52,8 @@ class FakeCodex:
         if method in ('thread/start','thread/resume'):
             self.threads+=1
             return {'thread':{'id':params.get('threadId','synthetic-thread-'+str(self.threads))},
-                    'approvalPolicy':'on-request','approvalsReviewer':'user','sandbox':{'type':'readOnly'}}
+                    'approvalPolicy':'on-request','approvalsReviewer':'user','sandbox':{'type':'readOnly'},
+                    'model':'synthetic-codex','reasoningEffort':'high'}
         if method=='turn/start':
             self.turn+=1;tid=str(self.turn)
             self.tasks.append(asyncio.create_task(self.finish(params,tid)))
@@ -63,6 +65,7 @@ class FakeCodex:
         raise ValueError(method)
     async def finish(self,params,tid):
         await asyncio.sleep(.02)
+        await self.event('turn/started',{'threadId':params['threadId'],'turn':{'id':tid}})
         text=params['input'][0]['text']
         if 'WAIT_FOR_STOP' in text:
             await asyncio.sleep(30)
@@ -73,9 +76,16 @@ class FakeCodex:
                 return json.loads(result['contentItems'][0]['text'])
             context=await tool('case_report_context',{})
             a=context['manifest']['artifacts'][0]
-            await tool('case_save_report',{'markdown':report_text(a['path'],a['artifact_id']),
+            coins='\n'.join(f"![Decorative coin for {c['image_id']}]({c['path']})" for c in context['manifest']['coins'] if 'path' in c)
+            await tool('case_save_report',{'markdown':coins+'\n'+coins+'\n'+report_text(a['path'],a['artifact_id']),
                 'findings':[{'finding_id':'F001','evidence_refs':[{'artifact_id':a['artifact_id'],'locator':'synthetic test record'}]}],'iocs':[]})
         await self.event('item/completed',{'threadId':params['threadId'],'item':{'type':'agentMessage','id':tid,'text':'Synthetic response; no real investigation.'}})
+        self.total_tokens+=1000
+        counts={'totalTokens':self.total_tokens,'inputTokens':self.total_tokens*8//10,
+                'outputTokens':self.total_tokens//5,'cachedInputTokens':0,'reasoningOutputTokens':self.total_tokens//10}
+        for _ in range(2):  # Repeated notifications must not double-charge usage.
+            await self.event('thread/tokenUsage/updated',{'threadId':params['threadId'],'turnId':tid,
+                'tokenUsage':{'total':counts,'last':counts}})
         await self.event('turn/completed',{'threadId':params['threadId'],'turn':{'id':tid,'status':'completed'}})
 
 
@@ -128,11 +138,18 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(report['status'],'sealed')
         manifest=json.loads((self.app.directory(self.case)/'reports'/report['id']/'case-manifest.json').read_text())
         self.assertTrue(manifest['artifacts'])
+        self.assertEqual(manifest['generation']['model'],'synthetic-codex')
+        self.assertEqual(manifest['generation']['reasoning_effort'],'high')
+        self.assertEqual(manifest['generation']['token_usage']['total_tokens'],1000)
+        self.assertEqual(manifest['generation']['status'],'completed')
         self.assertEqual(len(manifest['coins']),1)
         coin=manifest['coins'][0]
         bundle=self.app.directory(self.case)/'reports'/report['id']
         self.assertTrue((bundle/coin['path']).is_file())
         self.assertIn(coin['path'],(bundle/'report.md').read_text())
+        self.assertEqual((bundle/'report.md').read_text().count('![Decorative coin for E001]'),1)
+        self.assertIn('and 1,000 tokens (report-generation turn; final provider count)',(bundle/'report.md').read_text())
+        self.assertEqual((bundle/'report.md').read_text().count('AI generation: '),1)
         self.assertIn(coin['path'],(bundle/'SHA256SUMS').read_text())
         self.assertTrue(all(r['image_id']=='E001' for r in manifest['runs']))
         self.assertEqual(self.fixture.image.read_bytes(),before)
@@ -152,6 +169,8 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.case['thread_id'],thread)
         self.assertEqual(path.read_bytes(),original)
         self.assertEqual(self.case['reports'][1]['previous'],report['id'])
+        self.assertEqual(self.case['reports'][1]['generation']['token_usage']['total_tokens'],1000)
+        self.assertEqual(self.case['reports'][1]['generation']['token_usage']['thread_total_tokens'],3000)
         roots=[self.app.directory(self.case)/'reports'/r['id'] for r in self.case['reports']]
         coins=[json.loads((r/'case-manifest.json').read_text())['coins'][0] for r in roots]
         self.assertEqual(coins[0]['asset_sha256'],coins[1]['asset_sha256'])

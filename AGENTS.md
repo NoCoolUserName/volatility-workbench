@@ -18,5 +18,12 @@ Do not restart active work. Preserve case identities, conversations and sealed
 reports. If a physical root moves, back up and validate mutable path metadata;
 do not create filesystem aliases implicitly. See docs/SEPARATION.md and docs/LOCAL_UI.md.
 
-Run `python -m unittest discover -s tests -v`, package smoke checks and browser
-checks appropriate to a change. Verify installed assets from outside the checkout.
+During development, run focused checks for changed behavior and concrete regression
+risks. Do not rerun the full suite after every small edit. Before merge/release, run
+the full application suite and installed-package smoke once on the final change;
+`scripts/package_smoke.py` includes the full suite against installed wheels and can
+satisfy both local requirements without another duplicate full checkout run.
+Use browser checks for affected interactions. Repeat only checks affected by later
+changes or failures; retain CI's supported-Python checks. Use simulated providers,
+not live-model loops or real investigations, for routine checks. Record actual checks
+and limitations. Verify installed assets from outside the checkout when installing.

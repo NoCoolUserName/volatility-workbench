@@ -623,3 +623,39 @@ updated. No app was installed from that build. The release pin was corrected
 and the builder now fails before downloads if these three sources disagree;
 an offline regression checks both metadata and lock mismatches. The subsequent
 native build and installer validation use the merged core commit.
+
+## Report generation provenance and preamble — 2026-10-18
+
+Focused checks use provider-shaped synthetic Codex notifications: effective
+model/effort, repeated cumulative usage, report-turn deltas, missing baseline,
+counter reset, malformed counters, case/turn isolation, reroutes, persistence,
+missing usage after dispatch, and refusal to revise final metadata from late events.
+The stage A/B fixtures verify metadata in sealed Markdown/manifests, one managed
+coin per image despite copied duplicate badges, per-turn versus thread totals,
+and unchanged prior sealed checksums. No live provider/model was invoked.
+
+The existing failed/partial-coverage report regression passes: mechanical
+limitations are refreshed at save and seal, with saved evidence and a subprocess
+guard. It addresses the recorded limitations-block sealing failure without
+weakening coverage validation. Other malformed reports can still fail validation.
+
+`node scripts/check_report_metadata_browser.cjs` passes against offline synthetic
+HTTP responses in local Chrome. It verifies actual assessment text (including a
+different assessment and HTML-looking data) beneath the title, model/effort/token
+display, historical unknowns, duplicate old-coin suppression, distinct-image coin
+retention, and zero work submissions. A screenshot was inspected locally; none
+contains private case data. The first assertion assumed inline-code rendering;
+it was corrected to check the existing renderer's literal text rather than expand
+Markdown behavior. The first local HTTP fixture needed local socket permission;
+that one check passed when repeated with the required execution permission.
+
+Development policy now uses focused checks while editing, then the full installed
+application suite/package smoke before merge, avoiding a duplicate local full
+checkout run when the smoke already executes all tests. CI still exercises the
+supported Python versions and installed-package boundary. Simulated provider
+contracts do not require additional model subscriptions and are not claims of
+live model accuracy or cross-provider compatibility.
+
+The final fresh-wheel smoke passed all 116 installed application tests, dependency
+checks and ten-tool MCP discovery in both SDK modes. Its HTTP/assets guard observed
+zero analysis/model subprocesses. No real images were opened for those checks.

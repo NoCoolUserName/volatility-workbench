@@ -12,6 +12,14 @@ creates decorative assets from saved identities. `http.py` serves packaged stati
 assets with loopback Host/Origin/capability checks. The runtime fingerprint covers
 both installed packages, so a core update requires an idle process restart.
 
+`generation.py` formats optional report-turn provenance. Thread responses provide
+effective Codex model/effort; usage notifications provide cumulative counters,
+with a persisted pre-turn baseline for report-only deltas. Report revisions snapshot
+that metadata, never the case's latest settings retroactively. New portable Markdown,
+manifest and final checksums contain the final snapshot. Live presentation of older
+reports labels missing metadata instead of altering their bundles. No model requests
+are made merely to display or calculate these counters.
+
 Explicit incomplete-report hide/delete actions use the same authenticated,
 Origin-checked HTTP transport. Hidden/deleted timestamps and history remain in
 the existing case state. Only a registered incomplete revision can be targeted;
