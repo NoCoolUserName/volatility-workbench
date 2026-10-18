@@ -118,6 +118,10 @@ class Handler(BaseHTTPRequestHandler):
         app=self.server.app
         one=lambda k,d='':query.get(k,[d])[0]
         if path=='/api/state':return app.snapshot()
+        if path=='/api/plugins':
+            if one('refresh', '0') not in ('0', '1'):
+                raise ValueError('refresh must be 0 or 1')
+            return await app.plugin_catalog(refresh=one('refresh', '0') == '1')
         if path=='/api/browse':return app.browse(one('path'))
         if path=='/api/artifacts':return app.artifacts(app.case(one('case')))
         if path=='/api/coverage':
