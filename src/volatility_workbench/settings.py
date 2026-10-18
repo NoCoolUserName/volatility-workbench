@@ -47,6 +47,7 @@ class SettingsManager:
         titles={case['id']:case.get('title',case['id']) for case in self.app.state['cases']}
         for case in provider.get('cases',[]): case['title']=titles.get(case['case_id'],case['case_id'])
         return {'config':config.to_dict(),'state_dir':str(self.app.root),'has_cases':bool(self.app.state['cases']),
+            'evidence_locations':self.app.evidence_locations() if hasattr(self.app,'evidence_locations') else [],
             'native_folder_picker':bool(self.folder_picker),'managed_runtime_available':bool(self.resources and (self.resources/'analyzer/bin/python3').exists()),
             'symbols':{'directory':str(symbol_root),'cache':str(config.cache_path),'profile':symbols.profile(),
                 'matching':'Windows uses the exact PDB GUID/age when collection requests symbols. Linux/macOS need matching banners. Installed files do not establish image readiness.'},

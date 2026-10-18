@@ -476,3 +476,31 @@ and after launch. No Volatility command or investigation job was started.
 - PTE algorithms and real-image plugin support remain unvalidated. Two upstream
   source redistribution licenses remain unresolved; future public app/container
   bundling must resolve permission or retain explicit operator download.
+
+
+## Registered evidence locations — 2026-10-18
+
+Five new fixture checks pass for explicit images in different physical folders:
+metadata-only Settings discovery/deduplication, persistence across reopening,
+related captures with exact file allowlists, unavailable-folder display, rejection
+of symlinks/traversal/output files, and actual stdio MCP discovery rejecting an
+unselected sibling. The existing hashing routine also accepts the newly scoped
+fixture image. Adding/viewing locations launches zero analyzer processes and does
+not hash images; the MCP inventory and fingerprint check hash only tiny synthetic
+fixtures. The unchanged default config bytes are checked explicitly.
+
+All 97 application tests pass, including the isolated installed-wheel smoke check
+outside the checkout with real SDK/HTTP interfaces. No real memory acquisition or
+live model is used. The offline Chromium Settings check passes initial rendering,
+2-second refresh, reload, deduplicated counts, safe text rendering and unchanged
+default-folder controls. Its screenshot was visually inspected using synthetic
+paths. The first browser attempts found a missing old temporary Playwright module
+and a bundled-library/browser-cache version mismatch; the successful check used
+the existing bundled library and cached Chromium via explicit environment paths,
+without installing another browser.
+
+Run the optional browser check with Playwright available in Node's module path:
+`node scripts/check_settings_browser.cjs`. If using a separately cached Chromium,
+set `WORKBENCH_BROWSER_EXECUTABLE` to its actual executable. This browser fixture
+simulates settings data; the real scoped MCP tests exercise backend access limits.
+Existing cases retain their saved roots and reports. No legacy manifest is rebased.

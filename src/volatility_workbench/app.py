@@ -199,10 +199,45 @@ class Workbench:
                 break
         return {'root':str(self.config.evidence_root),'relative':relative,'entries':entries,'limit':500}
 
+    def selected_image(self, value):
+        """An explicit UI selection may establish a new location, never a scan."""
+        if not isinstance(value, str):
+            raise ValueError('Image path must be text')
+        candidate = logical_path(Path(value).expanduser())
+        if not candidate.is_absolute():
+            candidate = self.config.evidence_root / candidate
+        check_components(candidate)
+        if (candidate.is_relative_to(self.config.output_root) or candidate.is_relative_to(self.root)
+                or self.project and candidate.is_relative_to(self.project)
+                or '_outputs' in candidate.parts or '__MACOSX' in candidate.parts):
+            raise ValueError('Select original evidence outside application outputs and project files')
+        if candidate.is_relative_to(self.config.evidence_root):
+            return self.backend.resolve_input(value)
+        if not candidate.is_file():
+            raise ValueError('Selected image does not exist or is not a regular file')
+        selected = dataclasses.replace(self.config, evidence_root=candidate.parent)
+        return VolatilityBackend(selected).resolve_input(value)
+
+    def evidence_locations(self):
+        """Derive folders from saved case metadata; never hash or open images."""
+        locations = {str(self.config.evidence_root): {'path': str(self.config.evidence_root),
+                      'default': True, 'images': set(), 'cases': set()}}
+        for case in self.state['cases']:
+            for image in case.get('images', []):
+                path = Path(image['path'])
+                folder = str(path.parent)
+                location = locations.setdefault(folder, {'path': folder, 'default': False,
+                                                        'images': set(), 'cases': set()})
+                location['images'].add(str(path))
+                location['cases'].add(case['id'])
+        return [{'path': item['path'], 'default': item['default'],
+                 'image_count': len(item['images']), 'case_count': len(item['cases'])}
+                for item in sorted(locations.values(), key=lambda x: (not x['default'], x['path'].casefold()))]
+
     def add(self, paths, related=False, title='', source=''):
         if not isinstance(paths,list) or not 1<=len(paths)<=32:
             raise ValueError('Select between 1 and 32 images')
-        resolved = list(dict.fromkeys(str(self.backend.resolve_input(p)) for p in paths))
+        resolved = list(dict.fromkeys(str(self.selected_image(p)) for p in paths))
         groups = [resolved] if related else [[p] for p in resolved]
         cases = []
         for group in groups:
@@ -212,7 +247,8 @@ class Workbench:
                 'readiness':{'status':'Unchecked','reasons':['Run readiness before generating a report.']},
                 'reports':[],'messages':[],'activity':[],'notes':{},'thread_id':None,'provider':copy.deepcopy(self.provider)}
             private_dir(self.directory(case))
-            case_config = dataclasses.replace(self.config,output_root=self.directory(case)/'analysis')
+            scope = self.config.evidence_root if all(Path(p).is_relative_to(self.config.evidence_root) for p in group) else Path(os.path.commonpath([str(Path(p).parent) for p in group]))
+            case_config = dataclasses.replace(self.config,evidence_root=scope,output_root=self.directory(case)/'analysis')
             atomic_json(self.directory(case)/'mcp.json',{'config':case_config.to_dict(),'images':group})
             self.state['cases'].append(case)
             cases.append(case)
@@ -285,8 +321,8 @@ class Workbench:
         job['progress']=label
         self.save()
 
-    async def fingerprint(self, image, job):
-        path=self.backend.resolve_input(image['path'])
+    async def fingerprint(self, case, image, job):
+        path=self.case_backend(case).resolve_input(image['path'])
         self.progress(job,'Hashing '+path.name)
         fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
         digest=hashlib.sha256()
@@ -325,7 +361,7 @@ class Workbench:
                 raise ValueError('No usable Volatility plugins were discovered')
             case['catalog_summary']={k:v for k,v in catalog.items() if k!='plugins'}
             for image in case['images']:
-                image.update(await self.fingerprint(image,job))
+                image.update(await self.fingerprint(case,image,job))
                 case['coins']=populate(self.directory(case),case['images'])
                 self.progress(job,'OS/symbol discovery: '+Path(image['path']).name)
                 info=decode_result(await client.call_tool('get_image_info',{'image':image['path']}))
@@ -441,7 +477,7 @@ REPORT_SPEC follows:\n'''+spec
         await self.ensure_thread(case)
         if job['kind'] in ('report','update'):
             for image in case['images']:
-                fresh=await self.fingerprint(image,job)
+                fresh=await self.fingerprint(case,image,job)
                 if fresh['sha256']!=image.get('sha256'):
                     raise ValueError('Image changed since readiness. Do not combine old and new evidence.')
             report={'id':timestamped_id(),'created_at':now(),'status':'draft',
@@ -468,7 +504,7 @@ REPORT_SPEC follows:\n'''+spec
             report=next(r for r in case['reports'] if r['id']==job['report_id'])
             fingerprints={}
             for image in case['images']:
-                fingerprints[image['id']]=await self.fingerprint(image,job)
+                fingerprints[image['id']]=await self.fingerprint(case,image,job)
             self.progress(job,'Validating and sealing new report version')
             bundle=Bundle(self.directory(case),case,report,self.cancel,
                           coverage_backend=self.case_backend(case),jobs=self.state['jobs'])
@@ -644,8 +680,9 @@ REPORT_SPEC follows:\n'''+spec
 
     def case_backend(self, case):
         from volatility_mcp.api import CaseBackend
-        return CaseBackend(dataclasses.replace(self.config, output_root=self.directory(case)/'analysis'),
-                           [i['path'] for i in case['images']])
+        from volatility_mcp.api import Config
+        scoped = Config.from_dict(json.loads((self.directory(case)/'mcp.json').read_text())['config'])
+        return CaseBackend(scoped, [i['path'] for i in case['images']])
 
     def coverage(self, case, image_id, offset=0, entry_id=None, attempt_offset=0):
         from volatility_mcp.api import job_view, request_failures
@@ -726,7 +763,7 @@ REPORT_SPEC follows:\n'''+spec
 
     async def native_pick(self):
         if platform.system()!='Darwin':raise ValueError('Native selection is supported on macOS; use path entry or folder browsing here.')
-        script='set chosen to choose file with prompt "Select memory images inside the configured evidence folder" with multiple selections allowed\nset paths to {}\nrepeat with f in chosen\nset end of paths to POSIX path of f\nend repeat\nset AppleScript\'s text item delimiters to linefeed\nreturn paths as text'
+        script='set chosen to choose file with prompt "Select source memory images (files remain in their current folders)" with multiple selections allowed\nset paths to {}\nrepeat with f in chosen\nset end of paths to POSIX path of f\nend repeat\nset AppleScript\'s text item delimiters to linefeed\nreturn paths as text'
         proc=await asyncio.create_subprocess_exec('osascript','-e',script,stdout=asyncio.subprocess.PIPE,stderr=asyncio.subprocess.PIPE)
         try:out,err=await asyncio.wait_for(proc.communicate(),180)
         except BaseException:
