@@ -700,6 +700,8 @@ REPORT_SPEC follows:\n'''+spec
         else:
             prompt+=('Explicitly update the report in a NEW version, preserving earlier evidence. ' if job['kind']=='update' else 'Generate and save a complete evidence-backed report. ')
             prompt+='Readiness outputs already exist; reuse them rather than repeating discovery. Investigate adaptively. Focus: '+(job['text'] or 'Relevant system state and suspicious activity supported by the evidence.')
+            if job['kind']=='update':
+                prompt+='\nRead the previous sealed report and reassess its Executive summary and AI Determination against the new saved results. Incorporate pertinent new findings, changed confidence, contradictions and material limitations into the Executive summary; revise earlier conclusions when warranted. Do not merely append plugin output or a technical subsection. If the new results do not materially change the assessment, state that briefly and explain why, retaining failed or unexamined scopes as limitations. Preserve stable evidence/finding references and all earlier sealed versions.'
         prompt+='\nExisting reports: '+json.dumps([r for r in case['reports'] if not r.get('deleted_at')])
         self.progress(job,'Investigating with '+self.case_provider(case)['provider'])
         case['messages'].append({'role':'user','text':job['text'] or job['kind'],'time':now(),'job_id':job['id']})

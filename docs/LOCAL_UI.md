@@ -145,7 +145,13 @@ saved evidence, and reports are unaffected.
 6. **Ask / investigate further** resumes the same case conversation. It may run
    more MCP queries, but does not rewrite reports. **Update report** explicitly
    creates a new revision with a link to the previous version and preserved stable
-   evidence IDs. Sealed content is not edited in place; explicit Hide/Delete is
+   evidence IDs. Each update explicitly instructs the investigator to read the
+   previous sealed report, reassess its Executive summary and AI Determination,
+   and incorporate pertinent new findings, confidence changes, contradictions and
+   material limitations. If the new results leave the assessment unchanged, the
+   summary should say why. This is an investigative instruction; mechanical
+   report validation does not independently judge the relevance of a finding.
+   Sealed content is not edited in place; explicit Hide/Delete is
    separate from report generation and retains the case's audit metadata.
 7. Multiple cases/jobs run sequentially. Refreshing/reopening the browser reads
    existing state and cannot start a scan. **Stop all work** interrupts the active
