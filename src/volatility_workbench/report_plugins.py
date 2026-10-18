@@ -474,8 +474,18 @@ def read(root, case_id, report_id, offset=0, limit=20):
         if reader.warnings:
             snapshot['warnings'] += reader.warnings
             if snapshot['source_status'] == 'available':snapshot['source_status'] = 'partial'
-    return {**snapshot, 'entries': snapshot['entries'][offset:offset + limit],
-            'next_offset': offset + limit if offset + limit < len(snapshot['entries']) else None}
+    entries = snapshot['entries']
+    executed_names = sorted({e['plugin'] for e in entries
+                             if e.get('kind') == 'plugin_run' and e.get('execution_recorded') is True
+                             and e.get('synthetic') is not True and e.get('execution_kind') != 'simulated'
+                             and isinstance(e.get('plugin'), str)})
+    errored = [{key: e.get(key) for key in ('plugin', 'image_id', 'status', 'kind', 'run_id', 'call_id', 'reason')}
+               for e in entries if e.get('kind') == 'request_failure' or
+               (e.get('kind') == 'plugin_run' and isinstance(e.get('status'), str) and
+                re.search(r'fail|error|denied|cancel|timeout', e['status'], re.I))]
+    return {**snapshot, 'entries': entries[offset:offset + limit],
+            'next_offset': offset + limit if offset + limit < len(entries) else None,
+            'executed_plugin_names': executed_names, 'errored_entries': errored}
 
 
 def markdown(text, inventory):
