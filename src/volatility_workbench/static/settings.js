@@ -68,6 +68,7 @@ async function act(operation){try{const result=await operation();message('Saved.
 function providerFields(){byId('api-options').hidden=byId('provider').value!=='compatible';byId('codex-options').hidden=byId('provider').value!=='codex';}
 async function refresh(){
   const data=await request('/api/settings');
+  window.WorkbenchThemes.sync(data.appearance);
   providerState=data.provider;
   byId('settings-readiness').textContent=data.readiness.status+': '+data.readiness.reasons.join(' ');
   byId('state-root').textContent=data.state_dir;

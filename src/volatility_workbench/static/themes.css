@@ -124,6 +124,158 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   --vegas-horizontal-lamps: radial-gradient(circle at 12px 6px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px),radial-gradient(circle at 44px 6px,#fff1c4 0 2px,#cfaa69 3px,transparent 5px),radial-gradient(circle at 76px 6px,#4f4030 0 3px,#8d7050 4px,transparent 5px),radial-gradient(circle at 108px 6px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px),radial-gradient(circle at 140px 6px,#fff1c4 0 2px,#cfaa69 3px,transparent 5px),radial-gradient(circle at 172px 6px,#544335 0 3px,#8d7050 4px,transparent 5px),radial-gradient(circle at 204px 6px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px);
   --vegas-vertical-lamps: radial-gradient(circle at 6px 12px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px),radial-gradient(circle at 6px 44px,#fff1c4 0 2px,#cfaa69 3px,transparent 5px),radial-gradient(circle at 6px 76px,#4f4030 0 3px,#8d7050 4px,transparent 5px),radial-gradient(circle at 6px 108px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px),radial-gradient(circle at 6px 140px,#fff1c4 0 2px,#cfaa69 3px,transparent 5px),radial-gradient(circle at 6px 172px,#544335 0 3px,#8d7050 4px,transparent 5px),radial-gradient(circle at 6px 204px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px);
 }
+/* Carry the same sign into the main app and Settings, not only the CRT.
+   Generated decoration stays in the aria-hidden scene; no bitmap or animation. */
+:root[data-theme="fallout-new-vegas"] body {
+  background: radial-gradient(ellipse at 0 0,#66372f44,transparent 60%),repeating-linear-gradient(110deg,#b47d4e08 0 1px,transparent 1px 19px),#1d1418;
+}
+:root[data-theme="fallout-new-vegas"] :is(body > header,.settings > header) {
+  background: linear-gradient(#f4ddaf66,#f4ddaf66),var(--vegas-metal);
+  color: #281711;
+  border: 2px solid #73523b;
+  border-radius: 14px 14px 3px 3px;
+  box-shadow: inset 0 0 0 1px #f4d7a3,inset 0 -5px #674a39,0 4px 12px #0005;
+}
+:root[data-theme="fallout-new-vegas"] body > header {
+  width: calc(100% - 28px);
+  max-width: 1700px;
+  margin: 14px auto 0;
+}
+:root[data-theme="fallout-new-vegas"] :is(body > header,.settings > header) h1 {
+  font-family: Georgia,serif;
+  letter-spacing: .025em;
+  text-shadow: 0 1px #ffe4b8;
+}
+:root[data-theme="fallout-new-vegas"] :is(.eyebrow,.settings > header a,.settings-link) { color: #281711; }
+:root[data-theme="fallout-new-vegas"] .settings-link svg { color: currentColor; }
+:root[data-theme="fallout-new-vegas"] :is(.settings-link,.settings > header a):focus-visible { outline-color: #281711; }
+:root[data-theme="fallout-new-vegas"] .dot { color: #872f27; text-shadow: 0 0 3px #ffc06a; }
+:root[data-theme="fallout-new-vegas"] .privacy {
+  width: calc(100% - 28px);
+  max-width: 1700px;
+  margin: auto;
+  border: 2px solid #8f6b4c;
+  border-bottom: 0;
+  background: #2d2025;
+}
+:root[data-theme="fallout-new-vegas"] .layout {
+  width: calc(100% - 28px);
+  grid-template-columns: 260px minmax(0,1fr);
+  gap: 20px;
+  padding: 20px;
+  margin-bottom: 14px;
+  background: var(--vegas-metal);
+  border: 2px solid #8f6b4c;
+  border-radius: 0 0 16px 16px;
+  box-shadow: inset 0 0 0 1px #dfc395,0 4px 12px #0005;
+}
+:root[data-theme="fallout-new-vegas"] :is(.layout > aside,.layout > main,.settings > section) {
+  min-width: 0;
+  background: var(--bg);
+  border: 4px solid #563c32;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px #d4c7a5,inset 0 0 0 1px #09070a,0 3px 4px #38271e88;
+}
+:root[data-theme="fallout-new-vegas"] .layout > aside { padding: 18px; }
+:root[data-theme="fallout-new-vegas"] .layout > main { padding: 22px; }
+:root[data-theme="fallout-new-vegas"] :is(aside > h2,.case-heading > h2,.settings h2,.work-heading h2,#empty h2) {
+  color: #ffdab0;
+  font-family: Georgia,serif;
+  letter-spacing: .04em;
+  text-shadow: 0 0 8px #dd955333;
+}
+:root[data-theme="fallout-new-vegas"] :where(button:not(.report-remove):not(.dialog-close):not(#consoleVolshellMode)) {
+  background: linear-gradient(#503536,#2c1e26);
+  color: var(--text);
+  border: 1px solid #b89575;
+  border-radius: 9px 3px;
+  box-shadow: inset 0 1px #edcca237,inset 0 -2px #0d090c,0 2px 2px #0005;
+}
+:root[data-theme="fallout-new-vegas"] button.primary {
+  color: var(--accent-text);
+  background: var(--accent);
+  border-color: #ffe3b7;
+}
+:root[data-theme="fallout-new-vegas"] button.danger { color: var(--danger); }
+:root[data-theme="fallout-new-vegas"] :is(.case-button.selected,.tabs .selected,.plugin-nav.selected,.report-version.selected > button:first-child,.plugin-os-filters button[aria-pressed="true"]) {
+  background: #34242a;
+  color: var(--accent);
+  border-color: #ffd8a8;
+  box-shadow: none;
+}
+:root[data-theme="fallout-new-vegas"] :is(input:not([type="checkbox"]),textarea,select) {
+  background: #1b1219;
+  border-radius: 3px;
+  box-shadow: inset 0 2px 3px #0008;
+}
+:root[data-theme="fallout-new-vegas"] .tabs {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background: var(--vegas-metal);
+  border: 2px solid #76543c;
+  border-radius: 11px 3px;
+}
+:root[data-theme="fallout-new-vegas"] :is(.report-plugin-inventory,.live-console-section,dialog.approval,.theme-dropdown,.plugin-source-options) {
+  background: var(--panel);
+  border: 2px solid #b89575;
+  border-radius: 9px;
+}
+:root[data-theme="fallout-new-vegas"] .live-console-section { padding: 14px; }
+:root[data-theme="fallout-new-vegas"] .theme-dropdown { color: var(--text); }
+:root[data-theme="fallout-new-vegas"] .settings > header { padding: 24px; }
+@media (max-width: 850px) {
+  :root[data-theme="fallout-new-vegas"] .layout { grid-template-columns: minmax(0,1fr); padding: 10px; gap: 12px; }
+  :root[data-theme="fallout-new-vegas"] .layout > aside { min-height: 0; padding: 14px; }
+  :root[data-theme="fallout-new-vegas"] .layout > main { padding: 14px 10px; }
+  :root[data-theme="fallout-new-vegas"] body > header { padding: 20px 16px; }
+  :root[data-theme="fallout-new-vegas"] body > header h1 { font-size: 27px; }
+  :root[data-theme="fallout-new-vegas"] .privacy { padding: 12px 16px; }
+  :root[data-theme="fallout-new-vegas"] .tabs { padding: 7px; gap: 6px; }
+  :root[data-theme="fallout-new-vegas"] .settings > header { padding: 18px; }
+}
+:root[data-theme="fallout-new-vegas"] .skin-scene {
+  container-type: inline-size;
+  min-height: 158px;
+  width: calc(100% - 28px);
+  max-width: 840px;
+  margin: 18px auto;
+  border: 3px solid #674735;
+  border-radius: 65px / 30px;
+  background-image: var(--vegas-horizontal-lamps),var(--vegas-horizontal-lamps),linear-gradient(#3d292a 0 18px,#b5c9c4 18px 20px,transparent 20px calc(100% - 20px),#b5c9c4 calc(100% - 20px) calc(100% - 18px),#3d292a calc(100% - 18px)),var(--vegas-metal);
+  background-size: 224px 12px,224px 12px,224px 12px,224px 12px,224px 12px,224px 12px,224px 12px,
+    224px 12px,224px 12px,224px 12px,224px 12px,224px 12px,224px 12px,224px 12px,auto,auto,auto,auto,auto;
+  background-position: center 6px,center 6px,center 6px,center 6px,center 6px,center 6px,center 6px,
+    center calc(100% - 6px),center calc(100% - 6px),center calc(100% - 6px),center calc(100% - 6px),
+    center calc(100% - 6px),center calc(100% - 6px),center calc(100% - 6px),0 0,0 0,0 0,0 0,0 0;
+  background-repeat: repeat-x;
+  box-shadow: inset 0 0 0 2px #e2c395,0 5px 0 #25181a,0 8px 15px #0005;
+}
+:root[data-theme="fallout-new-vegas"] .skin-scene::before {
+  --vegas-disc: min(36px,calc((100cqw - 24px) / 7));
+  content: "WELCOME";
+  inset: 25px auto auto 50%;
+  transform: translateX(-50%);
+  width: calc(var(--vegas-disc) * 7);
+  height: 38px;
+  padding-left: calc(var(--vegas-disc) / 3);
+  box-sizing: border-box;
+  background: radial-gradient(circle at calc(var(--vegas-disc) / 2) 19px,#684c3c 0 calc(var(--vegas-disc) * .36),#cfe2df calc(var(--vegas-disc) * .39) calc(var(--vegas-disc) * .42),#806650 calc(var(--vegas-disc) * .45),transparent calc(var(--vegas-disc) / 2)) 0 0 / var(--vegas-disc) 38px repeat-x;
+  color: #ffe0a5;
+  font: calc(var(--vegas-disc) * .55556)/38px ui-monospace,SFMono-Regular,Consolas,monospace;
+  letter-spacing: calc(var(--vegas-disc) * .66667);
+  text-shadow: 0 0 3px #fff1c6,0 0 7px #df9d45;
+}
+:root[data-theme="fallout-new-vegas"] .skin-scene::after {
+  content: "NEW VEGAS";
+  inset: 71px 24px auto;
+  background: none;
+  color: #7d3029;
+  font: 900 clamp(27px,5vw,44px)/1.2 Georgia,serif;
+  text-align: center;
+  letter-spacing: .08em;
+  text-shadow: 1px 1px #ffe2ad,-1px -1px #e1bd87,0 2px #4a2d23;
+}
 :root[data-theme="fallout-new-vegas"] .crt-monitor {
   padding: 115px 38px 20px;
   border: 2px solid #5c3d2c;

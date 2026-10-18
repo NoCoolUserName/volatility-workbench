@@ -2,14 +2,26 @@
 from __future__ import annotations
 import asyncio
 import dataclasses
+import fcntl
 import json
 import os
 from pathlib import Path
+import stat
 import uuid
 from volatility_mcp.api import Config, VolatilityBackend
-from .storage import atomic_json, now, private_dir
+from .storage import atomic_json, now, private_dir, safe_file
 from . import symbols
 from .runtime_management import install_community_overlay
+
+
+THEME_IDS = frozenset({
+    'matrix', 'halloween', 'halloween-noir', 'nightmare', 'fallout', 'fallout-2',
+    'fallout-tactics', 'fallout-brotherhood', 'fallout-3', 'fallout-new-vegas',
+    'fallout-4', 'fallout-shelter', 'fallout-76', 'fallout-4-vr', 'fallout-pinball',
+    'fallout-shelter-online', '8-bit', 'adventure', 'metroid', 'silpheed',
+    'elevator', 'vaporwave', 'retrowave', 'hacker', 'top-gun', 'oedo',
+    'cyberpunk', 'golgo', 'punisher', 'mono', 'blue',
+})
 
 
 class SettingsManager:
@@ -37,6 +49,51 @@ class SettingsManager:
             raise ValueError('Wait for investigations and queued work to finish before changing settings')
         if self.busy: raise ValueError('Settings maintenance is already running')
 
+    def appearance(self):
+        """Presentation preferences survive the desktop server's changing port."""
+        empty = {'schema': 'appearance/1', 'theme': None, 'revision': 0}
+        try:
+            path = safe_file(self.root, 'appearance.json')
+            if not path.exists():
+                return empty
+            if path.stat().st_size > 1024:
+                raise ValueError('Appearance preference exceeds its size bound')
+            saved = json.loads(path.read_text())
+            if (not isinstance(saved, dict) or saved.get('schema') != 'appearance/1'
+                    or not isinstance(saved.get('theme'), str) or saved['theme'] not in THEME_IDS
+                    or type(saved.get('revision')) is not int or not 1 <= saved['revision'] < 2**53):
+                raise ValueError('Invalid appearance preference')
+            return {key: saved[key] for key in ('schema', 'theme', 'revision')}
+        except (OSError, ValueError, UnicodeError):
+            return {**empty, 'error': 'Saved theme could not be loaded. Choose a theme to save it again.'}
+
+    def save_appearance(self, body):
+        # This changes no analyzer/configuration/case state and remains available
+        # during investigations and settings maintenance.
+        if (not isinstance(body, dict) or set(body) not in ({'theme'}, {'theme', 'expected_revision'})
+                or not isinstance(body.get('theme'), str) or body['theme'] not in THEME_IDS
+                or ('expected_revision' in body and (type(body['expected_revision']) is not int or body['expected_revision'] != 0))):
+            raise ValueError('Choose one built-in Workbench theme')
+        # Separate case/state directories can share this preferences directory.
+        # Keep a stable lock inode: locking the atomically replaced JSON would
+        # let another process lock its replacement while this save still runs.
+        lock = os.open(safe_file(self.root, 'appearance.lock'), os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600)
+        try:
+            if not stat.S_ISREG(os.fstat(lock).st_mode):
+                raise ValueError('Appearance lock must be a regular file')
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            previous = self.appearance()
+            # A delayed legacy migration must not replace a newer intentional choice.
+            if 'expected_revision' in body and previous['revision'] != 0:
+                return previous
+            if previous['revision'] == 2**53 - 1:
+                raise ValueError('Theme preference revision limit reached')
+            saved = {'schema': 'appearance/1', 'theme': body['theme'], 'revision': previous['revision'] + 1}
+            atomic_json(safe_file(self.root, 'appearance.json'), saved)
+            return saved
+        finally:
+            os.close(lock)
+
     def snapshot(self):
         config=self.app.config
         symbol_root=config.symbols or self.root/'symbols'
@@ -56,7 +113,7 @@ class SettingsManager:
             'native_folder_picker':bool(self.folder_picker),'managed_runtime_available':bool(self.resources and (self.resources/'analyzer/bin/python3').exists()),
             'symbols':{'directory':str(symbol_root),'cache':str(config.cache_path),'profile':symbol_profile,'installed':installed,
                 'matching':'Windows uses the exact PDB GUID/age when collection requests symbols. Linux/macOS need matching banners. Installed files do not establish image readiness.'},
-            'provider':provider,
+            'provider':provider, 'appearance':self.appearance(),
             'operation':dict(self.operation),'readiness':readiness}
 
     def progress(self, **values):
@@ -169,6 +226,7 @@ class SettingsManager:
         return result
 
     async def dispatch(self, path, body):
+        if path=='/api/settings/appearance': return self.save_appearance(body)
         if path=='/api/settings/save': return await self.save_locations(body)
         if path=='/api/settings/pick-folder':
             if not self.folder_picker: raise ValueError('Native selection is available in the desktop application; enter a physical path here')

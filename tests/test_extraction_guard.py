@@ -37,6 +37,18 @@ class GuardTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(result.result_type,'input_required')
 
 
+    async def test_passwordmanager_is_automatic_but_sshkeys_still_requires_approval(self):
+        server=StdioServerParameters(command=sys.executable,args=[str(Path(__file__).parent/'fixtures/extraction_server.py')],env={'PYTHONPATH':str(Path(guarded_scoped.__file__).parents[1])})
+        for mode in ('auto','legacy'):
+            async def unexpected_prompt(context,params):
+                self.fail('Authorized PasswordManager should not request extraction approval')
+            async with Client(server,mode=mode,elicitation_callback=unexpected_prompt) as client:
+                result=await client.call_tool('run_plugin',{'image':'fixture','plugin':'windows.passwordmanagers.PasswordManager','arguments':['--pid','123']})
+                self.assertFalse(result.is_error)
+        async with Client(server) as client:
+            result=await client.session.call_tool('run_plugin',{'image':'fixture','plugin':'linux.openssh_sessionkeys.SSHKeys','arguments':['--pid','123','--address','0x1000']},allow_input_required=True)
+            self.assertEqual(result.result_type,'input_required')
+
     async def test_modern_approval_cannot_be_replayed_or_moved_to_another_call(self):
         server=StdioServerParameters(command=sys.executable,args=[str(Path(__file__).parent/'fixtures/extraction_server.py')],env={'PYTHONPATH':str(Path(guarded_scoped.__file__).parents[1])})
         async with Client(server) as client:
@@ -59,6 +71,11 @@ class GuardTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(extraction_reason('windows.truecrypt.Passphrase',[],{'description':'TrueCrypt Cached Passphrase Finder'}))
         self.assertIsNone(extraction_reason('windows.truecrypt.Passphrase',[],None))
         self.assertTrue(extraction_reason('synthetic.passphrase.Recover',[],{'description':'Recovers a passphrase'}))
+        password='windows.passwordmanagers.PasswordManager'
+        self.assertIsNone(extraction_reason(password,['--pid','123'],{'description':'Fragments','manual_only':False}))
+        self.assertTrue(extraction_reason(password,[],{'description':'Fragments','manual_only':True}))
+        self.assertTrue(extraction_reason(password,[],None))
+        self.assertTrue(extraction_reason('synthetic.password.Recover',[],{'description':'Secrets','manual_only':False}))
         layer={'description':'Runs the automagics and writes out the primary layer produced by the stacker.',
                'options':[{'flag':'--list'},{'flag':'--layers'},{'flag':'--block-size'}]}
         self.assertTrue(extraction_reason('layerwriter.LayerWriter',[],layer))

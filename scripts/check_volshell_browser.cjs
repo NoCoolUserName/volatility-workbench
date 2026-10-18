@@ -14,10 +14,10 @@ let entryId=0;
 async function checkBezelConnection(browser){
  const existing=(caseId='case-b',status='running')=>({id:'existing-shell',case_id:caseId,image_id:'E001',mode:caseId==='case-b'?'linux':'windows',status,ready:status==='running',entries:[entry('output','Private output for '+caseId)],earlier_entries:0});
  const fixture=async({images,session=null,jobs=[],reply='start'}={})=>{
-  const page=await browser.newPage({viewport:{width:1400,height:1000}}),requests=[],errors=[];
+  const page=await browser.newPage({viewport:{width:1400,height:1000}}),requests=[],closes=[],errors=[];
   const value={cases:[makeCase('case-a','Synthetic Windows case','windows'),makeCase('case-b','Synthetic Linux case','linux')],jobs,approvals:[],account:{},evidence_root:'/synthetic',live_console:null,volshell:{session,busy:!!session}};
   if(images)value.cases[1].images=images;
-  const control={reply,returned:null};
+  const control={reply,returned:null,closeReply:'closed',heldClose:null};
   await page.addInitScript(()=>{
    window.fixtureStreams=[];window.EventSource=class extends EventTarget{static CLOSED=2;constructor(){super();this.readyState=1;fixtureStreams.push(this);}close(){this.readyState=2;}emit(value){this.dispatchEvent(new MessageEvent('volshell',{data:JSON.stringify(value)}));}};
    const interval=setInterval;window.setInterval=(callback,delay,...args)=>delay===1500?0:interval(callback,delay,...args);
@@ -34,7 +34,16 @@ async function checkBezelConnection(browser){
     const name=url.pathname==='/'?'index.html':url.pathname.slice(1);
     return route.fulfill({body:fs.readFileSync(path.join(assets,name)),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html'});
    }
-   assert.equal(url.pathname,'/api/volshell/start','Connection controls never execute commands or disconnect implicitly');
+   if(url.pathname==='/api/volshell/close'){
+    const body=request.postDataJSON();closes.push(body);
+    assert.deepEqual(body,{case_id:value.volshell.session.case_id,session_id:value.volshell.session.id},'Close addresses the exact owning session');
+    if(control.closeReply==='hold'){control.heldClose=route;return;}
+    if(control.closeReply==='fail')return route.fulfill({status:500,json:{error:'Synthetic close failed; process remains alive'}});
+    const closed={busy:false,session:{...value.volshell.session,status:'closed',ready:false}};
+    if(control.closeReply!=='lag')value.volshell=closed;
+    return route.fulfill({json:closed});
+   }
+   assert.equal(url.pathname,'/api/volshell/start','Connection controls never execute commands');
    const body=request.postDataJSON();requests.push(body);
    if(control.reply==='fail')return route.fulfill({status:500,json:{error:'Synthetic interpreter could not start'}});
    control.returned={busy:true,session:{id:'new-shell-'+requests.length,case_id:body.case_id,image_id:body.image_id,mode:body.mode,status:control.reply==='ready'?'running':'starting',ready:control.reply==='ready',entries:[],earlier_entries:0}};
@@ -45,7 +54,7 @@ async function checkBezelConnection(browser){
   const refresh=()=>page.evaluate(()=>refresh());
   const click=async()=>{await page.locator('#consoleVolshellMode').click();await page.waitForFunction(()=>document.querySelector('#volshellStatus').textContent!=='Request in progress…');};
   const close=async()=>{assert.deepEqual(errors,[]);await page.close();};
-  return {page,value,requests,control,refresh,click,close};
+  return {page,value,requests,closes,control,refresh,click,close};
  };
  let f=await fixture();
  assert.equal(await f.page.locator('#volshellConnection').evaluate(node=>node.open),false);
@@ -55,7 +64,7 @@ async function checkBezelConnection(browser){
  await f.click();assert.deepEqual(f.requests,[{case_id:'case-b',image_id:'E001',mode:'linux'}],'Bezel connects the selected Linux case, not the first Windows case');
  await f.click();await f.refresh();assert.equal(f.requests.length,1,'A starting session is reused');
  f.value.volshell.session.status='running';f.value.volshell.session.ready=true;await f.refresh();
- assert.equal(await f.page.locator('#volshellInput').evaluate(node=>document.activeElement===node),true,'The first ready prompt focuses its input when focus stayed on Collapse');await f.click();
+ assert.equal(await f.page.locator('#volshellInput').evaluate(node=>document.activeElement===node),true,'The first ready prompt focuses its input when focus stayed on Collapse');
  assert.equal(f.requests.length,1);assert.equal(await f.page.locator('#volshellInput').isDisabled(),false);await f.close();
 
  f=await fixture({reply:'ready'});await f.click();
@@ -70,8 +79,8 @@ async function checkBezelConnection(browser){
  assert.equal(await f.page.locator('#consoleZoom').isHidden(),true,'Readiness never reopens a collapsed monitor');
  assert.equal(await f.page.locator('#volshellInput').evaluate(node=>document.activeElement===node),false);await f.close();
 
- f=await fixture({session:existing()});await f.click();
- assert.equal(f.requests.length,0,'An existing same-case connection is reused');assert.equal(await f.page.locator('#volshellInput').isDisabled(),false);await f.close();
+ f=await fixture({session:existing()});
+ assert.equal(f.requests.length,0,'Opening an existing same-case connection does not toggle it');assert.equal(await f.page.locator('#volshellInput').isDisabled(),false);await f.close();
  f=await fixture({session:existing('case-a')});await f.click();
  assert.equal(f.requests.length,0,'Another case is never disconnected or rebound implicitly');
  assert.equal(await f.page.locator('#volshellConnection').evaluate(node=>node.open),true);
@@ -125,6 +134,66 @@ async function checkBezelConnection(browser){
  f.value.volshell.session.status='running';f.value.volshell.session.ready=true;
  await emit({case_id:'case-b',...f.value.volshell,agent_activity:null});
  assert.equal(await f.page.locator('#volshellInput').isDisabled(),false);await f.close();
+
+ // A connected bezel is an explicit off switch, including from Output. Close
+ // acknowledgements and process exit are deliberately separate in this fixture.
+ f=await fixture({session:existing()});f.control.closeReply='hold';
+ const led=()=>f.page.locator('#volshellLED').getAttribute('data-state');
+ const emitClose=async value=>{await f.page.evaluate(value=>fixtureStreams.at(-1).emit(value),value);await f.page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));};
+ assert.equal(await led(),'ready');assert.equal(await f.page.locator('#volshellDisconnect').isHidden(),true);
+ await f.page.locator('#consoleOutputMode').click();assert.equal(f.closes.length,0,'Output alone leaves the process connected');
+ await f.page.locator('#consoleVolshellMode').click();
+ await f.page.waitForFunction(()=>document.querySelector('#volshellInput').disabled);
+ assert.deepEqual(f.closes,[{case_id:'case-b',session_id:'existing-shell'}],'Connected bezel closes the selected-case session directly from Output');
+ assert.equal(await led(),'ready','A pending close does not optimistically turn the LED off');
+ await emitClose({case_id:'case-b',session:null,busy:false,agent_activity:null});
+ assert.equal(await led(),'ready','An older empty SSE snapshot cannot imply process exit');
+ await f.page.locator('#consoleVolshellMode').evaluate(node=>{node.click();node.click();});
+ assert.equal(f.closes.length,1,'Repeated clicks never send concurrent close requests');assert.equal(f.requests.length,0);
+ f.value.volshell.session.status='stopping';f.value.volshell.session.ready=false;
+ await f.refresh();assert.equal(await led(),'ready','Stopping retains the established connection LED');
+ assert.ok(f.control.heldClose);await f.control.heldClose.fulfill({json:f.value.volshell});
+ await f.page.waitForFunction(()=>document.querySelector('#volshellStatus').textContent!=='Request in progress…');
+ await emitClose({case_id:'case-b',session:{...f.value.volshell.session,status:'running',ready:true},busy:true,agent_activity:null});
+ assert.equal(await f.page.locator('#volshellInput').isDisabled(),true,'A stale ready frame cannot enable input during shutdown');
+ assert.equal(await f.page.locator('#volshellInterrupt').isDisabled(),true);
+ assert.match(await f.page.locator('#volshellStatus').textContent(),/Disconnecting/);
+ await f.page.locator('#consoleVolshellMode').click();assert.equal(f.closes.length,1,'A stopping response is not an invitation to close again');
+ const completed={case_id:'case-b',session:{...f.value.volshell.session,status:'closed',ready:false},busy:false,agent_activity:null};
+ await emitClose(completed);assert.equal(await led(),'off','Only a backend terminal state extinguishes the LED');
+ await f.refresh();assert.equal(await led(),'off','An older stopping poll cannot resurrect the closed process');
+ await emitClose({...completed,session:{...completed.session,status:'running',ready:true},busy:true});
+ assert.equal(await led(),'off','A delayed active SSE frame cannot resurrect a confirmed exit');
+ await f.page.locator('#consoleVolshellMode').dispatchEvent('click',{detail:2});
+ assert.equal(f.requests.length,0,'The second event in a double-click never reconnects');
+ await f.page.locator('#collapseVolshell').click();await f.page.locator('#openCaseConsole').click();
+ assert.equal(f.requests.length,0);assert.equal(f.closes.length,1,'Collapse/reopen does not change process state');
+ f.control.reply='fail';await f.click();assert.equal(f.requests.length,1);
+ assert.equal(await led(),'off','A failed reconnect cannot resurrect the old closed session from stale SSE');
+ f.control.reply='start';await f.click();assert.equal(f.requests.length,2,'A failed reconnect remains explicitly retryable');
+ assert.equal(f.closes.length,1);assert.equal(await led(),'pending');await f.close();
+
+ f=await fixture({session:existing()});f.control.closeReply='fail';await f.click();
+ assert.equal(await f.page.locator('#volshellLED').getAttribute('data-state'),'ready');
+ assert.equal(await f.page.locator('#volshellInput').isDisabled(),false,'A failed close leaves the live input usable');
+ assert.match(await f.page.locator('#volshellError').innerText(),/Synthetic close failed/);
+ await f.refresh();assert.equal(f.closes.length,1,'Close errors do not retry in the background');
+ f.control.closeReply='closed';await f.click();assert.equal(f.closes.length,2);assert.equal(await f.page.locator('#volshellLED').getAttribute('data-state'),'off');await f.close();
+
+ f=await fixture({session:{...existing(),ready:false}});f.control.closeReply='lag';
+ assert.equal(await f.page.locator('#volshellLED').getAttribute('data-state'),'ready','Running a command does not extinguish the connection LED');
+ await f.page.locator('#consoleVolshellMode').dblclick();
+ await f.page.waitForFunction(()=>document.querySelector('#volshellStatus').textContent!=='Request in progress…');
+ assert.equal(f.closes.length,1,'A double-click closes a busy command once');assert.equal(f.requests.length,0);
+ assert.equal(await f.page.locator('#volshellLED').getAttribute('data-state'),'off','A confirmed close response wins over a stale full-state poll');await f.close();
+
+ for(const status of ['failed','exited']){
+  f=await fixture({session:existing('case-b',status)});f.value.volshell.busy=false;await f.refresh();
+  assert.equal(await f.page.locator('#volshellLED').getAttribute('data-state'),'off');
+  assert.equal(f.requests.length,0);assert.equal(f.closes.length,0,'Terminal states never automatically reconnect or close');await f.close();
+ }
+ f=await fixture({session:existing(),jobs:[{id:'busy-job',case_id:'case-b',kind:'question',status:'running'}]});await f.click();
+ assert.equal(f.closes.length,0,'An investigation owns the session until it finishes');assert.equal(await f.page.locator('#volshellInput').isDisabled(),true);await f.close();
 }
 (async()=>{
  const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
@@ -226,9 +295,12 @@ async function checkBezelConnection(browser){
   state.volshell.session.entries=[entry('output','Volshell 2.28.2 · synthetic fixture\n(layer) >>> '),entry('output','<img src=x onerror="window.injected=true">\n')];
   await ready();
   assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'ready');
+  assert.equal(await page.locator('#volshellDisconnect').isVisible(),false,'The bezel replaces the same-case Disconnect button');
+  assert.match(await page.locator('#consoleVolshellMode').getAttribute('title'),/Disconnect VolShell/);
+  assert.equal(await page.locator('#volshellConnection').evaluate(node=>node.open),false);
   for(const [value,id] of [['manual','volshellInput'],['suggestions','volshellAIInput'],['investigation','volshellInvestigationInput']]){
-   await mode(value);await page.locator('#consoleOutputMode').click();await page.locator('#consoleVolshellMode').click();
-   assert.equal(await page.locator('#'+id).evaluate(node=>document.activeElement===node),true,'Returning to '+value+' focuses its visible input');
+   await mode(value);await page.locator('#collapseVolshell').click();await page.locator('#openCaseConsole').click();
+   assert.equal(await page.locator('#'+id).evaluate(node=>document.activeElement===node),true,'Reopening '+value+' focuses its visible input');
   }
   assert.equal(count('volshell/start'),1,'All three modes reuse the existing connection');
   await mode('manual');
@@ -240,7 +312,7 @@ async function checkBezelConnection(browser){
   assert.equal(await page.locator('#volshellGhostSuffix').textContent(),'');assert.equal(await zoom.isVisible(),true,'Escape dismisses ghost before closing CRT');
   await input.fill('ps');await input.press('Enter');await settle();
   assert.equal(posts.find(item=>item.path==='/api/volshell/input').body.text,'ps','Enter executes only typed text, never the ghost suffix');
-  assert.equal(await input.isDisabled(),true);assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'pending');
+  assert.equal(await input.isDisabled(),true);assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'ready','The LED stays green while a command runs');
   assert.equal(await page.locator('#volshellInterrupt').isDisabled(),false);
   await connectionOptions();await page.locator('#volshellInterrupt').click();await settle();
   assert.equal(count('volshell/interrupt'),1);await input.fill('value = 1');await input.press('Shift+Enter');
@@ -336,7 +408,7 @@ async function checkBezelConnection(browser){
   assert.equal(await page.locator('.vegas-welcome i').nth(4).evaluate(node=>getComputedStyle(node).textShadow),'none','A fixed failed sign letter remains dark');
   assert.equal(await page.locator('.vegas-lamps').evaluate(node=>getComputedStyle(node).pointerEvents),'none');
   assert.ok(await page.locator('.crt-vegas-sign,.vegas-lamps,.vegas-lamps span').evaluateAll(nodes=>nodes.every(node=>getComputedStyle(node).animationName==='none')),'Sign and bulbs never flash');
-  await page.locator('#consoleOutputMode').click();await screenshot('output-fallout-new-vegas-desktop');await page.locator('#consoleVolshellMode').click();
+  await page.locator('#consoleOutputMode').click();await screenshot('output-fallout-new-vegas-desktop');await page.locator('#collapseEmptyConsole').click();await page.locator('#openCaseConsole').click();
   for(const width of [390,320]){
    await page.setViewportSize({width,height:844});
    assert.equal(await zoom.evaluate(node=>node.scrollWidth<=node.clientWidth+1),true,'New Vegas monitor fits '+width+'px');
@@ -348,7 +420,7 @@ async function checkBezelConnection(browser){
    await mode('manual');
    await page.locator('#volshellPanel').evaluate(node=>node.scrollTop=0);await screenshot('volshell-fallout-new-vegas-'+width);
    await page.locator('#volshellRun').scrollIntoViewIfNeeded();await screenshot('volshell-fallout-new-vegas-controls-'+width);
-   await page.locator('#consoleOutputMode').click();await screenshot('output-fallout-new-vegas-'+width);await page.locator('#consoleVolshellMode').click();
+   await page.locator('#consoleOutputMode').click();await screenshot('output-fallout-new-vegas-'+width);await page.locator('#collapseEmptyConsole').click();await page.locator('#openCaseConsole').click();
   }
   await page.evaluate(()=>window.WorkbenchThemes.apply('fallout-2'));
   for(const width of [390,320]){
@@ -371,8 +443,16 @@ async function checkBezelConnection(browser){
   state.volshell.session.status='exited';state.volshell.session.error=null;await refresh();
   assert.equal(count('volshell/start'),1,'EOF, failure, refresh and mode changes never restart the interpreter');
   state.volshell.session.status='running';state.volshell.session.ready=true;state.volshell.busy=true;await refresh();
-  await chooseShellCase('case-b');await connectionOptions();await page.locator('#volshellDisconnect').click();await settle();
+  await chooseShellCase('case-b');
+  assert.equal(await page.locator('#volshellConnection').evaluate(node=>node.open),false);
+  assert.equal(await page.locator('#volshellDisconnect').isVisible(),false,'Other-case disconnect is an explicit gear fallback');
+  await connectionOptions();assert.equal(await page.locator('#volshellDisconnect').isVisible(),true);
+  await page.locator('#volshellDisconnect').click();await settle();
   assert.equal(count('volshell/close'),1,'Other-case disconnect is an explicit request bound to the original session');
+  assert.equal(await page.locator('#volshellDisconnect').isVisible(),false,'Disconnect hides when the session has closed');
+  assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'off');
+  assert.equal(await input.isDisabled(),true);
+  assert.equal(await page.locator('#consoleVolshellMode').evaluate(node=>document.activeElement===node),true,'Closing a session restores focus to the reconnect bezel');
   await page.locator('#consoleOutputMode').click();assert.equal(await page.locator('#expandedConsoleHost').isVisible(),true);
   await page.locator('#consoleVolshellMode').click();assert.equal(await page.locator('#volshellPanel').isVisible(),true);
   await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
@@ -499,6 +579,6 @@ async function checkBezelConnection(browser){
   assert.equal(await zoom.isVisible(),false,'Late events from a closed source cannot reopen the CRT');
   assert.equal(await page.evaluate(()=>window.injected),undefined);assert.deepEqual(errors,[]);
   if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)fs.writeFileSync(path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-contrast.json'),JSON.stringify(themeStyles,null,2)+'\n');
-  console.log('VolShell: bezel connection and explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;31 distinct bezels/New Vegas desktop/mobile; fully synthetic requests.');
+  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;31 distinct bezels/New Vegas desktop/mobile; fully synthetic requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

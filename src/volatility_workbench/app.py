@@ -650,7 +650,11 @@ Routine report/update jobs and explicit Volshell AI investigations authorize ord
 bounded helper inspection. Other questions require the exact collection approval;
 missing saved output alone is not permission. Never use helpers to bypass sensitive
 extraction approvals, execute Python, load scripts, export memory, or read host files.
-Plugins marked manual_only (including PasswordManager and SSHKeys) require a direct
+PasswordManager may run during automatic investigations when relevant to the authorized
+case scope. Discover its schema and select an observed supported browser PID; keep
+its offline execution, bounds and source provenance. No separate extraction approval
+is needed for this exact plugin when the catalog marks it manual_only: false.
+Plugins marked manual_only (including SSHKeys) require a direct
 user request for that sensitive extraction and its PID/address scope. Never include
 them in routine triage, automatic baselines, or broad investigation/report flows.
 Installation or catalog visibility is not permission to collect secrets.

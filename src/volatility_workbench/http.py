@@ -153,7 +153,12 @@ class Handler(BaseHTTPRequestHandler):
     async def get_data(self,path,query):
         app=self.server.app
         one=lambda k,d='':query.get(k,[d])[0]
-        if path=='/api/state':return app.snapshot()
+        if path=='/api/state':
+            snapshot = app.snapshot()
+            manager = getattr(app, 'settings_manager', None)
+            if manager is not None:
+                snapshot = {**snapshot, 'appearance': manager.appearance()}
+            return snapshot
         if path=='/api/volshell':
             app.case(one('case'))
             return app.volshell_snapshot()

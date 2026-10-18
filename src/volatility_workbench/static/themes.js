@@ -17,7 +17,7 @@
     ['fallout-tactics','Fallout Tactics: Brotherhood of Steel','Fallout','#0c1717 #192929 #1d3030 #568077 #e3efdf #b1c9c1 #a8d4b9 #11291d','A tactical grid with connected squad markers.','terminal'],
     ['fallout-brotherhood','Fallout: Brotherhood of Steel','Fallout','#191213 #2b1e20 #302326 #8c6e67 #f4e6d6 #ceb7aa #e3b394 #321b13','Steel heraldry and a weathered crimson field.','industrial'],
     ['fallout-3','Fallout 3','Fallout','#10170e #1b2818 #20301b #698059 #e7efd5 #bbcbab #b6d695 #203016','A green wasteland and a broken capital skyline.','terminal'],
-    ['fallout-new-vegas','Fallout: New Vegas','Fallout','#1b1117 #2d2028 #35242a #966c64 #ffebd2 #d9b9ae #ffc28c #341e13','Desert dusk, neon towers and a diamond on the Strip.','industrial'],
+    ['fallout-new-vegas','Fallout: New Vegas','Fallout','#1b1117 #2d2028 #35242a #966c64 #ffebd2 #d9b9ae #ffc28c #341e13','Weathered cream and rust, neon marquee bulbs and desert dusk.','industrial'],
     ['fallout-4','Fallout 4','Fallout','#0e1b20 #1a2b30 #1d333a #588389 #e4f2ed #b2ceca #a8dfd6 #173130','Coastal blue steel and a suspension bridge.','industrial'],
     ['fallout-shelter','Fallout Shelter','Fallout','#17180f #252b1b #2d3420 #788459 #f2eed2 #c6c9a2 #e8ce88 #30270f','A warm cross-section of a busy underground vault.','rounded'],
     ['fallout-76','Fallout 76','Fallout','#0d1d21 #1a3035 #203b40 #62898a #e9f4e9 #bdd2c6 #e6ce92 #2a2814','Appalachian pines, blue steel and a golden 76.','industrial'],
@@ -42,6 +42,53 @@
   ];
   const tokens = ['bg','panel','control-bg','border','text','muted','accent','accent-text'];
   const themes = new Map(catalog.map(([id,label,group,palette,description,shape]) => [id,{id,label,group,palette,description,shape}]));
+  let connected=false, revision=-1, selection=0, pending=null, saves=Promise.resolve();
+  function cache(id) { try {localStorage.setItem(key,id);} catch {} }
+  function saveMessage(text, retry=false) {
+    document.querySelectorAll('[data-theme-picker]').forEach(select=>{
+      let status=select.parentElement.querySelector('[data-theme-save-status]');
+      if(!status){status=document.createElement('span');status.dataset.themeSaveStatus='';status.className='subtle';status.setAttribute('role','status');status.setAttribute('aria-live','polite');select.after(status);}
+      status.textContent=text;status.hidden=!text;
+      let button=select.parentElement.querySelector('[data-theme-save-retry]');
+      if(!button){
+        button=document.createElement('button');button.type='button';button.dataset.themeSaveRetry='';button.textContent='Retry save';status.after(button);
+        button.addEventListener('click',()=>{if(pending&&connected){saveMessage('Saving theme…');save(pending,selection);}});
+      }
+      button.hidden=!retry;
+    });
+  }
+  function save(id, chosen, migrate=false) {
+    saves=saves.then(async()=>{
+      // Coalesce rapid selections that have not been sent yet.
+      if(chosen!==selection)return;
+      saveMessage('Saving theme…');
+      try {
+        const body=migrate?{theme:id,expected_revision:0}:{theme:id};
+        const response=await fetch('/api/settings/appearance',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)});
+        const result=await response.json();
+        if(!response.ok||result.schema!=='appearance/1'||!themes.has(result.theme)||(!migrate&&result.theme!==id)||!Number.isSafeInteger(result.revision)||result.revision<1)throw Error('Theme preference save failed');
+        revision=Math.max(revision,result.revision);
+        if(chosen===selection){pending=null;if(migrate){apply(result.theme);cache(result.theme);}saveMessage('');}
+      } catch {
+        if(chosen===selection)saveMessage('Theme changed in this window, but could not be saved for the next launch.',true);
+      }
+    });
+  }
+  function sync(appearance) {
+    // Existing local preferences are a migration/fallback cache. The authenticated
+    // server preference is authoritative across dynamic loopback origins.
+    if(!appearance||appearance.schema!=='appearance/1'||!Number.isSafeInteger(appearance.revision)||appearance.revision<0)return;
+    const first=!connected;connected=true;
+    if(pending){if(first)save(pending,selection);return;}
+    if(appearance.revision<=revision)return;
+    revision=appearance.revision;
+    if(themes.has(appearance.theme)){apply(appearance.theme);cache(appearance.theme);saveMessage('');}
+    else if(first){
+      const legacy=saved();
+      if(themes.has(legacy)&&!appearance.error){pending=legacy;save(legacy,++selection,true);}
+      if(appearance.error)saveMessage(appearance.error);
+    }
+  }
   function apply(value, persist=false) {
     const theme = themes.get(value) || themes.get(defaultTheme);
     const root = document.documentElement;
@@ -60,7 +107,10 @@
     root.style.setProperty('--zoom-bg', classic ? '#080d10ed' : '#080d10f5');
     root.style.setProperty('--zoom-text', classic ? '#e6eee9' : '#f0f4ef');
     document.querySelectorAll('[data-theme-picker]').forEach(select=>{ select.value=theme.id; });
-    if(persist) { try {localStorage.setItem(key,theme.id);} catch {} }
+    if(persist) {
+      cache(theme.id);pending=theme.id;++selection;
+      if(connected)save(theme.id,selection);
+    }
     return theme.id;
   }
   function saved() { try {return localStorage.getItem(key);} catch {return null;} }
@@ -79,7 +129,9 @@
     });
     apply(document.documentElement.dataset.theme);
   }
-  window.WorkbenchThemes=Object.freeze({catalog: Object.freeze(Array.from(themes.values()).map(theme=>Object.freeze({...theme}))), apply, defaultTheme});
+  window.WorkbenchThemes=Object.freeze({catalog: Object.freeze(Array.from(themes.values()).map(theme=>Object.freeze({...theme}))), apply, sync, defaultTheme});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true}); else mount();
-  window.addEventListener('storage',event=>{if(event.key===key)apply(event.newValue);});
+  // Once connected, revisioned server snapshots coordinate both windows. A stale
+  // browser cache event must never replace an unsaved or confirmed selection.
+  window.addEventListener('storage',event=>{if(!connected&&!pending&&event.key===key)apply(event.newValue);});
 })();
