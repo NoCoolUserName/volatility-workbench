@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-18",
+  "exceptions": [
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/build_macos.py",
+      "line": 23,
+      "source_sha256": "a183e2843e53e39dff760cafd0f7e5a64ea52dea5ab4ee9b342873ada6e6eafb",
+      "reason": "Build helper receives argv from fixed build/signing commands and explicit developer-selected paths; shell=False is explicit. No recovered data enters executable selection."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/install_core_pin.py",
+      "line": 30,
+      "source_sha256": "d22ce8df9f8a0c36c194a3b8f0c22e51a5abe2ff2388815c3c1f6d74524e1d7e",
+      "reason": "Fixed Python -I pip install argv, fixed repository, validated 40-hex immutable commit, explicit shell=False; developer maintenance only."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/install_macos.py",
+      "line": 16,
+      "source_sha256": "b920e63f6c98d6da8eb263409f14dc30543aca0ef37a1ed67d5466929e7e16e5",
+      "reason": "Installer helper is called only with fixed native tools or explicitly selected bundle validation binaries; shell=False is explicit. It is not an HTTP or evidence execution path."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/package_smoke.py",
+      "line": 16,
+      "source_sha256": "d7fffbacb813df0b6f2eceee56ef7dad8721c6fd3c84235f706abdc3218bcb84",
+      "reason": "All callers supply fixed isolated wheel-install/test argv tuples; subprocess default shell=False, and no caller supplies shell=True. Developer test runner, no recovered input."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/release_macos.py",
+      "line": 31,
+      "source_sha256": "77865c61b714cf952100c605613066449a0f7a26760f0d3d832ed9744e946ce9",
+      "reason": "Signing helper uses fixed native tools and separately passed identity/app-path arguments; shell=False is explicit. Release is an explicit developer action."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/release_macos.py",
+      "line": 232,
+      "source_sha256": "77865c61b714cf952100c605613066449a0f7a26760f0d3d832ed9744e946ce9",
+      "reason": "Nested release runner receives fixed ditto/xcrun/stapler/spctl argv; validated Keychain profile remains a separate argument and shell=False is explicit."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/validate_macos.py",
+      "line": 21,
+      "source_sha256": "ff2b1829130ac761de24f854ad0bf146a0250ec6b1e01356b4508c5d261490ab",
+      "reason": "Explicit developer-selected bundle native executable receives the fixed --check-bundled-runtime argument; list argv uses default shell=False."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/validate_macos.py",
+      "line": 76,
+      "source_sha256": "ff2b1829130ac761de24f854ad0bf146a0250ec6b1e01356b4508c5d261490ab",
+      "reason": "Explicit bundle Python runs a fixed literal synthetic validation program with -I, separate resources argument, sanitized env and default shell=False. No recovered code is executed."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "src/volatility_workbench/runtime_management.py",
+      "line": 23,
+      "source_sha256": "a0f7be6ae014495106e978fc9c11883dfcdd5415cc83f722cedc7e51bfc94a31",
+      "reason": "Only fixed venv/pip/core-installer argv from this module reach the runner; private candidate paths are separate argv elements, shell=False and a credential-free environment are explicit."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/security_scan.py",
+      "line": 165,
+      "source_sha256": "155cd136b309ded31a44ade71a41b46ad1168323a8b12dc3ee420e903ffa9729",
+      "reason": "Security CI invokes the pinned local Semgrep executable with fixed flags, local verified rules and enumerated source paths as argv; shell=False and an environment allowlist are explicit."
+    }
+  ]
+}

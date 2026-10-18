@@ -4,17 +4,21 @@ import argparse
 import asyncio
 import fcntl
 import hashlib
+import hmac
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from http.cookies import SimpleCookie
 import json
 import os
 from pathlib import Path
 import secrets
+import select
 import re
 import signal
+import socket
 import subprocess
 import sys
 import threading
+import time
 from urllib.parse import urlsplit, parse_qs
 import webbrowser
 from .app import Workbench
@@ -60,9 +64,20 @@ class Server(ThreadingHTTPServer):
     def __init__(self, app, port, loop):
         self.app, self.loop = app, loop
         self.token = secrets.token_urlsafe(32)
+        self.stream_slots = threading.BoundedSemaphore(8)
+        self.streams_stopping = threading.Event()
+        self.bridge_lock = threading.Lock()
+        self.bridge_requests = {}
+        self.bridge_cancelled = {}
         super().__init__(('127.0.0.1', port), Handler)
         self.authority = '127.0.0.1:' + str(self.server_port)
         self.origin = 'http://' + self.authority
+        app.volshell_bridge_origin = self.origin
+        app.volshell_bridge_secret = secrets.token_bytes(32)
+
+    def server_close(self):
+        self.streams_stopping.set()
+        super().server_close()
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -107,6 +122,18 @@ class Handler(BaseHTTPRequestHandler):
         app=self.server.app
         if path.startswith('/api/settings/'):
             return await app.settings_manager.dispatch(path,body)
+        if path=='/api/volshell/start':
+            return await app.start_volshell(body['case_id'],body['image_id'],body.get('mode','generic'))
+        if path=='/api/volshell/input':
+            return await app.input_volshell(body['case_id'],body['session_id'],body['text'])
+        if path=='/api/volshell/interrupt':
+            return await app.volshell.interrupt(body['case_id'],body['session_id'])
+        if path=='/api/volshell/close':
+            return await app.close_volshell(body['case_id'],body['session_id'])
+        if path=='/api/volshell/suggest':
+            return await app.suggest_volshell(body['case_id'],body['session_id'],body['text'])
+        if path=='/api/volshell/investigate':
+            return app.investigate_volshell(body['case_id'],body['session_id'],body['text'],body.get('request_id'))
         if path=='/api/cases':return {'cases':app.add(body['paths'],body.get('related',False),body.get('title',''),body.get('source',''))}
         if path=='/api/jobs':return app.enqueue(body['case_id'],body['kind'],body.get('text',''),body.get('request_id'))
         if path=='/api/reports/remove':return await app.remove_report(body['case_id'],body['report_id'],body['action'])
@@ -127,6 +154,9 @@ class Handler(BaseHTTPRequestHandler):
         app=self.server.app
         one=lambda k,d='':query.get(k,[d])[0]
         if path=='/api/state':return app.snapshot()
+        if path=='/api/volshell':
+            app.case(one('case'))
+            return app.volshell_snapshot()
         if path=='/api/settings':return app.settings_manager.snapshot()
         if path=='/api/plugins':
             if one('refresh', '0') not in ('0', '1'):
@@ -148,6 +178,59 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/file':return app.read_file(app.case(one('case')),one('path'),int(one('offset','0')))
         raise ValueError('Unknown route')
 
+    async def shell_stream_data(self, case_id):
+        app = self.server.app
+        app.case(case_id)
+        # Stream only terminal transport state. Investigation history and other
+        # cases remain on their existing authenticated snapshot routes.
+        view = app.volshell.snapshot(case_id)
+        agent = getattr(app, 'volshell_agent', None)
+        activity = agent.snapshot() if agent else None
+        view['agent_activity'] = activity if activity and activity.get('case_id') == case_id else None
+        return view
+
+    def stream_shell(self, query):
+        case_id = query.get('case', [''])[0]
+        initial = self.invoke(self.shell_stream_data(case_id))
+        if not self.server.stream_slots.acquire(blocking=False):
+            return self.send(429, {'error':'Too many terminal streams; close another console'})
+        try:
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/event-stream; charset=utf-8')
+            self.send_header('Cache-Control', 'no-store')
+            self.send_header('X-Content-Type-Options', 'nosniff')
+            self.send_header('Referrer-Policy', 'no-referrer')
+            self.send_header('Connection', 'close')
+            self.end_headers()
+            self.connection.settimeout(5)
+            self.close_connection = True
+            previous = None
+            heartbeat = time.monotonic()
+            # Bounded connections reconnect through EventSource with a complete
+            # current view. Flush fragments without waiting for newline/prompt.
+            deadline = heartbeat + 120
+            while not self.server.streams_stopping.is_set() and time.monotonic() < deadline:
+                if select.select([self.connection], [], [], 0)[0] and not self.connection.recv(1, socket.MSG_PEEK):
+                    break
+                view = initial if initial is not None else self.invoke(self.shell_stream_data(case_id), timeout=5)
+                initial = None
+                data = json.dumps({'case_id':case_id, **view}, ensure_ascii=True, separators=(',', ':')).encode()
+                if data != previous:
+                    self.wfile.write(b'event: volshell\ndata: ' + data + b'\n\n')
+                    self.wfile.flush()
+                    previous = data
+                    heartbeat = time.monotonic()
+                elif time.monotonic() - heartbeat >= 10:
+                    self.wfile.write(b': heartbeat\n\n')
+                    self.wfile.flush()
+                    heartbeat = time.monotonic()
+                self.server.streams_stopping.wait(.05)
+        except (OSError, TimeoutError, ValueError, RuntimeError):
+            # A closed browser is not an app error; never append JSON after SSE.
+            pass
+        finally:
+            self.server.stream_slots.release()
+
     def do_GET(self):
         try:
             self.guard()
@@ -157,6 +240,7 @@ class Handler(BaseHTTPRequestHandler):
                 '/settings.js':('settings.js','text/javascript; charset=utf-8'),
                 '/settings.css':('settings.css','text/css; charset=utf-8'),
                 '/themes.js':('themes.js','text/javascript; charset=utf-8'),
+                '/volshell.js':('volshell.js','text/javascript; charset=utf-8'),
                 '/themes.css':('themes.css','text/css; charset=utf-8'),
                 '/halloween-night.png':('halloween-night.png','image/png')})
             # Asset paths originate only in the package, never in request text.
@@ -166,6 +250,8 @@ class Handler(BaseHTTPRequestHandler):
                 name,mime=assets[url.path]
                 return self.send(200,(Path(__file__).parent/'static'/name).read_bytes(),mime)
             self.authenticated()
+            if url.path=='/api/volshell/events':
+                return self.stream_shell(parse_qs(url.query))
             if url.path=='/api/coin':
                 query=parse_qs(url.query)
                 case=self.server.app.case(query['case'][0])
@@ -190,10 +276,58 @@ class Handler(BaseHTTPRequestHandler):
             if self.path=='/api/unlock':
                 if not secrets.compare_digest(str(body.get('token','')),self.server.token):raise PermissionError('Invalid launch token')
                 return self.send(200,{'connected':True},cookie=True)
+            if self.path in ('/api/internal/volshell', '/api/internal/volshell/cancel'):
+                case_id = body.get('case_id')
+                if not isinstance(case_id, str) or not 0 < len(case_id) <= 256:
+                    raise PermissionError('Invalid VolShell case capability')
+                expected = hmac.new(self.server.app.volshell_bridge_secret,
+                                    case_id.encode(), hashlib.sha256).hexdigest()
+                if not secrets.compare_digest(self.headers.get('Authorization', ''), 'Bearer ' + expected):
+                    raise PermissionError('Invalid VolShell case capability')
+                return self.bridge_shell(case_id, body, cancel=self.path.endswith('/cancel'))
             self.authenticated()
             self.send(200,self.invoke(self.dispatch(self.path,body)))
         except PermissionError as exc:self.send(403,{'error':str(exc)})
         except (Exception,) as exc:self.send(400,{'error':str(exc)})
+
+    def bridge_shell(self, case_id, body, cancel=False):
+        ident = body.get('request_id')
+        if not isinstance(ident, str) or not re.fullmatch(r'[a-f0-9]{32}', ident):
+            raise ValueError('A unique VolShell request identity is required')
+        key = (case_id, ident)
+        with self.server.bridge_lock:
+            current = time.monotonic()
+            self.server.bridge_cancelled = {k:v for k,v in self.server.bridge_cancelled.items() if v > current}
+            if cancel:
+                future = self.server.bridge_requests.get(key)
+                if future:
+                    future.cancel()
+                # Cancellation may arrive before the original HTTP request.
+                if len(self.server.bridge_cancelled) >= 64:
+                    self.server.bridge_cancelled.pop(next(iter(self.server.bridge_cancelled)))
+                self.server.bridge_cancelled[key] = current + 180
+            else:
+                if key in self.server.bridge_cancelled:
+                    raise ValueError('VolShell request has already finished or was cancelled')
+                if key in self.server.bridge_requests or len(self.server.bridge_requests) >= 8:
+                    raise ValueError('VolShell request is already active or capacity is full')
+                future = asyncio.run_coroutine_threadsafe(
+                    self.server.app.run_agent_volshell(case_id, body.get('arguments', {})), self.server.loop)
+                self.server.bridge_requests[key] = future
+        if cancel:
+            return self.send(200, {'cancelled':True})
+        try:
+            result = future.result(timeout=180)
+        except TimeoutError:
+            future.cancel()
+            raise
+        finally:
+            with self.server.bridge_lock:
+                self.server.bridge_requests.pop(key, None)
+                if len(self.server.bridge_cancelled) >= 64:
+                    self.server.bridge_cancelled.pop(next(iter(self.server.bridge_cancelled)))
+                self.server.bridge_cancelled[key] = time.monotonic() + 180
+        return self.send(200, result)
 
 
 async def serve(args):

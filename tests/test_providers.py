@@ -54,6 +54,15 @@ class CredentialsTests(unittest.TestCase):
 
 
 class CompatibleTests(unittest.IsolatedAsyncioTestCase):
+    async def test_plain_drafting_request_has_no_tool_contract(self):
+        def handler(request):
+            payload=json.loads(request.content)
+            self.assertNotIn('tools',payload)
+            self.assertNotIn('tool_choice',payload)
+            return response({'role':'assistant','content':'An inert draft'})
+        result=await self.adapter(handler).request([{'role':'user','content':'Draft only'}],[])
+        self.assertEqual(result['content'],'An inert draft')
+
     def adapter(self, handler, **config):
         return CompatibleClient({'provider':'compatible','endpoint':'https://synthetic.example/v1','model':'synthetic',**config},
                                 CredentialStore(),httpx.MockTransport(handler))

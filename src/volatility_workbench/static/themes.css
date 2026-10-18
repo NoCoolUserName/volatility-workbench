@@ -61,6 +61,124 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 .plugin-table thead { background: var(--panel); }
 .approval { background: var(--panel); color: var(--text); }
 
+/* Every bezel switch has its own material/shape language. The rectangular LED
+   remains a separate, truthful connection indicator in every skin. */
+:root {
+  --shell-plate: linear-gradient(#253830, #0e1b17);
+  --shell-radius: 3px;
+  --shell-border: 1px solid var(--border);
+  --shell-shadow: inset 0 1px #ffffff24, 0 2px 3px #0007;
+  --shell-font: ui-monospace, SFMono-Regular, Consolas, monospace;
+  --shell-spacing: .03em;
+}
+#consoleVolshellMode {
+  background: var(--shell-plate);
+  border: var(--shell-border);
+  border-radius: var(--shell-radius);
+  box-shadow: var(--shell-shadow);
+  color: var(--text);
+  font-family: var(--shell-font);
+  letter-spacing: var(--shell-spacing);
+  padding: 9px 13px;
+  font-weight: 650;
+}
+#consoleVolshellMode[aria-pressed="true"] { border-color: var(--accent); }
+#consoleVolshellMode:hover { filter: brightness(1.13); }
+:root[data-theme="matrix"] { --shell-plate: repeating-linear-gradient(0deg, #77d8a009 0 1px, transparent 1px 4px), linear-gradient(#162c22, #081912); --shell-radius: 1px; --shell-shadow: inset 0 0 0 2px #07100c, inset 0 -4px #456f5638; }
+:root[data-theme="halloween"] { --shell-plate: radial-gradient(ellipse at 15% 0, #b6673259, transparent 65%), linear-gradient(#40252d, #1d1528); --shell-radius: 18px 7px 18px 7px; --shell-border: 2px solid #bd8860; --shell-font: Georgia, serif; }
+:root[data-theme="halloween-noir"] { --shell-plate: repeating-linear-gradient(110deg, #ba8b5e10 0 2px, transparent 2px 8px), linear-gradient(#382a23, #1c1715); --shell-radius: 2px 12px 2px 12px; --shell-border: 3px double #b79a7b; --shell-font: Georgia, serif; }
+:root[data-theme="nightmare"] { --shell-plate: repeating-linear-gradient(105deg, #c4b0d30b 0 9px, transparent 9px 18px), linear-gradient(#382a4a, #191622); --shell-radius: 19px 4px 19px 4px; --shell-shadow: inset 0 0 0 2px #11101b, 2px 3px 0 #63516f; --shell-font: Georgia, serif; }
+:root[data-theme="fallout"] { --shell-plate: radial-gradient(circle at 4px 4px,#a39b70 0 1px,transparent 2px), radial-gradient(circle at calc(100% - 4px) calc(100% - 4px),#a39b70 0 1px,transparent 2px),linear-gradient(#4a4932,#252b1e); --shell-radius: 2px; --shell-border: 2px solid #8c8b61; --shell-shadow: inset 1px 1px #c1bd8a55,inset -2px -2px #12190d; }
+:root[data-theme="fallout-2"] { --shell-plate: linear-gradient(100deg,#9d62322b,transparent 25% 75%,#9d62322b),linear-gradient(#625b3c,#343e28); --shell-radius: 3px; --shell-border: 2px solid #b7a569; --shell-shadow: inset 1px 2px #d2bc7b77,inset -2px -3px #17200e,0 2px 0 #0a1007; }
+:root[data-theme="fallout-tactics"] { --shell-plate: repeating-linear-gradient(135deg,#acc4a80c 0 5px,transparent 5px 10px),linear-gradient(#2c4943,#152a27); --shell-radius: 0 9px; --shell-border: 2px solid #7d9d88; --shell-shadow: inset 0 3px #172d27,inset 0 -3px #64837144; --shell-spacing: .08em; }
+:root[data-theme="fallout-brotherhood"] { --shell-plate: linear-gradient(90deg,#a0493b40,transparent 22% 78%,#a0493b40),linear-gradient(#4a2b2d,#281b20); --shell-radius: 3px 3px 14px 14px; --shell-border: 3px double #c69b80; --shell-font: Georgia, serif; }
+:root[data-theme="fallout-3"] { --shell-plate: linear-gradient(0deg,#0c1c09 0 5px,transparent 5px),linear-gradient(#32492a,#182a13); --shell-radius: 8px 2px; --shell-shadow: inset 0 0 0 2px #6a825247,inset 0 0 12px #091408; --shell-border: 2px solid #8a9d68; }
+:root[data-theme="fallout-new-vegas"] { --shell-plate: radial-gradient(ellipse at 0 100%,#6a292f70,transparent 70%),linear-gradient(#572c2d,#2a1720); --shell-radius: 18px 4px; --shell-border: 2px solid #ffdab0; --shell-shadow: inset 0 0 0 2px #33212a,0 0 0 1px #9ec5ca,0 0 7px #f1a65e55; --shell-font: Georgia, serif; --shell-spacing: .08em; }
+:root[data-theme="fallout-4"] { --shell-plate: linear-gradient(90deg,transparent 45%,#76999b26 46% 48%,transparent 49%),linear-gradient(#2c5156,#192e32); --shell-radius: 5px; --shell-border: 2px solid #8bb3ad; --shell-shadow: inset 2px 2px #b8d0ba44,inset -2px -3px #10262b; }
+:root[data-theme="fallout-shelter"] { --shell-plate: linear-gradient(0deg,#777037 0 5px,transparent 5px),linear-gradient(#3d4b29,#263320); --shell-radius: 16px; --shell-border: 2px solid #d3bb6d; --shell-shadow: inset 0 2px #d4ce8555,0 3px 0 #1a2614; --shell-font: system-ui,sans-serif; }
+:root[data-theme="fallout-76"] { --shell-plate: linear-gradient(90deg,#bba86230 0 7px,transparent 7px calc(100% - 7px),#bba86230 calc(100% - 7px)),linear-gradient(#285261,#123440); --shell-radius: 6px 6px 2px 2px; --shell-border: 3px double #c1b174; --shell-shadow: inset 0 2px #bdd2c633; }
+:root[data-theme="fallout-4-vr"] { --shell-plate: linear-gradient(90deg,#294655 49%,#182b34 49% 51%,#294655 51%); --shell-radius: 17px 17px 10px 10px; --shell-border: 2px solid #a3bcc5; --shell-shadow: inset 0 -4px #112332,0 1px 0 #c5d4d966; }
+:root[data-theme="fallout-pinball"] { --shell-plate: radial-gradient(ellipse at 30% 10%,#b88c5144,transparent 70%),linear-gradient(#51324b,#2b203a); --shell-radius: 22px 7px 22px 22px; --shell-border: 2px solid #d6bc88; --shell-shadow: inset 0 2px #fff0bd44,0 3px 0 #171023; --shell-font: system-ui,sans-serif; }
+:root[data-theme="fallout-shelter-online"] { --shell-plate: repeating-linear-gradient(90deg,transparent 0 19px,#adc8d018 19px 21px),linear-gradient(#28516e,#172f4c); --shell-radius: 8px 0 8px 0; --shell-border: 2px solid #d5bd7e; --shell-shadow: inset 0 -4px #081d2d; --shell-font: system-ui,sans-serif; }
+:root[data-theme="8-bit"] { --shell-plate: linear-gradient(#373657,#252342); --shell-radius: 0; --shell-border: 3px solid #c5b26d; --shell-shadow: 3px 3px 0 #080c24,inset 2px 2px #a49ac550,inset -2px -2px #11142c; --shell-spacing: .1em; }
+:root[data-theme="adventure"] { --shell-plate: linear-gradient(100deg,#83644128,transparent 60%),linear-gradient(#333b28,#1b2a21); --shell-radius: 0 4px 0 4px; --shell-border: 1px dashed #cfbb85; --shell-shadow: inset 0 0 0 3px #101e17; --shell-font: Georgia,serif; --shell-spacing: .04em; }
+:root[data-theme="metroid"] { --shell-plate: radial-gradient(ellipse at 50% 120%,#bf9d4655,transparent 75%),linear-gradient(#285046,#112c2e); --shell-radius: 5px 19px; --shell-border: 2px solid #b7aa63; --shell-shadow: inset 0 0 0 2px #163e34,0 0 5px #9ac76533; }
+:root[data-theme="silpheed"] { --shell-plate: linear-gradient(130deg,#9cb6d522 0 20%,transparent 20% 80%,#9cb6d522 80%),linear-gradient(#283e64,#18284c); --shell-radius: 2px 13px 2px 13px; --shell-border: 1px solid #aec7e5; --shell-shadow: inset 0 3px #748bad44,inset 0 -3px #0b1736; --shell-spacing: .12em; }
+:root[data-theme="elevator"] { --shell-plate: linear-gradient(90deg,#383c54 49%,#121c2a 49% 51%,#383c54 51%); --shell-radius: 0; --shell-border: 2px solid #9f91bd; --shell-shadow: inset 3px 0 #61738355,inset -3px 0 #61738355; --shell-spacing: .06em; }
+:root[data-theme="vaporwave"] { --shell-plate: repeating-linear-gradient(0deg,#efb7d70c 0 1px,transparent 1px 6px),linear-gradient(120deg,#473952,#3b294b); --shell-radius: 20px 3px 20px 3px; --shell-border: 2px solid #d5b3dc; --shell-shadow: 2px 3px 0 #748ca055,inset 0 2px #f6cce733; --shell-font: Georgia,serif; }
+:root[data-theme="retrowave"] { --shell-plate: repeating-linear-gradient(0deg,#e4a8d009 0 1px,transparent 1px 5px),linear-gradient(#3b234d,#1d1734); --shell-radius: 3px 10px 3px 10px; --shell-border: 2px solid #dd96c6; --shell-shadow: 0 0 6px #b75c9f55,inset 0 -3px #733b7455; --shell-spacing: .11em; }
+:root[data-theme="hacker"] { --shell-plate: linear-gradient(90deg,#93cbba1c 0 3px,transparent 3px),linear-gradient(#183e3c,#10262c); --shell-radius: 0; --shell-border: 1px solid #83b9b3; --shell-shadow: inset 0 0 0 3px #0b2027,inset 0 -5px #537e7455; --shell-spacing: .14em; }
+:root[data-theme="top-gun"] { --shell-plate: linear-gradient(155deg,transparent 0 15%,#a3b2ba19 15% 18%,transparent 18% 82%,#a3b2ba19 82% 85%,transparent 85%),linear-gradient(#364957,#1b2b3e); --shell-radius: 5px 5px 12px 12px; --shell-border: 2px solid #b4a591; --shell-shadow: inset 0 2px #c6d3d033,inset 0 -3px #0f1d2e; --shell-spacing: .13em; }
+:root[data-theme="oedo"] { --shell-plate: linear-gradient(90deg,#5790a029,transparent 25% 75%,#c77d8e29),linear-gradient(#343047,#1b2038); --shell-radius: 8px 1px 8px 1px; --shell-border: 1px solid #c399b3; --shell-shadow: -2px 0 #70a2b166,2px 0 #bb687b66,inset 0 -2px #10192b; }
+:root[data-theme="cyberpunk"] { --shell-plate: linear-gradient(135deg,#d0c35c20 0 15%,transparent 15% 85%,#d0c35c20 85%),linear-gradient(#364140,#182c33); --shell-radius: 0 12px 0 12px; --shell-border: 2px solid #cbc05c; --shell-shadow: 2px 2px 0 #a9688c66,inset 0 -3px #111f25; --shell-spacing: .09em; }
+:root[data-theme="golgo"] { --shell-plate: linear-gradient(90deg,#99545833 0 4px,transparent 4px),linear-gradient(#343944,#182430); --shell-radius: 2px 2px 0 0; --shell-border: 1px solid #b39193; --shell-shadow: inset 0 -2px #8e4e5744,0 3px 0 #0b1421; --shell-font: Georgia,serif; --shell-spacing: .08em; }
+:root[data-theme="punisher"] { --shell-plate: repeating-linear-gradient(135deg,#dc9ba90c 0 3px,transparent 3px 12px),linear-gradient(#3c3b48,#202b3d); --shell-radius: 1px 7px 1px 7px; --shell-border: 2px solid #ad8d9b; --shell-shadow: inset 2px 0 #bd738647,inset -2px 0 #bd738647,0 2px 0 #101622; }
+:root[data-theme="mono"] { --shell-plate: linear-gradient(#303235,#191b1e); --shell-radius: 6px; --shell-border: 1px solid #a5a7aa; --shell-shadow: inset 0 1px #ffffff40,inset 0 -2px #0a0b0c; --shell-font: system-ui,sans-serif; --shell-spacing: 0; }
+:root[data-theme="blue"] { --shell-plate: radial-gradient(ellipse at 30% 0,#b6d8e02c,transparent 80%),linear-gradient(#234658,#102c42); --shell-radius: 12px 12px 4px 4px; --shell-border: 1px solid #8fb6c8; --shell-shadow: inset 0 2px #c7eaf540,0 2px 0 #0a1b29; --shell-font: system-ui,sans-serif; --shell-spacing: .025em; }
+
+/* New Vegas: a worn roadside sign around a clean, readable display. Static
+   sockets include unlit bulbs; there is deliberately no flicker or animation. */
+.crt-vegas-sign, .vegas-lamps { display: none; }
+:root[data-theme="fallout-new-vegas"] {
+  --vegas-metal: radial-gradient(ellipse at 8% 100%,#7c392b88,transparent 50%),radial-gradient(ellipse at 90% 0,#91553988,transparent 40%),repeating-linear-gradient(112deg,#3a1e1712 0 1px,transparent 1px 17px),linear-gradient(115deg,#b49b76,#d6bf94 35%,#bca37c 70%,#8a6e50);
+  --vegas-horizontal-lamps: radial-gradient(circle at 12px 6px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px),radial-gradient(circle at 44px 6px,#fff1c4 0 2px,#cfaa69 3px,transparent 5px),radial-gradient(circle at 76px 6px,#4f4030 0 3px,#8d7050 4px,transparent 5px),radial-gradient(circle at 108px 6px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px),radial-gradient(circle at 140px 6px,#fff1c4 0 2px,#cfaa69 3px,transparent 5px),radial-gradient(circle at 172px 6px,#544335 0 3px,#8d7050 4px,transparent 5px),radial-gradient(circle at 204px 6px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px);
+  --vegas-vertical-lamps: radial-gradient(circle at 6px 12px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px),radial-gradient(circle at 6px 44px,#fff1c4 0 2px,#cfaa69 3px,transparent 5px),radial-gradient(circle at 6px 76px,#4f4030 0 3px,#8d7050 4px,transparent 5px),radial-gradient(circle at 6px 108px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px),radial-gradient(circle at 6px 140px,#fff1c4 0 2px,#cfaa69 3px,transparent 5px),radial-gradient(circle at 6px 172px,#544335 0 3px,#8d7050 4px,transparent 5px),radial-gradient(circle at 6px 204px,#fff4cf 0 2px,#dfbc79 3px,transparent 5px);
+}
+:root[data-theme="fallout-new-vegas"] .crt-monitor {
+  padding: 115px 38px 20px;
+  border: 2px solid #5c3d2c;
+  border-radius: 30px 30px 46px 46px;
+  background: var(--vegas-metal);
+  box-shadow: inset 2px 2px 1px #ffe4b5,inset -4px -5px 3px #493024,0 20px 60px #000a;
+}
+:root[data-theme="fallout-new-vegas"] .crt-monitor::before {
+  inset: 25px;
+  border: 2px solid #b8d4d6;
+  border-radius: 16px 16px 28px 28px;
+  box-shadow: 0 0 0 2px #715c4a,inset 0 0 0 2px #79553b,0 0 7px #e6f1d777;
+}
+:root[data-theme="fallout-new-vegas"] .vegas-lamps { display: block; position: absolute; inset: 0; pointer-events: none; }
+:root[data-theme="fallout-new-vegas"] .vegas-lamps span { position: absolute; }
+:root[data-theme="fallout-new-vegas"] :is(.vegas-lamps-top,.vegas-lamps-bottom) { left: 24px; right: 24px; height: 12px; background-image: var(--vegas-horizontal-lamps); background-size: 224px 12px; background-repeat: repeat-x; }
+:root[data-theme="fallout-new-vegas"] .vegas-lamps-top { top: 9px; }
+:root[data-theme="fallout-new-vegas"] .vegas-lamps-bottom { bottom: 9px; }
+:root[data-theme="fallout-new-vegas"] :is(.vegas-lamps-left,.vegas-lamps-right) { top: 24px; bottom: 24px; width: 12px; background-image: var(--vegas-vertical-lamps); background-size: 12px 224px; background-repeat: repeat-y; }
+:root[data-theme="fallout-new-vegas"] .vegas-lamps-left { left: 9px; }
+:root[data-theme="fallout-new-vegas"] .vegas-lamps-right { right: 9px; }
+:root[data-theme="fallout-new-vegas"] .crt-vegas-sign { display: flex; position: absolute; top: 43px; left: 50%; transform: translateX(-50%); pointer-events: none; }
+:root[data-theme="fallout-new-vegas"] .vegas-welcome { display: flex; gap: 9px; }
+:root[data-theme="fallout-new-vegas"] .vegas-welcome i { display: grid; place-items: center; width: 48px; height: 48px; border: 2px solid #d8e7e3; border-radius: 50%; background: radial-gradient(ellipse at 30% 20%,#a27e56,#5c4133); color: #ffe0a5; font: 24px/1 Georgia,serif; text-shadow: 0 0 3px #fff0b5,0 0 7px #ed9e45; box-shadow: 0 0 0 2px #7b6b56,0 0 6px #c7dbd8aa,inset 0 0 0 3px #725744; }
+:root[data-theme="fallout-new-vegas"] .vegas-welcome i:nth-child(5) { color: #72583b; text-shadow: none; border-color: #839087; box-shadow: 0 0 0 2px #6d5b48,inset 0 0 0 3px #67503d; }
+:root[data-theme="fallout-new-vegas"] .vegas-star { position: absolute; width: 54px; height: 63px; left: -71px; top: -15px; filter: drop-shadow(0 0 3px #d9eeee) drop-shadow(0 0 5px #db8b45); }
+:root[data-theme="fallout-new-vegas"] .vegas-star::before { content:""; position:absolute; inset:0; clip-path: polygon(50% 0,57% 35%,91% 11%,66% 43%,100% 50%,66% 57%,89% 88%,57% 65%,50% 100%,43% 65%,9% 89%,34% 57%,0 50%,34% 43%,11% 12%,43% 35%); background: #e8e8d2; }
+:root[data-theme="fallout-new-vegas"] .vegas-star::after { content:""; position:absolute; inset:4px; clip-path: polygon(50% 0,55% 39%,89% 11%,61% 45%,100% 50%,61% 55%,89% 89%,55% 61%,50% 100%,45% 61%,11% 89%,39% 55%,0 50%,39% 45%,11% 11%,45% 39%); background: #e49f4c; }
+:root[data-theme="fallout-new-vegas"] .crt-top-vents { display: none; }
+:root[data-theme="fallout-new-vegas"] .crt-recess { padding: 9px; border-radius: 17px; background: linear-gradient(135deg,#5a3427,#9b714d 65%,#e4c793); box-shadow: inset 2px 2px 6px #301b18,0 1px 0 #ffe0a5; }
+:root[data-theme="fallout-new-vegas"] .crt-screen { background: #1b1117; border-color: #3d2925; border-radius: 11px; box-shadow: inset 0 0 0 1px #09070a,0 0 0 1px #d9b078; }
+:root[data-theme="fallout-new-vegas"] .crt-chin { min-height: 68px; color: #512b25; text-shadow: 0 1px #f0d6a3; padding-bottom: 7px; }
+:root[data-theme="fallout-new-vegas"] .crt-brand { color: #562821; font-family: Georgia,serif; letter-spacing: 1px; font-size: 11px; }
+:root[data-theme="fallout-new-vegas"] .crt-brand::before { content:"NEW VEGAS"; display:block; color:#8b332b; font:800 18px/1.2 ui-serif,Georgia,serif; letter-spacing:2px; text-shadow:1px 1px #f5d59b; }
+:root[data-theme="fallout-new-vegas"] .crt-power { color: #41261c; }
+@media (max-width: 700px) {
+  :root[data-theme="fallout-new-vegas"] .crt-monitor { padding: 88px 24px 18px; border-radius: 23px 23px 30px 30px; }
+  :root[data-theme="fallout-new-vegas"] .crt-monitor::before { inset: 19px; border-radius: 12px 12px 21px 21px; }
+  :root[data-theme="fallout-new-vegas"] .crt-vegas-sign { top: 39px; }
+  :root[data-theme="fallout-new-vegas"] .vegas-welcome { gap: 4px; }
+  :root[data-theme="fallout-new-vegas"] .vegas-welcome i { width: 29px; height: 29px; font-size: 17px; border-width: 1px; }
+  :root[data-theme="fallout-new-vegas"] .vegas-star { width: 32px; height: 31px; left: calc(50% - 16px); top: -30px; }
+  :root[data-theme="fallout-new-vegas"] .crt-screen { padding: 12px 9px; }
+  :root[data-theme="fallout-new-vegas"] .crt-recess { padding: 5px; }
+  :root[data-theme="fallout-new-vegas"] .crt-chin { padding: 10px 3px 3px; }
+  :root[data-theme="fallout-new-vegas"] .crt-brand::before { font-size: 12px; }
+  :root[data-theme="fallout-new-vegas"] .crt-brand { font-size: 8px; }
+  :root[data-theme="fallout-new-vegas"] .crt-brand > span { display: none; }
+}
+@media (prefers-contrast: more) {
+  :root[data-theme="fallout-new-vegas"] { --vegas-metal: #bca47e; }
+  :root[data-theme="fallout-new-vegas"] .vegas-star { filter: none; }
+  #consoleVolshellMode { background: var(--panel); border-color: var(--text); }
+}
+
 /* Fallout 2: a responsive instrument housing built entirely from CSS.
    Patina, fasteners and vents belong to the chassis, never to evidence text. */
 :root[data-theme="fallout-2"] {

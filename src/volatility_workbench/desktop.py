@@ -137,7 +137,8 @@ class BackendHost:
     def activity(self):
         if not self.app:return {'active':False,'maintenance':False,'owned':False}
         async def read():
-            return {'active':bool(self.app.active or any(j['status'] in ('queued','running','stopping') for j in self.app.state['jobs'])),
+            return {'active':bool(self.app.active or getattr(getattr(self.app,'volshell',None),'busy',False)
+                                  or any(j['status'] in ('queued','running','stopping') for j in self.app.state['jobs'])),
                     'maintenance':bool(self.app.settings_manager.busy or getattr(self.app, 'report_cleanup', {})),'owned':True}
         return asyncio.run_coroutine_threadsafe(read(),self.loop).result(timeout=5)
 
@@ -196,8 +197,8 @@ def install_cocoa_hooks(controller):
                 return AppKit.NSTerminateCancel
             if state['active']:
                 alert=AppKit.NSAlert.alloc().init()
-                alert.setMessageText_('An investigation is still active')
-                alert.setInformativeText_('Keep working, or cancel queued and active work safely and quit. Completed evidence will be retained.')
+                alert.setMessageText_('Investigation work or VolShell is still active')
+                alert.setInformativeText_('Keep working, or stop queued work and active sessions safely and quit. Completed evidence will be retained.')
                 alert.addButtonWithTitle_('Keep working');alert.addButtonWithTitle_('Cancel work and quit')
                 if alert.runModal()!=AppKit.NSAlertSecondButtonReturn:return AppKit.NSTerminateCancel
             controller.quitting=True

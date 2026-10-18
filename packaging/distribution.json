@@ -39,7 +39,10 @@
       "aynaitlamine/volatility3-browser-history",
       "Immersive-Labs-Sec/volatility_plugins",
       "kevthehermit/volatility_plugins",
-      "fox-it/OpenSSH-Session-Key-Recovery"
+      "fox-it/OpenSSH-Session-Key-Recovery",
+      "lorelyai/volatility3-bitlocker",
+      "HalaAli198/Go-Memory-Forensics",
+      "HalaAli198/Volatility-3-Plugins-for-Python-Runtime-Analysis"
     ]
   },
   "pypykatz_plugin": {

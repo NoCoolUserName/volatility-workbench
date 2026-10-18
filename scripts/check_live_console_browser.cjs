@@ -17,6 +17,9 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
  const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
  try{
   const page=await browser.newPage({viewport:{width:1400,height:1000}}),errors=[],calls=[];
+  // Transport behavior has its own synthetic VolShell/SSE checks. This fixture
+  // keeps the optional terminal subscription offline while testing saved output.
+  await page.addInitScript(()=>{window.EventSource=class extends EventTarget {close(){}};});
   await page.addInitScript(now=>{window.fixtureNow=now;Date.now=()=>window.fixtureNow;},fixtureNow);
   let retained=null,rejectSaved=false;
   page.on('pageerror',error=>errors.push(error.message));
@@ -56,6 +59,27 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   assert.equal(await pre.locator('img,script').count(),0);assert.equal(await page.evaluate(()=>window.injected),undefined);
   assert.ok(await pre.evaluate(node=>node.scrollHeight-node.scrollTop-node.clientHeight<3),'New output follows the bottom');
   if(process.env.WORKBENCH_CONSOLE_SCREENSHOT)await page.locator('#liveConsoleSection').screenshot({path:process.env.WORKBENCH_CONSOLE_SCREENSHOT});
+  const reportToggle=page.locator('#toggleReportConsole');
+  assert.equal(await reportToggle.getAttribute('aria-expanded'),'true');
+  assert.equal(await reportToggle.getAttribute('aria-controls'),'liveConsoleDock');
+  await reportToggle.click();
+  assert.equal(await reportToggle.getAttribute('aria-expanded'),'false');
+  assert.equal(await pre.isHidden(),true,'Report console arrow hides only the inline console');
+  assert.equal(await page.locator('#activeReportProgress').isVisible(),true,'Collapsed console keeps job progress visible');
+  assert.equal(await page.locator('#stop').isVisible(),true,'Collapsed console keeps Stop accessible');
+  await page.evaluate(()=>refresh());
+  assert.equal(await pre.isHidden(),true,'Polling preserves the collapsed inline preference');
+  await page.locator('#openCaseConsole').click();await page.locator('#consoleOutputMode').click();
+  assert.equal(await page.locator('#consoleZoom').isVisible(),true);
+  assert.equal(await pre.isVisible(),true,'The expanded CRT can show Output while its inline dock is collapsed');
+  assert.match(await pre.innerText(),/Actual synthetic output 39/);
+  await page.locator('#expandConsole').click();await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  assert.equal(await pre.isHidden(),true,'Closing the CRT does not reopen the inline console');
+  assert.equal(await reportToggle.evaluate(node=>document.activeElement===node),true,'Closing CRT restores focus to the visible Report console toggle');
+  assert.equal(await reportToggle.getAttribute('aria-expanded'),'false');
+  await reportToggle.click();
+  assert.equal(await pre.isVisible(),true);assert.match(await pre.innerText(),/Actual synthetic output 39/);
+  assert.equal(await reportToggle.getAttribute('aria-expanded'),'true');
   await pre.focus();
   await pre.evaluate(node=>{node.scrollTop=0;node.dispatchEvent(new Event('scroll'));});
   assert.equal(await page.locator('#consoleFollow').isChecked(),false,'Reading earlier output pauses following');
@@ -111,7 +135,7 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   assert.equal(await zoom.isHidden(),true,'Escape closes the monitor');
   await expectConsoleOperation('');
   assert.equal(await page.locator('body').evaluate(node=>node.classList.contains('console-zoom-open')),false);
-  for(const theme of ['matrix','blue','8-bit','fallout-2']){
+  for(const theme of ['matrix','blue','8-bit','fallout-new-vegas','fallout-2']){
    if(await page.locator('#theme').isHidden())await page.locator('#toggleTheme').click();
    await page.locator('#theme').selectOption(theme);
    await expand.click();await zoom.waitFor();
@@ -129,6 +153,14 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
    assert.equal(await pre.evaluate(node=>getComputedStyle(node).color),await page.locator('header a').evaluate(node=>getComputedStyle(node).color));
    if(theme==='matrix'&&process.env.WORKBENCH_CRT_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_CRT_SCREENSHOT});
    if(theme==='fallout-2'&&process.env.WORKBENCH_FALLOUT_CRT_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_FALLOUT_CRT_SCREENSHOT});
+   if(theme==='fallout-new-vegas'){
+    if(process.env.WORKBENCH_NEW_VEGAS_CRT_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_NEW_VEGAS_CRT_SCREENSHOT});
+    await page.setViewportSize({width:320,height:844});
+    assert.equal(await zoom.evaluate(node=>node.scrollWidth<=node.clientWidth+1),true,'New Vegas output CRT fits the narrow viewport');
+    assert.ok((await pre.boundingBox()).height>200,'New Vegas sign preserves a usable output area');
+    if(process.env.WORKBENCH_NEW_VEGAS_CRT_MOBILE_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_NEW_VEGAS_CRT_MOBILE_SCREENSHOT});
+    await page.setViewportSize({width:1400,height:1000});
+   }
    await expand.click();await page.waitForFunction(()=>document.querySelector('#expandConsole').getAttribute('aria-expanded')==='false');
   }
   await page.setViewportSize({width:2560,height:1440});
@@ -202,6 +234,6 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   await page.getByRole('button',{name:'Synthetic case · Win XP',exact:true}).click();await pre.waitFor();
   assert.match(await pre.innerText(),/New job output/,'Returning to the case restores its saved console');
   assert.deepEqual(errors,[]);assert.ok(calls.every(url=>['/api/state','/api/artifacts','/api/file','/api/report-plugins','/api/report-console'].includes(url)||!url.startsWith('/api/')));
-  console.log('Live/saved console: safe bounded output and CRT interactions; mirrored amber tool/elapsed updates, desktop/mobile placement, stopping and stale-label clearing across collapse/job/case/completion; completion keeps expanded review open, saved reload, case isolation; zero work/external requests.');
+  console.log('Live/saved console: independent inline collapse with retained progress/Stop and CRT review; safe bounded output and CRT interactions; mirrored amber tool/elapsed updates, desktop/mobile placement, stopping and stale-label clearing across collapse/job/case/completion; completion keeps expanded review open, saved reload, case isolation; zero work/external requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -289,6 +289,8 @@ article h2:first-child {
 .crt-top-vents { width: min(360px, 35%); height: 7px; flex: 0 0 7px; margin: -12px auto 12px; background: repeating-linear-gradient(90deg, #696455 0 2px, #eee7d2 2px 3px, transparent 3px 8px); border-radius: 2px; opacity: .7; }
 .crt-recess { flex: 1; min-height: 0; padding: 12px; display: flex; border-radius: 24px / 20px; background: linear-gradient(135deg, #736d5e, #a59d89 45%, #ece6d4); box-shadow: inset 2px 3px 7px #554f41, 1px 1px 1px #f6f0df; }
 .crt-screen { flex: 1; min-width: 0; min-height: 0; display: flex; border-radius: 17px / 14px; overflow: hidden; padding: 18px 22px; background: var(--bg); border: 2px solid #242720; box-shadow: inset 0 0 0 2px #000, 0 0 0 2px #45473b, 0 3px 6px #0009; }
+.crt-console-pane { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
+.crt-console-pane > .live-console-section { flex: 1; }
 .crt-screen .live-console-section { display: flex; flex-direction: column; width: 100%; min-height: 0; }
 .crt-screen .live-console-heading { flex: 0 0 auto; }
 .crt-screen .live-console-heading h3 { font-size: 17px; }
@@ -300,6 +302,59 @@ article h2:first-child {
 .crt-bottom-vents { height: 17px; width: min(280px, 30%); background: repeating-linear-gradient(0deg, #797260 0 1px, #eee6d0 1px 2px, transparent 2px 5px); opacity: .65; border-radius: 2px; }
 .crt-power { display: flex; align-items: center; gap: 8px; font: 700 9px ui-monospace, monospace; letter-spacing: 1px; }
 .crt-power i { display: inline-block; height: 7px; width: 7px; border-radius: 50%; background: #a8e3a1; border: 1px solid #527447; box-shadow: 0 0 6px #93ee9b80, inset 0 1px #fff9; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.crt-mode-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.crt-mode-controls button { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; text-shadow: none; }
+.crt-mode-controls button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.volshell-led { display: inline-block; width: 13px; height: 7px; border: 1px solid #181e17; border-radius: 1px; background: #30362c; box-shadow: inset 0 1px 2px #0009; }
+.volshell-led[data-state="ready"] { background: #83ee55; box-shadow: 0 0 5px #6de64780, inset 0 1px #d9ffbd; }
+.volshell-led[data-state="pending"] { background: #b28e3d; }
+.volshell-panel { overflow: auto; gap: 8px; }
+.volshell-heading, .volshell-session-actions, .volshell-command-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.volshell-heading { justify-content: space-between; }
+.volshell-heading h3 { margin: 0; overflow-wrap: anywhere; }
+.volshell-heading > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.volshell-compact-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.volshell-compact-heading > #collapseVolshell { grid-column: 2; grid-row: 1; }
+.volshell-connection { min-width: 0; margin: 0; }
+.volshell-connection > summary { display: inline-block; padding: 5px 8px; color: var(--muted); font-size: 18px; line-height: 1.4; cursor: pointer; list-style: none; }
+.volshell-connection > summary::-webkit-details-marker { display: none; }
+.volshell-connection > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.volshell-connection[open] { grid-column: 1 / -1; grid-row: 2; }
+.volshell-connection[open] > summary { margin-bottom: 8px; }
+.volshell-connection .volshell-session-actions { margin: 8px 0; }
+#volshellAgentStatus { color: var(--status); margin: 0; overflow-wrap: anywhere; }
+#volshellAgentCommand { flex: 0 0 auto; max-height: 120px; margin: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+#volshellAgentOutput { flex: 1 1 140px; min-height: 100px; margin: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+#volshellAgentCommand, #volshellAgentOutput { color: var(--accent); background: var(--bg); border: 1px solid var(--border); font: 13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.volshell-targets { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(110px, .6fr); gap: 12px; }
+.volshell-targets label { margin: 0; min-width: 0; }
+.volshell-targets select { display: block; width: 100%; max-width: 100%; }
+#volshellStatus { color: var(--status); font-size: 12px; }
+#volshellBinding, #volshellError, #volshellAIStatus { margin: 0; overflow-wrap: anywhere; }
+#volshellError { color: var(--error-text); }
+#volshellOutput { flex: 1 0 150px; min-height: 150px; margin: 0; overflow: auto; color: var(--accent); background: var(--bg); border: 1px solid var(--border); font: 13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.volshell-form { flex: 0 0 auto; }
+.volshell-form > label { margin: 0 0 4px; }
+.volshell-command { position: relative; background: var(--control-bg); border-radius: 4px; }
+.volshell-command textarea, .volshell-ghost { padding: 9px 11px; font: 14px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; tab-size: 4; white-space: pre-wrap; overflow-wrap: anywhere; }
+#volshellInput { position: relative; display: block; background: transparent; min-height: 64px; max-height: 160px; resize: vertical; }
+.volshell-ghost { position: absolute; inset: 0; border: 1px solid transparent; overflow: hidden; pointer-events: none; color: #9a9d9a; }
+#volshellGhostPrefix { color: transparent; }
+.volshell-command-actions { margin-top: 8px; }
+.volshell-form .subtle { margin: 6px 0 0; }
+.volshell-ai { flex: 0 0 auto; padding: 12px; border: 1px solid var(--border); border-radius: 5px; background: var(--panel); }
+.volshell-ai label { margin-top: 0; }
+.volshell-ai pre { max-height: 160px; overflow: auto; }
+.volshell-interaction { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0; }
+.volshell-interaction select { min-width: 0; max-width: 100%; }
+.volshell-investigation { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+.volshell-investigation label { margin: 0 0 8px; }
+#volshellInvestigationStatus { color: var(--status); overflow-wrap: anywhere; }
+#volshellInvestigationOutput { min-height: 140px; flex: 1 0 140px; overflow: auto; margin: 0; color: var(--accent); }
+#volshellInvestigationMessages { white-space: pre-wrap; overflow-wrap: anywhere; }
+#volshellApprovalNotice { margin: 16px; padding: 12px; border: 1px solid var(--status); color: var(--status); background: var(--panel); }
+:root[data-theme="fallout-2"] #volshellInput { background: transparent; }
 @media (max-width: 600px) {
   .console-zoom { width: calc(100vw - 12px); height: calc(100dvh - 12px); }
   .crt-monitor { padding: 20px 10px 0; border-radius: 20px; }
@@ -313,6 +368,12 @@ article h2:first-child {
   .crt-brand { font-size: 10px; letter-spacing: 2px; }
   .crt-brand > span { font-size: 7px; letter-spacing: 1px; }
   .crt-bottom-vents { display: none; }
+  .crt-chin { flex-wrap: wrap; }
+  .crt-mode-controls { order: 3; flex-basis: 100%; justify-content: center; }
+  .volshell-targets { grid-template-columns: minmax(0, 1fr) minmax(110px, .6fr); gap: 6px; }
+  .volshell-targets > label:first-child { grid-column: 1 / -1; }
+  .volshell-panel { gap: 6px; }
+  #volshellOutput { flex-basis: 140px; min-height: 140px; }
 }
 article p {
   white-space: pre-wrap;
@@ -437,6 +498,9 @@ pre {
   padding-left: 5px;
 }
 .work-heading, .report-progress-heading { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+#toggleReportConsole { display: inline-flex; align-items: center; gap: .35em; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: inherit; font: inherit; text-align: left; }
+#toggleReportConsole:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+.report-console-arrow { width: .8em; font-size: .7em; text-align: center; }
 .queue li span {
   display: block;
   color: var(--muted);

@@ -12,6 +12,6 @@
     "quality / Lint, tests and secrets",
     "compatibility (3.12)",
     "compatibility (3.13)",
-    "security / Security / CodeQL"
+    "Security / SAST"
   ]
 }

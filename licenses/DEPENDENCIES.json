@@ -4311,8 +4311,8 @@
     {
       "ecosystem": "git-dependency",
       "name": "volatility-mcp",
-      "version": "5ffbbdf791fd7fdc1083fdd8b99c3a0d135f6105",
-      "source_url": "https://github.com/NoCoolUserName/volatility-mcp/tree/5ffbbdf791fd7fdc1083fdd8b99c3a0d135f6105",
+      "version": "e49244fd753826c83ae581e371fd2ff7d24580a1",
+      "source_url": "https://github.com/NoCoolUserName/volatility-mcp/tree/e49244fd753826c83ae581e371fd2ff7d24580a1",
       "status": "integration-scope-unresolved",
       "license_files": [],
       "note": "Exact VCS dependency; existing MIT grant does not settle VSL wrapper requirements. See LICENSING.md."
@@ -4335,10 +4335,12 @@
     "limits": "Selected wheel/sdist evidence is not a complete platform-specific built-release inventory. External host tools, optional browser downloads, native source/relinking obligations, unknown upstream terms and VSL integration remain separately flagged. No binary release was rebuilt or published."
   },
   "manifest_sha256": {
-    "pyproject.toml": "3b2e2ee9f019b867dc828e6a968b3706ae86ae15bc8b1a5e2ad0b5edd22dd188",
-    "requirements.lock.txt": "bc8ab46dfee3a42382bef8a7c225c1ebac8a20a1436d56f9341e9fe632cd373f",
+    "pyproject.toml": "d743a10b167f37aba55219c26c985f2093b8b190879c442bdd985b56ff2ded77",
+    "requirements.lock.txt": "2d98128b7a3282ad8a101d180b1cb08777e858cfb8b0165f0ce25df0926d1025",
     "packaging/macos/analyzer.lock.txt": "0839aca1eddd6f8fc8e741fc4d9ff4ecec2cb6dc4ecb7363b588452a1808f0a7",
-    "packaging/macos/desktop.lock.txt": "9bcefc6b1d1893431781d5648c03cab8676a95cf26e0fe68d82cc7c4cddded2d"
+    "packaging/macos/desktop.lock.txt": "9bcefc6b1d1893431781d5648c03cab8676a95cf26e0fe68d82cc7c4cddded2d",
+    "core-dependency.json": "f3677bd4b45fad1950902f9c0bb4cc93f2f17bdbb01ebca14e8ba0732c08e465",
+    "packaging/distribution.json": "b050a3820dd57fdbdeda90e56fa751da1a94ce0885678ef64d0dbaadeeca0865"
   },
   "review_items": [
     {
@@ -4365,5 +4367,11 @@
       "status": "mixed-and-unresolved",
       "detail": "Workbench bundles only its allowlisted sources and already copies their notices. Missing-license/GPL-derived optional sources remain separate; no permission inferred."
     }
-  ]
+  ],
+  "runtime_addon_core_supplement": {
+    "date": "2026-10-18",
+    "core_commit": "e49244fd753826c83ae581e371fd2ff7d24580a1",
+    "profile_revision": 6,
+    "scope": "Core runtime-addon inventory and source-license text supplement; configured analyzer 237 commands, public bundle allowlist unchanged. Exact source/installed hashes and GPL/Apache/AGPL notices are maintained by the pinned core."
+  }
 }

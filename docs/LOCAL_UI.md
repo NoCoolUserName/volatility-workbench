@@ -547,6 +547,11 @@ Stop all work sits beside Report running (or Stopping report) during report work
 For other queued/active tasks it sits beside Current work. The same global stop
 control is retained across progress updates and hides with the work panel at idle.
 
+The small arrow beside Report console (Current work while a job is active) toggles
+the inline console. Collapsing preserves its output and follow state; polling and
+returning from the expanded CRT keep that choice for the current page. Active job
+progress and Stop all work remain visible.
+
 The console's upper-right Expand button opens a near-full-screen modal with a
 resolution-independent CSS CRT casing, recessed screen, vents and power indicator.
 It moves the existing read-only console rather than duplicating the feed. Output
@@ -558,7 +563,88 @@ measured from the job's start, not the current tool's start. The label clears on
 collapse, job/case-stream changes and completion, and is absent from saved consoles.
 Collapse or Escape restores the inline console and focus; background page scrolling
 is locked while expanded. The view closes when its job changes. No shell
-input or additional analysis request is introduced.
+input or additional analysis request is introduced by the Output view itself.
+
+The CRT bezel also has a **VolShell** button and a small rectangular connection
+LED. Clicking the bezel button connects to the selected case's chosen capture and
+operating-system mode. A sole registered capture is selected automatically; its
+saved detected OS is used when available, otherwise Generic. Capture and OS choices
+are remembered per case while the page is open. If a case has multiple captures
+and none is chosen, the Connection options gear opens so the operator can choose
+explicitly. The gear also contains Connect, Interrupt and Disconnect; this setup
+stays collapsed during ordinary use. Opening **Console / VolShell** from the case
+only opens the view; the bezel button starts the session. The application
+launches the configured analyzer's official Volatility 3 Volshell locally, with
+installed symbols and offline symbol lookup. The LED becomes green only when the
+manual interpreter reaches its input prompt. A busy or starting manual session is
+amber; an ended session is off. Active AI VolShell inspection also lights the LED
+green, with an accessible label identifying AI activity. Missing symbols and startup errors remain visible.
+Repeated clicks reuse the current session or pending connection rather than
+starting another process. A session bound to another case must be disconnected
+explicitly; an active investigation prevents a new interactive connection.
+Clicking the bezel during active AI VolShell inspection opens its read-only view.
+Connection failures open the options and remain visible without automatic retries.
+
+VolShell offers three explicit modes:
+
+- **Manual commands** sends the operator's Python input to Volshell. Enter submits,
+  Shift+Enter adds a line, and an empty submission completes a continued Python
+  block. Gray starter-command suggestions are editable examples: Tab fills the
+  visible suggestion, and a separate Enter executes it. Tab otherwise moves focus.
+- **AI command suggestions** sends the typed question and selected OS mode to the
+  case's configured provider in a separate session with tools disabled. It attaches
+  no memory contents or terminal transcript. The returned explanation and command
+  are inert until the operator copies, reviews, and explicitly runs the draft.
+- **AI investigation** submits a follow-up to the existing case agent, using its
+  current provider, MCP tools, saved evidence and extraction-approval workflow.
+  It preserves reports and does not create a report revision. Tool output and the
+  answer appear inside the CRT. Manual input pauses until this job finishes; the
+  idle Python session and its variables remain available afterward. Pending
+  approvals bring the operator back to the case approval controls.
+
+The case agent can also choose **case_volshell** during an investigation. Volshell
+is a separate upstream interface, so it is exposed as an investigation tool rather
+than inserted into the installed plugin catalog. AI calls select bounded official
+inspection helpers and literal arguments; they cannot submit arbitrary Python,
+imports, scripts, dump helpers or plugins through this route. Full Python remains
+available in Manual commands. The AI owns a separate interpreter and cannot adopt
+operator-defined functions from the manual session.
+
+The returned observation can guide the next plugin choice and exact PID/address
+arguments through the existing MCP tools. It is marked exploratory and carries
+its private transcript provenance, not a core run ID or a validated evidence claim.
+The agent must corroborate report findings with saved core evidence. Existing
+extraction approvals and saved-evidence-first rules still apply. Routine report
+investigations and explicit VolShell AI investigations may select ordinary helpers
+automatically; a general follow-up question requires approval for new memory
+inspection. Help and layer-context selection do not request a memory-read helper,
+though starting Volshell still opens the registered image.
+
+When the CRT is already expanded for that case, new AI VolShell activity appears
+in a read-only pane with the selected command, status and output. It does not open
+a closed CRT or redirect another case. Output and Interactive controls remain
+available. Terminal output uses a case-scoped live event stream: partial writes
+are flushed without waiting for a newline or command completion, with up to 50ms
+server dispatch cadence. Normal state polling is retained as a reconnection
+fallback. OS/browser scheduling and upstream computations can still introduce
+latency; the application does not invent output while an upstream helper is busy.
+
+There is one operator-controlled interactive session at a time. Every input request carries its exact
+case and session identity; selecting another case cannot redirect commands or
+inherit the previous transcript. Disconnect ends the session, Interrupt interrupts
+the current Python command, and Stop all work ends both AI work and VolShell.
+Native quit and settings maintenance treat an open shell as active work. Restart
+never reconnects or replays commands automatically.
+
+This is a real local Python interpreter, not a code sandbox. Case binding selects
+the starting memory image; it does not restrict arbitrary Python to that case.
+Manual commands run with the operator's account permissions. Upstream user startup
+scripts and IPython startup configuration are disabled for this integration. The
+adapter uses the official Volshell implementation rather than duplicating forensic
+logic. It records commands/output in private `case/volshell/<session>/transcript.jsonl`
+and gives the session its own output directory. These manual transcripts are not
+automatically promoted to validated core evidence, report findings or plugin-run
+coverage. Original reports remain separate.
 
 After a report completes, fails or stops, its console remains expandable and an
 already expanded CRT stays open. The title/status changes to Saved investigation
@@ -612,3 +698,11 @@ unrelated failure reviewed. Unchecking clears that acknowledgment across snapsho
 This is a human review marker, not evidence that a failed plugin has been repaired.
 Original errors and sealed report files remain unchanged. Failed saves are shown
 inline and leave the checkbox at its previously saved value.
+
+### New Vegas console housing
+
+The Fallout: New Vegas expanded console takes its CSS housing from the weathered
+Welcome sign: neon letter discs and star, warm perimeter bulbs with several dark
+sockets, faded red lettering and aged trim. The display remains opaque and legible.
+All 31 themes give the VolShell bezel button their own treatment while retaining
+a separate rectangular connection LED and visible keyboard focus.
