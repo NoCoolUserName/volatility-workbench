@@ -241,6 +241,16 @@ When you scroll deep into a report, an up-arrow near the lower right edge
 returns to the top. It disappears near the top and outside the Reports tab.
 The case header shows evidence image sizes in decimal MB, or GB at 1 GB and
 above, rounded to two decimal places.
+Below **Executive summary**, a sealed report displays its AI determination as
+Benign, Malicious or Undetermined. New reports ask the report-writing AI to
+state exactly one of these in the saved summary and explain its basis. Older
+reports without that line receive a conservative reading of affirmative
+summary language; ambiguous summaries show Undetermined. A separate **Human
+Determination** selector can disagree with the AI. It saves per report version
+in private Workbench state with an activity timestamp, without editing the
+sealed report or starting an investigation. Benign appears bold green,
+Malicious bold red, and Undetermined bold white; an unset human choice remains
+visibly unset.
 
 Other supported command/file approvals and scoped Volatility MCP form requests are
 shown with details and approve-once/decline/cancel choices; user-input requests
@@ -376,6 +386,21 @@ physical executions and shows each remaining plugin with an **Add to prompt** bu
 and quick description. The button appends a request for that plugin to the current
 case's investigation focus without starting work. Review the accumulated focus and
 choose **Update report** when ready; that action creates the new report version.
+After Update report accepts the request, the investigation focus clears. A failed
+submission leaves the text in place for correction and retry.
+
+While a report revision is still draft, the report pane shows **Report running…**
+and the current job step without requesting a report file that has not been saved.
+Its progress bar is indeterminate when the prompt has no explicit plugin list or
+one of the listed plugins has no successful saved timing history. For a known list,
+the bar weights completed planned plugin runs by their historical average durations.
+The segmented, square-edged meter uses the selected theme's accent color and
+stops animating when reduced motion is requested.
+It estimates *plugin work only*: model reasoning, evidence review, validation and
+report writing have no reliable plugin-based ETA. The private `plugin-speeds.json`
+table keeps the last ten successful physical execution times for each plugin;
+failed requests, errors and reused results do not supply timing samples. Once the
+revision seals, the complete saved report replaces the running view.
 **Add all OS-relevant to prompt** uses each case image's saved discovery
 `detected_os` and the installed catalog's `target_os` to group unused plugins by
 image. Windows, Linux and macOS are matched explicitly; the host OS and case title

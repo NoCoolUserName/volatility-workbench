@@ -153,12 +153,17 @@ function updateBackToTop() {
 }
 async function job(kind, text = "") {
   if (!selected) throw Error("Select a case");
+  const caseId = selected;
   await api("jobs", {
-    case_id: selected,
+    case_id: caseId,
     kind,
     text,
     request_id: crypto.randomUUID(),
   });
+  if (kind === "update") {
+    focusDrafts.set(caseId, "");
+    if (selected === caseId) { $("focus").value = ""; sizeFocus(); updateBulkPluginAction(); }
+  }
   await refresh();
 }
 function setTab(name) {
@@ -304,6 +309,83 @@ function reportPresentation(text, generation) {
   } else preamble.push("", "AI generation: " + detail, "");
   return preamble.concat(lines.slice(end)).join("\n");
 }
+const AI_DETERMINATION_LINE = /^(?:\*\*)?AI Determination:(?:\*\*)?\s*(?:\*\*)?(Benign|Malicious|Undetermined)(?:\*\*)?\s*$/i;
+function executiveSummary(text) {
+  const heading = /^##\s+Executive summary\s*$/im.exec(text);
+  if (!heading) return "";
+  const rest = text.slice(heading.index + heading[0].length);
+  const next = /^##\s+/m.exec(rest);
+  return next ? rest.slice(0, next.index) : rest;
+}
+function aiDetermination(text) {
+  const summary = executiveSummary(text);
+  const stated = summary.split("\n").map(line => AI_DETERMINATION_LINE.exec(line.trim())?.[1]?.toLowerCase())
+    .filter(Boolean);
+  if (stated.length) {
+    const unique = new Set(stated);
+    return unique.size === 1 ? stated[0][0].toUpperCase() + stated[0].slice(1) : "Undetermined";
+  }
+  // Older sealed reports predate the explicit line. Recognize only affirmative
+  // conclusions in their own executive summaries; ambiguous prose stays Undetermined.
+  if (/evidence supports (?:a )?(?:high[- ]confidence )?assessment of (?:host )?compromise\b/i.test(summary))
+    return "Malicious";
+  if (/evidence supports (?:a )?benign (?:explanation|assessment)\b/i.test(summary))
+    return "Benign";
+  return "Undetermined";
+}
+function syncHumanDetermination(version) {
+  const select = $("humanDetermination");
+  if (!select || select.dataset.reportId !== version.id || select.disabled) return;
+  select.value = version.human_determination || "";
+  select.dataset.determination = select.value || "unset";
+}
+function renderDeterminations(text, version, caseId) {
+  if (version.status !== "sealed") return;
+  const heading = [...$("reportView").querySelectorAll("h2")]
+    .find(node => node.textContent.trim().toLowerCase() === "executive summary");
+  if (!heading) return;
+  const panel = el("div", undefined, "report-determinations");
+  const aiRow = el("p", undefined, "determination-row");
+  const savedAI = ["Benign", "Malicious", "Undetermined"].includes(version.ai_determination)
+    ? version.ai_determination : aiDetermination(text);
+  const aiValue = el("span", savedAI, "determination-value");
+  aiValue.dataset.determination = aiValue.textContent;
+  aiRow.append(el("strong", "AI Determination:"), aiValue);
+  const humanRow = el("label", undefined, "determination-row");
+  const select = el("select");
+  select.id = "humanDetermination";
+  select.dataset.reportId = version.id;
+  for (const [value, label] of [["", "Not set"], ["Benign", "Benign"],
+    ["Malicious", "Malicious"], ["Undetermined", "Undetermined"]]) {
+    const option = el("option", label); option.value = value; select.append(option);
+  }
+  const status = el("span", "", "determination-save-status");
+  status.setAttribute("aria-live", "polite");
+  humanRow.append(el("strong", "Human Determination:"), select, status);
+  select.value = version.human_determination || "";
+  select.dataset.determination = select.value || "unset";
+  select.onchange = async () => {
+    const prior = version.human_determination || "";
+    const requested = select.value;
+    select.dataset.determination = requested || "unset";
+    select.disabled = true;
+    status.textContent = "Saving…";
+    try {
+      const saved = await api("reports/determination", {case_id:caseId, report_id:version.id,
+        value:requested || null});
+      version.human_determination = saved.human_determination;
+      status.textContent = "Saved";
+      await refresh();
+    } catch (e) {
+      select.value = prior;
+      select.dataset.determination = prior || "unset";
+      status.textContent = "Save failed";
+      error(e);
+    } finally { select.disabled = false; }
+  };
+  panel.append(aiRow, humanRow);
+  heading.insertAdjacentElement("afterend", panel);
+}
 function renderMarkdown(text, base) {
   const article = $("reportView"),
     toc = $("toc");
@@ -317,7 +399,8 @@ function renderMarkdown(text, base) {
     article.append(gallery);
   }
   let code = null,
-    count = 0;
+    count = 0,
+    inExecutiveSummary = false;
   const shownCoins = new Set();
   const lines = text.split("\n");
   for (let index = 0; index < lines.length; index++) {
@@ -380,6 +463,7 @@ function renderMarkdown(text, base) {
     }
     const h = /^(#{1,6})\s+(.*)/.exec(line);
     if (h) {
+      if (h[1].length === 2) inExecutiveSummary = h[2].trim().toLowerCase() === "executive summary";
       const n = el("h" + Math.min(h[1].length, 4), h[2]);
       n.id = "section-" + ++count;
       article.append(n);
@@ -388,7 +472,7 @@ function renderMarkdown(text, base) {
         a.href = "#" + n.id;
         toc.append(a);
       }
-    } else if (line.trim()) {
+    } else if (line.trim() && !(inExecutiveSummary && AI_DETERMINATION_LINE.test(line.trim()))) {
       const n = el("p");
       inline(n, line, base);
       article.append(n);
@@ -725,7 +809,7 @@ async function loadReportPluginCatalog() {
   if (current) renderReportPlugins(current);
 }
 function showReportPlugins(version) {
-  if (!version) { reportPluginKey = ""; $("reportPluginInventory").hidden = true; $("reportPluginInventory").replaceChildren(); return; }
+  if (!version || version.status === "draft") { reportPluginKey = ""; $("reportPluginInventory").hidden = true; $("reportPluginInventory").replaceChildren(); return; }
   const key = JSON.stringify([selected, version.id, version.status]);
   if (reportPluginKey === key) return;
   reportPluginKey = key;
@@ -737,6 +821,42 @@ function showReportPlugins(version) {
     if (reportPluginCache.size > 8) reportPluginCache.delete(reportPluginCache.keys().next().value);
     loadReportPlugins(record);
   } else renderReportPlugins(record);
+}
+function renderRunningReport(version) {
+  const job = state.jobs.find(j => j.case_id === selected && j.report_id === version.id);
+  const root = $("reportView");
+  const title = el("h2", job?.status === "stopping" ? "Stopping report…" : "Report running…");
+  const stage = el("p", job?.progress ? "Current step: " + readableTime(job.progress) : "Preparing the report.", "subtle");
+  const planned = job?.planned_plugins || [];
+  const completed = [...(job?.completed_plugins || [])];
+  const known = planned.map(name => state.plugin_speed_summary?.[name]?.average_seconds);
+  const progress = el("div", undefined, "dos-progress");
+  progress.setAttribute("role", "progressbar");
+  progress.setAttribute("aria-valuemin", "0");
+  progress.setAttribute("aria-valuemax", "100");
+  progress.append(el("span", undefined, "dos-progress-fill"));
+  const note = el("p", "", "subtle");
+  if (planned.length && known.every(value => Number.isFinite(value) && value > 0)) {
+    let done = 0, total = known.reduce((sum, value) => sum + value, 0), count = 0;
+    for (let i = 0; i < planned.length; i++) {
+      const index = completed.indexOf(planned[i]);
+      if (index >= 0) { completed.splice(index, 1); done += known[i]; count++; }
+    }
+    const percent = 100 * done / total;
+    progress.style.setProperty("--completion", percent + "%");
+    progress.setAttribute("aria-valuenow", String(Math.round(percent)));
+    note.textContent = count === planned.length
+      ? `Planned plugin work complete (${count}/${planned.length}); report writing continues.`
+      : `Estimated plugin work: ${count}/${planned.length} completed · about ${Math.ceil(total - done)}s of typical plugin runtime remaining. Report writing time is not included.`;
+  } else {
+    progress.classList.add("indeterminate");
+    note.textContent = planned.length
+      ? `Waiting for saved timing history for ${planned.filter((_, i) => !known[i]).length} of ${planned.length} planned plugin runs. Report progress cannot yet be estimated.`
+      : "Investigating and writing the report. The plugin plan is adaptive, so completion time cannot yet be estimated.";
+  }
+  progress.setAttribute("aria-label", "Estimated plugin work");
+  root.replaceChildren(title, stage, progress, note);
+  $("toc").replaceChildren();
 }
 async function showReport(version) {
   showReportPlugins(version);
@@ -750,9 +870,14 @@ async function showReport(version) {
     return;
   }
   const key = selected + "/" + version.id + "/" + version.status;
-  if (shownReport === key) return;
+  if (shownReport === key) {
+    if (version.status === "draft") renderRunningReport(version);
+    else syncHumanDetermination(version);
+    return;
+  }
   clearReportReturn();
   shownReport = key;
+  if (version.status === "draft") { renderRunningReport(version); return; }
   $("reportView").replaceChildren(el("p", "Loading full saved report…"));
   $("toc").replaceChildren();
   try {
@@ -771,7 +896,9 @@ async function showReport(version) {
       $("reportView").firstChild.textContent = "Loading full saved report… " + offset.toLocaleString() + " bytes";
     }
     if (shownReport !== key) return;
-    renderMarkdown(reportPresentation(chunks.join(""), version.generation), "reports/" + version.id);
+    const savedText = chunks.join("");
+    renderMarkdown(reportPresentation(savedText, version.generation), "reports/" + version.id);
+    renderDeterminations(savedText, version, selected);
     const citationCase = selected;
     const checks = el("button", "Inspect evidence citations");
     const panel = el("div");
@@ -803,7 +930,9 @@ async function showReport(version) {
     $("reportView").append(checks, panel);
   } catch (e) {
     if (shownReport !== key) return;
-    renderMarkdown("Report is not available yet: " + e.message, "reports/" + version.id);
+    renderMarkdown(version.status === "incomplete"
+      ? "This report stopped before a saved document became available. Its completed evidence and run records remain available."
+      : "The saved report could not be opened. Check the report files and try again.", "reports/" + version.id);
     $("toc").replaceChildren();
   }
 }

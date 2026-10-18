@@ -20,6 +20,13 @@ provider sessions and evidence remain saved. **Start a new conversation** applie
 only to the explicitly selected case and allows recovery from an interrupted
 compatible-provider turn. Default-only saves do not switch existing cases.
 
+Workbench's Codex forensic sessions request GPT-6 Astra with high reasoning effort
+for new and resumed case conversations, including each new turn. This is an app
+default; it does not edit the user's global Codex configuration or override an
+explicitly selected compatible provider. Higher effort can take longer and should
+be considered only after representative memory-analysis comparisons show a useful
+improvement.
+
 ## Locations and maintenance
 
 The configured evidence folder is the default for relative paths and folder

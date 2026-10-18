@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import patch
 import urllib.error
 import urllib.request
-from volatility_workbench.app import Workbench
+from volatility_workbench.app import Workbench, report_ai_determination
 from volatility_workbench.http import Server, check_running_version, runtime_fingerprint, serve
 from volatility_mcp.scoped import CaseBackend
 from volatility_workbench.storage import Bundle, read_chunk
@@ -22,6 +22,7 @@ PROJECT=Path(__file__).resolve().parents[1]
 
 def report_text(path,aid):
     return '\n'.join(['# SYNTHETIC UI TEST — NOT A REAL INVESTIGATION','## Executive summary',
+        'AI Determination: Undetermined',
         'F001: Simulated analyzer result. ['+aid+']('+path+')',
         '## Scope and evidence','Harmless synthetic fixture; no malware.',
         '## Reconstructed event timeline','No real incident timeline.',
@@ -90,6 +91,15 @@ class FakeCodex:
 
 
 class UITests(unittest.IsolatedAsyncioTestCase):
+    def test_ai_determination_must_be_a_single_executive_summary_opinion(self):
+        for value in ('Benign', 'Malicious', 'Undetermined'):
+            self.assertEqual(report_ai_determination('## Executive summary\nAI Determination: '+value+
+                '\nSupported reasoning.\n## Scope and evidence\nSynthetic.'), value)
+        for markdown in ('## Executive summary\nNo conclusion.\n## Scope and evidence\nAI Determination: Benign',
+                         '## Executive summary\nAI Determination: Benign\nAI Determination: Malicious'):
+            with self.assertRaisesRegex(ValueError, 'exactly one line'):
+                report_ai_determination(markdown)
+
     def test_launcher_rejects_stale_and_legacy_instances(self):
         fingerprint=runtime_fingerprint()
         self.assertEqual(len(fingerprint),64)
@@ -136,6 +146,7 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(job['status'],'completed',job)
         report=self.case['reports'][0]
         self.assertEqual(report['status'],'sealed')
+        self.assertEqual(report['ai_determination'],'Undetermined')
         manifest=json.loads((self.app.directory(self.case)/'reports'/report['id']/'case-manifest.json').read_text())
         self.assertTrue(manifest['artifacts'])
         self.assertEqual(manifest['generation']['model'],'synthetic-codex')
@@ -376,6 +387,8 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([method for method,_ in calls],['thread/start','thread/resume'])
         for _,params in calls:
             settings=params['config']
+            self.assertEqual(params['model'],'gpt-6-astra')
+            self.assertEqual(settings['model_reasoning_effort'],'high')
             self.assertEqual(settings['mcp_servers.volatility']['default_tools_approval_mode'],'approve')
             self.assertEqual(params['sandbox'],'read-only')
             self.assertFalse(settings['features.shell_tool'])
@@ -420,6 +433,9 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         for _ in range(100):
             if self.app.agent and any(c[0]=='turn/start' for c in self.app.agent.calls):break
             await asyncio.sleep(.01)
+        turns=[params for method,params in self.app.agent.calls if method=='turn/start']
+        self.assertEqual(turns[0]['model'],'gpt-6-astra')
+        self.assertEqual(turns[0]['effort'],'high')
         await self.app.stop();await self.wait_job(job)
         self.assertEqual(job['status'],'incomplete',job)
         self.assertTrue(any(c[0]=='turn/interrupt' for c in self.app.agent.calls))

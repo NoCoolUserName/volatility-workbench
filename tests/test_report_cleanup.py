@@ -197,6 +197,30 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue((await self.app.remove_report(self.case['id'], record['id'], 'delete'))['already_deleted'])
         self.assert_preserved()
 
+    async def test_human_determination_is_per_version_and_preserves_sealed_bundle(self):
+        first, folder = self.report('first', 'sealed')
+        second, other_folder = self.report('second', 'sealed')
+        original = {p.relative_to(folder):p.read_bytes() for p in folder.rglob('*') if p.is_file()}
+        with patch('subprocess.Popen', side_effect=AssertionError('No model or analysis allowed')):
+            for value in ('Benign', 'Malicious', 'Undetermined'):
+                result = self.app.set_human_determination(self.case['id'], first['id'], value)
+                self.assertEqual(result['human_determination'], value)
+            self.assertEqual(self.app.set_human_determination(self.case['id'], first['id'], None)['human_determination'], None)
+            self.app.set_human_determination(self.case['id'], first['id'], 'Malicious')
+        self.assertNotIn('human_determination', second)
+        self.assertEqual(Workbench(self.config, self.app.root).case(self.case['id'])['reports'][0]['human_determination'], 'Malicious')
+        self.assertEqual(original, {p.relative_to(folder):p.read_bytes() for p in folder.rglob('*') if p.is_file()})
+        self.assertTrue(other_folder.exists())
+        self.assertEqual(self.case['activity'][-1]['detail']['value'], 'Malicious')
+        with self.assertRaisesRegex(ValueError, 'Choose Benign'):
+            self.app.set_human_determination(self.case['id'], first['id'], 'Probably malicious')
+        draft, _ = self.report('draft', 'incomplete')
+        with self.assertRaisesRegex(ValueError, 'sealed report'):
+            self.app.set_human_determination(self.case['id'], draft['id'], 'Benign')
+        with self.assertRaisesRegex(ValueError, 'sealed report'):
+            self.app.set_human_determination(self.case['id'], 'unknown', 'Benign')
+        self.assert_preserved()
+
     async def test_sealed_delete_keeps_active_reference_and_source_guards(self):
         record, folder = self.report('sealed', 'sealed')
         self.app.state['jobs']=[{'case_id':self.case['id'],'status':'running'}]
@@ -231,6 +255,35 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(folder.exists())
             self.assertEqual(await asyncio.to_thread(request, 'delete'), 200)
             self.assertFalse(folder.exists()); self.assert_preserved()
+        finally:
+            await asyncio.to_thread(server.shutdown); server.server_close()
+
+    async def test_http_human_determination_saves_without_touching_sealed_report(self):
+        record, folder = self.report('sealed', 'sealed')
+        saved_bytes = (folder/'report.md').read_bytes()
+        server = Server(self.app, 0, asyncio.get_running_loop())
+        thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+        def request(value, auth=True, origin=True):
+            headers = {'Content-Type':'application/json'}
+            if auth: headers['Cookie'] = 'volatility_ui='+server.token
+            if origin: headers['Origin'] = server.origin
+            body = json.dumps({'case_id':self.case['id'],'report_id':record['id'],'value':value}).encode()
+            req = urllib.request.Request(server.origin+'/api/reports/determination', body, headers=headers)
+            try:
+                with urllib.request.urlopen(req, timeout=5) as response:
+                    return response.status, json.load(response)
+            except urllib.error.HTTPError as error:
+                return error.code, json.load(error)
+        try:
+            self.assertEqual((await asyncio.to_thread(request, 'Benign', False))[0], 403)
+            self.assertEqual((await asyncio.to_thread(request, 'Benign', True, False))[0], 403)
+            self.assertEqual((await asyncio.to_thread(request, 'Unknown'))[0], 400)
+            status, result = await asyncio.to_thread(request, 'Malicious')
+            self.assertEqual(status, 200)
+            self.assertEqual(result['human_determination'], 'Malicious')
+            self.assertEqual((folder/'report.md').read_bytes(), saved_bytes)
+            self.assertEqual(Workbench(self.config,self.app.root).case(self.case['id'])['reports'][0]['human_determination'], 'Malicious')
+            self.assert_preserved()
         finally:
             await asyncio.to_thread(server.shutdown); server.server_close()
 

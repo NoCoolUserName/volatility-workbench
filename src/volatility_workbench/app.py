@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 from volatility_mcp.api import logical_path, resolved_path, environment as relocation_environment, check_components, report_spec
 import platform
+import re
 import shutil
 import stat
 import sys
@@ -25,7 +26,12 @@ from .codex import CodexClient, CodexError, child_environment
 from .providers import CompatibleClient, ProviderError, provider_config
 from .credentials import CredentialStore
 from . import generation
+from . import plugin_speeds
 from .storage import Bundle, atomic_json, delete_report_bundle, now, private_dir, read_chunk, safe_file, uid
+
+MAX_JOB_PLUGIN_RUNS = 500
+FORENSIC_MODEL = 'gpt-6-astra'
+FORENSIC_EFFORT = 'high'
 
 TOOLS = [
     {'type':'function','name':'case_set_plan','description':'Explicitly record declared investigative scope for a registered image, not completion. Never invent a historical plan. Does not submit analysis.',
@@ -36,9 +42,22 @@ TOOLS = [
      'inputSchema':{'type':'object','properties':{'path':{'type':'string'},'offset':{'type':'integer'}},'required':['path'],'additionalProperties':False}},
     {'type':'function','name':'case_note','description':'Record an important actual run: its question, result, concise rationale, next step and hypothesis disposition. Use its returned run_id. Do not invent hidden reasoning.',
      'inputSchema':{'type':'object','properties':{**{k:{'type':'string'} for k in ['run_id','question','result','rationale','next_step','hypothesis_disposition']},'prerequisite_run_ids':{'type':'array','items':{'type':'string'}}},'required':['run_id','question','result','rationale','next_step','hypothesis_disposition'],'additionalProperties':False}},
-    {'type':'function','name':'case_save_report','description':'Save the explicit report revision and validate its links/provenance. Supply canonical Markdown, finding_id/evidence_refs objects and contextualized IOC rows. Errors must be corrected; a chat answer is not a report. Source metadata/artifacts/log/checksums are packaged by the UI.',
+    {'type':'function','name':'case_save_report','description':'Save the explicit report revision and validate its links/provenance. The Executive summary must state one AI Determination: Benign, Malicious or Undetermined. Supply canonical Markdown, finding_id/evidence_refs objects and contextualized IOC rows. Errors must be corrected; a chat answer is not a report. Source metadata/artifacts/log/checksums are packaged by the UI.',
      'inputSchema':{'type':'object','properties':{'markdown':{'type':'string'},'findings':{'type':'array','items':{'type':'object'}},'iocs':{'type':'array','items':{'type':'object'}}},'required':['markdown','findings','iocs'],'additionalProperties':False}},
 ]
+
+
+def report_ai_determination(markdown):
+    heading = re.search(r'^##\s+Executive summary\s*$', markdown, re.I | re.M)
+    if not heading:
+        raise ValueError('Report requires an Executive summary with one AI Determination line')
+    rest = markdown[heading.end():]
+    next_section = re.search(r'^##\s+', rest, re.M)
+    summary = rest[:next_section.start()] if next_section else rest
+    values = re.findall(r'^AI Determination: (Benign|Malicious|Undetermined)\s*$', summary, re.I | re.M)
+    if len(values) != 1:
+        raise ValueError('Executive summary must contain exactly one line: AI Determination: Benign, Malicious or Undetermined')
+    return values[0].capitalize()
 
 
 class Workbench:
@@ -53,6 +72,15 @@ class Workbench:
         self.backend = VolatilityBackend(self.config)
         self.state_path = self.root / 'state.json'
         self.state = json.loads(self.state_path.read_text()) if self.state_path.exists() else {'schema_version':1,'cases':[],'jobs':[]}
+        self.plugin_speeds_path = self.root / 'plugin-speeds.json'
+        try:
+            history = json.loads(self.plugin_speeds_path.read_text()) if self.plugin_speeds_path.exists() else {}
+        except (OSError, ValueError):
+            history = {}
+        self.plugin_speed_history = plugin_speeds.valid_history(history)
+        self.plugin_speed_runs = {}
+        self.plugin_speed_mtime = {}
+        self.plugin_speed_checked_at = 0.0
         for job in self.state['jobs']:
             if job['status'] in ('queued','running','stopping'):
                 job.update(status='incomplete',error='Application stopped before completion. Explicitly enqueue new work to resume.',finished_at=now())
@@ -82,6 +110,22 @@ class Workbench:
 
     def save(self):
         atomic_json(self.state_path, self.state)
+
+    def refresh_plugin_speeds(self, case, force=False):
+        # Only saved physical executions create timing samples. Throttle UI reads.
+        if not force and time.monotonic() - self.plugin_speed_checked_at < 5:
+            return
+        self.plugin_speed_checked_at = time.monotonic()
+        runs = plugin_speeds.saved_runs(self.directory(case), case['id'], self.plugin_speed_mtime.get(case['id'], 0))
+        if runs:
+            self.plugin_speed_mtime[case['id']] = max(run['source_mtime_ns'] for run in runs)
+            self.plugin_speed_runs[case['id']] = sorted(
+                self.plugin_speed_runs.get(case['id'], []) + runs,
+                key=lambda item:item['finished_at'])[-MAX_JOB_PLUGIN_RUNS:]
+        updated = plugin_speeds.merge(self.plugin_speed_history, runs)
+        if updated != self.plugin_speed_history:
+            self.plugin_speed_history = updated
+            atomic_json(self.plugin_speeds_path, updated)
 
     async def plugin_catalog(self, refresh=False):
         """Same core discovery API as MCP list_plugins; independent of any case/model."""
@@ -143,6 +187,24 @@ class Workbench:
             raise
         finally:
             self.report_cleanup.pop(case_id, None)
+
+    def set_human_determination(self, case_id, report_id, value):
+        if value is not None and value not in ('Benign', 'Malicious', 'Undetermined'):
+            raise ValueError('Choose Benign, Malicious or Undetermined')
+        case = self.case(case_id)
+        report = next((r for r in case['reports'] if r['id'] == report_id and not r.get('deleted_at')), None)
+        if report is None or report['status'] != 'sealed':
+            raise ValueError('Human determination requires a sealed report version')
+        previous = report.get('human_determination')
+        if previous != value:
+            if value is None:
+                report.pop('human_determination', None)
+            else:
+                report['human_determination'] = value
+            report['human_determination_at'] = now()
+            self.event(case, 'report_human_determination_set',
+                {'report_id': report_id, 'previous': previous, 'value': value})
+        return {'report_id': report_id, 'human_determination': report.get('human_determination')}
 
     async def start(self):
         self.worker = asyncio.create_task(self._worker())
@@ -331,6 +393,9 @@ class Workbench:
         if any(j['case_id']==case_id and j['kind']==kind and j['status'] in ('queued','running','stopping') for j in self.state['jobs']):
             raise ValueError('This operation is already queued or active for the case')
         job={'id':uid(),'request_id':request_id,'case_id':case_id,'kind':kind,'text':text,'status':'queued','created_at':now()}
+        if kind in ('report','update'):
+            job['planned_plugins'] = [name for name in re.findall(r'`([^`]+)`', text)
+                                      if len(name) <= 256 and plugin_speeds.PLUGIN.fullmatch(name)][:500]
         self.state['jobs'].append(job)
         self.save()
         self.queue.put_nowait(job)
@@ -371,6 +436,8 @@ class Workbench:
                         job['generation']['status']=job['status']
                     job['generation']['summary']=generation.summary(job['generation'])
                 job['finished_at']=now()
+                try:self.refresh_plugin_speeds(case, force=True)
+                except OSError:pass  # Timing telemetry must not change job outcome.
                 self.event(case,'job_'+job['status'],{k:v for k,v in job.items() if k!='text'})
                 self.active=None
                 self.active_task=None
@@ -452,7 +519,8 @@ class Workbench:
             'web_search':'disabled','features.shell_tool':False,'features.unified_exec':False,
             'features.multi_agent':False,'features.multi_agent_v2':False,'features.apps':False,
             'features.plugins':False,'features.hooks':False,'features.browser_use':False,
-            'features.computer_use':False,'features.image_generation':False})
+            'features.computer_use':False,'features.image_generation':False,
+            'model_reasoning_effort':FORENSIC_EFFORT})
         settings.pop('mcp_servers.volatility.enabled',None)
         return settings
 
@@ -496,6 +564,11 @@ Only when explicitly asked to generate/update a report: call case_report_context
 run/call and artifact IDs; use case_save_report for the Markdown, findings and IOCs. The application
 packages provenance, raw artifacts, investigation log and checksums, then validates and seals.
 Correct case_save_report validation errors before ending. Do not call a chat answer a saved report.
+Immediately below the Executive summary heading, put one plain line exactly in the form
+AI Determination: Benign, AI Determination: Malicious, or AI Determination: Undetermined.
+Choose from supported findings, explain the basis and limitations in the summary, and choose
+Undetermined when evidence is insufficient or mixed. Absence of observed indicators alone
+does not establish Benign. This AI opinion never replaces the human determination.
 Include all required sections in REPORT_SPEC, including no-hunt justification. New versions preserve old ones.
 Each finding/IOC must reference an artifact ID and useful locator. Distinguish each image in related cases.
 No invented source identity or metadata. Concise rationale is a reviewable record, not hidden reasoning.
@@ -519,7 +592,8 @@ REPORT_SPEC follows:\n'''+spec
             return
         instructions=self.investigation_instructions()
         params={'cwd':str(self.directory(case).resolve()),'sandbox':'read-only','approvalPolicy':'on-request',
-            'approvalsReviewer':'user','config':self.thread_config(case),'developerInstructions':instructions}
+            'approvalsReviewer':'user','config':self.thread_config(case),'developerInstructions':instructions,
+            'model':FORENSIC_MODEL}
         new_thread=not case['thread_id']
         if case['thread_id']:
             result=await self.agent.call('thread/resume',{'threadId':case['thread_id'],**params},timeout=180)
@@ -596,7 +670,8 @@ REPORT_SPEC follows:\n'''+spec
         completion=asyncio.get_running_loop().create_future()
         self.turns[case['thread_id']]=completion
         if self.cancel.is_set():raise asyncio.CancelledError()
-        starting=asyncio.create_task(self.agent.call('turn/start',{'threadId':case['thread_id'],'input':[{'type':'text','text':prompt}]}))
+        starting=asyncio.create_task(self.agent.call('turn/start',{'threadId':case['thread_id'],
+            'input':[{'type':'text','text':prompt}], 'model':FORENSIC_MODEL, 'effort':FORENSIC_EFFORT}))
         try:
             result=await asyncio.shield(starting)
         except asyncio.CancelledError:
@@ -778,7 +853,10 @@ REPORT_SPEC follows:\n'''+spec
             data=bundle.prepare()
             return {'bundle_path':'reports/'+report['id'],'manifest':data,
                 'instructions':'Report links are relative to the bundle, e.g. artifacts/... . case_read_file paths are relative to the case, so prefix reports/<version>/. Supply findings as finding_id plus evidence_refs artifact_id/locator. Use required REPORT_SPEC headings.'}
+        determination=report_ai_determination(args['markdown'])
         result=bundle.save(args['markdown'],args['findings'],args['iocs'])
+        report['ai_determination']=determination
+        self.save()
         self.event(case,'report_draft_validated',result)
         return result
 
@@ -890,7 +968,18 @@ REPORT_SPEC follows:\n'''+spec
         return {'paths':[str(self.selected_image(p)) for p in paths], 'cancelled': False}
 
     def snapshot(self):
+        if self.active:
+            try:self.refresh_plugin_speeds(self.case(self.active['case_id']))
+            except OSError:pass
         view=copy.deepcopy(self.state)
+        if self.active:
+            job = next((j for j in view['jobs'] if j['id']==self.active['id']), None)
+            if job and job.get('started_at'):
+                started = plugin_speeds.instant(job['started_at'])
+                if started:
+                    job['completed_plugins'] = [run['plugin'] for run in
+                        sorted(self.plugin_speed_runs.get(job['case_id'], []), key=lambda item:item['finished_at'])
+                        if plugin_speeds.instant(run['finished_at']) >= started]
         for case in view['cases']:
             case['messages']=case['messages'][-100:]
             for message in case['messages']:
@@ -900,7 +989,8 @@ REPORT_SPEC follows:\n'''+spec
                 encoded=json.dumps(event['detail'])
                 if len(encoded)>12000:
                     event['detail']={'preview':encoded[:12000],'truncated':True,'complete_record':'activity.jsonl in the private case directory'}
-        return {**view,'report_cleanup_cases':list(self.report_cleanup),'default_provider':self.provider['provider'],'account':self.account,'active_job':self.active['id'] if self.active else None,
+        return {**view,'plugin_speed_summary':plugin_speeds.summary(self.plugin_speed_history),
+            'report_cleanup_cases':list(self.report_cleanup),'default_provider':self.provider['provider'],'account':self.account,'active_job':self.active['id'] if self.active else None,
             'evidence_root':str(self.config.evidence_root),'state_dir':str(self.root),
             'native_picker':platform.system()=='Darwin',
             'approvals':[{k:v for k,v in a.items() if k!='future'} for a in self.approvals.values()]}
