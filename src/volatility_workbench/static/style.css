@@ -141,6 +141,7 @@ button:disabled {
   flex: 1;
   min-width: 180px;
 }
+#focus { min-height: calc(4.8em + 20px); }
 label {
   display: block;
   margin: 12px 0;

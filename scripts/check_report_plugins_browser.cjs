@@ -49,6 +49,12 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   const choose=async id=>{await page.locator(`.report-version[data-report-id="${id}"] > button:first-child`).click();};
   await page.goto('http://localhost/');
   await page.waitForFunction(()=>document.querySelector('#reportPluginInventory summary')?.textContent.includes('18 recorded executions'));
+  const focus=page.locator('#focus');
+  const assertReadableFocus=async()=>assert.ok(await focus.evaluate(node=>{
+   const style=getComputedStyle(node);
+   return node.clientHeight>=3*parseFloat(style.lineHeight)+parseFloat(style.paddingTop)+parseFloat(style.paddingBottom)-1;
+  }),'Investigation focus retains at least three readable lines');
+  await assertReadableFocus();
   assert.equal(await inventory.locator('> details.report-plugin-inventory').first().getAttribute('open'),null,'Large inventory starts collapsed');
   assert.equal(await inventory.locator('> details').count(),3,'Used, errored, and unused sections are siblings');
   assert.equal(calls.filter(x=>x==='/api/plugins').length,0,'Collapsed sections do not discover the catalog');
@@ -60,7 +66,6 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.match(await inventory.locator('.report-plugin-unused-table').innerText(),/windows\.synthetic\.NotUsed.*Shows a harmless unused fixture/s);
   assert.equal(await inventory.locator('> details').nth(2).getAttribute('open'),'','Catalog response preserves the expanded section');
   assert.doesNotMatch(await inventory.locator('.report-plugin-unused-table').innerText(),/windows\.synthetic\.Plugin4/);
-  const focus=page.locator('#focus');
   await focus.fill('Investigate persistence.');
   const add=inventory.locator('.report-plugin-unused-table tbody button');
   assert.equal(await add.count(),2);
@@ -125,9 +130,11 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.doesNotMatch(await inventory.innerText(),/delayed-plugin/,'Stale reply never replaces current report');
   await page.getByRole('button',{name:'Synthetic B',exact:true}).click();
   assert.equal(await focus.inputValue(),'','Focus drafts stay with their case');
+  await assertReadableFocus();
   await page.waitForFunction(()=>document.querySelector('#reportPluginInventory tbody')?.textContent.includes('other-plugin'));
   await page.getByRole('button',{name:'Synthetic A',exact:true}).click();assert.equal(await table.locator('tr').count(),21);
   assert.match(await focus.inputValue(),/Investigate persistence.*NotUsed2`/s);
+  await assertReadableFocus();
   assert.equal(await page.locator('.report-version.selected').getAttribute('data-report-id'),'current');
   failCurrent=true;await inventory.getByRole('button',{name:'Refresh saved inventory'}).click();
   await page.waitForFunction(()=>document.querySelector('#reportPluginInventory [role=alert]'));
@@ -137,11 +144,13 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.equal(await inventory.locator('[role=alert]').count(),0);
   for(const id of await page.evaluate(()=>window.WorkbenchThemes.catalog.map(t=>t.id))){
    await page.locator('#theme').selectOption(id);assert.equal(await table.locator('tr').count(),20);assert.equal(await page.locator('.report-version.selected').getAttribute('data-report-id'),'current');
+   await assertReadableFocus();
    const ratio=await table.evaluate(node=>{const c=getComputedStyle(node),parse=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).map(n=>{n/=255;return n<=.04045?n/12.92:((n+.055)/1.055)**2.4;}),lum=a=>a[0]*.2126+a[1]*.7152+a[2]*.0722;const text=lum(parse(c.color)),bg=lum(parse(getComputedStyle(node.closest('.report-plugin-inventory')).backgroundColor));return(text+.05)/(bg+.05);});
    assert.ok(ratio>=4.5,id+' table text contrast');
   }
   if(process.env.WORKBENCH_REPORT_PLUGIN_SCREENSHOT)await page.screenshot({path:process.env.WORKBENCH_REPORT_PLUGIN_SCREENSHOT,fullPage:true});
   await page.setViewportSize({width:390,height:844});
+  await assertReadableFocus();
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Only table region scrolls on mobile');
   const region=inventory.getByRole('region');await region.focus();assert.equal(await region.evaluate(e=>getComputedStyle(e).outlineStyle),'solid');
   assert.ok(await region.evaluate(e=>e.scrollWidth>e.clientWidth));
