@@ -93,7 +93,7 @@ class CompatibleClient:
                    'tool_choice': 'auto'}
         encoded = json.dumps(payload).encode()
         if len(encoded) > MAX_TRANSCRIPT:
-            raise ProviderError('Conversation exceeds the 8 MiB request limit. Start a new explicit provider session; saved evidence is retained.')
+            raise ProviderError('Conversation exceeds the 8.39 MB request limit. Start a new explicit provider session; saved evidence is retained.')
         # Read the credential only at the network boundary; never put it in state or env.
         secret = await asyncio.to_thread(self.credentials.get, self.config['endpoint'], self.config.get('credential_storage', 'none'))
         headers = {'Content-Type': 'application/json'}
@@ -112,7 +112,7 @@ class CompatibleClient:
                     async for chunk in response.aiter_bytes():
                         data.extend(chunk)
                         if len(data) > MAX_RESPONSE:
-                            raise ProviderError('Provider response exceeds the 4 MiB limit')
+                            raise ProviderError('Provider response exceeds the 4.19 MB limit')
             if secret and secret.encode() in data:
                 raise ProviderError('Provider response contained the configured credential; response was discarded to prevent disclosure')
             result = json.loads(data)
@@ -198,7 +198,7 @@ class CompatibleClient:
             if path.is_symlink():
                 raise ProviderError('Saved provider conversation must not be a symlink')
             if path.stat().st_size > MAX_TRANSCRIPT:
-                raise ProviderError('Saved provider conversation exceeds the 8 MiB limit')
+                raise ProviderError('Saved provider conversation exceeds the 8.39 MB limit')
             saved = json.loads(path.read_text())
             if saved.get('provider_id') != self.config['id']:
                 raise ProviderError('Provider conversation belongs to a different endpoint/model')
@@ -212,7 +212,7 @@ class CompatibleClient:
         state = {'schema_version': 1, 'provider_id': self.config['id'], 'messages': messages, 'status': 'running'}
         def save():
             if len(json.dumps(state).encode()) > MAX_TRANSCRIPT:
-                raise ProviderError('Saved provider conversation exceeds the 8 MiB limit')
+                raise ProviderError('Saved provider conversation exceeds the 8.39 MB limit')
             atomic_json(path, state)
         save()
         allowed = {t['name']: t for t in tools}
@@ -245,7 +245,7 @@ class CompatibleClient:
                     result = await execute(name, args)
                     encoded = json.dumps(result)
                     if len(encoded.encode()) > MAX_TOOL_RESULT:
-                        encoded = json.dumps({'error': 'Tool response exceeds the 1 MiB provider limit. Query a smaller bounded page; saved outputs remain intact.', 'truncated': True})
+                        encoded = json.dumps({'error': 'Tool response exceeds the 1.05 MB provider limit. Query a smaller bounded page; saved outputs remain intact.', 'truncated': True})
                     messages.append({'role': 'tool', 'tool_call_id': call['id'], 'content': encoded})
                     await event('provider_tool_completed', {'tool': name, 'call_id': call['id']})
                     save()

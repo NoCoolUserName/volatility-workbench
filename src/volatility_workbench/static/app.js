@@ -425,7 +425,7 @@ function render() {
         (readinessJob.started_at ? " · " + Math.floor((Date.now() - timestampMillis(readinessJob.started_at)) / 1000) + "s elapsed" : "")
       : submittingReadiness ? "Submitting readiness check…" : c.readiness.status === "Blocked" ? "Blocked · see reasons below" : "";
     const checkedAt = c.readiness.checked_at;
-    $("readyDetails").textContent = checkedAt
+    $("readyDetails").textContent = checking ? "" : checkedAt
       ? "Last checked " + readableTime(checkedAt) + " · image access and SHA-256 verified then"
       : ["Ready", "Ready with limitations"].includes(c.readiness.status)
         ? "Saved status has no check time · current image access is unverified"

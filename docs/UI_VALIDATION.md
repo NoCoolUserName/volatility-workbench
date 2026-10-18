@@ -604,3 +604,15 @@ Deletion is permanent within the selected bundle; failures can leave partially
 removed files until an explicit retry. Case/job metadata and activity are audit
 records, not deleted bundles. No actual user's report was hidden or deleted by
 this verification, and no general filesystem cleanup or unhide UI is provided.
+
+## Readiness placement and decimal MB labels — 2026-10-18
+
+The offline browser checks place the saved check timestamp beside Ready, align
+the silver Settings gear beneath Theme, and keep the title change limited to
+the Workbench header. A synthetic 8,388,608-byte symbol pack displays as
+8.39 MB. The existing header behavior and three themes remain covered by the
+same browser fixture. The full Workbench suite and fresh-wheel package smoke
+each passed 110 tests with the merged core pin; the package smoke exercised
+ten MCP tools and launched zero analysis/model subprocesses. No private image
+was rehashed or analyzed for these checks. The private case's incomplete
+revision was inspected read-only; its files and status were not changed.

@@ -41,8 +41,8 @@ Images remain local, but this is not an entirely offline AI workflow. There is n
 fallback provider, automatic endpoint selection or silent account/billing change.
 
 The compatible adapter has a maximum of 16 tool rounds, 64 tool calls, 16 tool
-requests per response, an 8 MiB request/transcript limit, 4 MiB response limit,
-1 MiB per tool-result limit, 120-second HTTP timeout, a 180-second overall capability-check deadline and two-hour turn ceiling.
+requests per response, an 8.39 MB request/transcript limit, 4.19 MB response limit,
+1.05 MB per tool-result limit, 120-second HTTP timeout, a 180-second overall capability-check deadline and two-hour turn ceiling.
 Oversized tool results return an explicit error asking for a bounded query.
 Only the ten case-scoped MCP tools and the existing validated case/report tools
 are available. There is no generic shell/file/installation tool. Tool schemas are
