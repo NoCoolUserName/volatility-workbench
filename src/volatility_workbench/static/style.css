@@ -275,8 +275,42 @@ article h2:first-child {
 .determination-save-status { color: var(--muted); font-size: inherit; }
 .live-console-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .live-console-heading h3, .live-console-heading label { margin: 8px 0; }
+.live-console-actions { display: flex; align-items: center; gap: 16px; margin-left: auto; flex-wrap: wrap; }
 #liveConsole { height: 320px; min-height: 160px; max-height: 70vh; overflow: auto; resize: vertical; padding: 14px; border: 1px solid var(--border); background: var(--bg); color: var(--accent); font: 13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
 #liveConsole > span { display: block; margin-bottom: 12px; }
+.console-zoom-open { overflow: hidden; }
+.console-zoom { width: calc(100vw - 40px); max-width: none; height: calc(100dvh - 40px); max-height: none; margin: auto; padding: 0; border: 0; background: transparent; color: var(--text); overflow: visible; }
+.console-zoom::backdrop { background: rgb(0 0 0 / 85%); backdrop-filter: blur(5px); }
+.crt-monitor { position: relative; height: 100%; padding: 27px 28px 0; display: flex; flex-direction: column; border-radius: 30px 30px 24px 24px; border: 1px solid #e3dcc9; background: linear-gradient(110deg, #dbd5c4, #c8c1ad 28%, #b9b19b 72%, #aaa18d); box-shadow: inset 3px 3px 3px #f4efdf, inset -5px -6px 7px #706a5c, 0 24px 70px #000b; }
+.crt-monitor::before { content: ""; position: absolute; inset: 8px; pointer-events: none; border-radius: 23px 23px 18px 18px; border: 1px solid #8f877357; box-shadow: 0 1px 0 #f8f4e06b, inset 0 1px 0 #f8f4e066; }
+.crt-top-vents { width: min(360px, 35%); height: 7px; flex: 0 0 7px; margin: -12px auto 12px; background: repeating-linear-gradient(90deg, #696455 0 2px, #eee7d2 2px 3px, transparent 3px 8px); border-radius: 2px; opacity: .7; }
+.crt-recess { flex: 1; min-height: 0; padding: 12px; display: flex; border-radius: 24px / 20px; background: linear-gradient(135deg, #736d5e, #a59d89 45%, #ece6d4); box-shadow: inset 2px 3px 7px #554f41, 1px 1px 1px #f6f0df; }
+.crt-screen { flex: 1; min-width: 0; min-height: 0; display: flex; border-radius: 17px / 14px; overflow: hidden; padding: 18px 22px; background: var(--bg); border: 2px solid #242720; box-shadow: inset 0 0 0 2px #000, 0 0 0 2px #45473b, 0 3px 6px #0009; }
+.crt-screen .live-console-section { display: flex; flex-direction: column; width: 100%; min-height: 0; }
+.crt-screen .live-console-heading { flex: 0 0 auto; }
+.crt-screen .live-console-heading h3 { font-size: 17px; }
+.crt-screen #consoleNote { margin: 4px 0 12px; font-size: 12px; }
+.crt-screen #liveConsole { flex: 1; height: auto; min-height: 0; max-height: none; margin: 0; resize: none; font-size: 14px; border-radius: 9px; }
+.crt-chin { min-height: 68px; padding: 12px 12px 18px; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: #48463c; text-shadow: 0 1px #f2eddc; }
+.crt-brand { font: 800 13px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: 3px; }
+.crt-brand > span { display: block; font-size: 8px; letter-spacing: 2px; font-weight: 600; }
+.crt-bottom-vents { height: 17px; width: min(280px, 30%); background: repeating-linear-gradient(0deg, #797260 0 1px, #eee6d0 1px 2px, transparent 2px 5px); opacity: .65; border-radius: 2px; }
+.crt-power { display: flex; align-items: center; gap: 8px; font: 700 9px ui-monospace, monospace; letter-spacing: 1px; }
+.crt-power i { display: inline-block; height: 7px; width: 7px; border-radius: 50%; background: #a8e3a1; border: 1px solid #527447; box-shadow: 0 0 6px #93ee9b80, inset 0 1px #fff9; }
+@media (max-width: 600px) {
+  .console-zoom { width: calc(100vw - 12px); height: calc(100dvh - 12px); }
+  .crt-monitor { padding: 20px 10px 0; border-radius: 20px; }
+  .crt-recess { padding: 7px; }
+  .crt-screen { padding: 12px 10px; }
+  .crt-screen .live-console-heading { gap: 0; }
+  .crt-screen .live-console-heading h3 { font-size: 15px; }
+  .crt-screen .live-console-actions { width: 100%; justify-content: space-between; gap: 8px; }
+  .crt-screen #liveConsole { font-size: 12px; padding: 10px; }
+  .crt-chin { min-height: 52px; padding: 8px 4px 14px; gap: 8px; }
+  .crt-brand { font-size: 10px; letter-spacing: 2px; }
+  .crt-brand > span { font-size: 7px; letter-spacing: 1px; }
+  .crt-bottom-vents { display: none; }
+}
 article p {
   white-space: pre-wrap;
 }
