@@ -7,6 +7,7 @@ const assets=path.join(__dirname,'../src/volatility_workbench/static');
 const sealed={id:'saved-report',status:'sealed',created_at:'2026-10-17T12:00:00Z'};
 const version={id:'synthetic-report',status:'draft',created_at:'2026-10-18T12:00:00Z'};
 const job={id:'synthetic-job',case_id:'synthetic',report_id:null,kind:'update',status:'running',
+  text:'Original synthetic investigation focus',
   started_at:'2026-10-18T12:00:00Z',progress:'Starting',
   planned_plugins:['windows.pslist.PsList','windows.netscan.NetScan'],completed_plugins:[]};
 const state={cases:[{id:'synthetic',title:'Synthetic case',created_at:'2026-10-18T12:00:00Z',
@@ -17,13 +18,14 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
   const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
   try{
     const page=await browser.newPage({viewport:{width:1400,height:1000}}),calls=[],errors=[];
-    let rejectUpdate=false;
+    let rejectUpdate=false, holdSubmission=false, releaseSubmission;
     page.on('pageerror',e=>errors.push(e.message));
-    await page.route('http://localhost/**',route=>{
+    await page.route('http://localhost/**',async route=>{
       const u=new URL(route.request().url());
       if(u.pathname==='/api/state')return route.fulfill({json:state});
       if(u.pathname==='/api/jobs'){
         calls.push(route.request().postDataJSON());
+        if(holdSubmission)await new Promise(resolve=>releaseSubmission=resolve);
         return rejectUpdate ? route.fulfill({status:400,json:{error:'Synthetic submission failure'}})
           : route.fulfill({json:{id:'accepted'}});
       }
@@ -103,6 +105,38 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     assert.match(await page.locator('#reportView').innerText(),/Saved synthetic paragraph 89/,'Failure preserves the readable sealed report');
     assert.equal(await page.getByRole('progressbar').count(),0,'Failed work must not keep animating');
     assert.equal(await page.locator('#liveConsoleSection').isHidden(),true);
+    const rerun=page.locator('#reportJobFailure').getByRole('button',{name:'Rerun',exact:true});
+    await page.locator('#focus').fill('Keep this newer unsubmitted prompt');
+    rejectUpdate=true;
+    await rerun.click();
+    await page.getByText('Synthetic submission failure').waitFor();
+    await page.waitForFunction(()=>!document.querySelector('#reportJobFailure button[title]')?.disabled);
+    assert.equal(await page.locator('#focus').inputValue(),'Keep this newer unsubmitted prompt','Rejected rerun preserves newer prompt');
+    rejectUpdate=false;holdSubmission=true;
+    const beforeRerun=calls.filter(item=>item?.kind==='update').length;
+    await rerun.click();
+    await page.waitForFunction(()=>document.querySelector('#reportJobFailure button[title]')?.disabled);
+    await page.evaluate(()=>refresh());
+    assert.equal(await rerun.isDisabled(),true,'Polling cannot re-enable an in-flight retry');
+    await rerun.evaluate(button=>button.click());
+    assert.equal(calls.filter(item=>item?.kind==='update').length,beforeRerun+1,'Repeated activation submits once');
+    holdSubmission=false;releaseSubmission();
+    await page.waitForFunction(()=>!document.querySelector('#reportJobFailure button[title]')?.disabled);
+    const retried=calls.filter(item=>item?.kind==='update').at(-1);
+    assert.equal(retried.case_id,'synthetic');assert.equal(retried.text,job.text,'Rerun reuses saved focus instead of newer prompt');
+    assert.ok(retried.request_id);assert.notEqual(retried.request_id,calls.filter(item=>item?.kind==='update').at(-2).request_id);
+    assert.equal(await page.locator('#focus').inputValue(),'Keep this newer unsubmitted prompt','Accepted rerun preserves newer prompt');
+    state.jobs.push({id:'other-work',case_id:'synthetic',kind:'question',status:'queued'});
+    await page.evaluate(()=>refresh());assert.equal(await rerun.isDisabled(),true,'Queued case work blocks duplicate reruns');
+    state.jobs.pop();state.cases[0].readiness.status='Blocked';
+    await page.evaluate(()=>refresh());assert.equal(await rerun.isDisabled(),true,'Readiness must permit rerun');
+    state.cases[0].readiness.status='Ready';state.report_cleanup_cases=['synthetic'];
+    await page.evaluate(()=>refresh());assert.equal(await rerun.isDisabled(),true,'Cleanup blocks rerun');
+    state.report_cleanup_cases=[];job.kind='report';job.text='';
+    await page.evaluate(()=>refresh());await rerun.click();
+    await page.waitForFunction(()=>!document.querySelector('#reportJobFailure button[title]')?.disabled);
+    assert.equal(calls.filter(item=>item?.kind==='report').at(-1).text,'','Initial generation reruns retain kind and blank focus');
+    job.kind='update';await page.evaluate(()=>refresh());
     await page.locator('#reportJobFailure').getByRole('button',{name:/Activity/}).click();
     assert.equal(await page.locator('#activity').isVisible(),true,'Failure provides a route to saved job details');
     assert.match(await page.locator('#activityList').innerText(),/job_failed/);
@@ -112,6 +146,7 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     assert.equal(await page.locator('#reportJobFailure').isHidden(),true,'A current retry replaces the prior failure with active progress');
     assert.equal(await active.getByRole('progressbar').isVisible(),true);
     job.status='completed';await page.evaluate(()=>refresh());
+    const updatesBefore=calls.filter(item=>item?.kind==='update').length;
     await page.locator('#focus').fill('Attempt Volatility plugin `windows.netscan.NetScan` on applicable evidence.');
     rejectUpdate=true;
     await page.locator('#update').click();
@@ -121,8 +156,8 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     await page.locator('#update').click();
     await page.waitForFunction(()=>document.querySelector('#focus')?.value==='');
     assert.equal(await page.locator('#focus').inputValue(),'','Accepted Update report clears the submitted prompt');
-    assert.equal(calls.filter(item=>item?.kind==='update').length,2);
+    assert.equal(calls.filter(item=>item?.kind==='update').length,updatesBefore+2);
     assert.deepEqual(errors,[]);
-    console.log('Running report: visible pre-draft progress above long sealed report, one indicator through draft transition, focus preservation, indeterminate/weighted timing, nonreport/idle hiding, visible pre-draft failure with Activity navigation, no missing-file request, and accepted-only prompt clearing.');
+    console.log('Running report: visible startup progress/console, draft transitions, timing, idle/failure states; Rerun preserves original kind/focus and newer prompt, blocks duplicate/busy/blocked/cleanup requests, recovers from rejection; accepted-only Update prompt clearing.');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
