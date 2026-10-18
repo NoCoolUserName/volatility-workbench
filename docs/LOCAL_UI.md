@@ -545,6 +545,14 @@ Stop all work sits beside Report running (or Stopping report) during report work
 For other queued/active tasks it sits beside Current work. The same global stop
 control is retained across progress updates and hides with the work panel at idle.
 
+The console's upper-right Expand button opens a near-full-screen modal with a
+resolution-independent CSS CRT casing, recessed screen, vents and power indicator.
+It moves the existing read-only console rather than duplicating the feed. Output
+keeps updating with the same theme colors, follow state and scrolling controls.
+Collapse or Escape restores the inline console and focus; background page scrolling
+is locked while expanded. The view closes when its job ends or changes. No shell
+input or additional analysis request is introduced.
+
 The latest failed or interrupted report request has a dismissible notice above the
 case, with its recorded error and a link to Activity & failures. This also covers
 failure before any draft exists. A new request replaces that notice; old sealed

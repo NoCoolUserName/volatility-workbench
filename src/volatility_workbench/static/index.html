@@ -73,12 +73,13 @@
             <button id="stop" class="danger" disabled>Stop all work</button></div>
           <div id="activeReportProgress" hidden></div>
           <ol id="queue" aria-live="polite"></ol>
-          <section id="liveConsoleSection" class="live-console-section" hidden aria-labelledby="liveConsoleTitle">
+          <div id="liveConsoleDock"><section id="liveConsoleSection" class="live-console-section" hidden aria-labelledby="liveConsoleTitle">
             <div class="live-console-heading"><h3 id="liveConsoleTitle">Live investigation console</h3>
-              <label class="check"><input id="consoleFollow" type="checkbox" checked> Follow output</label></div>
+              <div class="live-console-actions"><label class="check"><input id="consoleFollow" type="checkbox" checked> Follow output</label>
+                <button id="expandConsole" type="button" aria-expanded="false" aria-controls="consoleZoom">Expand</button></div></div>
             <p id="consoleNote" class="subtle">Read-only tool output. Scroll up to pause following. Full plugin results remain available in Evidence.</p>
             <pre id="liveConsole" tabindex="0" role="log" aria-label="Live investigation console" aria-live="off"></pre>
-          </section>
+          </section></div>
         </section>
         <section id="plugins" aria-labelledby="pluginsTitle" hidden>
           <div class="case-heading">
@@ -110,7 +111,7 @@
         <section id="reportJobFailure" class="report-job-failure" role="alert" hidden></section>
         <section id="case" hidden>
           <div class="case-heading">
-            <h2 id="caseTitle"></h2>
+            <h2 id="caseTitle" tabindex="-1"></h2>
             <div class="readiness-row">
               <button id="readiness" class="badge" aria-describedby="readyDetails">Check Readiness</button>
               <span id="readinessProgress" class="subtle" role="status" aria-live="polite"></span>
@@ -185,5 +186,13 @@
       Official Volatility performs the analysis. Independent project; no vendor
       endorsement. One investigating agent per case.
     </footer>
+    <dialog id="consoleZoom" class="console-zoom" aria-labelledby="liveConsoleTitle">
+      <div class="crt-monitor">
+        <div class="crt-top-vents" aria-hidden="true"></div>
+        <div class="crt-recess"><div id="expandedConsoleHost" class="crt-screen"></div></div>
+        <div class="crt-chin" aria-hidden="true"><span class="crt-brand">WORKBENCH <span>MONOCHROME DISPLAY</span></span>
+          <span class="crt-bottom-vents"></span><span class="crt-power"><i></i> LIVE</span></div>
+      </div>
+    </dialog>
   </body>
 </html>

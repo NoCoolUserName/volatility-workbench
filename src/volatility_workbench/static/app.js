@@ -41,6 +41,7 @@ let state,
   approvalKey = "",
   artifact = null;
 let consoleJob = null;
+let consolePagePosition = null;
 const consoleNodes = new Map();
 const dismissedReportFailures = new Set();
 const rerunningReportFailures = new Set();
@@ -1358,6 +1359,7 @@ function renderReportFailure(c) {
 }
 function renderLiveConsole() {
   const stream = state.live_console, pre = $("liveConsole");
+  if ($("consoleZoom").open && (!stream || stream.job_id !== consoleJob)) $("consoleZoom").close();
   $("liveConsoleSection").hidden = !stream;
   if (!stream) { consoleJob = null; consoleNodes.clear(); pre.replaceChildren(); return; }
   const follow = $("consoleFollow");
@@ -1384,6 +1386,42 @@ function renderLiveConsole() {
   $("consoleNote").textContent = "Read-only tool output. Scroll up to pause following. Full plugin results remain available in Evidence." +
     (stream.earlier_entries ? " Showing the latest output in this window." : "");
 }
+function resizeConsoleView(expanded) {
+  const pre = $("liveConsole"), top = pre.scrollTop, follow = $("consoleFollow").checked;
+  const button = $("expandConsole"), dialog = $("consoleZoom");
+  if (expanded) {
+    if (!state?.live_console || dialog.open || button.getAttribute("aria-expanded") === "true") return;
+    consolePagePosition = window.scrollY;
+    $("expandedConsoleHost").append($("liveConsoleSection"));
+    document.body.classList.add("console-zoom-open");
+    button.textContent = "Collapse";
+    button.setAttribute("aria-expanded", "true");
+    dialog.showModal();
+  } else {
+    $("liveConsoleDock").append($("liveConsoleSection"));
+    document.body.classList.remove("console-zoom-open");
+    button.textContent = "Expand";
+    button.setAttribute("aria-expanded", "false");
+    if (consolePagePosition !== null) window.scrollTo({top:consolePagePosition, behavior:"instant"});
+    consolePagePosition = null;
+  }
+  pre.scrollTop = follow ? pre.scrollHeight : top;
+  $("consoleFollow").checked = follow;
+  if (state?.live_console) button.focus({preventScroll:true});
+  else $("caseTitle").focus({preventScroll:true});
+}
+$("expandConsole").onclick = () => {
+  if ($("consoleZoom").open) $("consoleZoom").close();
+  else resizeConsoleView(true);
+};
+$("consoleZoom").addEventListener("close", () => resizeConsoleView(false));
+$("consoleZoom").addEventListener("keydown", (event) => {
+  if (event.key !== "Tab") return;
+  const controls = [...$("consoleZoom").querySelectorAll('button:not(:disabled), input:not(:disabled), [tabindex="0"]')];
+  const first = controls[0], last = controls.at(-1);
+  if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+  else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+});
 $("liveConsole").addEventListener("scroll", () => {
   const pre = $("liveConsole");
   if (pre.scrollHeight - pre.clientHeight - pre.scrollTop > 24) $("consoleFollow").checked = false;
