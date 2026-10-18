@@ -697,3 +697,44 @@ manual choice state remains separate. The corrected Chrome fixture passes.
 The final installed-wheel smoke passed all 118 application tests, ten MCP-tool
 discovery in both SDK modes, HTTP/assets checks, and the zero analysis/model
 subprocess guard. No private image was opened.
+
+## Offline theme catalog and decimal units — 2026-10-18
+
+The shared Workbench/Settings catalog has 31 choices, including 12 distinct released
+Fallout games/table experiences, every other requested reference and the three
+legacy preference IDs. Original local SVGs and a generated adult-Halloween raster
+are isolated in a decorative band; forensic surfaces stay opaque. No runtime
+external asset requests or new investigation-mode buttons were added. The verified
+Punisher #53 attribution correction and official release sources are in THEMES.md.
+
+The synthetic Chrome theme check loads every scene under the exact production CSP:
+31 palettes passed primary/muted/control/selection/status/error text contrast of
+at least 4.5:1 and control borders of at least 3:1, visible focus, selected-report
+preservation, legacy reload preferences, shared Settings, a 390px viewport,
+increased contrast and unavailable storage. The corrected final run made 196 local
+GET requests with zero external requests, case/job mutations, page errors or CSP
+violations. Original SVG art uses packaged same-origin files; embedded data URLs
+were replaced during development because the existing policy forbids them. The
+policy was retained unchanged. Screenshots of the seasonal, specific game/comic,
+terminal and mobile variants were visually inspected using synthetic data.
+
+Existing header, report-metadata, report-cleanup, Settings and plugin-catalog
+browser regressions passed. The header check caught a readiness annotation whose
+box top shifted 10.4px when controls became 40px tall; matching the annotation's
+minimum height retained the original alignment and touch target. Its unchanged
+regression and all-theme checks passed after that CSS-only fix. The catalog harness
+also had a stale expectation of four rows after excluding one of four sources;
+its failure-state assertion now correctly checks the retained three-row filter.
+No plugin filtering implementation changed.
+
+The final isolated installed-wheel smoke completed all 118 application tests,
+dependency health, ten MCP tools in both protocol modes, HTTP startup and every
+one of the 30 SVG routes plus the raster/script/styles. Its subprocess guard
+observed zero analysis/model execution. The later CSS alignment change was checked
+with the affected header/all-theme browser suites. Core PR #12's exact decimal
+KB/MB metadata conversion is pinned at
+`7f7cc1f0c4f4f6e6a17dfecca8c27db02e53c1d6`; binary arithmetic and byte bounds,
+revision-4 hashes/policies, 214 configured commands and the public 200-command
+baseline are unchanged. No private case, source image or saved report was used as
+a fixture or modified by validation. Broader assistive-technology, OS/image
+compatibility and forensic-accuracy limits remain those in ROADMAP.md.

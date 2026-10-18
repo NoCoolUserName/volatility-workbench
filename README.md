@@ -1,41 +1,105 @@
 # Volatility Workbench
 
-A local application for existing memory acquisitions, with an optional native macOS window and browser/CLI modes: case navigation,
-sequential jobs, a case conversation, report exploration, saved evidence, coverage,
-a searchable installed-plugin catalog, and decorative image coins. It uses the separately maintained
-[volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp) core; there is one
-implementation of execution, integrity, result reuse, artifact inspection, queries,
-references, citation validation and forensic coverage.
+An experimental local application for exploring existing memory acquisitions with
+[volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
+cases, sequential analysis jobs, resumable case conversations, versioned reports,
+saved evidence and citations, coverage views, and a searchable plugin catalog.
+Use the native macOS application or the same interface in a browser.
 
-Experimental. macOS ARM64 is the tested local host. POSIX/Linux uses path entry
-and folder browsing; Finder is macOS-only. Windows hosts are unsupported. The Codex adapter reuses existing sign-in. An optional compatible chat/tool API adapter supports explicitly configured endpoints after a synthetic capability check. Desktop dependencies are optional; browser mode retains the core-only dependency set. See [AI providers](docs/AI_PROVIDERS.md).
+Workbench owns the application and presentation. The separately maintained core
+owns forensic execution, integrity checks, saved-result reuse, artifact inspection,
+queries, citations and coverage. Shared forensic code is not duplicated here.
+
+## Implemented workflow
+
+- Register existing images by physical path, folder browser or macOS file picker.
+  Images stay in place. Unrelated images get separate cases; explicitly related
+  captures can share a case even when they live in different folders. Each case's
+  MCP server can access only its selected files.
+- Check readiness, generate a report, ask follow-up questions, and create a new
+  report revision. Jobs run sequentially with progress, Stop, cancellation and
+  interrupted-work recovery. Readiness is permission to attempt analysis, not a
+  clean verdict or a guarantee of matching symbols.
+- Reopen saved cases and conversations. Explore report sections, source artifacts,
+  checked citations, coverage, and activity/failures. The displayed report revision
+  stays visibly selected. Refreshing saved views does not start new analysis.
+- Keep sealed report versions immutable. New revisions record available model,
+  reasoning-effort and generation-turn token provenance; historical unknowns stay
+  explicit. Optional decorative coins are stable per image. Hide retains files;
+  explicit Delete removes only the selected eligible report bundle, preserving
+  source evidence, shared results and history.
+- Inspect the configured analyzer's plugin names, descriptions, versions, source
+  attribution, compatibility notes and import failures. Search and filter by OS
+  and source without starting an investigation.
+- Use Settings for explicit AI connections, registered evidence locations, idle-only
+  community-plugin maintenance, bounded symbol downloads and exact-identity local
+  symbol imports. Existing case roots cannot be moved through a settings save.
+
+See [the local workflow](docs/LOCAL_UI.md), [Settings and symbols](docs/SETTINGS_AND_SYMBOLS.md),
+and [ownership and recovery](docs/SEPARATION.md).
+
+## Themes
+
+The header and Settings share 31 locally bundled appearance choices. A new browser
+without a saved preference starts with friendly Halloween: a black night sky,
+a moon and smiling jack-o'-lanterns. Existing Matrix green, Soft black and white,
+and Light blue preferences remain supported. Theme changes affect presentation;
+case contents and saved reports are unchanged.
+
+| Collection | Choices |
+| --- | --- |
+| Fallout — one skin per released game/table experience | Fallout; Fallout 2; Fallout Tactics: Brotherhood of Steel; Fallout: Brotherhood of Steel; Fallout 3; Fallout: New Vegas; Fallout Shelter; Fallout 4; Fallout Pinball; Fallout 4 VR; Fallout 76; Fallout Shelter Online |
+| Seasonal | Friendly Halloween; adult, non-cartoon Halloween; The Nightmare Before Christmas |
+| Arcade and adventure | 8-bit; Colossal Cave Adventure; Metroid; Silpheed (Sega CD); Elevator Action (NES) |
+| Neon and terminals | Vaporwave; retrowave; The Matrix; hacker |
+| Cinema and anime | Top Gun; Cyber City Oedo 808; Cyberpunk 2077; Golgo 13; The Punisher — War Journal #53 |
+| Other retained choices | Soft black and white; Light blue |
+
+Original SVG scenes and the original generated adult-Halloween raster ship inside
+the package. Themes make no external asset requests. Opaque work surfaces, semantic
+warning colors, visible keyboard focus and selection indicators keep the forensic
+UI readable. The saved preference is local to the browser/native WebView profile.
+
+[Theme references and artwork provenance](docs/THEMES.md) document the official
+Fallout release audit, version-specific references and the comic correction:
+War Journal #53's signed cover is credited to Gary Kwapisz, rather than Jim Lee.
+The skin follows the verified issue's visual cues.
 
 ## Native macOS application
 
-The macOS ARM64 distribution opens the same UI/backend in a decorated system
-WebView with a Dock icon, native menus and Settings. It includes separate,
-relocatable Python application/analyzer runtimes; no checkout, Homebrew, shell
-startup file or development venv is needed. Closing the window hides it; Dock
-reopen restores it. Quit asks before cancelling active work. Existing configuration
-and case roots can be reused without moving evidence. Images explicitly added
-from different physical folders stay in place; Settings lists their registered
-locations and counts while MCP access remains limited to each case’s selected files.
+The tested distribution targets Apple silicon and macOS 13 or later. It opens a
+decorated system WebKit window with native menus, Settings, saved geometry and a
+Dock icon. Closing hides the window while work continues; reopening restores it.
+Quit asks before cancelling active work. Separate relocatable Python application
+and analyzer runtimes mean the installed app needs no source checkout, Homebrew,
+development environment or shell startup file.
 
-See [build, install and rollback](packaging/README.md), [native application](docs/MACOS_APP.md),
-and [Settings, symbols and optional plugins](docs/SETTINGS_AND_SYMBOLS.md).
-The distribution manifest selects pinned core, Volatility and optional addon
-profiles. Public bundles contain redistributable additions; optional community
-sources are downloaded explicitly into a separate managed environment. Catalog
-counts come from the configured runtime. Local builds are ad-hoc signed unless
-an explicit release identity is supplied. The optional [release machinery](docs/MACOS_RELEASE.md)
-provides package auditing, a read-only plan, and staged notarization/stapling with
-operator-supplied Apple credentials. No credentialed release has been validated yet.
+Build from a clean, configured checkout with Python 3.12+ and Apple's command-line
+tools:
 
-## Browser / CLI install and launch
+```sh
+python3 scripts/build_macos.py --cache /tmp/workbench-build-cache --output dist/macos
+python3 scripts/validate_macos.py 'dist/macos/Volatility Workbench.app'
+python3 scripts/install_macos.py 'dist/macos/Volatility Workbench.app' --desktop-launcher
+open "$HOME/Applications/Volatility Workbench.app"
+```
 
-Use Python 3.12+ and Git. Install official Volatility separately as described in
-[core setup](https://github.com/NoCoolUserName/volatility-mcp#quick-start-1-use-the-mcp-server).
-Keep an existing configured Volatility environment intact. Clone only Workbench:
+Quit only while idle before replacement. The installer refuses a running target
+and retains the old app and Desktop launcher in timestamped rollback storage.
+Configuration, evidence and case state remain outside the replaced bundle. The
+optional Desktop launcher is a real native `.app` and opens no Terminal window.
+An established external analyzer and existing case roots can be reused intact.
+
+See [build/install/rollback](packaging/README.md), [native behavior and limits](docs/MACOS_APP.md),
+and [release auditing and signing](docs/MACOS_RELEASE.md). Local builds are ad-hoc
+signed unless an explicit release identity is supplied. Credentialed Developer ID,
+notarization and downloaded-app Gatekeeper acceptance remain unvalidated.
+
+## Browser / CLI setup
+
+Use Python 3.12+ and Git. Set up official Volatility separately following
+[core setup](https://github.com/NoCoolUserName/volatility-mcp#quick-start-1-use-the-mcp-server),
+or keep an existing configured analyzer. Clone only Workbench:
 
 ```sh
 git clone https://github.com/NoCoolUserName/volatility-workbench.git
@@ -48,118 +112,95 @@ python3.12 -m venv .venv
 .venv/bin/volatility-workbench --config /absolute/path/to/config.json --state-dir /absolute/path/to/private/workbench
 ```
 
-`pip install .` automatically installs its full-commit core dependency. The lock
-file also pins all runtime dependencies for the tested release. The core-pin
-helper checks installed Git provenance and replaces a stale wheel even when two
-core commits share the same package version. No PyPI publication
-of either project is required. The console command or `python -m volatility_workbench`
-works from any directory; no source checkout is needed after installation. Assets,
-the presentation template, and the core report contract ship in the wheels.
+The console entry point and `python -m volatility_workbench` work outside the
+checkout after installation. Assets and templates ship in the wheel. macOS browser
+launch uses the system default browser; `--no-open` prints the private launch URL
+without opening it. Desktop dependencies are optional for browser/CLI use.
 
-Use an existing private config/state directory to reopen existing cases. Without
-`--state-dir`, the default is `<configured output_root>/workbench`. No source images
-are copied. Point private configuration and launchers at the actual evidence and
-output directories. If those directories were physically moved, back up and
-rebase mutable saved-case path metadata before relying on saved-result queries;
-sealed report bundles and recorded command lines remain historical records. The
-launcher does not create filesystem aliases. `--project` is
-accepted for old launchers but is no longer needed for packaged assets/contracts.
+Reuse the established private config and state directory to reopen existing cases.
+Without `--state-dir`, state defaults to `<configured output_root>/workbench`.
+Keep configuration, evidence, histories, outputs and environments out of Git.
+Physically moving existing roots requires backed-up mutable metadata rebasing;
+launching does not create aliases or rewrite sealed historical records.
 
-See [workflow and limits](docs/LOCAL_UI.md), [validation](docs/UI_VALIDATION.md),
-[ownership and recovery](docs/SEPARATION.md), and [security](SECURITY.md).
+## AI connections and data
 
-New report revisions record their reported Codex model, reasoning effort and
-generation-turn token usage in the manifest and portable Markdown. The viewer
-shows that provenance beside the preparation date and moves each report's actual
-assessment wording beneath its title. Historical unknowns and case-total versus
-report-only counts stay explicit; sealed originals are never rewritten. Duplicate
-managed coin links are suppressed in the viewer and normalized on new report saves.
-See [AI connections](docs/AI_PROVIDERS.md) for counter scope and current selection limits.
+Codex is the default and reuses its existing supported sign-in. A separate,
+experimental compatible chat/tool API adapter accepts an explicitly configured
+endpoint/model after a synthetic tool-capability check. Provider changes for an
+idle case are explicit and preserve earlier sessions. New API secrets can use
+macOS Keychain or session-only storage. Workbench does not mirror another chat's
+model selection or provide a Codex model/effort picker.
 
-Incomplete and sealed report cards offer explicit Hide/Delete controls. Hide keeps
-all files; Delete removes only the selected bundle and its private copies, retaining
-source images, shared analysis and audit history. Active work and references from
-later revisions block deletion; hiding remains available. See the workflow limits.
+Images remain local. Questions, image metadata and selected evidence excerpts may
+reach the chosen AI service. This is a local, single-user application; same-user
+plugin subprocesses are not a malware sandbox. Recovered content is untrusted and
+must never be executed. Reports require human review. See [AI connections](docs/AI_PROVIDERS.md)
+and [security](SECURITY.md).
 
-On macOS, launch and reopen use the system's default browser through `/usr/bin/open`.
-If opening fails, Workbench prints an explicit message and keeps the private launch
-URL available in Terminal. `--no-open` skips browser opening.
+## Pinned core and plugins
 
-The packaged icon also appears in the browser tab. To apply the same custom icon
-to an existing macOS `.command` launcher (without changing its command):
+The tested core pin is `7f7cc1f0c4f4f6e6a17dfecca8c27db02e53c1d6`, API revision 1.
+`core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on the
+immutable commit. `pip install .` brings in that dependency; the pin helper checks
+installed Git provenance even when successive core commits share a package version.
 
-```sh
-swift scripts/macos-icon.swift /tmp/workbench-icon.png "/absolute/path/to/Launch Volatility Workbench.command"
-```
+The validated portable public bundle baseline has **200 commands**. The existing
+configured local analyzer has **214 commands**, preserving all original 208 names,
+with zero import failures. These are different installation profiles. Counts are
+measured from the selected runtime and do not establish image compatibility.
 
-The Swift source draws the icon using AppKit; it requires Apple's Swift tools.
-To regenerate the packaged image, use `src/volatility_workbench/static/icon.png`
-as the output path and omit the launcher argument. This optional browser-mode fallback opens Terminal. The native application uses
-the same artwork as a packaged `.icns` and does not open Terminal or a browser tab.
+Core's single opt-in community inventory includes PteMalfind/Ptenum, ImgMalfind,
+Prefetch, AnyDesk, EVTXLog, Browser History Extractor and KeePass, plus CobaltStrike,
+RichHeader, ZoneID3, PteResolve, PasswordManager and SSHKeys. The six recent additions
+are forced offline. PasswordManager and SSHKeys are manual-only sensitive extraction
+commands, excluded from automatic investigation/report flows. PasswordManager needs
+an explicit browser PID; SSHKeys needs a Linux PID and one suspected `sshenc` address.
+No installed command is silently removed.
 
-## Optional analysis plugins
-
-The core dependency provides a pinned, opt-in community profile for PteMalfind /
-Ptenum, ImgMalfind, Prefetch, AnyDesk, EVTXLog, Browser History Extractor and
-KeePass. Install only while analysis clients are idle:
+Redistribution restrictions keep selected upstream sources out of the public app;
+install them explicitly through idle Settings maintenance or core's installer:
 
 ```sh
 .venv/bin/python -m volatility_mcp plugins-install --config /absolute/path/to/config.json
 ```
 
-Then refresh **Plugins**; restart idle clients that retain an older catalog. The
-profile installs into the configured analyzer, preserves official Volatility, and
-adds source labels/compatibility notes to the existing UI. It includes the callable
-SimplePteEnumerator and the supporting ApiSearch command. The app does not install
-plugins silently. See the [pinned profile, licenses and validation limits](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COMMUNITY_PLUGINS.md).
+Refresh Plugins afterwards; restart idle clients that retain an older catalog.
+See [core's profile, source attribution, licenses and limitations](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COMMUNITY_PLUGINS.md).
+UI metadata/help uses decimal KB/MB; a 4,096-byte page is 4.096 KB. This conversion
+does not change binary page arithmetic, scan/read/output limits or upstream files.
 
-## Develop both repositories
+## Development and validation
 
-Place the two checkouts alongside each other, then use Workbench's environment:
+For shared-code development, keep the repositories alongside each other and install
+both editable into Workbench's environment:
 
 ```sh
-cd volatility-workbench
 .venv/bin/python -m pip install -r requirements.lock.txt
 .venv/bin/python scripts/install_core_pin.py
 .venv/bin/python -m pip install --no-deps -e ../volatility-mcp -e .
-.venv/bin/python -m unittest discover -s tests -q
 ```
 
-Edit shared code once in `../volatility-mcp`. Python source changes are read from
-that checkout after restarting idle Workbench and its relevant MCP process. Packaging,
-entry-point or dependency changes require reinstalling. Never restart an active job.
-No source copying, PYTHONPATH setting, or submodule is used. The independent core
-checkout retains its own environment and existing standalone MCP registration.
+Run focused checks for changed behavior during development. Before release, run
+`scripts/package_smoke.py` once on the final change: it builds and installs isolated
+wheels, checks dependencies, assets, HTTP startup and both MCP protocol modes, then
+runs the full Workbench suite against installed packages outside the checkout.
+Browser scripts under `scripts/check_*_browser.cjs` use synthetic data and Playwright
+as a validation-only dependency; `check_themes_browser.cjs` checks all 31 skins under
+the production content-security policy. Normal application use needs no Playwright.
+CI retains Python 3.12 and 3.13 compatibility checks.
 
-## Core releases and rollback
+[UI validation](docs/UI_VALIDATION.md), [packaging validation](packaging/VALIDATION.md),
+and [the roadmap](docs/ROADMAP.md) distinguish actual checks from remaining work.
+No private case is a test fixture. Synthetic checks establish application contracts,
+not broad forensic accuracy. Remaining gaps include a clean-account/second-Mac
+acceptance run, independent multi-OS accuracy evidence, wider symbol/plugin
+compatibility, interruption/storage limits, broader accessibility testing and
+credentialed release acceptance. Intel/Windows distributions, parallel analysis and
+polished report exports remain future work. **Quick triage and compatibility sweep
+buttons are proposals and are not implemented.**
 
-`core-dependency.json`, `pyproject.toml`, and `requirements.lock.txt` record the tested
-core version and immutable commit. Eligible updates are stable `v0.1.x` core releases
-with API revision 1. The weekly/manual `Update core` workflow selects a new release,
-updates the pin and core runtime lock, installs and tests the candidate (including
-wheel/outside-checkout checks), then proposes one PR per commit. No automatic merge
-or startup update occurs. Incompatible versions fail before publication of a PR.
-
-The updater validates directly in its own run because token-created PR workflows
-may require approval. The PR links that successful run; maintainers can also run
-CI manually on its branch. It uses the repository GITHUB_TOKEN with only contents
-and pull-request write permissions, no PAT. See
-[GitHub's token event rules](https://docs.github.com/en/actions/concepts/security/github_token).
-
-Manual equivalent:
-
-```sh
-.venv/bin/python scripts/update_core.py --dry-run
-.venv/bin/python scripts/update_core.py
-.venv/bin/python -m pip install -r requirements.lock.txt
-.venv/bin/python scripts/install_core_pin.py
-.venv/bin/python -m pip install .
-.venv/bin/python -m unittest discover -s tests -q
-.venv/bin/python scripts/package_smoke.py
-```
-
-Review and commit the generated files only after validation. A core minor/API change
-requires explicit maintainer review of compatibility policy. To roll back, install a
-previous tested Workbench commit and its lock file in a separate environment, switch
-the launcher while idle, and retain the same private data roots. Existing bundles
-are never regenerated or rewritten by an upgrade/rollback.
+The weekly/manual core updater proposes eligible stable `v0.1.x` API-1 updates in a
+PR; startup never updates or merges automatically. Review and validate each new pin.
+To roll back, restore a tested app/environment while idle and keep the same private
+data roots. Existing evidence and sealed reports are not regenerated by an upgrade.

@@ -2,7 +2,8 @@
 
 The current application supports saved-case navigation, newest-first initial
 selection, report/evidence/citation/coverage views, sequential jobs, cancellation,
-resumable case conversations, coins and three display themes. See LOCAL_UI.md.
+resumable case conversations, coins and 31 locally bundled display themes. See
+LOCAL_UI.md and [the theme catalog](THEMES.md).
 
 The optional native macOS application, managed plugin/symbol settings and one
 compatible tool-API adapter are now implemented; see MACOS_APP.md and
@@ -83,8 +84,15 @@ establish detection accuracy. No private cases were used. Broader compatibility,
 known-positive accuracy fixtures and the remaining candidate groups stay separate
 work. Quick triage and compatibility sweep buttons remain proposals.
 
-Workbench now pins merged core `5bede5123abf7286ddea0a05cf0482920d94ac2e`
-(core PRs #10 and #11), so rebuilt installations inherit inventory revision 4,
+Workbench pins merged core `7f7cc1f0c4f4f6e6a17dfecca8c27db02e53c1d6`
+(core PRs #10–12), so rebuilt installations inherit inventory revision 4,
 source attribution and forced-offline dispatch. The public bundle's eligible
 200-command baseline is unchanged; the configured local analyzer has the full
 214-command installation through explicit upstream download.
+
+The theme follow-up adds the requested seasonal, game, film, anime and terminal
+skins while retaining existing preferences and the selected-report highlight.
+All decorative assets are packaged locally. Core PR #12 converts remaining
+displayed binary unit labels to accurate decimal KB/MB without changing page
+arithmetic, limits, adapter hashes or plugin inventory. These presentation changes
+do not implement any proposed investigation mode or broaden forensic validation.
