@@ -88,20 +88,31 @@ async function refresh(){
   byId('install-plugins').disabled=!data.managed_runtime_available||data.operation.status==='running';
   byId('plugin-note').textContent=data.managed_runtime_available?'No plugins are installed by opening this page.':'Managed overlay installation is available in the complete desktop package. Your current configured analyzer remains usable.';
   byId('operation').textContent=JSON.stringify(data.operation,null,2);
+  const list=byId('symbol-packs');
+  if(list.dataset.profile!==JSON.stringify(data.symbols.profile.packs)){
+    list.replaceChildren();list.dataset.profile=JSON.stringify(data.symbols.profile.packs);
+    for(const pack of data.symbols.profile.packs){
+      const div=document.createElement('div');div.className='pack';
+      const name=document.createElement('strong');name.textContent=pack.label+' · '+pack.version+' · '+(pack.size/1_000_000).toFixed(2)+' MB';div.append(name);
+      const detail=document.createElement('p');detail.textContent=pack.limitations;div.append(detail);
+      const provenance=document.createElement('small');provenance.textContent=pack.url+'\nSHA-256: '+pack.sha256;div.append(provenance);
+      const button=document.createElement('button');button.dataset.pack=pack.id;button.textContent='Download this pack';button.addEventListener('click',()=>act(()=>request('/api/settings/symbols/download',{pack:pack.id})));div.append(button);list.append(div);
+    }
+  }
+  for(const button of list.querySelectorAll('button[data-pack]')){
+    const installed=data.symbols.installed?.[button.dataset.pack]===true;
+    button.textContent=installed?'Installed':'Download this pack';
+    button.disabled=installed||data.operation.status==='running';
+  }
+  const allInstalled=data.symbols.profile.packs.length>0&&data.symbols.profile.packs.every(pack=>data.symbols.installed?.[pack.id]===true);
+  byId('all-symbols').textContent=allInstalled?'Installed':'Download all supported packs';
+  byId('all-symbols').disabled=allInstalled||data.operation.status==='running';
   if(!initialized){
     byId('evidence-root').value=data.config.evidence_root;byId('output-root').value=data.config.output_root;
     const provider=data.provider;
     for(const item of provider.cases||[]){const option=document.createElement('option');option.value=item.case_id;option.textContent=(item.title||item.case_id)+' — '+(item.provider.provider||'codex');byId('provider-case').append(option);}
     const current=typeof provider.default_provider==='object'?provider.default_provider:provider;
     loadProvider({provider:'codex',...current});
-    const list=byId('symbol-packs');list.replaceChildren();
-    for(const pack of data.symbols.profile.packs){
-      const div=document.createElement('div');div.className='pack';
-      const name=document.createElement('strong');name.textContent=pack.label+' · '+pack.version+' · '+(pack.size/1_000_000).toFixed(2)+' MB';div.append(name);
-      const detail=document.createElement('p');detail.textContent=pack.limitations;div.append(detail);
-      const provenance=document.createElement('small');provenance.textContent=pack.url+'\nSHA-256: '+pack.sha256;div.append(provenance);
-      const button=document.createElement('button');button.textContent='Download this pack';button.addEventListener('click',()=>act(()=>request('/api/settings/symbols/download',{pack:pack.id})));div.append(button);list.append(div);
-    }
     providerFields();initialized=true;message('Settings ready. No analysis was started.');
   }
 }

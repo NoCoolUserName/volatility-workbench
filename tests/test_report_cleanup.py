@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import threading
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
 import urllib.error
 import urllib.request
 
@@ -219,6 +219,40 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
             self.app.set_human_determination(self.case['id'], draft['id'], 'Benign')
         with self.assertRaisesRegex(ValueError, 'sealed report'):
             self.app.set_human_determination(self.case['id'], 'unknown', 'Benign')
+        self.assert_preserved()
+
+    async def test_update_carries_human_opinion_without_modifying_parent_or_ai(self):
+        for value in ('Benign','Malicious','Undetermined'):
+            parent,folder=self.report('parent-'+value,'sealed')
+            self.app.set_human_determination(self.case['id'],parent['id'],value)
+            original=(folder/'report.md').read_bytes()
+            self.case['thread_id']='synthetic'
+            self.case['images'][0]['sha256']='synthetic-hash'
+            job={'id':'update-'+value,'kind':'update','text':'Synthetic update'}
+            with patch.object(self.app,'ensure_thread',new=AsyncMock()), \
+                 patch.object(self.app,'fingerprint',new=AsyncMock(return_value={'sha256':'synthetic-hash'})), \
+                 patch.object(self.app,'codex_turn',new=AsyncMock(side_effect=RuntimeError('stop before model'))), \
+                 patch('volatility_workbench.app.Bundle'):
+                with self.assertRaisesRegex(RuntimeError,'stop before model'):
+                    await self.app._execute(self.case,job)
+            child=self.case['reports'][-1]
+            self.assertEqual(child['human_determination'],value)
+            self.assertEqual(child['human_determination_inherited_from'],parent['id'])
+            self.assertEqual(child['human_determination_at'],parent['human_determination_at'])
+            self.assertNotIn('ai_determination',child)
+            changed='Benign' if value!='Benign' else 'Malicious'
+            self.app.set_human_determination(self.case['id'],parent['id'],changed)
+            self.assertEqual(child['human_determination'],changed)
+            self.app.set_human_determination(self.case['id'],parent['id'],None)
+            self.assertNotIn('human_determination',child)
+            self.app.set_human_determination(self.case['id'],parent['id'],value)
+            self.assertEqual(child['human_determination'],value)
+
+            self.assertEqual((folder/'report.md').read_bytes(),original)
+            child['status']='sealed'
+            self.app.set_human_determination(self.case['id'],child['id'],'Benign' if value!='Benign' else 'Malicious')
+            self.assertNotIn('human_determination_inherited_from',child)
+            self.assertEqual(parent['human_determination'],value)
         self.assert_preserved()
 
     async def test_sealed_delete_keeps_active_reference_and_source_guards(self):

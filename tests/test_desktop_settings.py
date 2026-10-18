@@ -68,6 +68,38 @@ class SymbolTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'changed'):symbols.import_symbols(source,root/'symbols')
             self.assertEqual(target.read_text(),'changed')
 
+    def test_pack_status_verifies_files_identifiers_and_invalidates_cache(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary).resolve();source=root/'symbols.json';source.write_text(json.dumps(isf()))
+            digest=hashlib.sha256(source.read_bytes()).hexdigest()
+            pack={'id':'fixture','os':'windows','sha256':digest,'size':source.stat().st_size,
+                  'identifiers':[{'database':'ntkrnlmp.pdb','GUID':'A'*32,'age':1}]}
+            destination=root/'symbols';cache={}
+            self.assertIsNone(symbols.installed_pack(pack,destination,cache))
+            receipt=symbols.import_symbols(source,destination)
+            self.assertEqual(symbols.installed_pack(pack,destination,cache),receipt)
+            with patch.object(symbols,'_decode',side_effect=AssertionError('unchanged content cached')):
+                self.assertEqual(symbols.installed_pack(pack,destination,cache),receipt)
+            with patch('urllib.request.build_opener',side_effect=AssertionError('no download')):
+                with patch.object(symbols,'profile',return_value={'packs':[pack]}):
+                    self.assertEqual(symbols.download_pack('fixture',destination,root/'downloads'),receipt)
+            target=destination/'windows'/('managed-'+digest);file=target/receipt['files'][0]['path']
+            old=file.read_bytes();file.write_bytes(old.replace(b'6.2.0',b'6.3.0'))
+            self.assertIsNone(symbols.installed_pack(pack,destination,cache))
+            file.write_bytes(old);self.assertIsNotNone(symbols.installed_pack(pack,destination,cache))
+            file.unlink();self.assertIsNone(symbols.installed_pack(pack,destination,cache))
+            file.symlink_to(source);self.assertIsNone(symbols.installed_pack(pack,destination,cache));file.unlink();file.write_bytes(old)
+            receipt_path=target/'.receipt';saved=receipt_path.read_text()
+            for mutation in ({'files':[]},{'source_sha256':'0'*64},
+                             {'files':[{**receipt['files'][0],'path':'../../escape.json'}]},
+                             {'files':[{**receipt['files'][0],'identity':{'os':'linux'}}]}):
+                receipt_path.write_text(json.dumps({**receipt,**mutation}))
+                self.assertIsNone(symbols.installed_pack(pack,destination,cache))
+            receipt_path.write_text(saved)
+            wrong={**pack,'identifiers':[{'database':'ntkrnlmp.pdb','GUID':'B'*32,'age':1}]}
+            self.assertIsNone(symbols.installed_pack(wrong,destination,cache))
+            self.assertIsNone(symbols.installed_pack(pack,root/'other'))
+
     def test_pinned_profile_has_exact_bounds_and_no_default_downloads(self):
         profile=symbols.profile();self.assertEqual(profile['default_downloads'],[])
         self.assertEqual(len(profile['packs']),2)

@@ -3,7 +3,7 @@
 Browser static assets → loopback HTTP controller → private durable case/jobs state.
 The controller uses `volatility_mcp.api` for local saved-data access, confinement,
 coverage and report validation. Readiness and Codex case turns use the official
-MCP SDK and `python -m volatility_mcp.scoped` for the same ten case-confined tools.
+MCP SDK and `python -m volatility_workbench.guarded_scoped` (a consent middleware wrapper around the public core server) for the same ten case-confined tools.
 Codex is an adapter; core imports no model provider or application package.
 
 `app.py` owns sequential jobs, cancellation and case conversations. `storage.py`

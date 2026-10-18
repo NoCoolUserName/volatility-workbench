@@ -483,3 +483,47 @@ notes automatically; no case migration or report regeneration is required.
 Ptenum's callable entry is `windows.simple_pteenum.SimplePteEnumerator`; the
 PTE-family requires 64-bit Windows. EVTXLog does not parse XP EVT. Installation
 and synthetic fixture checks do not establish runtime support for a chosen image.
+
+### Unused plugin filters and saved error explanations
+
+Plugins not used includes live literal search over names and descriptions, plus
+All, Windows, Linux, macOS and Other / general buttons. OS filtering uses installed
+catalog target metadata; Other / general covers OS-independent or unclassified
+entries. Search and OS filters combine, keep keyboard focus while typing and do
+not start collection. They affect display only: the bulk prompt still uses saved
+image OS discovery, independently of display filters.
+
+Recognized, integrity-checked saved stderr and request errors now include a short
+explanation in the error table. Historical status and bundles are unchanged.
+Unsupported builds/architectures, missing symbols and acquisition gaps remain
+limitations; a code repair does not turn an earlier failed run into a success.
+
+### Extraction confirmation and report decisions
+
+Workbench's case-scoped MCP wrapper requests per-call operator consent for known
+extraction plugins, sensitive/manual plugins, selected dumping options, and plugins
+without a usable risk description. A modal shows the exact plugin/image/arguments
+and output root, requires an unchecked acknowledgement, and permits approval once
+or decline/cancel. Both Codex and compatible providers use the same gate. Approval
+cannot be replayed for another request; stopping work declines pending decisions.
+Saved-output queries do not prompt. Classification uses installed metadata and is
+conservative rather than a guarantee that arbitrary third-party plugins are safe.
+The core still confines derived files and handles cancellation; the consent gate
+is not a sandbox. Recovered files may contain malware or credentials and must not
+be executed, opened externally or uploaded by the investigator.
+
+Update report inherits the latest saved Human Determination and its timestamp,
+records the parent report ID, and leaves the parent bundle untouched. Only an
+explicit human change replaces or clears that choice. The AI opinion is assessed
+independently for each new report. Executive summary F-number references link to
+unambiguous matching finding headings in the same rendered report; unknown
+references remain plain text, and existing evidence links retain their behavior.
+
+Failed-plugin rows include **Add to prompt**, and the section includes
+**Add all failed requests to prompt**. Prompts retain saved scope and require
+reviewing the cause before a justified retry; unsupported or unchanged failures
+are skipped with a reason. Additions never submit work. Buttons derive their
+disabled state from the current prompt text, so bulk additions disable individual
+controls and removing a request re-enables it. Requests remain scoped to their
+selected report and case. Manual-only extraction plugins are excluded from the
+unused-plugins bulk OS action.

@@ -164,3 +164,11 @@ still passed afterwards. This exercised installation/discovery only: no memory
 image was opened and no analysis tool was invoked. A real HTTPS retry from a
 partial Windows symbol download passed the pinned byte-size/hash checks and
 imported its exact PDB identifier into temporary storage.
+
+Settings verifies each supported pack in the configured symbol directory using
+its pinned archive identity, managed receipt, ISF identifiers and file hashes.
+Verified packs show a disabled **Installed** button; when all supported packs are
+verified, the bulk button also shows **Installed**. Cached ZIPs alone do not count.
+Polling rechecks file metadata and revalidates changed content, so a removed or
+altered installation becomes downloadable again. Download-all skips packs whose
+managed files already verify. No downloads occur by opening Settings.

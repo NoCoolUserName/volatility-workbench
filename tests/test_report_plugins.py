@@ -77,7 +77,7 @@ class InventoryTests(unittest.TestCase):
         self.steps.append({'run_id':'inspection-0', 'call_id':'C-inspect', 'tool':'inspect_artifact',
                            'status':'success', 'arguments':{'operation':'strings'}})
         self.steps.append({'call_id':'UI-denied', 'tool':'run_plugin', 'arguments':{'plugin':'windows.pslist.PsList',
-                           'arguments':['--pid','bad']}, 'status':'error', 'timestamp':'2026-10-18T00:03:00Z'})
+                           'arguments':['--pid','bad'], 'image':'/synthetic/image.raw'}, 'status':'error', 'timestamp':'2026-10-18T00:03:00Z'})
         self.steps.append({'call_id':'UI-inspect-denied', 'tool':'inspect_artifact', 'status':'error'})
         receipt = {'run_id':'run0', 'plugin':'windows.pslist.PsList', 'arguments':['--pid','4'],
                    'reused':True, 'integrity_verified':True, 'image_before':{'sha256':'a' * 64},
@@ -105,7 +105,9 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(page['executed_plugin_names'], ['windows.pslist.PsList'])
         self.assertEqual(len(page['errored_entries']), 2, 'Error list covers the full saved snapshot, not only the visible page')
         self.assertEqual({e['kind'] for e in page['errored_entries']}, {'plugin_run', 'request_failure'})
-        self.assertNotIn('arguments', page['errored_entries'][0], 'Error summary does not duplicate exact command data')
+        self.assertEqual(page['errored_entries'][0]['arguments'], ['--pid','4'])
+        self.assertEqual(page['errored_entries'][1]['arguments'], ['--pid','bad'])
+        self.assertEqual(page['errored_entries'][1]['requested_image'], '/synthetic/image.raw')
 
     def test_saved_error_sources_and_request_diagnostic_are_read_only(self):
         self.add_run('failed', status='error')
@@ -114,7 +116,7 @@ class InventoryTests(unittest.TestCase):
         self.artifact('artifacts/C-other/json/stderr.txt', 'Other run', 'other')
         self.steps.append({'call_id':'UI-denied', 'tool':'run_plugin', 'status':'error',
                            'arguments':{'plugin':'windows.example.Plugin', 'arguments':[]}})
-        event = {'id':'denied', 'detail':{'arguments':{'plugin':'windows.example.Plugin'},
+        event = {'id':'denied', 'detail':{'arguments':{'plugin':'windows.example.Plugin', 'image':'/synthetic/image.raw', 'arguments':['--pid','bad']},
                  'result':{'content':[{'type':'text', 'text':'Synthetic invalid argument <script>not executable</script>'}]}}}
         saved = self.artifact('artifacts/UI-denied.json', event)
         self.persist(self.derive())
@@ -126,12 +128,32 @@ class InventoryTests(unittest.TestCase):
                          {'artifacts/C-failed/manifest.json', 'artifacts/C-failed/json/stderr.txt'})
         self.assertEqual(request['reason'], event['detail']['result']['content'][0]['text'])
         self.assertEqual(request['error_sources'], [{'path':'artifacts/UI-denied.json', 'label':'Saved request error'}])
+        self.assertEqual(request['requested_image'], '/synthetic/image.raw')
         self.assertEqual(before, {p: p.read_bytes() for p in self.root.rglob('*') if p.is_file()})
         saved.write_text('{}')
         result = inventory.read(self.root, 'case', 'revision')
         self.assertEqual(result['errored_entries'][1]['error_sources'], [])
         self.assertNotIn('Synthetic invalid', result['errored_entries'][1]['reason'])
         self.assertTrue(any('hash/size' in w for w in result['warnings']))
+
+    def test_saved_stderr_diagnosis_checks_integrity_without_rewriting_history(self):
+        self.add_run('failed',status='error')
+        path=self.artifact('artifacts/C-failed/json/stderr.txt',"NameError: name 'file_offset' is not defined",'failed')
+        self.persist(self.derive())
+        before=path.read_bytes()
+        with offline_guard():result=inventory.read(self.root,'case','revision')
+        self.assertIn('implementation defect',result['errored_entries'][0]['diagnosis'])
+        self.assertEqual(result['errored_entries'][0]['status'],'error');self.assertEqual(path.read_bytes(),before)
+        path.write_text('Page error changed')
+        result=inventory.read(self.root,'case','revision')
+        self.assertFalse(result['errored_entries'][0].get('diagnosis'))
+        for text,phrase in [('This version of Windows is not supported','does not support'),
+                ('This plugin only supports x64 versions of Windows','x64'),
+                ('Template guessing is not applicable for NT5','NT5'),('Page error','unreadable'),
+                ('Unable to validate the plugin requirements','requirements'),
+                ('Enumeration not found _MI_SYSTEM_VA_TYPE','enumeration'),
+                ('forbidden shell metacharacters','regex-aware')]:
+            self.assertIn(phrase,inventory.error_explanation(text))
 
     def test_request_diagnostic_rejects_wrong_identity_and_plugin(self):
         self.steps.append({'call_id':'UI-denied', 'tool':'run_plugin', 'status':'error',

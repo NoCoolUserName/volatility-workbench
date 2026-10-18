@@ -519,12 +519,14 @@ button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); 
 .report-plugin-used-table th:nth-child(6) { width: 17%; }
 .report-plugin-used-table th:nth-child(7) { width: 7%; }
 .report-plugin-used-table th:nth-child(8) { width: 10%; }
-.report-plugin-errors-table th:nth-child(1) { width: 17%; }
-.report-plugin-errors-table th:nth-child(2) { width: 23%; }
-.report-plugin-errors-table th:nth-child(3) { width: 7%; }
-.report-plugin-errors-table th:nth-child(4) { width: 25%; }
-.report-plugin-errors-table th:nth-child(5) { width: 16%; }
-.report-plugin-errors-table th:nth-child(6) { width: 12%; }
+.report-plugin-errors-table { min-width: 1300px; }
+.report-plugin-errors-table th:nth-child(1) { width: 15%; }
+.report-plugin-errors-table th:nth-child(2) { width: 12%; }
+.report-plugin-errors-table th:nth-child(3) { width: 18%; }
+.report-plugin-errors-table th:nth-child(4) { width: 6%; }
+.report-plugin-errors-table th:nth-child(5) { width: 23%; }
+.report-plugin-errors-table th:nth-child(6) { width: 15%; }
+.report-plugin-errors-table th:nth-child(7) { width: 11%; }
 .report-plugin-unused-table { min-width: 900px; }
 .report-plugin-unused-table th:first-child { width: 25%; }
 .report-plugin-unused-table th:nth-child(2) { width: 18%; }
@@ -535,3 +537,14 @@ button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); 
 .report-plugin-table .report-plugin-provenance-details { margin: 8px 0; }
 .report-plugin-table pre { max-height: 220px; overflow: auto; margin: 8px 0; padding: 10px; }
 .report-plugin-inventory > button { margin: 4px 8px 0 0; }
+
+.plugin-filters { margin-top: 16px; }
+.plugin-filters > label { display: block; margin-bottom: 6px; }
+.plugin-filters > input { width: 100%; max-width: 620px; }
+.plugin-os-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.plugin-os-filters button { width: auto; }
+.plugin-os-filters button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 650; }
+
+dialog.approval { width: min(680px, calc(100vw - 48px)); max-height: 85vh; overflow: auto; background: var(--panel); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; }
+dialog.approval::backdrop { background: rgb(0 0 0 / 65%); }
+dialog.approval pre { white-space: pre-wrap; overflow-wrap: anywhere; }

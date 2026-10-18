@@ -148,6 +148,51 @@ def import_symbols(source, destination, *, expected_hash=None, expected_size=Non
     return receipt
 
 
+def installed_pack(pack, destination, cache=None):
+    """Return a verified managed receipt, or None. Never downloads or changes files.
+
+    Recheck file metadata each poll; cache content validation only while all inode,
+    size, mtime and ctime fingerprints are unchanged. Cache lifetime is one manager.
+    """
+    try:
+        root=Path(destination).expanduser().absolute()/pack['os']/('managed-'+pack['sha256'])
+        receipt_path=_regular(root/'.receipt')
+        if receipt_path.stat().st_size>1024*1024: return None
+        receipt=json.loads(receipt_path.read_text())
+        files=receipt['files']
+        if (receipt.get('schema_version')!=1 or receipt['source_sha256']!=pack['sha256']
+                or receipt['source_size']!=pack['size'] or not isinstance(files,list)
+                or not files or len(files)!=len(pack['identifiers'])): return None
+        def fingerprint(path):
+            st=path.stat()
+            return (st.st_dev,st.st_ino,st.st_size,st.st_mtime_ns,st.st_ctime_ns)
+        paths=[]; signature=[fingerprint(receipt_path)]; total=0
+        for item in files:
+            relative=PurePosixPath(item['path'])
+            if relative.is_absolute() or '..' in relative.parts or '\\' in item['path']: return None
+            path=_regular(root/relative)
+            if not path.resolve().is_relative_to(root.resolve()) or path.stat().st_size!=item['size']: return None
+            total+=path.stat().st_size
+            if total>MAX_TOTAL: return None
+            paths.append(path); signature.append(fingerprint(path))
+        key=(str(root),json.dumps(pack,sort_keys=True))
+        if cache is not None and cache.get(key)==signature: return receipt
+        identities=[]
+        for item,path in zip(files,paths):
+            raw=path.read_bytes()
+            if hashlib.sha256(raw).hexdigest()!=item['sha256']: return None
+            _,identity,_=_decode(path.name,raw)
+            if identity!=item['identity'] or identity['os']!=pack['os']: return None
+            identities.append(identity)
+        expected=[{'os':pack['os'],'pdb':i['database'],'guid':i['GUID'].upper(),'age':i['age']}
+                  if pack['os']=='windows' else {'os':pack['os'],'banner':i['banner']} for i in pack['identifiers']]
+        if sorted(map(lambda i:json.dumps(i,sort_keys=True),identities))!=sorted(map(lambda i:json.dumps(i,sort_keys=True),expected)): return None
+        if cache is not None: cache[key]=signature
+        return receipt
+    except (OSError,ValueError,KeyError,TypeError,AttributeError):
+        return None
+
+
 class _HTTPSRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         if not newurl.startswith('https://'):
@@ -158,6 +203,9 @@ class _HTTPSRedirect(urllib.request.HTTPRedirectHandler):
 def download_pack(pack_id, destination, download_dir, progress=lambda **kwargs: None):
     pack=next((p for p in profile()['packs'] if p['id']==pack_id),None)
     if not pack: raise ValueError('Unknown supported symbol pack')
+    if receipt:=installed_pack(pack,destination):
+        progress(stage='Symbol pack already installed')
+        return receipt
     download_dir=private_dir(Path(download_dir))
     partial=download_dir/(pack['id']+'.zip.part')
     if partial.is_symlink(): raise ValueError('Download destination must not be a symlink')
