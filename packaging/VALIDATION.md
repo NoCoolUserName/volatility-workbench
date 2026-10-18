@@ -122,3 +122,27 @@ failures, verified adapted hashes and both SSH symbol schemas. This configured
 analyzer is independent of the bundled baseline. Native build/install verification
 is recorded with each artifact's exact source/core commits and the installation
 report; synthetic contract success is not a broad forensic-accuracy claim.
+
+## Theme assets and decimal-unit core pin — 2026-10-18
+
+The theme follow-up pins core `7f7cc1f0c4f4f6e6a17dfecca8c27db02e53c1d6`
+(core PR #12), retaining API revision 1 and community inventory revision 4. This
+changes descriptive KB/MB values exactly while preserving adapter hashes, runtime
+bounds and commands. The public eligible baseline remains 200; the existing
+configured analyzer remains the separately provisioned 214-command environment.
+
+The final fresh installed-wheel smoke passed 118 Workbench tests, dependency
+checks, ten-tool MCP discovery in both SDK modes and startup from outside the
+checkout. All 30 SVG scene assets, the generated Halloween PNG, shared theme
+JavaScript/CSS and other packaged assets were present and served successfully.
+The smoke forbade analysis/model subprocesses and used only temporary synthetic
+state. The native validator now independently requires all 30 scenes and the new
+shared assets. Browser checks under production CSP loaded every scene with no
+external requests or policy violations; UI_VALIDATION.md records interaction and
+contrast checks. The only later runtime change was the readiness annotation's CSS
+alignment, covered by the original header and all-theme browser checks.
+
+The final server-route repair removes request text from filesystem path assembly:
+only packaged SVG names enter the static asset map. An authenticated HTTP fixture
+covers a valid scene plus missing and plain/encoded traversal names. This followed
+CodeQL's path-injection warning; the gate remains enforced.

@@ -16,7 +16,7 @@ const sampleCase = (id, created_at) => ({id, title: id, created_at, images: [], 
 const state = {cases:[sampleCase('Older case', '2026-01-01T00:00:00Z'), sampleCase('Newest case', '2026-02-01T00:00:00Z')], jobs:[], approvals:[], account:{}, evidence_root:'/synthetic/evidence'};
 let mode = 'normal', calls = [], errors = [];
 (async () => {
-  const browser = await chromium.launch({headless:true});
+  const browser = await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
   try {
     const page = await browser.newPage({viewport:{width:1400,height:1000}});
     page.on('pageerror', e => errors.push(e.message));
@@ -109,7 +109,7 @@ let mode = 'normal', calls = [], errors = [];
     mode = 'failure';
     await page.locator('#refreshPlugins').click();
     await page.waitForFunction(() => document.querySelector('#pluginStatus').textContent.includes('refresh failed'));
-    assert.equal(await page.locator('#pluginRows tr').count(),4);
+    assert.equal(await page.locator('#pluginRows tr').count(),3,'Failed refresh retains the three rows selected by the source filter');
     assert.match(await page.locator('#pluginError').innerText(),/Synthetic discovery failure/);
     assert.equal(await page.locator('#pluginSource summary').innerText(),'Source (3/4)');
     mode = 'empty';

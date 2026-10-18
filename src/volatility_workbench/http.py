@@ -145,7 +145,13 @@ class Handler(BaseHTTPRequestHandler):
             assets={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/icon.png':('icon.png','image/png')}
             assets.update({'/settings.html':('settings.html','text/html; charset=utf-8'),
                 '/settings.js':('settings.js','text/javascript; charset=utf-8'),
-                '/settings.css':('settings.css','text/css; charset=utf-8')})
+                '/settings.css':('settings.css','text/css; charset=utf-8'),
+                '/themes.js':('themes.js','text/javascript; charset=utf-8'),
+                '/themes.css':('themes.css','text/css; charset=utf-8'),
+                '/halloween-night.png':('halloween-night.png','image/png')})
+            # Asset paths originate only in the package, never in request text.
+            assets.update({'/'+p.name:(p.name,'image/svg+xml')
+                for p in (Path(__file__).parent/'static').glob('theme-*.svg') if p.is_file()})
             if url.path in assets:
                 name,mime=assets[url.path]
                 return self.send(200,(Path(__file__).parent/'static'/name).read_bytes(),mime)

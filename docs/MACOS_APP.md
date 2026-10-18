@@ -93,7 +93,8 @@ not a claim that every plugin works against every memory image.
 The remaining supported community profile is an explicit upstream download into
 an idle, validated runtime overlay outside the signed app. Unresolved licensing
 or source obligations exclude those components from public binary redistribution.
-The existing local 208-plugin installation can continue to be used intact.
+The configured local analyzer currently has 214 commands, preserving its original
+208 names. It can continue to be used intact; the public bundle baseline stays 200.
 Unknown local additions are not silently discarded. See the core's
 [community plugin policy](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COMMUNITY_PLUGINS.md).
 

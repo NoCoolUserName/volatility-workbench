@@ -6,6 +6,8 @@
     <title>Volatility Workbench</title>
     <link rel="icon" type="image/png" href="/icon.png" />
     <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/themes.css" />
+    <script src="/themes.js"></script>
     <script src="/app.js" defer></script>
   </head>
   <body>
@@ -17,11 +19,7 @@
           <button id="openPlugins" class="plugin-nav" aria-controls="plugins" aria-pressed="false">Plugins</button>
           <div class="header-preferences">
             <label class="theme-control" for="theme">Theme
-              <select id="theme" aria-label="Workbench theme">
-                <option value="matrix">Matrix green</option>
-                <option value="mono">Soft black and white</option>
-                <option value="blue">Light blue</option>
-              </select>
+              <select id="theme" data-theme-picker aria-label="Workbench theme"></select>
             </label>
             <a class="settings-link" href="/settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M10.2 2h3.6l.5 2.3 1.4.6 2-1.3 2.5 2.5-1.3 2 .6 1.4 2.3.5v3.6l-2.3.5-.6 1.4 1.3 2-2.5 2.5-2-1.3-1.4.6-.5 2.3h-3.6l-.5-2.3-1.4-.6-2 1.3-2.5-2.5 1.3-2-.6-1.4-2.3-.5v-3.6l2.3-.5.6-1.4-1.3-2 2.5-2.5 2 1.3 1.4-.6.5-2.3z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a>
           </div>
@@ -32,6 +30,9 @@
         <button id="stop" class="danger" disabled>Stop all work</button>
       </div>
     </header>
+    <div class="skin-scene" aria-label="Selected theme artwork">
+      <div class="skin-caption"><strong data-theme-name>Halloween · pumpkin night</strong><p data-theme-description>A friendly moonlit pumpkin patch.</p></div>
+    </div>
     <div class="privacy">
       Images stay on this machine. Questions and selected tool results may be
       sent to your configured AI service. Never execute recovered code. Reports
