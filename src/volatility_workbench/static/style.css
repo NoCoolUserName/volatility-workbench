@@ -361,7 +361,7 @@ pre {
 }
 .dos-progress.indeterminate .dos-progress-fill {
   width: 30%;
-  animation: dos-progress-scan 3s linear infinite alternate;
+  animation: dos-progress-scan 6s linear infinite alternate;
 }
 @keyframes dos-progress-scan {
   from { transform: translateX(0); }
@@ -399,6 +399,7 @@ pre {
   margin: 8px 0;
   padding-left: 5px;
 }
+.work-heading, .report-progress-heading { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .queue li span {
   display: block;
   color: var(--muted);

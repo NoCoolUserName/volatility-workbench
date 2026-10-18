@@ -55,7 +55,6 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.equal(await page.locator('#reportView h1').evaluate(e=>getComputedStyle(e).fontSize),'25px');
     const plugins=await page.locator('#openPlugins').boundingBox(),theme=await page.locator('#toggleTheme').boundingBox();
     const settings=await page.getByRole('link',{name:'Settings',exact:true}).boundingBox();
-    const connection=await page.locator('#connection').boundingBox(),stop=await page.locator('#stop').boundingBox();
     assert.ok(theme.y>=plugins.y+plugins.height && Math.abs(theme.x-plugins.x)<2,'Theme button sits directly below Plugins');
     assert.ok(Math.abs(theme.width-plugins.width)<2,'Theme and Plugins buttons align');
     assert.ok(Math.abs(settings.x+settings.width-1368)<2 && settings.y<plugins.y,'Settings sits at the upper right');
@@ -70,7 +69,8 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.equal(await page.locator('#toggleTheme').getAttribute('aria-expanded'),'false');
     assert.equal(await page.locator('#toggleTheme').evaluate(node=>node===document.activeElement),true);
     assert.equal(await page.locator('.settings-link svg').evaluate(e=>getComputedStyle(e).color),'rgb(192, 192, 192)','Settings gear must be silver');
-    assert.ok(stop.y>=connection.y+connection.height,'Stop must sit below the connection status');
+    assert.equal(await page.locator('header #stop').count(),0,'Stop has moved out of the header');
+    assert.equal(await page.locator('#stop').isHidden(),true,'Idle Stop stays with the hidden work panel');
     assert.equal(await page.locator('#stop').isDisabled(),true,'Idle Stop must be disabled');
     assert.equal(await page.locator('#queueSection').isHidden(),true,'Idle queue must not show completed history');
     await control.click();
@@ -78,6 +78,7 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.equal(await control.isDisabled(),true);
     assert.equal(await page.locator('#readyDetails').textContent(),'','Prior timestamp must not imply the new check is complete');
     assert.equal(await page.locator('#stop').isEnabled(),true,'Queued work can be stopped');
+    assert.equal(await page.locator('#currentWorkHeading #stop').count(),1,'Readiness keeps Stop beside Current work');
     await page.waitForFunction(()=>document.querySelector('#queue').textContent.includes('queued'));
     assert.equal(await page.locator('#queue li').count(),1);
     await page.locator('#queue li').evaluate(item=>item.dataset.stable='yes');
