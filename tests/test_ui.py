@@ -341,6 +341,18 @@ class UITests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(status,200);self.assertTrue(json.loads(body)['acknowledged'])
             self.assertIn('a'*64,self.case['plugin_error_acknowledgments'])
 
+            bulk={'case_id':self.case['id'],'report_id':report_id}
+            bulk_url='/api/reports/acknowledge-all-errors'
+            status,_,_=await asyncio.to_thread(request,bulk_url,bulk);self.assertEqual(status,403)
+            status,_,_=await asyncio.to_thread(request,bulk_url,bulk,{'Cookie':cookie,'Origin':'https://evil.example'})
+            self.assertEqual(status,403)
+            status,_,_=await asyncio.to_thread(request,bulk_url,dict(bulk,report_id='unknown'),{'Cookie':cookie,'Origin':server.origin})
+            self.assertEqual(status,400)
+            with patch.object(self.app,'report_plugins',return_value={'errored_entries':[{'error_id':'b'*64}]}):
+                status,body,_=await asyncio.to_thread(request,bulk_url,bulk,{'Cookie':cookie,'Origin':server.origin})
+            self.assertEqual(status,200);self.assertEqual(json.loads(body)['error_ids'],['b'*64])
+            self.assertEqual(set(self.case['plugin_error_acknowledgments']),{'a'*64,'b'*64})
+
             self.assertEqual(manifest_path.read_bytes(),original)
             self.assertEqual(list(report_root.iterdir()),[manifest_path])
             self.app.state['jobs'].append({'id':'saved-console','case_id':self.case['id'],'kind':'report','status':'completed'})

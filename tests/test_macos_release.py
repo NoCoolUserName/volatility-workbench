@@ -51,7 +51,7 @@ class ReleaseTests(unittest.TestCase):
         self.write('bundled-addons.json', {'sources': [], 'pypykatz': self.manifest['pypykatz_plugin']})
         self.write('runtime/lib/python3.12/site-packages/volatility_mcp/resources/addons.json',
                    {'sources': [{'repository': 'synthetic/excluded', 'files': [{'target': 'windows/excluded.py'}]}]})
-        for name in ('workbench-LICENSE', 'workbench-THIRD_PARTY_NOTICES.md', 'pypykatz-LICENSE'):
+        for name in ('workbench-LICENSE', 'workbench-THIRD_PARTY_NOTICES.md', 'LICENSING.md', 'pypykatz-LICENSE'):
             (self.resources / 'notices' / name).write_text('SYNTHETIC NOTICE')
         (self.resources / 'notices/python-standalone/licenses').mkdir(parents=True)
         (self.app / 'Contents/Info.plist').write_bytes(plistlib.dumps({'CFBundleIdentifier': self.info['bundle_id']}))
@@ -101,9 +101,12 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Excluded community plugin'):
             release.audit(self.app)
         path.unlink()
-        (self.resources / 'notices/pypykatz-LICENSE').unlink()
-        with self.assertRaisesRegex(ValueError, 'Missing notice'):
-            release.audit(self.app)
+        for name in ('pypykatz-LICENSE', 'LICENSING.md'):
+            notice = self.resources / 'notices' / name
+            notice.unlink()
+            with self.assertRaisesRegex(ValueError, 'Missing notice'):
+                release.audit(self.app)
+            notice.write_text('SYNTHETIC NOTICE')
 
     def test_only_valid_developer_id_identity_is_accepted(self):
         certificate = 'A' * 40

@@ -8,15 +8,16 @@ local storage and updates other open Workbench tabs. Existing Matrix, Mono and B
 remain supported as Matrix green, Soft black and white, and Light blue. A browser
 without a saved preference starts with the original Matrix green appearance.
 
-The skins use a shared set of application colors and locally packaged decorative
-art. Forensic tables and controls remain application UI; their content is not
+The skins use a shared set of application colors, CSS surfaces and locally packaged
+decorative art. Forensic tables and controls remain application UI; their content is not
 rendered into background artwork. No theme downloads assets or requests an
 external page at runtime. The links below document visual references and release
 scope; they are not application dependencies.
 
 Theme names appear in the selector. The artwork band has no caption or tagline;
-the three plain classic themes omit that band entirely. Selected controls use
-an even border without a one-sided inset stripe.
+the three plain classic themes omit that band entirely. Fallout 2 replaces the
+artwork band with a compact CSS ventilation rail. Selected controls use an even
+border without a one-sided inset stripe; Fallout 2 adds a symmetric bevel.
 
 ## Fallout coverage
 
@@ -28,7 +29,7 @@ games, cancelled projects and unreleased announcements do not add separate skins
 | Released title | First release | Reference and distinguishing direction |
 | --- | --- | --- |
 | Fallout | 1997 | [Bethesda timeline](https://fallout.bethesda.net/en-EU/news/fallout25-presents-the-fallout-timeline): weathered industrial terminals and the original wasteland. |
-| Fallout 2 | 1998 | [Bethesda timeline](https://fallout.bethesda.net/en-EU/news/fallout25-presents-the-fallout-timeline): the Enclave and the expanded wasteland. |
+| Fallout 2 | 1998 | [Bethesda timeline](https://fallout.bethesda.net/en-EU/news/fallout25-presents-the-fallout-timeline): inventory-console styling with weathered metal housing, recessed green screens and brass controls. |
 | Fallout Tactics: Brotherhood of Steel | 2001 | [Bethesda timeline](https://fallout.bethesda.net/en-EU/news/fallout25-presents-the-fallout-timeline): squad tactics and Brotherhood military hardware. |
 | Fallout: Brotherhood of Steel | 2004 | [Bethesda timeline](https://fallout.bethesda.net/en-EU/news/fallout25-presents-the-fallout-timeline): the separate console action game, distinct from Tactics. |
 | Fallout 3 | 2008 | [Bethesda timeline](https://fallout.bethesda.net/en-EU/news/fallout25-presents-the-fallout-timeline): the Capital Wasteland and Vault 101. |
@@ -54,6 +55,17 @@ so it uses the Fallout 4 skin. Bethesda's
 places Fallout 5 in preproduction and describes Fallout 3 and New Vegas
 remasters and the new Obsidian project as future work; those announcements are
 not treated as released games.
+
+The Fallout 2 skin uses the user's inventory-screen reference as a visual concept.
+Its metal frame, rivets, ventilation slots and bevels are CSS gradients, borders
+and shadows, so the housing scales with the interface. It does not stretch the
+reference screenshot over the application. Subtle edge rust, tarnished slotted
+fasteners and small brass vent collars add a restrained post-apocalyptic mechanical
+feel. Cases, reports, plugin tables and console output remain selectable text on
+opaque dark screen surfaces, with green
+labels and phosphor accents. The same treatment covers Settings and adapts to
+narrow screens. These overrides apply only to Fallout 2; Matrix and the other
+Fallout palettes retain their existing presentation.
 
 ## Other requested skins
 
@@ -125,7 +137,7 @@ Shared theme tokens keep table surfaces, primary text, secondary text, borders,
 controls, warnings and focus indicators consistent. Decorative scenes stay
 behind the interface instead of behind dense table text. Statuses retain text
 labels as well as color. Keyboard focus remains visible, and the selected-report
-highlight retains an inset stripe and stronger text across themes. Theme
+highlight retains an even border and stronger text across themes. Theme
 selection uses a labelled native control and retains normal keyboard operation.
 Artwork is static, without animation. A higher-contrast system preference
 strengthens borders and reduces decorative artwork; printed views omit the

@@ -1,5 +1,5 @@
-/* Shared skin presentation. Art stays in this isolated band; evidence surfaces
-   remain opaque and untextured. Reduced motion is the default: no animation. */
+/* Shared skin presentation. Artwork and housing decoration stay outside the
+   opaque, untextured evidence surfaces. No decorative animation. */
 :root {
   color-scheme: dark;
   --bg: #05060b; --panel: #13121c; --control-bg: #151620;
@@ -60,17 +60,333 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 .plugin-table tbody tr:hover { background: var(--panel); }
 .plugin-table thead { background: var(--panel); }
 .approval { background: var(--panel); color: var(--text); }
+
+/* Fallout 2: a responsive instrument housing built entirely from CSS.
+   Patina, fasteners and vents belong to the chassis, never to evidence text. */
+:root[data-theme="fallout-2"] {
+  --fo2-brass: #d7be72;
+  --fo2-metal:
+    /* Thin oxidized seams and localized wear, confined to the metal shell. */
+    linear-gradient(90deg, #a25d303b, transparent 9px calc(100% - 12px), #884c302e),
+    linear-gradient(0deg, #a86d3f38, transparent 11px calc(100% - 5px), #d1b17a22),
+    radial-gradient(ellipse 38% 8% at 12% 100%, #a75b3042, transparent),
+    radial-gradient(ellipse 24% 5% at 76% 0%, #ad703c30, transparent),
+    linear-gradient(117deg, #dad7b810 0 8%, transparent 8.2% 37%, #080b0740 37.2% 37.8%, transparent 38%),
+    radial-gradient(ellipse at 4% 100%, #7d462c80, transparent 42%),
+    radial-gradient(ellipse at 94% 10%, #737b5260, transparent 34%),
+    repeating-linear-gradient(0deg, #0000000a 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(91deg, transparent 0 7px, #e8d5a509 7px 8px, transparent 8px 13px),
+    linear-gradient(110deg, #373c2c, #52513b 32%, #383d2c 62%, #504331);
+  --fo2-bolts:
+    linear-gradient(135deg, transparent 40%, #24281b 43% 56%, transparent 59%) 9px 9px / 8px 8px no-repeat,
+    linear-gradient(45deg, transparent 40%, #24281b 43% 56%, transparent 59%) calc(100% - 9px) 9px / 8px 8px no-repeat,
+    linear-gradient(45deg, transparent 40%, #24281b 43% 56%, transparent 59%) 9px calc(100% - 9px) / 8px 8px no-repeat,
+    linear-gradient(135deg, transparent 40%, #24281b 43% 56%, transparent 59%) calc(100% - 9px) calc(100% - 9px) / 8px 8px no-repeat,
+    radial-gradient(circle at 13px 13px, #b6aa7e 0 1px, #777151 2px 4px, #191d15 5px 7px, #995c3638 8px 10px, transparent 13px),
+    radial-gradient(circle at calc(100% - 13px) 13px, #b6aa7e 0 1px, #777151 2px 4px, #191d15 5px 7px, #995c3638 8px 10px, transparent 13px),
+    radial-gradient(circle at 13px calc(100% - 13px), #b6aa7e 0 1px, #777151 2px 4px, #191d15 5px 7px, #995c3638 8px 10px, transparent 13px),
+    radial-gradient(circle at calc(100% - 13px) calc(100% - 13px), #b6aa7e 0 1px, #777151 2px 4px, #191d15 5px 7px, #995c3638 8px 10px, transparent 13px);
+  --fo2-bezel: inset 2px 3px 5px #000, inset -1px -1px 0 #60644a, 0 0 0 1px #10120d, 2px 3px 0 #7b7652, 5px 6px 8px #0008;
+}
+:root[data-theme="fallout-2"] body {
+  background: #1d2118;
+}
+:root[data-theme="fallout-2"] body > header,
+:root[data-theme="fallout-2"] .layout,
+:root[data-theme="fallout-2"] .settings,
+:root[data-theme="fallout-2"] .crt-monitor {
+  background: var(--fo2-metal);
+  border: 2px solid #181c13;
+  box-shadow: inset 2px 2px 1px #a6a482, inset -3px -4px 2px #10130d, inset 0 0 0 5px #80583a30, 0 4px 12px #0008;
+}
+:root[data-theme="fallout-2"] body > header {
+  max-width: 1700px;
+  width: calc(100% - 28px);
+  margin: 14px auto 0;
+  padding: 28px 34px 23px;
+  border-radius: 12px 12px 3px 3px;
+}
+:root[data-theme="fallout-2"] body > header::before,
+:root[data-theme="fallout-2"] .layout::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background: var(--fo2-bolts);
+  pointer-events: none;
+}
+:root[data-theme="fallout-2"] header h1 {
+  color: var(--fo2-brass);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: clamp(25px, 2.4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -1.2px;
+  text-shadow: 0 2px 0 #181c12, 0 -1px 0 #eee2a635;
+}
+:root[data-theme="fallout-2"] .eyebrow { color: #d0c69e; }
+:root[data-theme="fallout-2"] .dot {
+  display: inline-block;
+  vertical-align: middle;
+  color: #8aff40;
+  text-shadow: 0 0 9px #80ff4e88;
+}
+:root[data-theme="fallout-2"] .header-controls {
+  max-width: 100%;
+  padding: 10px 14px;
+  background: #11170f;
+  border: 4px solid #272c20;
+  border-radius: 9px;
+  box-shadow: var(--fo2-bezel);
+}
+:root[data-theme="fallout-2"] #connection {
+  color: var(--muted);
+  font: 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+:root[data-theme="fallout-2"] .settings-link svg { color: currentColor; }
+:root[data-theme="fallout-2"] .skin-scene {
+  min-height: 26px;
+  height: 26px;
+  max-width: 1700px;
+  width: calc(100% - 28px);
+  margin: 0 auto;
+  border: 2px solid #25291e;
+  border-top: 0;
+  background: var(--fo2-metal);
+  box-shadow: inset 0 1px 0 #939273, inset 0 -2px 0 #0d100b;
+}
+:root[data-theme="fallout-2"] .skin-scene::before {
+  inset: 5px 10%;
+  background: repeating-linear-gradient(90deg, #080d08 0 3px, #77775a 3px 4px, transparent 4px 10px);
+  border-radius: 2px;
+  opacity: .8;
+}
+:root[data-theme="fallout-2"] .skin-scene::after {
+  inset: 0;
+  background:
+    radial-gradient(circle at 22px 50%, #242a1b 0 2px, #a18c55 3px 4px, #282e1f 5px 6px, transparent 7px),
+    radial-gradient(circle at calc(100% - 22px) 50%, #242a1b 0 2px, #a18c55 3px 4px, #282e1f 5px 6px, transparent 7px),
+    linear-gradient(90deg, #453322, transparent 25% 75%, #3a2d1e);
+}
+:root[data-theme="fallout-2"] .privacy {
+  max-width: 1700px;
+  width: calc(100% - 28px);
+  margin: auto;
+  padding: 12px 34px;
+  background: #272b1e;
+  color: #c5c7a4;
+  border: 2px solid #171c12;
+  border-top: 0;
+  font-size: 12px;
+  box-shadow: inset 0 1px 0 #747656;
+}
+:root[data-theme="fallout-2"] .layout {
+  position: relative;
+  width: calc(100% - 28px);
+  grid-template-columns: 270px minmax(0, 1fr);
+  gap: 24px;
+  padding: 25px;
+  margin: 0 auto 16px;
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+}
+:root[data-theme="fallout-2"] .layout > aside,
+:root[data-theme="fallout-2"] .layout > main,
+:root[data-theme="fallout-2"] .settings > section {
+  min-width: 0;
+  background: var(--bg);
+  border: 7px solid #272e20;
+  border-top-color: #20271c;
+  border-left-color: #1b2218;
+  border-radius: 13px;
+  box-shadow: var(--fo2-bezel);
+}
+:root[data-theme="fallout-2"] .layout > aside {
+  padding: 16px;
+  min-height: 70vh;
+}
+:root[data-theme="fallout-2"] .layout > main { padding: 20px 24px; }
+:root[data-theme="fallout-2"] aside > h2,
+:root[data-theme="fallout-2"] .case-heading > h2,
+:root[data-theme="fallout-2"] .settings h2,
+:root[data-theme="fallout-2"] .work-heading h2,
+:root[data-theme="fallout-2"] #empty h2 {
+  color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+:root[data-theme="fallout-2"] aside > h2 {
+  margin-top: 2px;
+  border-bottom: 1px solid #527336;
+  padding-bottom: 12px;
+}
+:root[data-theme="fallout-2"] :where(button:not(.report-remove):not(.dialog-close)) {
+  border: 1px solid #9a9169;
+  border-radius: 3px;
+  background: linear-gradient(#57543a, #393d2b 50%, #303525);
+  color: #e2d8ac;
+  box-shadow: inset 1px 1px 0 #b1a97888, inset -1px -2px 0 #14190f, 0 2px 2px #0008;
+  font-weight: 600;
+}
+:root[data-theme="fallout-2"] :where(button:not(.report-remove):not(.dialog-close)):hover:not(:disabled) {
+  background: linear-gradient(#686344, #424834);
+  border-color: #ddd19a;
+}
+:root[data-theme="fallout-2"] :where(button:not(.report-remove):not(.dialog-close)):active:not(:disabled) {
+  box-shadow: inset 1px 2px 3px #0c110b, inset -1px -1px 0 #9a956655;
+}
+:root[data-theme="fallout-2"] button.primary {
+  background: linear-gradient(#b4ed69, #8bc247 48%, #76a73a);
+  color: var(--accent-text);
+  border-color: #c6ff87;
+  box-shadow: inset 1px 1px 0 #deffb4, inset -1px -2px 0 #3e5827, 0 2px 3px #0009;
+}
+:root[data-theme="fallout-2"] button.primary:hover:not(:disabled) {
+  background: linear-gradient(#d0ff95, #abdb67);
+}
+:root[data-theme="fallout-2"] button.danger { color: var(--danger); }
+:root[data-theme="fallout-2"] :is(.case-button.selected, .tabs .selected, .plugin-nav.selected, .report-version.selected > button:first-child, .plugin-os-filters button[aria-pressed="true"]) {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: #182414;
+  box-shadow: inset 0 0 0 2px #304726, inset 0 3px 4px #060b05, 0 1px 0 #aaa07866;
+}
+:root[data-theme="fallout-2"] :is(.case-button.selected, .tabs .selected, .plugin-nav.selected, .report-version.selected > button:first-child, .plugin-os-filters button[aria-pressed="true"]):hover:not(:disabled) {
+  background: #24331b;
+  border-color: #b6ff83;
+}
+:root[data-theme="fallout-2"] :is(input:not([type="checkbox"]), textarea, select) {
+  max-width: 100%;
+  background: #0c120b;
+  color: var(--text);
+  border-color: var(--border);
+  border-radius: 3px;
+  box-shadow: inset 1px 2px 3px #000, 0 1px 0 #5b6244;
+}
+:root[data-theme="fallout-2"] :is(input, textarea)::placeholder { color: #a5b393; opacity: 1; }
+:root[data-theme="fallout-2"] .tabs {
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #6f7150;
+  border-radius: 4px;
+  background: var(--fo2-metal);
+  box-shadow: inset 1px 1px 0 #b0a77377, inset -2px -2px 0 #171d12, 0 3px 4px #0006;
+}
+:root[data-theme="fallout-2"] .theme-dropdown,
+:root[data-theme="fallout-2"] .plugin-source-options {
+  border: 3px solid #77764f;
+  border-radius: 4px;
+  background: #151c12;
+  box-shadow: inset 1px 1px 0 #c7bb84, 0 8px 20px #000b;
+}
+:root[data-theme="fallout-2"] .theme-dropdown { width: min(396px, calc(100vw - 68px)); }
+:root[data-theme="fallout-2"] .theme-dropdown select { width: 100%; max-width: 100%; }
+:root[data-theme="fallout-2"] .report-plugin-inventory,
+:root[data-theme="fallout-2"] .live-console-section,
+:root[data-theme="fallout-2"] #reportRemoval,
+:root[data-theme="fallout-2"] dialog.approval {
+  background: var(--panel);
+  border: 2px solid #6d7451;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 1px #080e08, 0 2px 0 #4c5137;
+}
+:root[data-theme="fallout-2"] .live-console-section { padding: 14px; }
+:root[data-theme="fallout-2"] #liveConsole,
+:root[data-theme="fallout-2"] #artifactView {
+  background: #090f08;
+  border: 2px solid #47533a;
+  border-radius: 7px;
+  box-shadow: inset 2px 3px 6px #000;
+}
+:root[data-theme="fallout-2"] #toc {
+  padding: 0 14px 8px;
+  border: 1px solid #4a593c;
+  background: #151d11;
+  border-radius: 3px;
+}
+:root[data-theme="fallout-2"] article h2 { color: var(--accent); border-color: #527336; }
+:root[data-theme="fallout-2"] .report-plugin-table th,
+:root[data-theme="fallout-2"] .plugin-table th { color: #c8d4b8; background: #202a19; }
+:root[data-theme="fallout-2"] .settings {
+  margin: 14px auto;
+  width: calc(100% - 28px);
+  border-radius: 12px;
+  padding: 24px;
+}
+:root[data-theme="fallout-2"] .settings header {
+  border: 0;
+  padding: 14px;
+  color: #e0dfc2;
+}
+:root[data-theme="fallout-2"] .settings > section { padding: 22px; }
+:root[data-theme="fallout-2"] .settings .skin-scene { width: 100%; border: 2px solid #454d34; border-radius: 2px; }
+:root[data-theme="fallout-2"] footer {
+  max-width: 1700px;
+  margin: auto;
+  border-color: #53583d;
+  color: #b6bca0;
+}
+:root[data-theme="fallout-2"] .crt-monitor { border-radius: 16px; }
+:root[data-theme="fallout-2"] .crt-monitor::before { border-color: #171d12; border-radius: 10px; box-shadow: 0 1px 0 #8b896266; }
+:root[data-theme="fallout-2"] .crt-recess { background: linear-gradient(135deg, #11190f, #303b26 55%, #95916a); }
+:root[data-theme="fallout-2"] .crt-screen { border-color: #12190f; background: #090f08; }
+:root[data-theme="fallout-2"] .crt-screen .live-console-section { border: 0; box-shadow: none; background: #090f08; padding: 0; }
+:root[data-theme="fallout-2"] .crt-chin { color: var(--fo2-brass); text-shadow: 0 1px 0 #141a0e; }
+:root[data-theme="fallout-2"] .crt-top-vents,
+:root[data-theme="fallout-2"] .crt-bottom-vents { filter: brightness(.6); }
+@media (max-width: 1100px) {
+  :root[data-theme="fallout-2"] .layout { grid-template-columns: 238px minmax(0, 1fr); gap: 18px; padding: 22px; }
+  :root[data-theme="fallout-2"] .layout > main { padding: 16px; }
+  :root[data-theme="fallout-2"] .report-layout { grid-template-columns: 1fr; gap: 16px; }
+  :root[data-theme="fallout-2"] #toc { position: static; }
+}
 @media (max-width: 850px) {
   .skin-scene { min-height: 116px; }
   .skin-scene::before { opacity: .65; background-position: right center; background-size: auto 116px; }
   .skin-scene::after { background: linear-gradient(90deg, var(--bg), transparent 120%); }
   .settings .theme-control { align-items: start; flex-direction: column; }
   .theme-control select { max-width: 65vw; }
+  :root[data-theme="fallout-2"] body > header { padding: 24px; }
+  :root[data-theme="fallout-2"] .header-controls { position: static; align-items: flex-start; }
+  :root[data-theme="fallout-2"] .layout { grid-template-columns: 1fr; gap: 20px; }
+  :root[data-theme="fallout-2"] .layout > aside { min-height: auto; }
+  :root[data-theme="fallout-2"] .privacy { padding: 12px 24px; }
+  :root[data-theme="fallout-2"] .settings > section { padding: 16px; }
+}
+@media (max-width: 520px) {
+  :root[data-theme="fallout-2"] body > header,
+  :root[data-theme="fallout-2"] .skin-scene,
+  :root[data-theme="fallout-2"] .privacy,
+  :root[data-theme="fallout-2"] .layout,
+  :root[data-theme="fallout-2"] .settings { width: calc(100% - 12px); }
+  :root[data-theme="fallout-2"] body > header { margin-top: 6px; padding: 22px 20px; }
+  :root[data-theme="fallout-2"] header h1 { overflow-wrap: anywhere; }
+  :root[data-theme="fallout-2"] .layout { padding: 19px 14px; }
+  :root[data-theme="fallout-2"] .layout > main,
+  :root[data-theme="fallout-2"] .layout > aside { padding: 14px 10px; border-width: 5px; border-radius: 9px; }
+  :root[data-theme="fallout-2"] .tabs { padding: 8px; }
+  :root[data-theme="fallout-2"] .settings { padding: 14px 10px; }
+  :root[data-theme="fallout-2"] .settings > section { padding: 14px 10px; border-width: 5px; }
 }
 @media (prefers-contrast: more) {
   :root { --border: var(--muted) !important; }
   .skin-scene::before { opacity: .35; }
+  :root[data-theme="fallout-2"] { --fo2-metal: #313a27; }
+  :root[data-theme="fallout-2"] button:not(.report-remove):not(.dialog-close),
+  :root[data-theme="fallout-2"] .layout > aside,
+  :root[data-theme="fallout-2"] .layout > main,
+  :root[data-theme="fallout-2"] .settings > section { border-color: var(--muted); }
 }
 @media print {
   .skin-scene, .theme-control { display: none; }
+  :root[data-theme="fallout-2"] body > header,
+  :root[data-theme="fallout-2"] .layout,
+  :root[data-theme="fallout-2"] .layout > aside,
+  :root[data-theme="fallout-2"] .layout > main,
+  :root[data-theme="fallout-2"] .settings,
+  :root[data-theme="fallout-2"] .settings > section,
+  :root[data-theme="fallout-2"] .tabs { background-image: none; box-shadow: none; }
+  :root[data-theme="fallout-2"] body > header::before,
+  :root[data-theme="fallout-2"] .layout::before { display: none; }
 }

@@ -388,6 +388,41 @@ class InventoryTests(unittest.TestCase):
             with self.assertRaises(OSError):asyncio.run(restarted.set_plugin_error_acknowledgment('case', 'revision', first, True))
         self.assertEqual(restarted.case('case')['plugin_error_acknowledgments'], {})
 
+    def test_acknowledge_all_is_atomic_scoped_and_preserves_existing_reviews(self):
+        for i in range(25):self.add_run('error-' + str(i), status='error')
+        self.write()
+        case = {'id':'case', 'reports':[{'id':'revision'}, {'id':'empty'}]}
+        app = object.__new__(Workbench)
+        app.root = self.root.parents[2];app.state_path = app.root / 'state.json'
+        app.state = {'cases':[case], 'jobs':[]}
+        ids = [e['error_id'] for e in app.report_plugins(case, 'revision')['errored_entries']]
+        previous = {ids[0]:{'acknowledged_at':'earlier'}, 'f'*64:{'acknowledged_at':'other snapshot'}}
+        case['plugin_error_acknowledgments'] = copy.deepcopy(previous);app.save()
+        initial = {p:p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
+        with patch.object(app, 'save', side_effect=OSError('Synthetic write failure')):
+            with self.assertRaises(OSError):asyncio.run(app.acknowledge_all_plugin_errors('case', 'revision'))
+        self.assertEqual(case['plugin_error_acknowledgments'], previous)
+        self.assertEqual(json.loads(app.state_path.read_text())['cases'][0]['plugin_error_acknowledgments'], previous)
+        with patch.object(app, 'save', wraps=app.save) as save:
+            result = asyncio.run(app.acknowledge_all_plugin_errors('case', 'revision'))
+            save.assert_called_once()
+        self.assertEqual(set(result['error_ids']), set(ids))
+        self.assertEqual(len(result['error_ids']), 25, 'Bulk includes errors beyond the first inventory page')
+        saved = json.loads(app.state_path.read_text())['cases'][0]['plugin_error_acknowledgments']
+        self.assertEqual(saved, result['acknowledgments'])
+        for key, value in previous.items():self.assertEqual(saved[key], value)
+        self.assertEqual(asyncio.run(app.acknowledge_all_plugin_errors('case', 'revision'))['acknowledgments'], saved)
+        for path, content in initial.items():self.assertEqual(path.read_bytes(), content)
+        empty = self.root.parent / 'empty';empty.mkdir()
+        atomic_json(empty / 'case-manifest.json', {'case_id':'case','runs':[], 'artifacts':[], 'evidence':[]})
+        self.assertEqual(asyncio.run(app.acknowledge_all_plugin_errors('case', 'empty'))['error_ids'], [])
+        self.assertEqual(case['plugin_error_acknowledgments'], saved)
+        app.state['cases'].append({'id':'other', 'reports':[]})
+        for case_id, report_id in [('other','revision'), ('case','unknown'), ('case','../revision')]:
+            with self.assertRaises(ValueError):asyncio.run(app.acknowledge_all_plugin_errors(case_id, report_id))
+        case['reports'][0]['deleted_at'] = 'now'
+        with self.assertRaises(ValueError):asyncio.run(app.acknowledge_all_plugin_errors('case', 'revision'))
+
     def test_ambiguous_error_identity_does_not_carry_to_new_report(self):
         app = object.__new__(Workbench)
         app.directory = lambda case:self.root.parents[1]

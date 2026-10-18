@@ -13,7 +13,7 @@
     ['halloween-noir','Halloween · midnight orchard','Seasonal','#0d0b0b #1b1616 #211b1a #7e675c #f5e8db #c9b6aa #eebc8c #29180e','Bare branches, harvest light and autumn mist.','serif'],
     ['nightmare','The Nightmare Before Christmas','Seasonal','#100f18 #1d1929 #231e30 #786984 #f4eee4 #c5b8d2 #dbc69a #241c2c','A curled hill and a moonlit, crooked silhouette.','serif'],
     ['fallout','Fallout (1997)','Fallout','#151613 #20231d #25291f #77775b #efeacb #c4c5a5 #d1c991 #272816','Weathered vault steel and a desert horizon.','terminal'],
-    ['fallout-2','Fallout 2','Fallout','#101812 #1c281f #202e24 #658064 #e5eed5 #b6c8ad #c7d69a #1d2a16','Olive armor, old-world machinery and dust.','terminal'],
+    ['fallout-2','Fallout 2','Fallout','#10140e #151c12 #24291c #8d9171 #c3e9b4 #a8b896 #83ff35 #15210c','Riveted olive steel, worn brass controls and recessed phosphor screens.','terminal'],
     ['fallout-tactics','Fallout Tactics: Brotherhood of Steel','Fallout','#0c1717 #192929 #1d3030 #568077 #e3efdf #b1c9c1 #a8d4b9 #11291d','A tactical grid with connected squad markers.','terminal'],
     ['fallout-brotherhood','Fallout: Brotherhood of Steel','Fallout','#191213 #2b1e20 #302326 #8c6e67 #f4e6d6 #ceb7aa #e3b394 #321b13','Steel heraldry and a weathered crimson field.','industrial'],
     ['fallout-3','Fallout 3','Fallout','#10170e #1b2818 #20301b #698059 #e7efd5 #bbcbab #b6d695 #203016','A green wasteland and a broken capital skyline.','terminal'],

@@ -1015,17 +1015,31 @@ REPORT_SPEC follows:\n'''+spec
         if not any(e['error_id'] == error_id for e in inventory['errored_entries']):
             raise ValueError('Unknown recorded error in this report')
         # Human review metadata belongs to the case, never the sealed report.
-        previous = copy.deepcopy(case.get('plugin_error_acknowledgments', {}))
-        values = dict(previous)
+        values = dict(case.get('plugin_error_acknowledgments', {}))
         if acknowledged: values[error_id] = {'acknowledged_at':now()}
         else: values.pop(error_id, None)
+        self._save_plugin_error_acknowledgments(case, values)
+        return {'error_id':error_id, 'acknowledged':acknowledged,
+                'acknowledgments':values}
+
+    async def acknowledge_all_plugin_errors(self, case_id, report_id):
+        case = self.case(case_id)
+        inventory = await asyncio.to_thread(self.report_plugins, case, report_id)
+        error_ids = list(dict.fromkeys(e['error_id'] for e in inventory['errored_entries']))
+        values = dict(case.get('plugin_error_acknowledgments', {}))
+        timestamp = now()
+        for error_id in error_ids:
+            values.setdefault(error_id, {'acknowledged_at':timestamp})
+        self._save_plugin_error_acknowledgments(case, values)
+        return {'error_ids':error_ids, 'acknowledgments':values}
+
+    def _save_plugin_error_acknowledgments(self, case, values):
+        previous = case.get('plugin_error_acknowledgments', {})
         case['plugin_error_acknowledgments'] = values
         try:self.save()
         except Exception:
             case['plugin_error_acknowledgments'] = previous
             raise
-        return {'error_id':error_id, 'acknowledged':acknowledged,
-                'acknowledgments':values}
 
     def citations(self, case, report_id, offset=0, finding=None, index=0):
         from volatility_mcp.api import check_citation

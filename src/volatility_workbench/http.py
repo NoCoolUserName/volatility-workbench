@@ -113,6 +113,8 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/reports/determination':return app.set_human_determination(body['case_id'],body['report_id'],body.get('value'))
         if path=='/api/reports/error-acknowledgment':return await app.set_plugin_error_acknowledgment(
             body['case_id'],body['report_id'],body.get('error_id'),body.get('acknowledged'))
+        if path=='/api/reports/acknowledge-all-errors':return await app.acknowledge_all_plugin_errors(
+            body['case_id'],body['report_id'])
         if path=='/api/stop':return await app.stop()
         if path=='/api/pick':return await app.native_pick()
         if path=='/api/approval':

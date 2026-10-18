@@ -274,6 +274,9 @@ article h2:first-child {
 #humanDetermination[data-determination="Undetermined"] { color: #fff; }
 .determination-save-status { color: var(--muted); font-size: inherit; }
 .live-console-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.live-console-title { display: flex; align-items: baseline; flex: 1 1 420px; flex-wrap: wrap; gap: 0 16px; min-width: 0; }
+.live-console-title h3 { overflow-wrap: anywhere; }
+.console-operation { color: var(--status); font-size: 14px; overflow-wrap: anywhere; }
 .live-console-heading h3, .live-console-heading label { margin: 8px 0; }
 .live-console-actions { display: flex; align-items: center; gap: 16px; margin-left: auto; flex-wrap: wrap; }
 #liveConsole { height: 320px; min-height: 160px; max-height: 70vh; overflow: auto; resize: vertical; padding: 14px; border: 1px solid var(--border); background: var(--bg); color: var(--accent); font: 13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -594,3 +597,5 @@ dialog.approval pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .error-acknowledgment-progress[data-level="orange"] { color: #ffb45e; }
 .error-acknowledgment-progress[data-level="green"] { color: #7fe4a3; }
 .report-plugin-errors-table input[type="checkbox"] { width: 1.2em; height: 1.2em; accent-color: var(--accent); }
+.plugin-filters > .error-acknowledgment-filter { display: flex; align-items: center; gap: 8px; flex-basis: 100%; }
+.error-acknowledgment-filter input { width: 1.2em; height: 1.2em; accent-color: var(--accent); }

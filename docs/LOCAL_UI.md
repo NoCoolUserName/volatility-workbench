@@ -17,8 +17,10 @@ original Matrix green appearance; the three original preference values remain
 supported. Selection persists in browser/WebView local storage, and open
 same-origin tabs synchronize.
 Artwork stays in a decorative band outside opaque evidence/report surfaces.
+Fallout 2 uses a scalable CSS metal housing, compact ventilation rail, recessed
+green screens and brass controls, guided by the supplied inventory-screen reference.
 Theme changes do not submit jobs or modify cases, conversations or saved reports.
-The displayed report retains its selection stripe. See [the catalog and verified
+The displayed report retains its selection border. See [the catalog and verified
 references](THEMES.md), including the Punisher #53 artist correction.
 
 ## Launch
@@ -549,6 +551,11 @@ The console's upper-right Expand button opens a near-full-screen modal with a
 resolution-independent CSS CRT casing, recessed screen, vents and power indicator.
 It moves the existing read-only console rather than duplicating the feed. Output
 keeps updating with the same theme colors, follow state and scrolling controls.
+While expanded, the matching live job's current operation and elapsed time appear
+in amber immediately beside the console title, wrapping below it on narrow screens.
+This mirrors the existing case progress label and refresh cycle; elapsed time is
+measured from the job's start, not the current tool's start. The label clears on
+collapse, job/case-stream changes and completion, and is absent from saved consoles.
 Collapse or Escape restores the inline console and focus; background page scrolling
 is locked while expanded. The view closes when its job changes. No shell
 input or additional analysis request is introduced.
@@ -587,6 +594,15 @@ The summary shows the percentage checked across all recorded errors in the selec
 snapshot, including rows hidden by search. The percentage uses red for the first
 third, orange for the middle third, and green for the final third. Zero-error
 snapshots do not show an acknowledgment percentage.
+
+**Acknowledge all** marks every recorded error in the selected snapshot, including
+rows hidden by search or the **Hide acknowledged/resolved** filter. It saves the
+batch together and preserves earlier acknowledgment timestamps. The button disables
+while an acknowledgment is saving and when all errors are already acknowledged.
+The hide filter combines with text search and remembers its setting per snapshot
+while that snapshot is cached. Successfully acknowledged rows disappear immediately
+when the filter is on; a failed save leaves them visible. Clear the filter to see
+and uncheck reviewed rows. The heading percentage always counts the full snapshot.
 
 Acknowledgments are saved as case review metadata and survive restart and report
 updates. They follow the saved run/call identity, so a new failure from the same

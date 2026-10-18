@@ -21,7 +21,7 @@ def main():
         env = temp/'venv'; venv.EnvBuilder(with_pip=True).create(env)
         python = str(env/'bin/python')
         source=temp/'source';source.mkdir()
-        for name in ('pyproject.toml','README.md','LICENSE','THIRD_PARTY_NOTICES.md'): shutil.copy2(ROOT/name,source/name)
+        for name in ('pyproject.toml','README.md','LICENSE','THIRD_PARTY_NOTICES.md','LICENSING.md'): shutil.copy2(ROOT/name,source/name)
         shutil.copytree(ROOT/'src',source/'src',ignore=shutil.ignore_patterns('__pycache__','*.egg-info','*.pyc'))
         run(sys.executable, '-m', 'pip', 'wheel', '--no-deps', '--wheel-dir', str(temp), str(source))
         wheel = next(temp.glob('volatility_workbench-*.whl'))
@@ -32,6 +32,7 @@ def main():
 import asyncio, json, os, subprocess, sys, threading, urllib.request
 from pathlib import Path
 from importlib.resources import files
+from importlib.metadata import distribution
 from mcp import Client
 from mcp.client.stdio import StdioServerParameters
 from volatility_mcp.api import Config, report_spec, decode_result
@@ -41,6 +42,7 @@ from volatility_workbench.compatibility import require_core
 assert require_core().API_VERSION == 1
 assert 'site-packages' in str(files('volatility_mcp'))
 assert 'site-packages' in str(files('volatility_workbench'))
+assert distribution('volatility-workbench').read_text('licenses/LICENSING.md')
 assert 'Executive summary' in report_spec()
 for p in ['static/app.js','static/index.html','static/style.css','static/themes.js','static/themes.css','static/theme-halloween.svg','static/halloween-night.png','static/icon.png','static/settings.html','static/settings.js','resources/symbols.json','templates/report.md']:
     assert files('volatility_workbench').joinpath(p).read_bytes()

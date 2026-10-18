@@ -690,7 +690,14 @@ function inventorySearch(section, rows, record, field, id, title) {
   count.setAttribute("role", "status");
   const apply = () => {
     const query = search.value.trim().toLocaleLowerCase(); let shown = 0;
-    for (const row of rows) { row.hidden = !row.textContent.toLocaleLowerCase().includes(query); if (!row.hidden) shown++; }
+    const saved = state.cases.find(c => c.id === record.caseId)?.plugin_error_acknowledgments || {};
+    for (const row of rows) {
+      row.hidden = !row.textContent.toLocaleLowerCase().includes(query) ||
+        (field === "errorSearch" && record.hideAcknowledged && Object.hasOwn(saved, row.dataset.errorId));
+      if (!row.hidden) shown++;
+    }
+    empty.textContent = field === "errorSearch" && record.hideAcknowledged
+      ? "No unacknowledged errors match these filters." : "No plugin records match this search.";
     count.textContent = `Showing ${inventoryCount(shown)} of ${inventoryCount(rows.length)} ${field === "usedSearch" ? "loaded plugin records" : "recorded errors"}` +
       (field === "usedSearch" && record.nextOffset != null ? (record.error ? " · Remaining records could not be loaded." : query ? " · Searching remaining saved records…" : " · More records are available below.") : "");
     empty.hidden = shown !== 0 || (field === "usedSearch" && record.nextOffset != null && !!query);
@@ -699,9 +706,18 @@ function inventorySearch(section, rows, record, field, id, title) {
     record[field] = search.value; apply();
     if (field === "usedSearch" && search.value.trim() && record.nextOffset != null && !record.loading) loadReportPlugins(record, record.nextOffset);
   };
-  filters.append(label, search);section.append(filters, count, empty);apply();
+  filters.append(label, search);
+  if (field === "errorSearch") {
+    const hideLabel = el("label", undefined, "error-acknowledgment-filter"), hide = el("input");
+    hide.id = "hideAcknowledgedErrors"; hide.type = "checkbox"; hide.checked = !!record.hideAcknowledged;
+    hide.onchange = () => { record.hideAcknowledged = hide.checked; apply(); };
+    hideLabel.append(hide, el("span", "Hide acknowledged/resolved")); filters.append(hideLabel);
+    record.applyErrorFilters = apply;
+  }
+  section.append(filters, count, empty);apply();
 }
 const pendingErrorAcknowledgments = new Map();
+const pendingBulkAcknowledgments = new Set();
 function refreshErrorAcknowledgments(record) {
   if (!record || record.key !== reportPluginKey) return;
   const entries = record.data?.errored_entries || [];
@@ -717,12 +733,19 @@ function refreshErrorAcknowledgments(record) {
   document.querySelectorAll("input[data-error-id]").forEach(input => {
     const key = record.caseId + ":" + input.dataset.errorId;
     input.checked = pendingErrorAcknowledgments.has(key) ? pendingErrorAcknowledgments.get(key) : Object.hasOwn(saved, input.dataset.errorId);
-    input.disabled = record.loading || pendingErrorAcknowledgments.has(key);
+    input.disabled = record.loading || pendingErrorAcknowledgments.has(key) || pendingBulkAcknowledgments.has(record.caseId);
   });
+  const bulk = $("acknowledgeAllErrors");
+  if (bulk) {
+    bulk.disabled = record.loading || count === entries.length || pendingBulkAcknowledgments.has(record.caseId) ||
+      [...pendingErrorAcknowledgments.keys()].some(key => key.startsWith(record.caseId + ":"));
+    bulk.textContent = pendingBulkAcknowledgments.has(record.caseId) ? "Acknowledging all…" : "Acknowledge all";
+  }
+  record.applyErrorFilters?.();
 }
 async function saveErrorAcknowledgment(record, entry, checked) {
   const key = record.caseId + ":" + entry.error_id;
-  if (pendingErrorAcknowledgments.has(key)) return;
+  if (record.key !== reportPluginKey || selected !== record.caseId || pendingBulkAcknowledgments.has(record.caseId) || pendingErrorAcknowledgments.has(key)) return;
   pendingErrorAcknowledgments.set(key, checked);
   record.acknowledgmentStatus = "Saving acknowledgment…";
   refreshErrorAcknowledgments(record);
@@ -740,6 +763,30 @@ async function saveErrorAcknowledgment(record, entry, checked) {
     record.acknowledgmentStatus = "Acknowledgment was not saved: " + (error.message || String(error));
   } finally {
     pendingErrorAcknowledgments.delete(key);
+    const current = reportPluginCache.get(reportPluginKey);
+    refreshErrorAcknowledgments(current);
+    if (current === record && $("errorAcknowledgmentStatus")) $("errorAcknowledgmentStatus").textContent = record.acknowledgmentStatus;
+  }
+}
+async function acknowledgeAllErrors(record) {
+  if (record.key !== reportPluginKey || selected !== record.caseId || record.loading || pendingBulkAcknowledgments.has(record.caseId) ||
+      [...pendingErrorAcknowledgments.keys()].some(key => key.startsWith(record.caseId + ":"))) return;
+  pendingBulkAcknowledgments.add(record.caseId);
+  record.acknowledgmentStatus = "Saving all acknowledgments…";
+  refreshErrorAcknowledgments(record);
+  $("errorAcknowledgmentStatus").textContent = record.acknowledgmentStatus;
+  try {
+    const result = await api("reports/acknowledge-all-errors", {case_id:record.caseId, report_id:record.reportId});
+    const c = state.cases.find(c => c.id === record.caseId);
+    if (c) {
+      c.plugin_error_acknowledgments ||= {};
+      for (const id of result.error_ids) c.plugin_error_acknowledgments[id] = result.acknowledgments[id];
+    }
+    record.acknowledgmentStatus = "All recorded errors acknowledged/resolved.";
+  } catch (error) {
+    record.acknowledgmentStatus = "Acknowledgments were not saved: " + (error.message || String(error));
+  } finally {
+    pendingBulkAcknowledgments.delete(record.caseId);
     const current = reportPluginCache.get(reportPluginKey);
     refreshErrorAcknowledgments(current);
     if (current === record && $("errorAcknowledgmentStatus")) $("errorAcknowledgmentStatus").textContent = record.acknowledgmentStatus;
@@ -868,11 +915,16 @@ function renderReportPlugins(record) {
     const retryStatus = el("p", "", "subtle"); retryStatus.id = "failedPluginPromptStatus"; retryStatus.setAttribute("role", "status");
     errors.append(retryAll, retryStatus);
     errors.append(el("p", "Acknowledgments carry forward for the same saved error. New errors start unchecked. Checking a row records your review; the original failure remains in the report.", "subtle"));
+    const acknowledgeAll = el("button", "Acknowledge all");
+    acknowledgeAll.id = "acknowledgeAllErrors"; acknowledgeAll.type = "button";
+    acknowledgeAll.onclick = () => acknowledgeAllErrors(record);
+    errors.append(acknowledgeAll);
     const acknowledgmentStatus = el("p", record.acknowledgmentStatus || "", "subtle");
     acknowledgmentStatus.id = "errorAcknowledgmentStatus"; acknowledgmentStatus.setAttribute("role", "status");
     errors.append(acknowledgmentStatus);
     const rows = errorEntries.map((entry, index) => {
       const row = el("tr"), outcome = el("td");
+      if (entry.error_id) row.dataset.errorId = entry.error_id;
       const action = el("td"), retry = el("button", "Add to prompt"); retry.type = "button";
       retry.dataset.retryIndex = String(index);
       retry.setAttribute("aria-label", "Add failed request " + (entry.plugin || "with unrecorded plugin") + " (" + (entry.call_id || entry.run_id || index + 1) + ") to investigation prompt");
@@ -906,7 +958,7 @@ function renderReportPlugins(record) {
       return row;
     });
     inventorySearch(errors, rows, record, "errorSearch", "erroredPluginSearch", "Search plugins that errored");
-    errors.append(el("p", "Search changes the displayed rows. Add all failed requests still includes all recorded errors.", "subtle"));
+    errors.append(el("p", "Filters change the displayed rows. Acknowledge all and Add all failed requests include all recorded errors in this snapshot.", "subtle"));
     errors.append(inventoryTable(["Plugin", "Add to prompt", "Acknowledged / Resolved", "Quick Description", "Image", "Recorded error", "Run provenance", "Source provenance"], rows,
       "Saved plugin errors for report " + record.reportId, "report-plugin-table report-plugin-errors-table"));
   }
@@ -1223,8 +1275,16 @@ function markSelectedReport(versionId) {
     else button.removeAttribute("aria-current");
   }
 }
+function operationLabel(job, now = Date.now()) {
+  if (!job || job.kind === "readiness" || !["running", "stopping"].includes(job.status)) return "";
+  const started = timestampMillis(job.started_at);
+  return readableTime(job.progress || job.kind) +
+    (Number.isFinite(started) ? " · " + Math.floor((now - started) / 1000) + "s elapsed" : "") +
+    (job.status === "stopping" ? " · stopping…" : "");
+}
 function render() {
   if (!state) return;
+  const renderedAt = Date.now();
   const connectedProvider = state.account.provider || (state.account.type ? "codex" : state.default_provider);
   $("connection").textContent = state.account.connected
     ? (connectedProvider === "compatible"
@@ -1311,13 +1371,7 @@ function render() {
     const running = state.jobs.find(
       (j) => j.case_id === c.id && ["running", "stopping"].includes(j.status),
     );
-    $("operation").textContent = running && running.kind !== "readiness"
-      ? readableTime(running.progress || running.kind) +
-        " · " +
-        Math.floor((Date.now() - timestampMillis(running.started_at)) / 1000) +
-        "s elapsed" +
-        (running.status === "stopping" ? " · stopping…" : "")
-      : "";
+    $("operation").textContent = operationLabel(running, renderedAt);
     const versions = $("versions");
     const visibleReports = c.reports.filter((r) => !r.hidden && !r.deleted_at);
     const versionsKey = JSON.stringify([c.id, visibleReports]);
@@ -1414,7 +1468,7 @@ function render() {
     }));
     shownQueue = queueKey;
   }
-  renderLiveConsole(stream);
+  renderLiveConsole(stream, renderedAt);
   renderReportFailure(c);
   updateBackToTop();
 }
@@ -1471,10 +1525,20 @@ function consoleForView() {
   }
   return savedConsoleCache.get(key);
 }
-function renderLiveConsole(stream) {
+function renderConsoleOperation(stream, now = Date.now()) {
+  const label = $("consoleOperation");
+  // The global live stream can belong to a different case than the selected one.
+  const job = $("consoleZoom").open && stream &&
+    (!stream.status || ["running", "stopping"].includes(stream.status))
+    ? state.jobs.find(j => j.id === stream.job_id && j.case_id === stream.case_id) : null;
+  label.textContent = operationLabel(job, now);
+  label.hidden = !label.textContent;
+}
+function renderLiveConsole(stream, now = Date.now()) {
   currentConsole = stream;
   const pre = $("liveConsole");
   if ($("consoleZoom").open && (!stream || stream.job_id !== consoleJob)) $("consoleZoom").close();
+  renderConsoleOperation(stream, now);
   $("liveConsoleSection").hidden = !stream;
   if (!stream) { consoleJob = null; consoleNodes.clear(); pre.replaceChildren(); return; }
   const follow = $("consoleFollow");
@@ -1529,6 +1593,7 @@ function resizeConsoleView(expanded) {
     if (consolePagePosition !== null) window.scrollTo({top:consolePagePosition, behavior:"instant"});
     consolePagePosition = null;
   }
+  renderConsoleOperation(currentConsole);
   pre.scrollTop = follow ? pre.scrollHeight : top;
   $("consoleFollow").checked = follow;
   if (currentConsole) button.focus({preventScroll:true});
