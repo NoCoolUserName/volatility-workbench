@@ -52,11 +52,17 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.equal(await page.locator('.eyebrow').textContent(),'LOCAL MEMORY FORENSICS · EXPERIMENTAL');
     assert.equal(await page.locator('header h1').evaluate(e=>getComputedStyle(e).fontSize),'29px');
     assert.equal(await page.locator('#reportView h1').evaluate(e=>getComputedStyle(e).fontSize),'25px');
-    const plugins=await page.locator('#openPlugins').boundingBox(),theme=await page.locator('.theme-control').boundingBox();
-    assert.ok(theme.x>=plugins.x+plugins.width && Math.abs(theme.y-plugins.y)<10,'Theme must be to right of Plugins');
+    const plugins=await page.locator('#openPlugins').boundingBox(),theme=await page.locator('#theme').boundingBox();
+    const settings=await page.getByRole('link',{name:'Settings',exact:true}).boundingBox();
+    const connection=await page.locator('#connection').boundingBox(),stop=await page.locator('#stop').boundingBox();
+    assert.ok(theme.x>=plugins.x+plugins.width && Math.abs(theme.y-plugins.y)<2,'Theme dropdown must align with the top of Plugins');
+    assert.ok(settings.y>=theme.y+theme.height && Math.abs(settings.x+settings.width-theme.x-theme.width)<2,'Settings must sit below the Theme dropdown');
+    assert.ok(stop.y>=connection.y+connection.height,'Stop must sit below the connection status');
+    assert.equal(await page.locator('#stop').isDisabled(),true,'Idle Stop must be disabled');
     await control.click();
     await page.waitForFunction(()=>document.querySelector('#readiness').textContent==='Queued…');
     assert.equal(await control.isDisabled(),true);
+    assert.equal(await page.locator('#stop').isEnabled(),true,'Queued work can be stopped');
     assert.equal(requests.length,1);
     const job=state.jobs[0];
     job.status='running';job.started_at=new Date().toISOString();
@@ -71,10 +77,15 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     await page.reload();
     await page.waitForFunction(()=>document.querySelector('#readiness').textContent==='Checking…');
     assert.equal(requests.length,1,'Reconnect must not submit another check');
+    job.status='stopping';
+    await page.waitForFunction(()=>document.querySelector('#readiness').textContent==='Stopping…');
+    assert.equal(await page.locator('#stop').isDisabled(),true,'Already stopping work must disable Stop');
     job.status='completed';
-    state.cases[0].readiness={status:'Ready',checked_at:'2026-10-18T12:00:00Z',reasons:['Synthetic readiness fixture']};
+    state.cases[0].readiness={status:'Ready',checked_at:'2026-10-18T12:00:00Z',reasons:['Synthetic readiness fixture','Ready means ready to attempt analysis; plugin compatibility and forensic conclusions still require review.']};
     await page.waitForFunction(()=>document.querySelector('#readiness').textContent==='Ready');
     assert.equal(await control.isEnabled(),true);
+    assert.equal(await page.locator('#stop').isDisabled(),true,'Completed work must disable Stop');
+    assert.doesNotMatch(await page.locator('#reasons').innerText(),/Ready means ready to attempt analysis/);
     assert.match(await page.locator('#readyDetails').innerText(),/Last checked .* image access and SHA-256 verified then/);
     for(const theme of ['matrix','mono','blue']){
       await page.locator('#theme').selectOption(theme);
@@ -106,6 +117,6 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.equal(calls.filter(x=>x==='/api/jobs').length,2);
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-    console.log('Case header: combined check/progress/Ready/recheck/failure/reconnect, fixed green across themes, header/mobile layout, report coin retained; two simulated readiness requests, zero real analysis.');
+    console.log('Case header: Theme/Settings and connection/Stop alignment, idle/queued/completed Stop state, hidden legacy readiness sentence, check/progress/Ready/recheck/failure/reconnect, fixed green across themes, mobile layout; two simulated readiness requests, zero real analysis.');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

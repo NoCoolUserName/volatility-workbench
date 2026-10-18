@@ -429,8 +429,7 @@ class Workbench:
                         reasons.append(probe['plugin']+': '+probe['status']+'; '+probe.get('error_preview','')[:600])
             if catalog.get('import_failures'):
                 reasons.append('Some installed plugins could not be imported; inspect the catalog.')
-        reasons.append('Ready means ready to attempt analysis; plugin compatibility and forensic conclusions still require review.')
-        case['readiness']={'status':'Ready with limitations' if len(reasons)>1 else 'Ready','reasons':reasons,'checked_at':now()}
+        case['readiness']={'status':'Ready with limitations' if reasons else 'Ready','reasons':reasons,'checked_at':now()}
         self.event(case,'readiness',case['readiness'])
 
     def thread_config(self,case):
