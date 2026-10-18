@@ -28,9 +28,10 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   await page.route('**/*',async route=>{
    const u=new URL(route.request().url());assert.equal(u.origin,'http://localhost');assert.equal(route.request().method(),'GET','Inventory never starts work');calls.push(u.pathname+u.search);
    if(u.pathname==='/api/state')return route.fulfill({json:state});
-   if(u.pathname==='/api/plugins')return route.fulfill({json:{total:3,plugins:[
+   if(u.pathname==='/api/plugins')return route.fulfill({json:{total:4,plugins:[
     {name:'windows.synthetic.Plugin4',description:'Lists synthetic processes.'},
     {name:'windows.synthetic.NotUsed',description:'Shows a harmless unused fixture.'},
+    {name:'windows.synthetic.NotUsed2',description:'Checks another synthetic fixture.'},
     {name:'windows.synthetic.Plugin5',description:'Describes another saved run.'}],import_failures:[]}});
    if(u.pathname==='/api/artifacts')return route.fulfill({json:{files:[],truncated:false}});
    if(u.pathname==='/api/file')return route.fulfill({json:{text:u.searchParams.get('path').endsWith('manifest.json')?'{"synthetic":"manifest only"}':'# Synthetic report\n## Investigative workflow\n<!-- report-plugin-inventory -->\nDuplicate generated inventory text\n<!-- /report-plugin-inventory -->\n## Observation\nHarmless fixture only.',size:128,next_offset:128,truncated:false}});
@@ -55,10 +56,23 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.match(await inventory.locator('.report-plugin-errors-table').innerText(),/failed.*No plugin execution recorded/s);
   await inventory.locator('> details').nth(2).locator('> summary').click();
   await page.waitForFunction(()=>document.querySelector('.report-plugin-unused-table')?.textContent.includes('Shows a harmless unused fixture.'));
-  assert.deepEqual(await inventory.locator('.report-plugin-unused-table thead th').allTextContents(),['Plugin name','Quick Description']);
+  assert.deepEqual(await inventory.locator('.report-plugin-unused-table thead th').allTextContents(),['Plugin name','Add to prompt','Quick Description']);
   assert.match(await inventory.locator('.report-plugin-unused-table').innerText(),/windows\.synthetic\.NotUsed.*Shows a harmless unused fixture/s);
   assert.equal(await inventory.locator('> details').nth(2).getAttribute('open'),'','Catalog response preserves the expanded section');
   assert.doesNotMatch(await inventory.locator('.report-plugin-unused-table').innerText(),/windows\.synthetic\.Plugin4/);
+  const focus=page.locator('#focus');
+  await focus.fill('Investigate persistence.');
+  const add=inventory.locator('.report-plugin-unused-table tbody button');
+  assert.equal(await add.count(),2);
+  await add.first().click();
+  assert.match(await focus.inputValue(),/^Investigate persistence\.\nAttempt Volatility plugin `windows\.synthetic\.NotUsed`/);
+  await add.first().click();
+  assert.equal((await focus.inputValue()).split('windows.synthetic.NotUsed`').length-1,1,'A repeated click does not duplicate the request');
+  await add.nth(1).click();
+  assert.match(await focus.inputValue(),/windows\.synthetic\.NotUsed2`/);
+  assert.ok(await focus.evaluate(node=>node.clientHeight>=node.scrollHeight-2),'Short multi-plugin drafts are fully visible');
+  assert.equal(calls.filter(x=>x.startsWith('/api/jobs')).length,0,'Adding to the prompt never submits work');
+  if(process.env.WORKBENCH_REPORT_PLUGIN_UNUSED_SCREENSHOT)await page.screenshot({path:process.env.WORKBENCH_REPORT_PLUGIN_UNUSED_SCREENSHOT,fullPage:true});
   await inventory.locator('> details').nth(1).locator('> summary').click();
   await inventory.locator('> details').nth(2).locator('> summary').click();
   await inventory.locator('> details > summary').first().focus();await page.keyboard.press('Space');
@@ -110,8 +124,10 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.ok(delayedRelease);delayedRelease();await page.waitForTimeout(100);
   assert.doesNotMatch(await inventory.innerText(),/delayed-plugin/,'Stale reply never replaces current report');
   await page.getByRole('button',{name:'Synthetic B',exact:true}).click();
+  assert.equal(await focus.inputValue(),'','Focus drafts stay with their case');
   await page.waitForFunction(()=>document.querySelector('#reportPluginInventory tbody')?.textContent.includes('other-plugin'));
   await page.getByRole('button',{name:'Synthetic A',exact:true}).click();assert.equal(await table.locator('tr').count(),21);
+  assert.match(await focus.inputValue(),/Investigate persistence.*NotUsed2`/s);
   assert.equal(await page.locator('.report-version.selected').getAttribute('data-report-id'),'current');
   failCurrent=true;await inventory.getByRole('button',{name:'Refresh saved inventory'}).click();
   await page.waitForFunction(()=>document.querySelector('#reportPluginInventory [role=alert]'));
@@ -134,6 +150,6 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   await page.waitForFunction(()=>document.querySelector('#artifactView').textContent.includes('manifest only'));
   assert.ok(calls.some(x=>x.startsWith('/api/file?')&&decodeURIComponent(x).includes('reports/current/artifacts/C-synthetic/manifest.json')));
   assert.deepEqual(errors,[]);assert.deepEqual(policies,[]);assert.equal(await page.evaluate(()=>window.injected),undefined);
-  console.log('Report plugins browser: counts/scope, runs/reuse/denied, exact hostile/huge args, paging, polling cache, legacy/partial/retry, report/case/stale races, local manifest, keyboard/mobile, 31 themes passed; only synthetic local GETs.');
+  console.log('Report plugins browser: counts/scope, errors/unused, descriptions/timing/details, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, 31 themes passed; only synthetic local GETs.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

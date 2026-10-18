@@ -352,7 +352,12 @@ Pages keep large inventories manageable.
 Below the used records, **Plugins that errored** lists saved failed runs and failed
 or denied requests, distinguishing requests that never executed a plugin. **Plugins
 not used** compares the current installed catalog with the full snapshot's recorded
-physical executions and shows each remaining plugin with its quick description.
+physical executions and shows each remaining plugin with an **Add to prompt** button
+and quick description. The button appends a request for that plugin to the current
+case's investigation focus without starting work. Review the accumulated focus and
+choose **Update report** when ready; that action creates the new report version.
+The focus box is multiline and vertically resizable for reviewing several requested plugins. Focus
+drafts stay separate when switching cases during the app session.
 The comparison uses all bundled records even when the used table displays one page.
 Catalog changes or partial historical metadata can affect this comparison; it is
 not a statement of image compatibility or forensic coverage. Catalog discovery

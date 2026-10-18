@@ -73,10 +73,21 @@ function act(fn) {
   };
 }
 let activeView = "case", pluginCatalog = null, pluginsLoading = false;
+const focusDrafts = new Map();
+function sizeFocus() {
+  const focus = $("focus");
+  focus.style.height = "";
+  focus.style.height = Math.min(Math.max(focus.scrollHeight, focus.offsetHeight), 320) + "px";
+}
 let submittingReadiness = false;
 let selectedPluginSources = new Set(), allPluginSourcesSelected = true, availablePluginSources = [];
 function choose(id, activate = true) {
   if (activate) activeView = "case";
+  if (id !== selected) {
+    if (selected) focusDrafts.set(selected, $("focus").value);
+    $("focus").value = focusDrafts.get(id) || "";
+    sizeFocus();
+  }
   selected = id;
   selectedVersion = null;
   shownReport = "";
@@ -376,6 +387,19 @@ function pluginSpeed(entry) {
   }
   return parts.join(" ");
 }
+function addPluginToFocus(name, record) {
+  if (reportPluginKey !== record.key || selected !== record.caseId) return;
+  const focus = $("focus");
+  const instruction = `Attempt Volatility plugin \`${name}\` on applicable evidence, record its result or failure, and include that in the updated report.`;
+  const current = focus.value.trim();
+  const next = current.includes(instruction) ? current : current ? current + "\n" + instruction : instruction;
+  if (next.length > 20000) { error(Error("The investigation focus is full. Shorten it before adding another plugin.")); return; }
+  focus.value = next;
+  focusDrafts.set(record.caseId, next);
+  sizeFocus();
+  focus.focus();
+  focus.setSelectionRange(next.length, next.length);
+}
 function inventoryTable(headings, rows, caption, className = "report-plugin-table") {
   const region = el("div", undefined, "report-plugin-scroll");
   region.tabIndex = 0; region.setAttribute("role", "region");
@@ -528,9 +552,14 @@ function renderReportPlugins(record) {
     unused.append(el("p", "Current installed catalog minus plugins with a recorded physical execution in this report snapshot. This does not establish forensic coverage or image compatibility." +
       (data.source_status === "partial" ? " Saved metadata is partial, so this list may include plugins that ran." : ""), "subtle"));
     const rows = unusedPlugins.map(plugin => {
-      const row = el("tr"); row.append(el("td", plugin.name), el("td", plugin.description || "No description provided in the installed catalog.")); return row;
+      const row = el("tr"), action = el("td"), add = el("button", "Add to prompt");
+      add.type = "button";
+      add.setAttribute("aria-label", "Add " + plugin.name + " to investigation prompt");
+      add.onclick = () => addPluginToFocus(plugin.name, record);
+      action.append(add);
+      row.append(el("td", plugin.name), action, el("td", plugin.description || "No description provided in the installed catalog.")); return row;
     });
-    if (rows.length) unused.append(inventoryTable(["Plugin name", "Quick Description"], rows,
+    if (rows.length) unused.append(inventoryTable(["Plugin name", "Add to prompt", "Quick Description"], rows,
       "Installed plugins without a recorded execution in report " + record.reportId, "report-plugin-table report-plugin-unused-table"));
     else unused.append(el("p", "Every currently installed plugin has a recorded physical execution in this snapshot."));
   }
@@ -1188,6 +1217,10 @@ $("readiness").onclick = act(async () => {
 });
 $("report").onclick = act(() => job("report", $("focus").value));
 $("update").onclick = act(() => job("update", $("focus").value));
+$("focus").oninput = () => {
+  if (selected) focusDrafts.set(selected, $("focus").value);
+  if ($("focus").scrollHeight > $("focus").clientHeight) sizeFocus();
+};
 $("stop").onclick = act(async () => {
   await api("stop", {});
   await refresh();
