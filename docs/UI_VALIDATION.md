@@ -437,3 +437,17 @@ reader returned its saved Markdown. Coverage returned saved attempts for both
 images with no migration-related issues; one preexisting unsupported XP result
 remained unparseable and was not treated as empty. The old path was absent before
 and after launch. No Volatility command or investigation job was started.
+
+## Installed-plugin catalog — October 17, 2026
+
+- Full Python suite: 38 tests passed, including real authenticated catalog HTTP,
+  explicit refresh, unchanged case-state bytes, and zero analysis/image-hashing/model calls.
+- Chromium checks: global view with/without cases, case and tab preservation,
+  state polling without rediscovery, search and OS/source filters, source links,
+  literal untrusted descriptions, stale/empty inventories, and 390px mobile layout.
+- Repeat the optional browser check with Playwright and Chromium available:
+  `node scripts/check_plugins_browser.cjs`. The check intercepts every request and
+  uses synthetic data; it requires no memory acquisition or model credentials.
+  Playwright is a development-only tool, not an application dependency.
+- Real Volatility 3 framework 2.28.2 discovery was separately exercised in core.
+  This does not establish compatibility with any particular memory image.

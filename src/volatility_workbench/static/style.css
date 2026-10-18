@@ -406,3 +406,18 @@ footer {
 #coinZoom[open] { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
 #coinZoom img { width: min(85vw, 80vh, 1000px); height: min(85vw, 80vh, 1000px); object-fit: contain; }
 #coinZoom p { margin: 0; text-align: center; font-size: 13px; }
+
+.plugin-nav { margin-top: 18px; }
+.plugin-filters { display: flex; flex-wrap: wrap; gap: 16px; }
+.plugin-filters label:first-child { flex: 1 1 220px; }
+.plugin-filters select { display: block; width: 100%; }
+.plugin-table { border-collapse: collapse; table-layout: fixed; width: 100%; }
+.plugin-table caption { text-align: left; margin-bottom: 12px; }
+.plugin-table th, .plugin-table td { padding: 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.plugin-table th:first-child { width: 65%; }
+.plugin-table th { color: var(--muted); font-size: 12px; }
+.plugin-table details { margin: 0; }
+.plugin-table summary { font-size: 13px; }
+.plugin-table p { margin-bottom: 0; white-space: pre-wrap; }
+#pluginError { color: var(--error-text); }
+button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }

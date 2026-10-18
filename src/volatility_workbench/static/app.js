@@ -81,7 +81,9 @@ function act(fn) {
     }
   };
 }
-function choose(id) {
+let activeView = "case", pluginCatalog = null, pluginsLoading = false;
+function choose(id, activate = true) {
+  if (activate) activeView = "case";
   selected = id;
   selectedVersion = null;
   shownReport = "";
@@ -318,14 +320,17 @@ function render() {
     const b = el(
       "button",
       c.title,
-      "case-button" + (c.id === selected ? " selected" : ""),
+      "case-button" + (c.id === selected && activeView === "case" ? " selected" : ""),
     );
     b.onclick = () => choose(c.id);
     cases.append(b);
   }
   const c = caseNow();
-  $("empty").hidden = !!c;
-  $("case").hidden = !c;
+  $("plugins").hidden = activeView !== "plugins";
+  $("openPlugins").classList.toggle("selected", activeView === "plugins");
+  $("openPlugins").setAttribute("aria-pressed", String(activeView === "plugins"));
+  $("empty").hidden = !!c || activeView === "plugins";
+  $("case").hidden = !c || activeView === "plugins";
   if (c) {
     $("caseTitle").textContent = c.title;
     $("ready").textContent = c.readiness.status;
@@ -691,7 +696,7 @@ async function browse(path = "") {
 }
 async function refresh() {
   state = await api("state");
-  if (!caseNow()) choose(orderedCases()[0]?.id || null);
+  if (!caseNow()) choose(orderedCases()[0]?.id || null, false);
   else render();
 }
 $("add").onclick = act(async () => {
@@ -741,3 +746,77 @@ document
     error(e);
   }
 })();
+
+function renderPlugins() {
+  if (!pluginCatalog) return;
+  const query = $("pluginSearch").value.trim().toLowerCase();
+  const os = $("pluginOS").value, sourceKind = $("pluginSource").value;
+  const plugins = pluginCatalog.plugins.filter(p => {
+    const source = p.source || {};
+    const text = [p.name, p.description, source.label].join(" ").toLowerCase();
+    return text.includes(query) && (!os || (p.target_os || "other") === os) &&
+      (!sourceKind || (source.kind || "unknown") === sourceKind);
+  }).sort((a, b) => a.name.localeCompare(b.name));
+  const rows = plugins.map(p => {
+    const row = el("tr"), name = el("td"), cell = el("td"), details = el("details");
+    const summary = el("summary"); summary.append(el("code", p.name));
+    const source = p.source || {label: "Source unknown", basis: "Source metadata unavailable."};
+    details.append(summary, el("p", p.description || "No description provided."),
+      el("p", "Version: " + (Array.isArray(p.plugin_version) ? p.plugin_version.join(".") : "Unknown"), "subtle"),
+      el("p", source.basis || "Source attribution is unavailable.", "subtle"));
+    if (p.compatibility_note) details.append(el("p", p.compatibility_note, "subtle"));
+    name.append(details);
+    let url;
+    try { url = new URL(source.url); } catch { /* unknown source remains plain text */ }
+    if (url?.protocol === "https:" && !url.username && !url.password) {
+      const link = el("a", source.label || "Source unknown");
+      link.href = url.href; link.target = "_blank"; link.rel = "noopener noreferrer";
+      cell.append(link);
+    } else cell.textContent = source.label || "Source unknown";
+    row.append(name, cell); return row;
+  });
+  if (!rows.length) {
+    const row = el("tr"), cell = el("td", pluginCatalog.plugins.length ? "No plugins match these filters." : "No plugins were discovered.");
+    cell.colSpan = 2; row.append(cell); rows.push(row);
+  }
+  $("pluginRows").replaceChildren(...rows);
+  $("pluginCount").textContent = `${plugins.length} shown · ${pluginCatalog.total} discovered`;
+  const failures = pluginCatalog.import_failures || [];
+  $("pluginFailures").hidden = !failures.length;
+  $("pluginFailureSummary").textContent = `${failures.length} plugin import failure(s)`;
+  $("pluginFailureList").replaceChildren(...failures.map(f => el("li", typeof f === "string" ? f : JSON.stringify(f))));
+}
+async function loadPlugins(force = false) {
+  if (pluginsLoading) return;
+  if (pluginCatalog && !force) { renderPlugins(); return; }
+  pluginsLoading = true;
+  $("refreshPlugins").disabled = true;
+  $("pluginError").hidden = true;
+  $("pluginStatus").textContent = "Discovering installed plugins…";
+  try {
+    const catalog = await api("plugins" + (force ? "?refresh=1" : ""));
+    if (!Array.isArray(catalog.plugins)) throw Error("The server returned an invalid plugin inventory.");
+    pluginCatalog = catalog;
+    $("openPlugins").textContent = `Plugins · ${catalog.total}`;
+    $("pluginStatus").textContent = `Volatility ${catalog.volatility_version} · Host ${catalog.architecture}` +
+      (catalog.discovered_at ? " · Checked " + readableTime(catalog.discovered_at) : "");
+    renderPlugins();
+  } catch (e) {
+    $("pluginStatus").textContent = pluginCatalog ? "Showing the previous inventory; refresh failed." : "Inventory unavailable.";
+    $("pluginError").textContent = e.message;
+    $("pluginError").hidden = false;
+  } finally {
+    pluginsLoading = false;
+    $("refreshPlugins").disabled = false;
+  }
+}
+$("openPlugins").onclick = () => {
+  activeView = "plugins"; render(); $("pluginsTitle").focus(); loadPlugins();
+};
+$("closePlugins").onclick = () => {
+  activeView = "case"; render(); $("openPlugins").focus();
+};
+$("refreshPlugins").onclick = () => loadPlugins(true);
+$("pluginSearch").oninput = renderPlugins;
+$("pluginOS").onchange = renderPlugins;
+$("pluginSource").onchange = renderPlugins;

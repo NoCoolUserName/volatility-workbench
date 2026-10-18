@@ -264,3 +264,21 @@ Refresh reads saved data only. Orchestration jobs are separate from plugin outco
 New reports include a coverage snapshot and limitations summary; old reports are
 unchanged. See [COVERAGE_EVALUATION.md](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COVERAGE_EVALUATION.md). Restart only an idle
 Workbench to load the new tool inventory, case guidance and view.
+
+## Installed plugins
+
+The **Plugins** button below Cases opens a global catalog in the main pane, even
+when no case is registered. It lists the configured analyzer's discovered plugins
+in two columns: exact plugin name and source. Search names/descriptions/sources,
+filter by OS or source type, and expand a name for description, version, provenance
+basis, and compatibility notes. Known source labels link to the upstream project.
+Back to case restores the selected case and report tab. Background state polling
+does not close the catalog, reset filters, or repeat discovery.
+
+`GET /api/plugins` uses the supported core `list_plugins` API behind MCP. Refresh
+uses `GET /api/plugins?refresh=1`. Both require the existing local session and never
+submit jobs, hash images, analyze memory, or connect to Codex. Import failures are
+shown separately; a failed refresh retains and explicitly labels the old inventory.
+Discovery success is not proof of image compatibility. Source unknown is explicit;
+`installed_volatility` alone does not mean Native. See the authoritative
+[core source contract](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/PUBLIC_API.md#plugin-catalog).

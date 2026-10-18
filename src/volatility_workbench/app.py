@@ -73,6 +73,10 @@ class Workbench:
     def save(self):
         atomic_json(self.state_path, self.state)
 
+    async def plugin_catalog(self, refresh=False):
+        """Same core discovery API as MCP list_plugins; independent of any case/model."""
+        return await asyncio.to_thread(self.backend.list_plugins, '', refresh)
+
     def case(self, ident):
         return next(c for c in self.state['cases'] if c['id']==ident)
 

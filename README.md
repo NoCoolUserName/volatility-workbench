@@ -2,7 +2,7 @@
 
 A local browser application for existing memory acquisitions: case navigation,
 sequential jobs, a case conversation, report exploration, saved evidence, coverage,
-and decorative image coins. It uses the separately maintained
+a searchable installed-plugin catalog, and decorative image coins. It uses the separately maintained
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp) core; there is one
 implementation of execution, integrity, result reuse, artifact inspection, queries,
 references, citation validation and forensic coverage.

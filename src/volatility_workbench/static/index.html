@@ -36,6 +36,7 @@
       <aside>
         <h2>Cases</h2>
         <div id="cases"></div>
+        <button id="openPlugins" class="case-button plugin-nav" aria-controls="plugins" aria-pressed="false">Plugins</button>
         <details>
           <summary>Add evidence</summary>
           <p>
@@ -64,6 +65,27 @@
         <p id="root" class="subtle"></p>
       </aside>
       <main>
+        <section id="plugins" aria-labelledby="pluginsTitle" hidden>
+          <div class="case-heading">
+            <h2 id="pluginsTitle" tabindex="-1">Installed plugins</h2>
+            <div class="buttons"><button id="closePlugins">Back to case</button><button id="refreshPlugins">Refresh</button></div>
+          </div>
+          <p class="subtle">Plugins discovered in the configured Volatility environment. Image support depends on its OS, symbols, and available memory.</p>
+          <p id="pluginStatus" role="status" aria-live="polite"></p>
+          <p id="pluginError" role="alert" hidden></p>
+          <div class="plugin-filters">
+            <label>Search plugins<input id="pluginSearch" type="search" placeholder="Name, description, or source" /></label>
+            <label>Operating system<select id="pluginOS"><option value="">All</option><option value="windows">Windows</option><option value="linux">Linux</option><option value="mac">macOS</option><option value="other">Other / general</option></select></label>
+            <label>Source<select id="pluginSource"><option value="">All</option><option value="native">Native</option><option value="third_party">Third party</option><option value="local">Local addon</option><option value="unknown">Unknown</option></select></label>
+          </div>
+          <p id="pluginCount" class="subtle" aria-live="polite"></p>
+          <details id="pluginFailures" hidden><summary id="pluginFailureSummary"></summary><ul id="pluginFailureList"></ul></details>
+          <table class="plugin-table">
+            <caption class="subtle">Expand a plugin name for its description, version, and source details.</caption>
+            <thead><tr><th scope="col">Plugin</th><th scope="col">Source</th></tr></thead>
+            <tbody id="pluginRows"></tbody>
+          </table>
+        </section>
         <div id="empty">
           <h2>Start with evidence.</h2>
           <p>
