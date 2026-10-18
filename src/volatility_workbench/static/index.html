@@ -76,13 +76,12 @@
           <div class="plugin-filters">
             <label>Search plugins<input id="pluginSearch" type="search" placeholder="Name, description, or source" /></label>
             <label>Operating system<select id="pluginOS"><option value="">All</option><option value="windows">Windows</option><option value="linux">Linux</option><option value="mac">macOS</option><option value="other">Other / general</option></select></label>
-            <label>Source<select id="pluginSource"><option value="">All</option><option value="native">Native</option><option value="third_party">Third party</option><option value="local">Local addon</option><option value="unknown">Unknown</option></select></label>
           </div>
           <p id="pluginCount" class="subtle" aria-live="polite"></p>
           <details id="pluginFailures" hidden><summary id="pluginFailureSummary"></summary><ul id="pluginFailureList"></ul></details>
           <table class="plugin-table">
             <caption class="subtle">Expand a plugin name for its description, version, and source details.</caption>
-            <thead><tr><th scope="col">Plugin</th><th scope="col">Source</th></tr></thead>
+            <thead><tr><th scope="col">Plugin</th><th scope="col"><details id="pluginSource" class="plugin-source-filter"><summary>Source</summary><div id="pluginSourceOptions" class="plugin-source-options" role="group" aria-label="Filter by plugin source"></div></details></th></tr></thead>
             <tbody id="pluginRows"></tbody>
           </table>
         </section>
