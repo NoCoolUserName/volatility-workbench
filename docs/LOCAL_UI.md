@@ -267,9 +267,10 @@ Workbench to load the new tool inventory, case guidance and view.
 
 ## Installed plugins
 
-The **Plugins** button below Cases opens a global catalog in the main pane, even
-when no case is registered. It lists the configured analyzer's discovered plugins
-in two columns: exact plugin name and source. Search names/descriptions/sources,
+The **Plugins** button below the Volatility Workbench title opens a global
+catalog in the main pane, even when no case is registered. It lists the
+configured analyzer's discovered plugins in two columns: exact plugin name
+and source. Search names/descriptions/sources,
 filter by OS or source type, and expand a name for description, version, provenance
 basis, and compatibility notes. Known source labels link to the upstream project.
 Back to case restores the selected case and report tab. Background state polling
