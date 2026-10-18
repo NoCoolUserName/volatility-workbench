@@ -35,11 +35,15 @@ package versions and artifact hashes. The dependency wheelhouse and Python,
 package and plugin notices are retained. The ZIP is an installable archive, not
 a signed/notarized installer package.
 
-The default signing is local ad-hoc signing. `--sign-identity` is an explicit
-signing hook when an appropriate certificate is available; Developer ID signing
-and notarization require their own release validation and are not implied by a
-successful local build. No Gatekeeper setting is changed. macOS may require the
-normal operator approval for a downloaded, unnotarized build.
+The default signing is local ad-hoc signing. The optional `--sign-identity`
+path requires a valid Developer ID Application identity, explicitly signs native
+components with secure timestamps/hardened runtime where appropriate, updates
+package inventories and seals the app last. The separate
+[release command and checklist](../docs/MACOS_RELEASE.md) audit a build, support a
+read-only dry run and, only when explicitly invoked with a Keychain profile,
+submit a staged copy to Apple, staple its ticket and produce a verified archive.
+Actual Developer ID runtime compatibility and Apple acceptance remain unverified
+without a credentialed release. No Gatekeeper setting is changed.
 
 Installation validates before replacing a bundle and refuses to replace a
 running native app. Quit normally while idle; it never kills an investigation.

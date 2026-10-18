@@ -104,5 +104,6 @@ chosen AI service. Same-user subprocess separation is not a malware sandbox.
 
 Local builds are ad-hoc signed unless an operator supplies applicable signing
 credentials. Ad-hoc signing is not Developer ID signing or notarization; no
-Gatekeeper protections are disabled. See [validation](../packaging/VALIDATION.md)
+Gatekeeper protections are disabled. See the [optional release pipeline](MACOS_RELEASE.md)
+for auditing, staged notarization and the credentialed checks still required. See [validation](../packaging/VALIDATION.md)
 and [UI validation](VALIDATION.md) for observed checks and remaining limits.
