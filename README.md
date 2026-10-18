@@ -23,6 +23,11 @@ queries, citations and coverage. Shared forensic code is not duplicated here.
 - Reopen saved cases and conversations. Explore report sections, source artifacts,
   checked citations, coverage, and activity/failures. The displayed report revision
   stays visibly selected. Refreshing saved views does not start new analysis.
+- Inspect **Plugins used in this report** for the selected revision's saved
+  execution inventory: exact plugin names, arguments, outcomes and run/call IDs.
+  Reused outputs and requests without a recorded execution are distinguished.
+  New portable reports include the same mechanical inventory; historical bundles
+  are read without rewriting them. Missing legacy metadata stays explicit.
 - Keep sealed report versions immutable. New revisions record available model,
   reasoning-effort and generation-turn token provenance; historical unknowns stay
   explicit. Optional decorative coins are stable per image. Hide retains files;

@@ -23,6 +23,7 @@ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42
         if(u.pathname==='/api/state')return route.fulfill({json:state});
         if(u.pathname==='/api/artifacts')return route.fulfill({json:{files:[],truncated:false}});
         if(u.pathname==='/api/coin')return route.fulfill({body:png,contentType:'image/png'});
+        if(u.pathname==='/api/report-plugins')return route.fulfill({json:{schema:'report-plugin-inventory/1',report_id:u.searchParams.get('report'),scope:'bundled_saved_runs',source_status:'unavailable',summary:{executions:null,plugins:null,failures:null,reuse_receipts:null,request_failures:null},entries:[],next_offset:null,warnings:['Inventory metadata is absent from this synthetic presentation fixture.']}});
         if(u.pathname==='/api/file')return route.fulfill({json:{text:badge('a')+badge('a')+badge('b')+'# E001 — Synthetic investigation\n\nCase: synthetic\nReport specification 0.3; manifest schema 0.1. '+assessment+' Prepared 2026-10-18 UTC.\n\n## Executive summary\nSynthetic only.',truncated:false}});
         throw Error('Unexpected request: '+u.pathname);
       }

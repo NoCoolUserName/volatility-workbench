@@ -135,6 +135,9 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/citations':
             return await asyncio.to_thread(app.citations, app.case(one('case')), one('report'),
                 int(one('offset','0')), one('finding') or None, int(one('index','0')))
+        if path=='/api/report-plugins':
+            return await asyncio.to_thread(app.report_plugins, app.case(one('case')), one('report'),
+                int(one('offset','0')), int(one('limit','20')))
         if path=='/api/file':return app.read_file(app.case(one('case')),one('path'),int(one('offset','0')))
         raise ValueError('Unknown route')
 

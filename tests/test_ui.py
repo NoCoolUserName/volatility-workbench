@@ -288,6 +288,33 @@ class UITests(unittest.IsolatedAsyncioTestCase):
             self.assertIn('HttpOnly',headers['Set-Cookie'])
             status,body,_=await asyncio.to_thread(request,'/api/state',None,{'Cookie':cookie});self.assertEqual(status,200)
             self.assertEqual(len(json.loads(body)['cases']),1)
+            # Historical report inventory is an authenticated, bounded metadata
+            # read. An empty legacy manifest must not imply zero plugin activity.
+            report_id='synthetic-legacy'
+            self.case['reports'].append({'id':report_id,'status':'sealed'})
+            report_root=self.app.directory(self.case)/'reports'/report_id
+            report_root.mkdir(parents=True)
+            manifest_path=report_root/'case-manifest.json'
+            manifest_path.write_text(json.dumps({'case_id':self.case['id'],'runs':[],
+                'artifacts':[],'evidence':[]}))
+            original=manifest_path.read_bytes()
+            url='/api/report-plugins?case='+self.case['id']+'&report='+report_id
+            status,_,_=await asyncio.to_thread(request,url);self.assertEqual(status,403)
+            status,body,_=await asyncio.to_thread(request,url,None,{'Cookie':cookie})
+            self.assertEqual(status,200)
+            inventory=json.loads(body)
+            self.assertEqual(inventory['report_id'],report_id)
+            self.assertIn(inventory['source_status'],('partial','unavailable'))
+            self.assertFalse(inventory['entries'])
+            for suffix in ('&offset=-1','&limit=101','&offset=abc'):
+                status,_,_=await asyncio.to_thread(request,url+suffix,None,{'Cookie':cookie})
+                self.assertEqual(status,400)
+            for invalid in ('missing','..%2F..%2Fconfig.json'):
+                status,_,_=await asyncio.to_thread(request,
+                    '/api/report-plugins?case='+self.case['id']+'&report='+invalid,None,{'Cookie':cookie})
+                self.assertEqual(status,400)
+            self.assertEqual(manifest_path.read_bytes(),original)
+            self.assertEqual(list(report_root.iterdir()),[manifest_path])
             from volatility_workbench.coins import ensure_coin
             coin=ensure_coin(self.app.directory(self.case),{**self.case['images'][0],'sha256':'a'*64})
             url='/api/coin?case='+self.case['id']+'&path='+coin['path']

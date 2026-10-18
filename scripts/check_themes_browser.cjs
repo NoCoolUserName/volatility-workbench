@@ -29,6 +29,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
         if(u.pathname==='/api/settings')return route.fulfill({json:settings});
         if(u.pathname==='/api/plugins')return route.fulfill({json:plugins});
         if(u.pathname==='/api/artifacts')return route.fulfill({json:{files:[],truncated:false}});
+        if(u.pathname==='/api/report-plugins')return route.fulfill({json:{schema:'report-plugin-inventory/1',report_id:u.searchParams.get('report'),scope:'bundled_saved_runs',source_status:'unavailable',summary:{executions:null,plugins:null,failures:null,reuse_receipts:null,request_failures:null},entries:[],next_offset:null,warnings:['Inventory metadata is absent from this synthetic presentation fixture.']}});
         if(u.pathname==='/api/file')return route.fulfill({json:{text:'# Synthetic report\n\n## Observation\n\nHarmless fixture only.\n\n```\nPID   Process        Result\n123   fixture.exe    Review required\n```',truncated:false}});
         throw Error('Unexpected API '+u.pathname);
       }
