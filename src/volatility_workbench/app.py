@@ -25,13 +25,13 @@ from .coins import populate
 from .codex import CodexClient, CodexError, child_environment
 from .providers import CompatibleClient, ProviderError, provider_config
 from .credentials import CredentialStore
+from .models import codex_models, same_model_settings
 from . import generation
 from . import plugin_speeds
+from . import live_console
 from .storage import Bundle, atomic_json, delete_report_bundle, now, private_dir, read_chunk, safe_file, uid
 
 MAX_JOB_PLUGIN_RUNS = 500
-FORENSIC_MODEL = 'gpt-6-astra'
-FORENSIC_EFFORT = 'high'
 
 TOOLS = [
     {'type':'function','name':'case_set_plan','description':'Explicitly record declared investigative scope for a registered image, not completion. Never invent a historical plan. Does not submit analysis.',
@@ -91,7 +91,7 @@ class Workbench:
                     report['status']='incomplete'
         self.provider_path = self.root / 'provider.json'
         stored=json.loads(self.provider_path.read_text()) if self.provider_path.exists() else {}
-        self.provider=provider_config(stored)
+        self.provider=provider_config(stored,resolve_executable=False)
         if stored.get('capability_check')=='passed': self.provider['capability_check']='passed'
         self.credentials = CredentialStore()
         self.compatible_factory = CompatibleClient
@@ -139,6 +139,8 @@ class Workbench:
 
     def event(self, case, kind, detail):
         entry = {'id':uid(),'time':now(),'kind':kind,'detail':detail}
+        if self.active and self.active.get('id') and self.active['case_id']==case['id']:
+            entry['job_id']=self.active['id']
         path = self.directory(case) / 'activity.jsonl'
         with path.open('a') as stream:
             stream.write(json.dumps(entry) + '\n')
@@ -219,22 +221,76 @@ class Workbench:
                 'cases':[{'case_id':c['id'],'provider':self.case_provider(c),'thread_id':c.get('thread_id')} for c in self.state['cases']]}
 
     def case_provider(self, case):
-        configured=case.get('provider') or {'provider':'codex','id':'codex'}
-        return self.provider if configured.get('id')==self.provider.get('id') else configured
+        stored=case.get('provider') or {}
+        configured=provider_config(stored,resolve_executable=False)
+        if configured['provider']=='compatible':
+            if stored.get('capability_check')=='passed' or (same_model_settings(configured,self.provider) and self.provider.get('capability_check')=='passed'):
+                configured['capability_check']='passed'
+            if configured.get('endpoint')==self.provider.get('endpoint'):
+                configured['credential_storage']=self.provider.get('credential_storage','none')
+        return configured
+
+    async def provider_models(self, config):
+        """Explicit catalog lookup, with no thread, prompt, MCP, or case data."""
+        try:
+            return await asyncio.wait_for(self._provider_models(config),90)
+        except asyncio.TimeoutError:
+            raise ProviderError('Model discovery timed out; saved connection settings were not changed') from None
+
+    async def _provider_models(self, config):
+        if not isinstance(config,dict):raise ValueError('Provider configuration must be an object')
+        candidate=provider_config({**config,'model':config.get('model') or 'catalog-discovery'} if config.get('provider')=='compatible' else config)
+        if candidate['provider']=='compatible':
+            saved=[self.provider,*[self.case_provider(case) for case in self.state['cases']]]
+            existing=next((p for p in saved if p.get('endpoint')==candidate['endpoint']),{})
+            candidate['credential_storage']=existing.get('credential_storage','none')
+            models=await self.compatible_factory(candidate,self.credentials).list_models()
+            return {'provider':'compatible','models':models,'effort_support':'provider_specific'}
+        async def ignore_event(method, params): pass
+        async def refuse_request(request):
+            raise CodexError('Model discovery cannot approve tools or start an investigation')
+        client=(self.factory(ignore_event,refuse_request,executable=candidate['codex_executable'])
+                if self.factory is CodexClient and candidate.get('codex_executable') else self.factory(ignore_event,refuse_request))
+        try:
+            await client.start()
+            entries=[];cursor=None;seen=set()
+            for _ in range(10):
+                page=await client.call('model/list',{'limit':100,'includeHidden':False,**({'cursor':cursor} if cursor else {})},timeout=30)
+                if not isinstance(page.get('data'),list):raise CodexError('Codex returned an invalid model catalog')
+                entries.extend(page['data'])
+                if len(entries)>1000:raise CodexError('Codex model catalog exceeds the 1,000-model limit')
+                cursor=page.get('nextCursor')
+                if not cursor:break
+                if not isinstance(cursor,str) or cursor in seen:raise CodexError('Codex model catalog pagination is invalid')
+                seen.add(cursor)
+            else:raise CodexError('Codex model catalog exceeds the 1,000-model limit')
+            models=codex_models(entries)
+            if not models:raise CodexError('Codex returned no available models; check its sign-in and account access')
+            return {'provider':'codex','models':models,'effort_support':'catalog'}
+        finally:
+            await client.close()
 
     async def configure_provider(self, config, secret=None, storage='session'):
         if self.active or any(j['status']=='queued' for j in self.state['jobs']):
             raise ValueError('Wait for active and queued work to finish before changing provider settings')
         candidate=provider_config(config)
+        if candidate['provider']=='codex' and ('model' in config or 'reasoning_effort' in config):
+            catalog=await self.provider_models(candidate)
+            model=next((m for m in catalog['models'] if m['model']==candidate['model']),None)
+            if not model:raise ValueError('Selected model is not in the available Codex catalog. Load models and choose an available model.')
+            if candidate['reasoning_effort'] and candidate['reasoning_effort'] not in model['efforts']:
+                raise ValueError('Selected reasoning effort is not supported by this Codex model. Load models and choose a supported effort.')
         if candidate['provider']=='compatible':
+            saved=[self.provider,*[self.case_provider(item) for item in self.state['cases']]]
+            existing=next((p for p in saved if p.get('endpoint')==candidate['endpoint']),{})
             if secret:
                 await asyncio.to_thread(self.credentials.set,candidate['endpoint'],secret,storage)
                 candidate['credential_storage']=storage
-            elif candidate['endpoint']==self.provider.get('endpoint'):
-                candidate['credential_storage']=self.provider.get('credential_storage','none')
+            elif existing:
+                candidate['credential_storage']=existing.get('credential_storage','none')
             elif config.get('credential_storage') not in (None,'none'):
                 raise ValueError('Changed endpoints require an explicitly supplied credential or no-credential mode')
-            if candidate['id']==self.provider.get('id') and not secret and self.provider.get('capability_check')=='passed':
+            if not secret and any(same_model_settings(candidate,p) and p.get('capability_check')=='passed' for p in saved):
                 candidate['capability_check']='passed'
         case=self.case(config['case_id']) if config.get('case_id') else None
         if case:
@@ -247,28 +303,36 @@ class Workbench:
             self.save()
         if self.agent:
             await self.agent.close();self.agent=None;self.loaded_threads.clear()
-        self.provider=candidate
+        if not case:
+            self.provider=candidate
+            atomic_json(self.provider_path,candidate)
         self.account={'connected':False,'provider':candidate['provider']}
-        atomic_json(self.provider_path,candidate)
         return self.provider_status()
 
-    async def check_provider(self):
+    async def check_provider(self, case_id=None):
         if self.active:
             raise ValueError('Wait for active work before testing a provider')
-        if self.provider['provider']=='codex':
-            await self.connect(self.provider)
-            return {**self.account,'provider':'codex','scope':'Existing Codex account readiness; no model turn requested.'}
-        self.provider.pop('capability_check',None)
-        atomic_json(self.provider_path,self.provider)
-        checked_configuration=copy.deepcopy(self.provider)
+        case=self.case(case_id) if case_id else None
+        selected=self.case_provider(case) if case else self.provider
+        if selected['provider']=='codex':
+            await self.connect(selected)
+            return {**self.account,'provider':'codex','model':selected['model'],'reasoning_effort':selected.get('reasoning_effort'),
+                    'scope':'Existing Codex account readiness; no model turn requested.'}
+        target=case['provider'] if case else self.provider
+        target.pop('capability_check',None)
+        if case:self.save()
+        else:atomic_json(self.provider_path,self.provider)
+        checked_configuration=provider_config(selected)
         result=await self.compatible_factory(checked_configuration,self.credentials).check()
-        if self.provider!=checked_configuration:
+        current=self.case_provider(case) if case else self.provider
+        if provider_config(current)!=checked_configuration:
             raise ProviderError('Provider settings changed during the capability check; its result was discarded. Check the selected endpoint again.')
-        self.provider['capability_check']='passed'
-        atomic_json(self.provider_path,self.provider)
-        for case in self.state['cases']:
-            if case.get('provider',{}).get('id')==self.provider['id']:
-                case['provider']['capability_check']='passed'
+        if same_model_settings(self.provider,checked_configuration):
+            self.provider['capability_check']='passed'
+            atomic_json(self.provider_path,self.provider)
+        for item in self.state['cases']:
+            if same_model_settings(self.case_provider(item),checked_configuration):
+                item['provider']['capability_check']='passed'
         self.save()
         self.account=result
         return result
@@ -519,8 +583,9 @@ class Workbench:
             'web_search':'disabled','features.shell_tool':False,'features.unified_exec':False,
             'features.multi_agent':False,'features.multi_agent_v2':False,'features.apps':False,
             'features.plugins':False,'features.hooks':False,'features.browser_use':False,
-            'features.computer_use':False,'features.image_generation':False,
-            'model_reasoning_effort':FORENSIC_EFFORT})
+            'features.computer_use':False,'features.image_generation':False})
+        if effort:=self.case_provider(case).get('reasoning_effort'):
+            settings['model_reasoning_effort']=effort
         settings.pop('mcp_servers.volatility.enabled',None)
         return settings
 
@@ -593,7 +658,7 @@ REPORT_SPEC follows:\n'''+spec
         instructions=self.investigation_instructions()
         params={'cwd':str(self.directory(case).resolve()),'sandbox':'read-only','approvalPolicy':'on-request',
             'approvalsReviewer':'user','config':self.thread_config(case),'developerInstructions':instructions,
-            'model':FORENSIC_MODEL}
+            'model':selected['model']}
         new_thread=not case['thread_id']
         if case['thread_id']:
             result=await self.agent.call('thread/resume',{'threadId':case['thread_id'],**params},timeout=180)
@@ -635,6 +700,8 @@ REPORT_SPEC follows:\n'''+spec
         else:
             prompt+=('Explicitly update the report in a NEW version, preserving earlier evidence. ' if job['kind']=='update' else 'Generate and save a complete evidence-backed report. ')
             prompt+='Readiness outputs already exist; reuse them rather than repeating discovery. Investigate adaptively. Focus: '+(job['text'] or 'Relevant system state and suspicious activity supported by the evidence.')
+            if job['kind']=='update':
+                prompt+='\nRead the previous sealed report and reassess its Executive summary and AI Determination against the new saved results. Incorporate pertinent new findings, changed confidence, contradictions and material limitations into the Executive summary; revise earlier conclusions when warranted. Do not merely append plugin output or a technical subsection. If the new results do not materially change the assessment, state that briefly and explain why, retaining failed or unexamined scopes as limitations. Preserve stable evidence/finding references and all earlier sealed versions.'
         prompt+='\nExisting reports: '+json.dumps([r for r in case['reports'] if not r.get('deleted_at')])
         self.progress(job,'Investigating with '+self.case_provider(case)['provider'])
         case['messages'].append({'role':'user','text':job['text'] or job['kind'],'time':now(),'job_id':job['id']})
@@ -670,8 +737,9 @@ REPORT_SPEC follows:\n'''+spec
         completion=asyncio.get_running_loop().create_future()
         self.turns[case['thread_id']]=completion
         if self.cancel.is_set():raise asyncio.CancelledError()
+        selected=self.case_provider(case)
         starting=asyncio.create_task(self.agent.call('turn/start',{'threadId':case['thread_id'],
-            'input':[{'type':'text','text':prompt}], 'model':FORENSIC_MODEL, 'effort':FORENSIC_EFFORT}))
+            'input':[{'type':'text','text':prompt}], 'model':selected['model'], 'effort':selected.get('reasoning_effort')}))
         try:
             result=await asyncio.shield(starting)
         except asyncio.CancelledError:
@@ -771,6 +839,9 @@ REPORT_SPEC follows:\n'''+spec
                 case['messages'].append(message)
             message['text']+=params.get('delta','')
             # Persist at item completion, avoiding one disk rewrite per token.
+        elif method=='item/mcpToolCall/progress':
+            if self.active and self.active['case_id']==case['id'] and params.get('turnId')==self.active.get('turn_id'):
+                self.event(case,'tool_progress',{'message':live_console.excerpt(params.get('message','')),'turn_id':params.get('turnId')})
         elif method in ('item/started','item/completed'):
             item=params.get('item',{})
             if item.get('type') in ('reasoning','userMessage'):return
@@ -780,11 +851,11 @@ REPORT_SPEC follows:\n'''+spec
                     if existing is None:case['messages'].append({'role':'assistant','text':item.get('text',''),'time':now(),'item_id':item.get('id')})
                     self.save()
                 return
-            self.event(case,method,item)
+            self.event(case,method,{**item,'turn_id':params.get('turnId')})
             if self.active:
                 self.active['progress']=item.get('tool') or item.get('type','Codex activity')
         elif method=='error':
-            self.event(case,'agent_error',params)
+            self.event(case,'agent_error',{**params,'turn_id':params.get('turnId')})
 
     async def agent_request(self,message):
         params=message.get('params',{})
@@ -793,13 +864,16 @@ REPORT_SPEC follows:\n'''+spec
             raise ValueError('Request is not for the active case')
         method=message['method']
         if method=='item/tool/call':
+            self.event(case,'local_tool_started',{'tool':params['tool'],'arguments':live_console.excerpt(params.get('arguments',{}),2000),'turn_id':params.get('turnId')})
             try:
                 task=asyncio.create_task(asyncio.to_thread(self.dynamic,case,params['tool'],params['arguments']))
                 self.dynamic_tasks.add(task)
                 task.add_done_callback(self.dynamic_tasks.discard)
                 result=await asyncio.shield(task)
+                self.event(case,'local_tool_completed',{'tool':params['tool'],'output':live_console.excerpt(result),'turn_id':params.get('turnId')})
                 return {'success':True,'contentItems':[{'type':'inputText','text':json.dumps(result)}]}
             except Exception as exc:
+                self.event(case,'local_tool_completed',{'tool':params['tool'],'output':live_console.excerpt(str(exc)),'turn_id':params.get('turnId')})
                 return {'success':False,'contentItems':[{'type':'inputText','text':str(exc)}]}
         supported={'item/commandExecution/requestApproval','item/fileChange/requestApproval','item/tool/requestUserInput','mcpServer/elicitation/request'}
         if method not in supported:
@@ -989,7 +1063,8 @@ REPORT_SPEC follows:\n'''+spec
                 encoded=json.dumps(event['detail'])
                 if len(encoded)>12000:
                     event['detail']={'preview':encoded[:12000],'truncated':True,'complete_record':'activity.jsonl in the private case directory'}
-        return {**view,'plugin_speed_summary':plugin_speeds.summary(self.plugin_speed_history),
+        console=live_console.snapshot(self.active,self.case(self.active['case_id']).get('activity',[])) if self.active else None
+        return {**view,'live_console':console,'plugin_speed_summary':plugin_speeds.summary(self.plugin_speed_history),
             'report_cleanup_cases':list(self.report_cleanup),'default_provider':self.provider['provider'],'account':self.account,'active_job':self.active['id'] if self.active else None,
             'evidence_root':str(self.config.evidence_root),'state_dir':str(self.root),
             'native_picker':platform.system()=='Darwin',

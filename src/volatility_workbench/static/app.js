@@ -40,6 +40,8 @@ let state,
   shownQueue = "",
   approvalKey = "",
   artifact = null;
+let consoleJob = null;
+const consoleNodes = new Map();
 const el = (tag, text, cls) => {
   const n = document.createElement(tag);
   if (text !== undefined) n.textContent = text;
@@ -1179,8 +1181,44 @@ function render() {
     }));
     shownQueue = queueKey;
   }
+  renderLiveConsole();
   updateBackToTop();
 }
+function renderLiveConsole() {
+  const stream = state.live_console, pre = $("liveConsole");
+  $("liveConsoleSection").hidden = !stream;
+  if (!stream) { consoleJob = null; consoleNodes.clear(); pre.replaceChildren(); return; }
+  const follow = $("consoleFollow");
+  $("liveConsoleTitle").textContent = "Live investigation console · " +
+    (state.cases.find(c => c.id === stream.case_id)?.title || stream.case_id);
+  if (consoleJob !== stream.job_id) {
+    consoleJob = stream.job_id; consoleNodes.clear(); pre.replaceChildren(); follow.checked = true;
+  }
+  const top = pre.scrollTop;
+  const entries = stream.entries || [], ids = new Set(entries.map(entry => entry.id));
+  let changed = false;
+  for (const [id, node] of consoleNodes) {
+    if (!ids.has(id)) { node.remove(); consoleNodes.delete(id); changed = true; }
+  }
+  for (const entry of entries) {
+    if (!consoleNodes.has(entry.id)) {
+      const node = el("span", "[" + readableTime(entry.time) + "]\n" + entry.text);
+      consoleNodes.set(entry.id, node); pre.append(node); changed = true;
+    }
+  }
+  if (!entries.length && !pre.textContent) pre.textContent = "Waiting for tool output…";
+  if (entries.length && pre.firstChild?.nodeType === Node.TEXT_NODE) pre.firstChild.remove();
+  if (changed) pre.scrollTop = follow.checked ? pre.scrollHeight : top;
+  $("consoleNote").textContent = "Read-only tool output. Scroll up to pause following. Full plugin results remain available in Evidence." +
+    (stream.earlier_entries ? " Showing the latest output in this window." : "");
+}
+$("liveConsole").addEventListener("scroll", () => {
+  const pre = $("liveConsole");
+  if (pre.scrollHeight - pre.clientHeight - pre.scrollTop > 24) $("consoleFollow").checked = false;
+});
+$("consoleFollow").onchange = () => {
+  if ($("consoleFollow").checked) $("liveConsole").scrollTop = $("liveConsole").scrollHeight;
+};
 function renderApprovals(c) {
   const list = state.approvals.filter((a) => a.case_id === c.id),
     key = list.map((a) => a.id).join();
@@ -1665,6 +1703,23 @@ async function loadPlugins(force = false) {
 $("openPlugins").onclick = () => {
   activeView = "plugins"; render(); $("pluginsTitle").focus(); loadPlugins();
 };
+function toggleThemeMenu(open) {
+  $("themeMenu").hidden = !open;
+  $("toggleTheme").setAttribute("aria-expanded", String(open));
+}
+$("toggleTheme").onclick = () => {
+  const open = $("themeMenu").hidden;
+  toggleThemeMenu(open);
+  if (open) $("theme").focus();
+};
+document.addEventListener("click", event => {
+  if (!$("themeMenu").hidden && !event.target.closest(".theme-menu")) toggleThemeMenu(false);
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !$("themeMenu").hidden) {
+    toggleThemeMenu(false); $("toggleTheme").focus();
+  }
+});
 $("closePlugins").onclick = () => {
   activeView = "case"; render(); $("openPlugins").focus();
 };

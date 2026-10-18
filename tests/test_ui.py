@@ -50,6 +50,11 @@ class FakeCodex:
     async def call(self,method,params=None,timeout=120):
         params=params or {};self.calls.append((method,params))
         if method=='account/read':return {'account':{'type':'chatgpt'},'requiresOpenaiAuth':True}
+        if method=='model/list':
+            return {'data':[{'model':'gpt-6-astra','displayName':'GPT-6 Astra','defaultReasoningEffort':'medium',
+                'supportedReasoningEfforts':[{'reasoningEffort':effort} for effort in ('low','medium','high','xhigh')]},
+                {'model':'synthetic-alternate','displayName':'Synthetic alternate','defaultReasoningEffort':'low',
+                 'supportedReasoningEfforts':[{'reasoningEffort':effort} for effort in ('low','high')]}], 'nextCursor':None}
         if method in ('thread/start','thread/resume'):
             self.threads+=1
             return {'thread':{'id':params.get('threadId','synthetic-thread-'+str(self.threads))},

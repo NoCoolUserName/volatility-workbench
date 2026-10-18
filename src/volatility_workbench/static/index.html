@@ -17,15 +17,16 @@
         <h1>Volatility Workbench<span class="dot">●</span></h1>
         <div class="header-tools">
           <button id="openPlugins" class="plugin-nav" aria-controls="plugins" aria-pressed="false">Plugins</button>
-          <div class="header-preferences">
-            <label class="theme-control" for="theme">Theme
+          <div class="theme-menu">
+            <button id="toggleTheme" aria-controls="themeMenu" aria-expanded="false">Theme</button>
+            <div id="themeMenu" class="theme-dropdown" hidden>
               <select id="theme" data-theme-picker aria-label="Workbench theme"></select>
-            </label>
-            <a class="settings-link" href="/settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M10.2 2h3.6l.5 2.3 1.4.6 2-1.3 2.5 2.5-1.3 2 .6 1.4 2.3.5v3.6l-2.3.5-.6 1.4 1.3 2-2.5 2.5-2-1.3-1.4.6-.5 2.3h-3.6l-.5-2.3-1.4-.6-2 1.3-2.5-2.5 1.3-2-.6-1.4-2.3-.5v-3.6l2.3-.5.6-1.4-1.3-2 2.5-2.5 2 1.3 1.4-.6.5-2.3z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a>
+            </div>
           </div>
         </div>
       </div>
       <div class="header-controls">
+        <a class="settings-link" href="/settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M10.2 2h3.6l.5 2.3 1.4.6 2-1.3 2.5 2.5-1.3 2 .6 1.4 2.3.5v3.6l-2.3.5-.6 1.4 1.3 2-2.5 2.5-2-1.3-1.4.6-.5 2.3h-3.6l-.5-2.3-1.4-.6-2 1.3-2.5-2.5 1.3-2-.6-1.4-2.3-.5v-3.6l2.3-.5.6-1.4-1.3-2 2.5-2.5 2 1.3 1.4-.6.5-2.3z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a>
         <span id="connection">Connecting…</span>
         <button id="stop" class="danger" disabled>Stop all work</button>
       </div>
@@ -169,6 +170,12 @@
         <section class="queue" id="queueSection" hidden>
           <h2>Current work</h2>
           <ol id="queue" aria-live="polite"></ol>
+          <section id="liveConsoleSection" class="live-console-section" hidden aria-labelledby="liveConsoleTitle">
+            <div class="live-console-heading"><h3 id="liveConsoleTitle">Live investigation console</h3>
+              <label class="check"><input id="consoleFollow" type="checkbox" checked> Follow output</label></div>
+            <p id="consoleNote" class="subtle">Read-only tool output. Scroll up to pause following. Full plugin results remain available in Evidence.</p>
+            <pre id="liveConsole" tabindex="0" role="log" aria-label="Live investigation console" aria-live="off"></pre>
+          </section>
         </section>
       </main>
     </div>

@@ -201,6 +201,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   await page.waitForFunction(()=>document.querySelectorAll('#reportPluginInventory .report-plugin-used-table tbody tr').length===20);
   assert.equal(await inventory.locator('[role=alert]').count(),0);
   for(const id of await page.evaluate(()=>window.WorkbenchThemes.catalog.map(t=>t.id))){
+   if(await page.locator('#theme').isHidden())await page.locator('#toggleTheme').click();
    await page.locator('#theme').selectOption(id);assert.equal(await table.locator('tr').count(),20);assert.equal(await page.locator('.report-version.selected').getAttribute('data-report-id'),'current');
    await assertReadableFocus();
    const ratio=await table.evaluate(node=>{const c=getComputedStyle(node),parse=s=>s.match(/[\d.]+/g).slice(0,3).map(Number).map(n=>{n/=255;return n<=.04045?n/12.92:((n+.055)/1.055)**2.4;}),lum=a=>a[0]*.2126+a[1]*.7152+a[2]*.0722;const text=lum(parse(c.color)),bg=lum(parse(getComputedStyle(node.closest('.report-plugin-inventory')).backgroundColor));return(text+.05)/(bg+.05);});
@@ -218,13 +219,15 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.ok(calls.some(x=>x.startsWith('/api/file?')&&decodeURIComponent(x).includes('reports/current/artifacts/C-synthetic/manifest.json')));
   await page.locator('[data-tab="reports"]').click();
   // Complete each job type while an older revision is selected. All three lists
-  // must follow the new snapshot, even if its draft inventory was already cached.
+  // must follow the sealed snapshot. Drafts show progress without a file/inventory fetch.
   for(const kind of ['update','report']){
    const id='finished-'+kind;
    state.cases[0].reports.push({id,status:'draft',created_at:'2026-10-18T13:00:00Z'});
    state.jobs.push({id:'job-'+kind,kind,case_id:'Synthetic A',report_id:id,status:'running',started_at:'2026-10-18T13:00:00Z'});
    await page.evaluate(()=>refresh());await choose(id);
-   await page.waitForFunction(id=>reportPluginCache.get(reportPluginKey)?.data?.report_id===id,id);
+   await page.getByRole('heading',{name:'Report running…',exact:true}).waitFor();
+   assert.equal(await inventory.isHidden(),true);
+   assert.ok(!calls.some(url=>url.startsWith('/api/report-plugins?')&&new URL('http://localhost'+url).searchParams.get('report')===id));
    await choose('current');
    state.cases[0].reports.at(-1).status='sealed';state.jobs.at(-1).status='completed';
    await page.evaluate(()=>refresh());

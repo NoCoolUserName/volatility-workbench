@@ -131,11 +131,11 @@ class SettingsTests(unittest.IsolatedAsyncioTestCase):
     async def test_awaited_settings_actions_hold_exclusive_guard(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary).resolve();manager,app,path=self.setup_manager(root)
-            for route in ('/api/settings/provider','/api/settings/provider/check','/api/settings/save'):
+            for route in ('/api/settings/provider','/api/settings/provider/check','/api/settings/provider/models','/api/settings/save'):
                 started=asyncio.Event();release=asyncio.Event()
                 async def pending(*args,**kwargs):
                     started.set();await release.wait();raise ValueError('fixture rejection')
-                app.configure_provider=pending;app.check_provider=pending
+                app.configure_provider=pending;app.check_provider=pending;app.provider_models=pending
                 with patch.object(manager,'_activate',side_effect=pending):
                     task=asyncio.create_task(manager.dispatch(route,{}));await started.wait()
                     self.assertTrue(manager.busy)

@@ -67,9 +67,10 @@ Background refreshes preserve the selected case, including a manual selection.
 If the selected/requested case no longer exists, selection falls back to the
 first displayed case; an empty list shows the start screen.
 The **Add evidence** panel starts collapsed; click its heading to expand it.
-The **Theme** selector beside Plugins offers Matrix green (default),
-Soft black and white, and Light blue; the Settings link with its silver gear
-starts below the Theme label. The selection is stored in this browser's local
+The **Theme** button sits directly below Plugins. Click it to show the theme
+dropdown, and click it again or press Escape to hide it. Settings, with its silver
+gear, sits at the upper-right corner. The themes include Matrix green (default),
+Soft black and white, and Light blue. The selection is stored in this browser's local
 storage and restored on reload. It changes presentation only; case state,
 saved evidence, and reports are unaffected.
 
@@ -144,7 +145,13 @@ saved evidence, and reports are unaffected.
 6. **Ask / investigate further** resumes the same case conversation. It may run
    more MCP queries, but does not rewrite reports. **Update report** explicitly
    creates a new revision with a link to the previous version and preserved stable
-   evidence IDs. Sealed content is not edited in place; explicit Hide/Delete is
+   evidence IDs. Each update explicitly instructs the investigator to read the
+   previous sealed report, reassess its Executive summary and AI Determination,
+   and incorporate pertinent new findings, confidence changes, contradictions and
+   material limitations. If the new results leave the assessment unchanged, the
+   summary should say why. This is an investigative instruction; mechanical
+   report validation does not independently judge the relevance of a finding.
+   Sealed content is not edited in place; explicit Hide/Delete is
    separate from report generation and retains the case's audit metadata.
 7. Multiple cases/jobs run sequentially. Refreshing/reopening the browser reads
    existing state and cannot start a scan. **Stop all work** interrupts the active
@@ -152,6 +159,15 @@ saved evidence, and reports are unaffected.
    the connection status and is disabled when no work is queued or running.
    The **Current work** panel appears only while jobs are queued, running, or
    stopping; completed and failed job history remains in the case's Activity tab.
+   During report generation/update, a **Live investigation console** shows actual
+   tool starts, progress notifications and returned text as they arrive through
+   the provider connection. This read-only terminal-style panel uses the theme's
+   background and accent color. It has no shell or input forwarding. Tool output
+   arrives only when emitted; a long-running plugin may be quiet until completion.
+   Scroll up to pause following, or enable **Follow output** to return to the
+   bottom. The recent window is bounded; full plugin results remain in Evidence.
+   Entries are isolated to the active job/turn and render as plain text. The
+   console does not expose model reasoning or raw protocol/credential traffic.
    Completed artifacts remain, and interrupted jobs/drafts are marked incomplete. An app
    restart marks unfinished jobs incomplete; it never automatically restarts them.
    Explicitly queue a new question/report operation to continue a saved completed
@@ -395,7 +411,8 @@ Its progress bar is indeterminate when the prompt has no explicit plugin list or
 one of the listed plugins has no successful saved timing history. For a known list,
 the bar weights completed planned plugin runs by their historical average durations.
 The segmented, square-edged meter uses the selected theme's accent color and
-stops animating when reduced motion is requested.
+uses a three-second sweep when indeterminate. It stops animating when reduced
+motion is requested.
 It estimates *plugin work only*: model reasoning, evidence review, validation and
 report writing have no reliable plugin-based ETA. The private `plugin-speeds.json`
 table keeps the last ten successful physical execution times for each plugin;

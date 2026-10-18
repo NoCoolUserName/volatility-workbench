@@ -32,6 +32,9 @@ class GenerationTests(unittest.TestCase):
         self.assertIn('token usage not reported',prepared)
         self.assertIn('not recorded for this report',generation.summary(None))
         self.assertIsNone(generation.begin('codex',{'model':'bad`<script>'})['model'])
+        requested=generation.begin('compatible',{'model':'synthetic','reasoning_effort':'xhigh'})
+        self.assertEqual(requested['reasoning_effort'],'xhigh')
+        self.assertIn('requested effort; effective effort not reported',generation.summary(requested))
 
 
 class GenerationEventTests(unittest.IsolatedAsyncioTestCase):
@@ -82,7 +85,7 @@ class GenerationEventTests(unittest.IsolatedAsyncioTestCase):
     async def test_resumed_legacy_thread_is_not_treated_as_zero_usage(self):
         # ensure_thread must not invent a zero baseline for an existing case.
         app=object.__new__(Workbench)
-        app.case_provider=lambda case:{'provider':'codex'}
+        app.case_provider=lambda case:{'provider':'codex','model':'synthetic','reasoning_effort':'medium'}
         async def connect(provider):pass
         async def call(method,params,timeout):
             self.assertEqual(method,'thread/resume')

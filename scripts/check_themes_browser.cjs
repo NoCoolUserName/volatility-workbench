@@ -17,6 +17,10 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
   const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
   try{
     const page=await browser.newPage({viewport:{width:1400,height:1050}});
+    async function chooseTheme(id){
+      if(await page.locator('#theme').isHidden())await page.locator('#toggleTheme').click();
+      await page.locator('#theme').selectOption(id);
+    }
     const errors=[],network=[],policyErrors=[];
     page.on('console',message=>{if(/Content Security Policy|violates the following/.test(message.text()))policyErrors.push(message.text());});
     page.on('pageerror',e=>errors.push(e.message));
@@ -51,7 +55,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     if(screenshotDir)fs.mkdirSync(screenshotDir,{recursive:true});
     const measurements=[];
     for(const theme of catalog){
-      await page.locator('#theme').selectOption(theme.id);
+      await chooseTheme(theme.id);
       assert.equal(await page.locator('html').getAttribute('data-theme'),theme.id);
       assert.equal(await page.locator('.skin-scene').textContent(),'','No theme caption or descriptive tagline');
       assert.equal(await page.locator('.skin-scene').isVisible(),theme.shape!=='plain');
@@ -86,7 +90,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     }
     // Every original preference remains honored on startup, including settings.
     for(const id of ['matrix','mono','blue']){
-      await page.locator('#theme').selectOption(id);await page.reload();
+      await chooseTheme(id);await page.reload();
       assert.equal(await page.locator('#theme').inputValue(),id);
       await page.goto('http://localhost/settings.html');
       assert.equal(await page.locator('#settings-theme').inputValue(),id);
@@ -101,12 +105,12 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     await page.locator('#openPlugins').click();
     await page.waitForFunction(()=>document.querySelector('#pluginRows tr'));
     for(const id of catalog.map(t=>t.id)){
-      await page.locator('#theme').selectOption(id);
+      await chooseTheme(id);
       assert.equal(await page.locator('#pluginRows tr').count(),1);
       assert.equal(await page.locator('#pluginRows').evaluate(e=>getComputedStyle(e).color),await page.locator('body').evaluate(e=>getComputedStyle(e).color));
     }
     await page.setViewportSize({width:390,height:844});
-    await page.locator('#theme').selectOption('matrix');
+    await chooseTheme('matrix');
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile must not overflow horizontally');
     if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,'mobile.png'),fullPage:true});
     await page.emulateMedia({reducedMotion:'reduce',contrast:'more'});
@@ -116,7 +120,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     await page.reload();assert.equal(await page.locator('#theme').inputValue(),'matrix');
     await page.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw new Error('disabled for fixture');}});});
     await page.reload();assert.equal(await page.locator('#theme').inputValue(),'matrix');
-    await page.locator('#theme').selectOption('8-bit');
+    await chooseTheme('8-bit');
     assert.equal(await page.locator('html').getAttribute('data-theme'),'8-bit');
     assert.deepEqual(errors,[]);
     assert.deepEqual(policyErrors,[],'Production CSP must allow all packaged artwork');
