@@ -12,9 +12,10 @@ credential handling and tested limits.
 ## Appearance
 
 The header's Theme selector and Settings → Appearance offer the same 31 local
-skins, including 12 separate Fallout choices. New profiles start with friendly
-Halloween; the three original preference values remain supported. Selection
-persists in browser/WebView local storage, and open same-origin tabs synchronize.
+skins, including 12 separate Fallout choices. New profiles start with the
+original Matrix green appearance; the three original preference values remain
+supported. Selection persists in browser/WebView local storage, and open
+same-origin tabs synchronize.
 Artwork stays in a decorative band outside opaque evidence/report surfaces.
 Theme changes do not submit jobs or modify cases, conversations or saved reports.
 The displayed report retains its selection stripe. See [the catalog and verified

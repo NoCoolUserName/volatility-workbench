@@ -38,8 +38,11 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     });
     await page.goto('http://localhost/');
     await page.waitForFunction(()=>document.querySelector('.report-version.selected'));
-    assert.equal(await page.locator('html').getAttribute('data-theme'),'halloween');
-    assert.equal(await page.locator('#theme').inputValue(),'halloween');
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'matrix');
+    assert.equal(await page.locator('#theme').inputValue(),'matrix');
+    assert.deepEqual(await page.locator('html').evaluate(element=>{
+      const style=getComputedStyle(element);return Object.fromEntries(['bg','panel','control-bg','text','muted','accent','privacy-bg','privacy-text','code-bg'].map(name=>[name,style.getPropertyValue('--'+name).trim()]));
+    }),{'bg':'#0d1418','panel':'#141f25','control-bg':'#0c171c','text':'#e5eeee','muted':'#9fb2bb','accent':'#9cddb7','privacy-bg':'#1d2a27','privacy-text':'#bed9c9','code-bg':'#091014'},'Default restores the original green Workbench palette');
     const catalog=await page.evaluate(()=>window.WorkbenchThemes.catalog);
     assert.equal(catalog.length,31);
     assert.equal(catalog.filter(t=>t.group==='Fallout').length,12);
@@ -53,7 +56,11 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       assert.equal(await page.locator('.skin-scene').textContent(),'','No theme caption or descriptive tagline');
       assert.equal(await page.locator('.skin-scene').isVisible(),theme.shape!=='plain');
       assert.equal(await page.locator('.report-version.selected').count(),1,'Theme must preserve selected report');
-      assert.match(await page.locator('.report-version.selected > button:first-child').evaluate(e=>getComputedStyle(e).boxShadow),/inset/);
+      const selectedStyles=await page.locator('.case-button.selected, .tabs .selected, .plugin-nav.selected, .report-version.selected > button:first-child').evaluateAll(elements=>elements.map(element=>{
+        const style=getComputedStyle(element);return {shadow:style.boxShadow,left:style.borderLeftWidth,right:style.borderRightWidth};
+      }));
+      assert.ok(selectedStyles.length>0);
+      for(const style of selectedStyles){assert.equal(style.shadow,'none','Selected controls have no one-sided inset stripe');assert.equal(style.left,style.right,'Selected borders are even on both sides');}
       const image=theme.id==='halloween-noir'?'halloween-night.png':`theme-${theme.id}.svg`;
       assert.ok(fs.existsSync(path.join(assets,image)),'Every skin has a packaged scene');
       if(image.endsWith('.svg')){
@@ -84,7 +91,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       await page.goto('http://localhost/settings.html');
       assert.equal(await page.locator('#settings-theme').inputValue(),id);
       assert.equal(await page.locator('.settings .skin-scene').textContent(),'');
-      assert.equal(await page.locator('.settings .skin-scene').isVisible(),id!=='mono'&&id!=='blue');
+      assert.equal(await page.locator('.settings .skin-scene').isVisible(),!['matrix','mono','blue'].includes(id));
       await page.goto('http://localhost/');
     }
     await page.goto('http://localhost/settings.html');
@@ -99,16 +106,16 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       assert.equal(await page.locator('#pluginRows').evaluate(e=>getComputedStyle(e).color),await page.locator('body').evaluate(e=>getComputedStyle(e).color));
     }
     await page.setViewportSize({width:390,height:844});
-    await page.locator('#theme').selectOption('halloween');
+    await page.locator('#theme').selectOption('matrix');
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile must not overflow horizontally');
     if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,'mobile.png'),fullPage:true});
     await page.emulateMedia({reducedMotion:'reduce',contrast:'more'});
     assert.equal(await page.locator('html').evaluate(e=>getComputedStyle(e).getPropertyValue('--border').trim()),await page.locator('html').evaluate(e=>getComputedStyle(e).getPropertyValue('--muted').trim()));
     // Storage unavailable and unknown future/removed IDs both keep a usable default.
     await page.evaluate(()=>localStorage.setItem('volatility-workbench-theme','unknown-theme'));
-    await page.reload();assert.equal(await page.locator('#theme').inputValue(),'halloween');
+    await page.reload();assert.equal(await page.locator('#theme').inputValue(),'matrix');
     await page.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw new Error('disabled for fixture');}});});
-    await page.reload();assert.equal(await page.locator('#theme').inputValue(),'halloween');
+    await page.reload();assert.equal(await page.locator('#theme').inputValue(),'matrix');
     await page.locator('#theme').selectOption('8-bit');
     assert.equal(await page.locator('html').getAttribute('data-theme'),'8-bit');
     assert.deepEqual(errors,[]);

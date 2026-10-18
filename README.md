@@ -46,19 +46,18 @@ and [ownership and recovery](docs/SEPARATION.md).
 ## Themes
 
 The header and Settings share 31 locally bundled appearance choices. A new browser
-without a saved preference starts with friendly Halloween: a black night sky,
-a moon and smiling jack-o'-lanterns. Existing Matrix green, Soft black and white,
-and Light blue preferences remain supported. Theme changes affect presentation;
-case contents and saved reports are unchanged.
+without a saved preference starts with the original Matrix green appearance.
+Existing Soft black and white and Light blue preferences remain supported.
+Theme changes affect presentation; case contents and saved reports are unchanged.
 
 | Collection | Choices |
 | --- | --- |
 | Fallout — one skin per released game/table experience | Fallout; Fallout 2; Fallout Tactics: Brotherhood of Steel; Fallout: Brotherhood of Steel; Fallout 3; Fallout: New Vegas; Fallout Shelter; Fallout 4; Fallout Pinball; Fallout 4 VR; Fallout 76; Fallout Shelter Online |
 | Seasonal | Friendly Halloween; adult, non-cartoon Halloween; The Nightmare Before Christmas |
 | Arcade and adventure | 8-bit; Colossal Cave Adventure; Metroid; Silpheed (Sega CD); Elevator Action (NES) |
-| Neon and terminals | Vaporwave; retrowave; The Matrix; hacker |
+| Neon and terminals | Vaporwave; retrowave; hacker |
 | Cinema and anime | Top Gun; Cyber City Oedo 808; Cyberpunk 2077; Golgo 13; The Punisher — War Journal #53 |
-| Other retained choices | Soft black and white; Light blue |
+| Classic choices | Matrix green; Soft black and white; Light blue |
 
 Original SVG scenes and the original generated adult-Halloween raster ship inside
 the package. Themes make no external asset requests. Opaque work surfaces, semantic

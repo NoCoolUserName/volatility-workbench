@@ -5,9 +5,8 @@ evidence, plugin availability, analysis settings, saved output or report content
 Choose a theme from the Theme control in Workbench's header or Settings →
 Appearance. Both use the same catalog. The choice is saved in this browser's
 local storage and updates other open Workbench tabs. Existing Matrix, Mono and Blue preferences
-remain supported as The Matrix, Soft black and white, and Light blue. A browser
-without a saved preference starts with the friendly
-Halloween theme: a black night sky, a moon and smiling jack-o'-lanterns.
+remain supported as Matrix green, Soft black and white, and Light blue. A browser
+without a saved preference starts with the original Matrix green appearance.
 
 The skins use a shared set of application colors and locally packaged decorative
 art. Forensic tables and controls remain application UI; their content is not
@@ -16,7 +15,8 @@ external page at runtime. The links below document visual references and release
 scope; they are not application dependencies.
 
 Theme names appear in the selector. The artwork band has no caption or tagline;
-the two plain classic themes omit that band entirely.
+the three plain classic themes omit that band entirely. Selected controls use
+an even border without a one-sided inset stripe.
 
 ## Fallout coverage
 
@@ -59,14 +59,14 @@ not treated as released games.
 
 | Reference | Visual direction |
 | --- | --- |
-| Halloween · pumpkin night | Friendly cartoon Halloween: black night sky by default, a moon, stars and smiling pumpkins. |
+| Halloween · pumpkin night | Friendly cartoon Halloween: black night sky, a moon, stars and smiling pumpkins. |
 | 8-bit | Pixel geometry, restrained console colors and crisp borders. |
 | Colossal Cave Adventure | Text-adventure terminal styling, cave silhouettes and an exploration mood. |
 | Vaporwave | Pastel cyan and pink, classical geometry and an airy digital sunset. |
 | Top Gun | Naval aviation, instrument markings and flight-deck colors. |
 | Halloween · midnight orchard | Adult, non-cartoon moonlight, mist, bare trees and carved pumpkins. |
 | The Nightmare Before Christmas | A crooked gothic skyline, spiral hill and moonlit seasonal colors. |
-| The Matrix | Green terminal light and code-rain motifs. |
+| Matrix green | Original charcoal and phosphor-green Workbench palette, without an artwork band. |
 | Cyber City Oedo 808 | The cyberpunk anime's nocturnal city, electric color and angular machinery. |
 | Cyberpunk 2077 | High-contrast yellow, cyan and dark industrial city geometry. |
 | Hacker | A restrained technical terminal with network and circuit motifs. |
