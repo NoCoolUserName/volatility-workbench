@@ -270,11 +270,12 @@ Workbench to load the new tool inventory, case guidance and view.
 The **Plugins** button below the Volatility Workbench title opens a global
 catalog in the main pane, even when no case is registered. It lists the
 configured analyzer's discovered plugins in two columns: exact plugin name
-and source. Search names/descriptions/sources,
-filter by OS or source type, and expand a name for description, version, provenance
-basis, and compatibility notes. Known source labels link to the upstream project.
-Back to case restores the selected case and report tab. Background state polling
-does not close the catalog, reset filters, or repeat discovery.
+and source. Search names/descriptions/sources, filter by OS, or open the Source
+column dropdown to check any combination of the actual discovered source
+labels. Expand a name for description, version, provenance basis, and
+compatibility notes. Known source labels link to the upstream project. Back to
+case restores the selected case and report tab. Background state polling does
+not close the catalog, reset filters, or repeat discovery.
 
 `GET /api/plugins` uses the supported core `list_plugins` API behind MCP. Refresh
 uses `GET /api/plugins?refresh=1`. Both require the existing local session and never

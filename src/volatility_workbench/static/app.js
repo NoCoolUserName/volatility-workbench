@@ -82,6 +82,7 @@ function act(fn) {
   };
 }
 let activeView = "case", pluginCatalog = null, pluginsLoading = false;
+let selectedPluginSources = new Set(), allPluginSourcesSelected = true, availablePluginSources = [];
 function choose(id, activate = true) {
   if (activate) activeView = "case";
   selected = id;
@@ -747,15 +748,50 @@ document
   }
 })();
 
+function pluginSource(p) {
+  const source = p.source || {};
+  const label = source.label || "Source unknown";
+  return {key: JSON.stringify([source.kind || "unknown", label]), label};
+}
+function updatePluginSourceSummary() {
+  const checked = availablePluginSources.filter(key => selectedPluginSources.has(key)).length;
+  $("pluginSource").querySelector("summary").textContent =
+    checked === availablePluginSources.length ? "Source" : `Source (${checked}/${availablePluginSources.length})`;
+}
+function renderPluginSourceOptions() {
+  const sources = new Map();
+  for (const plugin of pluginCatalog.plugins) {
+    const {key, label} = pluginSource(plugin);
+    if (!sources.has(key)) sources.set(key, {label, count: 0});
+    sources.get(key).count++;
+  }
+  availablePluginSources = [...sources.keys()].sort((a, b) => sources.get(a).label.localeCompare(sources.get(b).label));
+  if (allPluginSourcesSelected) selectedPluginSources = new Set(availablePluginSources);
+  const options = availablePluginSources.map(key => {
+    const item = sources.get(key), label = el("label"), checkbox = el("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = selectedPluginSources.has(key);
+    checkbox.onchange = () => {
+      if (checkbox.checked) selectedPluginSources.add(key);
+      else selectedPluginSources.delete(key);
+      allPluginSourcesSelected = availablePluginSources.every(source => selectedPluginSources.has(source));
+      renderPlugins();
+    };
+    label.append(checkbox, el("span", `${item.label} (${item.count})`));
+    return label;
+  });
+  $("pluginSourceOptions").replaceChildren(...options);
+  updatePluginSourceSummary();
+}
 function renderPlugins() {
   if (!pluginCatalog) return;
   const query = $("pluginSearch").value.trim().toLowerCase();
-  const os = $("pluginOS").value, sourceKind = $("pluginSource").value;
+  const os = $("pluginOS").value;
   const plugins = pluginCatalog.plugins.filter(p => {
     const source = p.source || {};
     const text = [p.name, p.description, source.label].join(" ").toLowerCase();
     return text.includes(query) && (!os || (p.target_os || "other") === os) &&
-      (!sourceKind || (source.kind || "unknown") === sourceKind);
+      selectedPluginSources.has(pluginSource(p).key);
   }).sort((a, b) => a.name.localeCompare(b.name));
   const rows = plugins.map(p => {
     const row = el("tr"), name = el("td"), cell = el("td"), details = el("details");
@@ -780,6 +816,7 @@ function renderPlugins() {
     cell.colSpan = 2; row.append(cell); rows.push(row);
   }
   $("pluginRows").replaceChildren(...rows);
+  updatePluginSourceSummary();
   $("pluginCount").textContent = `${plugins.length} shown · ${pluginCatalog.total} discovered`;
   const failures = pluginCatalog.import_failures || [];
   $("pluginFailures").hidden = !failures.length;
@@ -797,8 +834,9 @@ async function loadPlugins(force = false) {
     const catalog = await api("plugins" + (force ? "?refresh=1" : ""));
     if (!Array.isArray(catalog.plugins)) throw Error("The server returned an invalid plugin inventory.");
     pluginCatalog = catalog;
+    renderPluginSourceOptions();
     $("openPlugins").textContent = `Plugins · ${catalog.total}`;
-    $("pluginStatus").textContent = `Volatility ${catalog.volatility_version} · Host ${catalog.architecture}` +
+    $("pluginStatus").textContent = `Volatility3 ver. ${catalog.volatility_version} · Host ${catalog.architecture}` +
       (catalog.discovered_at ? " · Checked " + readableTime(catalog.discovered_at) : "");
     renderPlugins();
   } catch (e) {
@@ -819,4 +857,3 @@ $("closePlugins").onclick = () => {
 $("refreshPlugins").onclick = () => loadPlugins(true);
 $("pluginSearch").oninput = renderPlugins;
 $("pluginOS").onchange = renderPlugins;
-$("pluginSource").onchange = renderPlugins;
