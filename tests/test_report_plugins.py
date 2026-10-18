@@ -155,6 +155,27 @@ class InventoryTests(unittest.TestCase):
         self.assertIsNone(result['entries'][0]['argv'])
         self.assertEqual(result['source_status'], 'partial')
 
+    def test_launch_error_or_missing_exit_code_never_proves_physical_execution(self):
+        self.add_run('run0', status='error')
+        for code in (None, True, False, '1'):
+            record = json.loads((self.root / 'artifacts/C-run0/manifest.json').read_text())
+            record['commands'] = [{'argv':['python','vol','windows.pslist.PsList'],
+                                   'returncode':code, 'status':'error',
+                                   'error':'Cannot execute Volatility'}]
+            self.artifact('artifacts/C-run0/manifest.json', record, 'run0')
+            result = self.derive()
+            self.assertEqual(result['summary']['executions'], 0, code)
+            self.assertEqual(result['summary']['unknown_execution_records'], 1, code)
+            self.assertEqual(result['source_status'], 'partial')
+            self.assertEqual(result['entries'][0]['status'], 'error')
+            self.assertIsNone(result['entries'][0]['execution_recorded'])
+        for code in (0, 1, -9):
+            record['commands'][0]['returncode'] = code
+            self.artifact('artifacts/C-run0/manifest.json', record, 'run0')
+            result = self.derive()
+            self.assertEqual(result['summary']['executions'], 1, code)
+            self.assertTrue(result['entries'][0]['execution_recorded'])
+
     def test_snapshot_pagination_and_read_only_legacy_bytes(self):
         for n in range(23):self.add_run('run' + str(n))
         result = self.derive()

@@ -155,11 +155,13 @@ def _entry(run, step, original, source_path, reader, synthetic=False):
         if all(_array(v) is not None for v in candidate) and candidate:
             argv = candidate
     commands = original.get('commands')
-    # A command record establishes an attempted physical run even when old argv
-    # was not recorded. A log or empty command array alone does not establish it.
+    # Core can save a command entry even when Popen fails. An integer return
+    # code positively establishes process execution, including nonzero/negative
+    # exits, without requiring argv in older records. Booleans are not exit codes.
     synthetic = synthetic or any(value.get('synthetic') is True or value.get('execution_kind') == 'simulated'
                                  for value in (run, step, original))
-    executed = False if synthetic else (True if isinstance(commands, list) and any(isinstance(c, dict) for c in commands) else None)
+    executed = False if synthetic else (True if isinstance(commands, list) and any(
+        isinstance(c, dict) and type(c.get('returncode')) is int for c in commands) else None)
     if any(value is None for value in (plugin, args, argv)) or executed is None:
         reader.warn('Some plugin/argument/argv/execution metadata is unknown for bundled run ' + str(rid))
     if not (_text(original.get('status')) or _text(run.get('status'))) or (original.get('status') or run.get('status')) == 'unknown':
