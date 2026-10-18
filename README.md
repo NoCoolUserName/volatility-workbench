@@ -148,13 +148,13 @@ and [security](SECURITY.md).
 
 ## Pinned core and plugins
 
-The tested core pin is `7f7cc1f0c4f4f6e6a17dfecca8c27db02e53c1d6`, API revision 1.
+The tested core pin is `e49244fd753826c83ae581e371fd2ff7d24580a1`, API revision 1.
 `core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on the
 immutable commit. `pip install .` brings in that dependency; the pin helper checks
 installed Git provenance even when successive core commits share a package version.
 
 The validated portable public bundle baseline has **200 commands**. The existing
-configured local analyzer has **214 commands**, preserving all original 208 names,
+configured local analyzer has **237 commands**, preserving the previous 214 names,
 with zero import failures. These are different installation profiles. Counts are
 measured from the selected runtime and do not establish image compatibility.
 
@@ -165,6 +165,14 @@ are forced offline. PasswordManager and SSHKeys are manual-only sensitive extrac
 commands, excluded from automatic investigation/report flows. PasswordManager needs
 an explicit browser PID; SSHKeys needs a Linux PID and one suspected `sshenc` address.
 No installed command is silently removed.
+
+The runtime batch adds a BitLocker AES-schedule candidate scanner, ten Go commands
+and twelve Python commands through that same core inventory. All 23 require manual
+selection and run offline. They have bounded process/address/layout requirements:
+Python currently requires the explicitly verified pinned CPython 3.8 research
+layout; Go version gates are not an accuracy matrix; AES candidates do not establish
+BitLocker key roles or cipher modes. See the
+[core runtime-addon checks and limitations](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/RUNTIME_ADDONS.md).
 
 Redistribution restrictions keep selected upstream sources out of the public app;
 install them explicitly through idle Settings maintenance or core's installer:
