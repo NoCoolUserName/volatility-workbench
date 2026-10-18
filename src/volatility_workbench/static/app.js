@@ -907,7 +907,7 @@ function renderReportPlugins(record) {
     });
     inventorySearch(errors, rows, record, "errorSearch", "erroredPluginSearch", "Search plugins that errored");
     errors.append(el("p", "Search changes the displayed rows. Add all failed requests still includes all recorded errors.", "subtle"));
-    errors.append(inventoryTable(["Plugin", "Add to prompt", "Acknowledged/Resolved", "Quick Description", "Image", "Recorded error", "Run provenance", "Source provenance"], rows,
+    errors.append(inventoryTable(["Plugin", "Add to prompt", "Acknowledged / Resolved", "Quick Description", "Image", "Recorded error", "Run provenance", "Source provenance"], rows,
       "Saved plugin errors for report " + record.reportId, "report-plugin-table report-plugin-errors-table"));
   }
   const unused = el("details", undefined, "report-plugin-inventory report-plugin-secondary");

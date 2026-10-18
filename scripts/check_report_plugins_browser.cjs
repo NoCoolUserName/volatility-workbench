@@ -85,7 +85,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   const retryButtons=inventory.locator('.report-plugin-errors-table tbody button[data-retry-index]');
   const retryAll=page.getByRole('button',{name:'Add all failed requests to prompt',exact:true});
   assert.deepEqual(await inventory.locator('.report-plugin-errors-table thead th').allTextContents(),
-    ['Plugin','Add to prompt','Acknowledged/Resolved','Quick Description','Image','Recorded error','Run provenance','Source provenance']);
+    ['Plugin','Add to prompt','Acknowledged / Resolved','Quick Description','Image','Recorded error','Run provenance','Source provenance']);
   assert.equal(await retryButtons.count(),2);
   const checks=inventory.locator('.report-plugin-errors-table input[type="checkbox"]');
   const badge=page.locator('#errorAcknowledgmentProgress');
