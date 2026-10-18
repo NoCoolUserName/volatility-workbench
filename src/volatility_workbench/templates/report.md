@@ -52,6 +52,10 @@ initial access or an intrusion story.}}
 
 ## Investigative workflow and coverage
 
+<!-- Workbench inserts a mechanical plugin inventory from this bundle's saved
+execution metadata. Keep it distinct from the installed catalog and do not invent
+commands or describe reused results as new scans. -->
+
 | Call; prerequisites | Question and tool/arguments | Evidence; status/result | Next-step rationale; hypothesis disposition |
 | --- | --- | --- | --- |
 | {{CALL_ID}}; {{PREREQUISITES_OR_NONE}} | {{QUESTION_AND_ACTUAL_CALL}} | {{ARTIFACT_AND_RESULT}} | {{RATIONALE_AND_DISPOSITION}} |

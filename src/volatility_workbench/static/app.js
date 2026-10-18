@@ -197,7 +197,7 @@ function coinImage(path, label) {
 }
 function reportPresentation(text, generation) {
   // Presentation only: historical Markdown/checksums remain byte-for-byte intact.
-  const lines = text.split("\n");
+  const lines = text.replace(/<!-- report-plugin-inventory -->[\s\S]*?<!-- \/report-plugin-inventory -->/g, "").split("\n");
   const section = lines.findIndex(line => line.startsWith("## "));
   const end = section < 0 ? lines.length : section;
   const preamble = lines.slice(0, end).filter(line => !line.startsWith("AI generation: "));
@@ -270,7 +270,150 @@ function renderMarkdown(text, base) {
   }
   if (code) article.append(code);
 }
+// Inventories describe saved report snapshots; reading them never runs plugins.
+const reportPluginCache = new Map();
+let reportPluginKey = "";
+function inventoryCount(value) { return Number.isSafeInteger(value) && value >= 0 ? value.toLocaleString() : "Not recorded"; }
+function inventoryPath(source) {
+  return typeof source === "string" && source && !/[\\:\x00-\x1f]/.test(source) &&
+    source.split("/").every(part => part && part !== "." && part !== "..") ? source : null;
+}
+function renderReportPlugins(record) {
+  if (reportPluginKey !== record.key) return;
+  const host = $("reportPluginInventory");
+  host.hidden = false;
+  const details = el("details", undefined, "report-plugin-inventory");
+  details.open = record.open || false;
+  details.ontoggle = () => { record.open = details.open; };
+  const summary = el("summary", "Plugins used in this report snapshot");
+  if (record.data) {
+    const counts = record.data.summary || {};
+    summary.append(el("span", record.data.source_status === "unavailable"
+      ? " · Inventory unavailable"
+      : ` · ${inventoryCount(counts.executions)} recorded executions · ${inventoryCount(counts.plugins)} plugin names`, "inventory-counts"));
+  } else summary.append(el("span", record.loading ? " · Loading…" : " · Could not load", "inventory-counts"));
+  details.append(summary);
+  const scope = el("p", "Saved plugin records bundled with the selected report snapshot. These may include earlier saved executions and reuse receipts; they do not show only new scans performed for report generation. Inspection requests are not plugin executions.", "subtle");
+  details.append(scope);
+  if (record.error) {
+    const failure = el("p", "Plugin inventory could not be loaded: " + record.error, "inventory-warning");
+    failure.setAttribute("role", "alert"); details.append(failure);
+  }
+  const data = record.data;
+  if (data) {
+    const counts = data.summary || {};
+    const countLine = el("p", `${inventoryCount(counts.failures)} execution failures · ${inventoryCount(counts.reuse_receipts)} reuse receipts · ${inventoryCount(counts.request_failures)} request failures`, "subtle");
+    if (data.source_status !== "unavailable") {
+      details.append(countLine);
+      if (counts.simulated_runs != null) details.append(el("p", inventoryCount(counts.simulated_runs) + " explicitly simulated run records (not physical executions)", "subtle"));
+      if (counts.unknown_execution_records != null) details.append(el("p", inventoryCount(counts.unknown_execution_records) + " records with unknown execution provenance", "subtle"));
+    }
+    if (data.source_status !== "available") details.append(el("p", data.source_status === "partial"
+      ? "Partial inventory: some saved records could not be read. Counts and entries may be incomplete."
+      : "Inventory unavailable: this report has no readable saved plugin metadata. This does not mean no plugins ran. The historical report has not been changed.", "inventory-warning"));
+    for (const warning of data.warnings || []) details.append(el("p", String(warning), "inventory-warning"));
+    if (record.entries.length) {
+      const region = el("div", undefined, "report-plugin-scroll");
+      region.tabIndex = 0; region.setAttribute("role", "region");
+      region.setAttribute("aria-label", "Saved report plugin records; scroll horizontally for all columns");
+      const table = el("table", undefined, "report-plugin-table");
+      table.append(el("caption", "Bundled saved plugin records for report " + record.reportId));
+      const head = el("thead"), headings = el("tr");
+      for (const title of ["Plugin", "Image", "Outcome & record kind", "Exact arguments", "Run provenance & recorded time", "Local source"]) {
+        const th = el("th", title); th.scope = "col"; headings.append(th);
+      }
+      head.append(headings); table.append(head);
+      const body = el("tbody");
+      for (const entry of record.entries) {
+        const row = el("tr");
+        row.append(el("td", entry.plugin || "Plugin name not recorded"), el("td", entry.image_id || "Image not recorded"));
+        const outcome = el("td");
+        const kind = {plugin_run:"Saved plugin run", reuse_receipt:"Saved result reuse", request_failure:"Failed or denied request"}[entry.kind] || "Record kind not recorded";
+        outcome.append(el("strong", kind), el("p", "Status: " + (entry.status || "Not recorded")));
+        outcome.append(el("p", entry.synthetic === true || entry.execution_kind === "simulated" ? "Simulated execution record" : entry.execution_recorded === true && entry.execution_kind !== "unknown" ? "Execution recorded" : entry.execution_recorded === false ? "No execution recorded" : "Execution provenance not recorded", "subtle"));
+        if (entry.reuse_count != null) outcome.append(el("p", "Recorded reuse count: " + inventoryCount(entry.reuse_count), "subtle"));
+        if (entry.reason) outcome.append(el("p", String(entry.reason)));
+        if (/fail|error|denied|cancel|timeout/i.test(entry.status || "") || entry.kind === "request_failure") outcome.classList.add("inventory-warning");
+        row.append(outcome);
+        const args = el("td");
+        for (const [label, value] of [["Plugin arguments", entry.arguments], ["Recorded argv", entry.argv]]) {
+          if (Array.isArray(value)) {
+            const expanded = el("details");
+            expanded.append(el("summary", label + " · " + value.length + " item(s)"), el("pre", JSON.stringify(value, null, 2)));
+            args.append(expanded);
+          } else args.append(el("p", label + ": Not recorded", "subtle"));
+        }
+        row.append(args);
+        const provenance = el("td");
+        provenance.append(el("p", "Run: " + (entry.run_id || "Not recorded")), el("p", "Call: " + (entry.call_id || "Not recorded")));
+        for (const [label, value] of [["Started", entry.started_at], ["Finished", entry.finished_at]]) {
+          const time = el("p", label + ": " + (value ? readableTime(value) : "Not recorded"));
+          if (value) time.title = String(value); provenance.append(time);
+        }
+        provenance.append(el("p", "Source: " + (entry.provenance || "Not recorded"), "subtle"));
+        row.append(provenance);
+        const source = el("td"), localPath = inventoryPath(entry.source_path);
+        if (localPath) {
+          const link = el("a", "Open manifest");
+          link.href = "#evidence";
+          link.onclick = act(async () => {
+            if (reportPluginKey !== record.key || selected !== record.caseId) return;
+            await viewArtifact("reports/" + record.reportId + "/" + localPath, 0, () => reportPluginKey === record.key);
+            if (reportPluginKey === record.key && selected === record.caseId) setTab("evidence");
+          }); source.append(link);
+        } else source.append(el("span", "Not recorded", "subtle"));
+        row.append(source); body.append(row);
+      }
+      table.append(body); region.append(table); details.append(region);
+      details.append(el("p", record.entries.length.toLocaleString() + " saved record(s) shown", "subtle"));
+    } else if (data.source_status === "available") details.append(el("p", "No plugin records are bundled with this report snapshot."));
+  }
+  const live = el("p", record.loading ? "Loading saved plugin records…" : "");
+  live.setAttribute("role", "status"); details.append(live);
+  if (data && record.nextOffset != null) {
+    const more = el("button", "More plugin records"); more.disabled = record.loading;
+    more.onclick = () => { record.restoreFocus = "more"; loadReportPlugins(record, record.nextOffset); }; details.append(more);
+  }
+  const refresh = el("button", record.error ? "Retry plugin inventory" : "Refresh saved inventory");
+  refresh.disabled = record.loading;
+  refresh.onclick = () => { record.restoreFocus = "refresh"; loadReportPlugins(record, 0, true); }; details.append(refresh);
+  host.replaceChildren(details);
+  if (!record.loading && record.restoreFocus) {
+    const target = record.restoreFocus === "more" ? [...details.querySelectorAll("button")].find(button => button.textContent === "More plugin records") : refresh;
+    if (target) target.focus(); else { live.textContent = "All saved plugin records loaded."; live.tabIndex = -1; live.focus(); }
+    record.restoreFocus = null;
+  }
+}
+async function loadReportPlugins(record, offset = 0, reset = false) {
+  if (record.loading) return;
+  record.loading = true; record.error = "";
+  renderReportPlugins(record);
+  try {
+    const params = new URLSearchParams({case:record.caseId, report:record.reportId, offset:String(offset), limit:"20"});
+    const data = await api("report-plugins?" + params);
+    if (data.schema !== "report-plugin-inventory/1" || data.scope !== "bundled_saved_runs" || data.report_id !== record.reportId || !["available", "partial", "unavailable"].includes(data.source_status) || !Array.isArray(data.entries)) throw Error("Unexpected inventory response");
+    record.data = data;
+    record.entries = reset || offset === 0 ? data.entries : record.entries.concat(data.entries);
+    record.nextOffset = Number.isSafeInteger(data.next_offset) && data.next_offset > offset ? data.next_offset : null;
+  } catch (e) { record.error = e.message || String(e); }
+  record.loading = false;
+  renderReportPlugins(record);
+}
+function showReportPlugins(version) {
+  if (!version) { reportPluginKey = ""; $("reportPluginInventory").hidden = true; $("reportPluginInventory").replaceChildren(); return; }
+  const key = JSON.stringify([selected, version.id, version.status]);
+  if (reportPluginKey === key) return;
+  reportPluginKey = key;
+  let record = reportPluginCache.get(key);
+  if (!record) {
+    record = {key, caseId:selected, reportId:version.id, entries:[], data:null, nextOffset:null, loading:false, error:"", open:false};
+    reportPluginCache.set(key, record);
+    if (reportPluginCache.size > 8) reportPluginCache.delete(reportPluginCache.keys().next().value);
+    loadReportPlugins(record);
+  } else renderReportPlugins(record);
+}
 async function showReport(version) {
+  showReportPlugins(version);
   if (!version) {
     shownReport = "";
     $("reportView").replaceChildren(el("p", caseNow()?.reports.length
@@ -701,7 +844,7 @@ async function loadArtifacts() {
       el("p", "First 5,000 files shown. Complete artifacts remain on disk."),
     );
 }
-async function viewArtifact(path, offset = 0) {
+async function viewArtifact(path, offset = 0, isCurrent = () => true) {
   const caseId = selected;
   const data = await api(
     "file?case=" +
@@ -711,7 +854,7 @@ async function viewArtifact(path, offset = 0) {
       "&offset=" +
       offset,
   );
-  if (selected !== caseId) return;
+  if (selected !== caseId || !isCurrent()) return;
   artifact = { path, offset: data.next_offset };
   $("artifactMeta").textContent =
     readableTime(path) +

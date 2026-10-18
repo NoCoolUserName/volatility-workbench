@@ -329,6 +329,30 @@ Workbench to load the new tool inventory, case guidance and view.
 
 ## Installed plugins
 
+### Per-report plugin inventory
+
+**Plugins used in this report** appears with the selected report revision. Its
+table is derived from that report's saved bundle, rather than the current installed
+catalog or later case activity. Exact plugin names, arguments, recorded outcomes,
+image identities and run/call IDs remain inspectable, with links to the local
+supporting execution metadata. Pages keep large inventories manageable.
+
+Original saved executions can predate a report revision. Reuse receipts are not
+new scans, failed requests without a run are not successful executions, and
+artifact inspections are not Volatility plugins. The UI keeps these distinctions
+visible. Missing or partial historical metadata is labelled; an absent inventory
+is not evidence that no plugin ran. Refreshing this view reads saved metadata
+only and never analyzes or hashes a source image.
+
+New bundles retain a machine-readable plugin inventory and a generated table
+inside the existing investigative-workflow section of their portable Markdown.
+The generated section is synchronized before sealing and included in checksums.
+Existing sealed reports remain byte-identical; their UI inventory is derived
+read-only from the metadata they already contain. Installed command counts and
+recorded run counts are not forensic coverage denominators or clean verdicts.
+
+### Global plugin catalog
+
 The **Plugins** button below the Volatility Workbench title opens a global
 catalog in the main pane, even when no case is registered. It lists the
 configured analyzer's discovered plugins in two columns: exact plugin name

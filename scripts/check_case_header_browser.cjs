@@ -34,6 +34,7 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
           state.jobs.push(job);
           return route.fulfill({json:job});
         }
+        if(u.pathname==='/api/report-plugins')return route.fulfill({json:{schema:'report-plugin-inventory/1',report_id:u.searchParams.get('report'),scope:'bundled_saved_runs',source_status:'unavailable',summary:{executions:null,plugins:null,failures:null,reuse_receipts:null,request_failures:null},entries:[],next_offset:null,warnings:['Inventory metadata is absent from this synthetic presentation fixture.']}});
         if(u.pathname==='/api/file')return route.fulfill({json:{text:'# Synthetic report\n![Decorative coin for Synthetic coin](assets/coins/'+ 'a'.repeat(64)+'.png)\n## Finding\nFixture only.',truncated:false}});
         if(u.pathname==='/api/coin')return route.fulfill({body:Buffer.from(coin.split(',')[1],'base64'),contentType:'image/png'});
         if(u.pathname==='/api/artifacts')return route.fulfill({json:{files:[],truncated:false}});
@@ -118,7 +119,7 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.equal(await page.locator('#images .challenge-coin').count(),0);
     assert.equal(await page.locator('#reportView .challenge-coin').count(),1);
     assert.deepEqual(errors,[]);
-    assert.ok(!calls.some(x=>/stop|plugins/.test(x)));
+    assert.ok(!calls.some(x=>/^\/api\/(stop|plugins)$/.test(x)));
     assert.equal(calls.filter(x=>x==='/api/jobs').length,2);
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
