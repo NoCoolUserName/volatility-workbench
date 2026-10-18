@@ -360,7 +360,8 @@ physical executions and shows each remaining plugin with an **Add to prompt** bu
 and quick description. The button appends a request for that plugin to the current
 case's investigation focus without starting work. Review the accumulated focus and
 choose **Update report** when ready; that action creates the new report version.
-The focus box is multiline and vertically resizable for reviewing several requested plugins. Focus
+The focus box keeps at least three readable lines, grows with added plugin requests,
+and is vertically resizable. Sizing waits until the selected case is visible. Focus
 drafts stay separate when switching cases during the app session.
 The comparison uses all bundled records even when the used table displays one page.
 Catalog changes or partial historical metadata can affect this comparison; it is

@@ -106,17 +106,19 @@ const focusDrafts = new Map();
 function sizeFocus() {
   const focus = $("focus");
   focus.style.height = "";
-  focus.style.height = Math.min(Math.max(focus.scrollHeight, focus.offsetHeight), 320) + "px";
+  if (!focus.getClientRects().length) return;
+  const borderHeight = focus.offsetHeight - focus.clientHeight;
+  focus.style.height = Math.min(Math.max(focus.scrollHeight + borderHeight, focus.offsetHeight), 320) + "px";
 }
 let submittingReadiness = false;
 let selectedPluginSources = new Set(), allPluginSourcesSelected = true, availablePluginSources = [];
 function choose(id, activate = true) {
   clearReportReturn();
   if (activate) activeView = "case";
-  if (id !== selected) {
+  const changeFocus = id !== selected;
+  if (changeFocus) {
     if (selected) focusDrafts.set(selected, $("focus").value);
     $("focus").value = focusDrafts.get(id) || "";
-    sizeFocus();
   }
   selected = id;
   selectedVersion = null;
@@ -134,6 +136,7 @@ function choose(id, activate = true) {
   $("more").hidden = true;
   $("coverageView").replaceChildren();
   render();
+  if (changeFocus) sizeFocus();
   loadArtifacts().catch(error);
 }
 function caseNow() {
