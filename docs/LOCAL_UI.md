@@ -14,8 +14,11 @@ credential handling and tested limits.
 The header's Theme selector and Settings → Appearance offer the same 31 local
 skins, including 12 separate Fallout choices. New profiles start with the
 original Matrix green appearance; the three original preference values remain
-supported. Selection persists in browser/WebView local storage, and open
-same-origin tabs synchronize.
+supported. Selection persists in application preferences across desktop launches,
+including changes to the local server port. Workbench and Settings synchronize
+through their regular authenticated state refreshes. Browser/WebView local storage
+provides an initial cache and migrates an older choice only when no shared choice
+has been saved.
 Artwork stays in a decorative band outside opaque evidence/report surfaces.
 Fallout 2 uses a scalable CSS metal housing, compact ventilation rail, recessed
 green screens and brass controls, guided by the supplied inventory-screen reference.
@@ -571,16 +574,18 @@ operating-system mode. A sole registered capture is selected automatically; its
 saved detected OS is used when available, otherwise Generic. Capture and OS choices
 are remembered per case while the page is open. If a case has multiple captures
 and none is chosen, the Connection options gear opens so the operator can choose
-explicitly. The gear also contains Connect, Interrupt and Disconnect; this setup
-stays collapsed during ordinary use. Opening **Console / VolShell** from the case
+explicitly. The gear contains Connect, Interrupt and connection settings; this
+setup stays collapsed during ordinary use. Press the VolShell bezel button again
+to disconnect its manual session. The connection light stays green until the
+backend confirms the process has stopped. Opening **Console / VolShell** from the case
 only opens the view; the bezel button starts the session. The application
 launches the configured analyzer's official Volatility 3 Volshell locally, with
 installed symbols and offline symbol lookup. The LED becomes green only when the
-manual interpreter reaches its input prompt. A busy or starting manual session is
-amber; an ended session is off. Active AI VolShell inspection also lights the LED
+manual interpreter reaches its input prompt. Starting is amber; the connected
+session stays green during commands and shutdown until process exit is confirmed.
+An ended session is off. Active AI VolShell inspection also lights the LED
 green, with an accessible label identifying AI activity. Missing symbols and startup errors remain visible.
-Repeated clicks reuse the current session or pending connection rather than
-starting another process. A session bound to another case must be disconnected
+Clicks during a pending connection or shutdown do not start another process. A session bound to another case must be disconnected
 explicitly; an active investigation prevents a new interactive connection.
 Clicking the bezel during active AI VolShell inspection opens its read-only view.
 Connection failures open the options and remain visible without automatic retries.
@@ -706,3 +711,12 @@ Welcome sign: neon letter discs and star, warm perimeter bulbs with several dark
 sockets, faded red lettering and aged trim. The display remains opaque and legible.
 All 31 themes give the VolShell bezel button their own treatment while retaining
 a separate rectangular connection LED and visible keyboard focus.
+
+Theme selection is saved in `appearance.json` under the application preferences
+directory, outside cases and evidence. It survives a new desktop launch even
+when the local server port changes. Existing browser preferences migrate on the
+first authenticated connection; a theme selected while that connection is loading
+takes precedence. Settings and Workbench share the saved preference. The New Vegas
+Welcome marquee appears on the main window and expanded console, with weathered
+cream/rust housing, tabs and controls shared by Settings. Evidence and report
+surfaces stay opaque and readable.

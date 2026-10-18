@@ -858,3 +858,35 @@ cancellation and pre-cancel/replay rejection. Closed streams release slots withi
 the focused one-second bound; permanently closed EventSource connections retry at
 1/2/4/8/15-second capped intervals while polling remains available. The seven
 HTTP/SSE tests also passed with ResourceWarning promoted to an error.
+
+## Shared appearance preferences and automatic PasswordManager policy — 18 October 2026
+
+Theme choices now live in the application preferences directory, outside cases and
+installed assets. Ten backend tests cover validation, atomic persistence, migration,
+invalid/symlink paths and shared-preference locking. Three independent processes
+with different state roots produced 24 unique consecutive revisions under forced
+save overlap. The synthetic UI fixture covers changing server ports, fresh browser
+storage, main/Settings synchronization, late responses, rapid choices, stale storage
+events and a real Retry save button click after a failed write.
+
+The combined 31-theme fixture passed text/control contrast, theme isolation,
+320px/390px layouts and Settings checks, including the full-app New Vegas marquee
+and cream/rust housing. Its requests were intercepted synthetic local reads; no
+analysis, external requests or private evidence were used.
+
+Core 88f06e2 permits relevant automatic PasswordManager collection with an explicit
+browser PID and existing offline limits. Workbench's exact-name exemption requires
+explicit manual_only=false metadata; unknown/older metadata and SSHKeys remain
+gated. Focused tests passed through both supported MCP protocol modes. The staged
+analyzer retained the exact 237-command set with zero import failures and all 46
+addon files matching inventory hashes. These checks establish policy and packaging
+behavior, not real-image accuracy across OS/builds.
+
+The VolShell bezel is now a direct connection toggle for the selected case's
+manual session, including when returning from Output. Its synthetic UI regression
+passed delayed and failed shutdown, busy commands, duplicate clicks, stale ready
+and empty stream frames, terminal confirmation and cross-case fallback checks.
+Commands and disconnecting retain the green connection light; only a confirmed
+terminal state turns it off. Input stays disabled during shutdown, and stale
+poll/stream updates cannot resurrect a confirmed closed session. AI investigation
+guards remain in place. No live interpreter or evidence was used by this check.

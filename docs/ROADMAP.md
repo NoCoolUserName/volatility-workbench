@@ -1,115 +1,81 @@
-# Workbench scope
+# Workbench roadmap
 
-The current application supports saved-case navigation, newest-first initial
-selection, report/evidence/citation/coverage views, sequential jobs, cancellation,
-resumable case conversations, coins and 31 locally bundled display themes. See
-LOCAL_UI.md and [the theme catalog](THEMES.md).
+This is the remaining-work list, reviewed against current main on 18 October 2026.
+Completed features and rollouts are recorded in [LOCAL_UI.md](LOCAL_UI.md),
+[UI_VALIDATION.md](UI_VALIDATION.md) and [packaging validation](../packaging/VALIDATION.md).
+Remove completed items here when acceptance evidence is recorded there; keep
+unverified platform, forensic and release claims explicit.
 
-The optional native macOS application, managed plugin/symbol settings and one
-compatible tool-API adapter are now implemented; see MACOS_APP.md and
-AI_PROVIDERS.md for actual validation and limits. Advanced exports, additional
-provider protocols, parallel analysis, Intel/Windows distributions and broader
-accessibility testing remain future work. Shared forensic evaluation and contracts are maintained
-in volatility-mcp; do not fork them here.
+Workbench owns application controls, model adapters, jobs, case navigation,
+report presentation and distribution. Core owns forensic adapters, the single
+addon inventory, execution policy, symbols, provenance and accuracy evaluation.
+Use the public core API and existing catalog; do not duplicate upstream plugin
+implementations or inventory policy in this repository.
+
+## Release and usability priorities
+
+| Priority | Remaining Workbench work | Acceptance check |
+| --- | --- | --- |
+| 1 | Complete one end-to-end acceptance run of the current distributable on a clean user account or second Mac. Existing developer-Mac and synthetic checks do not establish that environment. | From a fresh install, register an authorized harmless fixture, check readiness, generate a report, ask a follow-up, revise it, quit and reopen. Verify preserved case/session identity, saved consoles, citations and report selection, with no duplicate analysis. Record exact app/core revisions, OS and results. |
+| 2 | Improve and measure interruption/resource behavior where forced process death, long hashing/conversion and unbounded stored output still limit reliability. Coordinate analyzer changes with core. | Bounded large fixtures for Stop latency, forced termination/restart and descendant cleanup; preserve completed evidence and mark unfinished work. Add a documented storage quota or warning/cleanup design that never silently removes evidence or sealed reports. |
+| 3 | Validate accessibility and interaction beyond the existing browser/theme fixtures. | Keyboard-only and assistive-technology review of case/report navigation, error review, Settings and VolShell; selected browser/WebView and narrow-screen checks. Preserve readable evidence surfaces, focus, reduced-motion behavior and status semantics across themes. |
+| 4 | Complete credentialed macOS release acceptance. Build, auditing and signing/notarization machinery already exist. | Authorized Developer ID signing, notarization/stapling, and downloaded-app Gatekeeper testing on a second Mac with quarantine intact; record exact artifact hashes and outcomes. Ad-hoc signing and simulated Apple responses do not close this item. |
+| 5 | Establish a distribution licensing decision before expanding the portable plugin baseline. Dependency inventories and bundled license notices already exist. | Resolve the questions in [LICENSING.md](../LICENSING.md) with core; align covered paths, metadata, notices and source obligations. Retain the current allowlist until each added source is eligible. Local installation and public redistribution are different decisions. |
+
+No existing private case or saved investigation is authorized as a fixture by this
+roadmap. Routine UI tests use synthetic state and simulated providers; any acceptance
+run involving an image or live provider needs a specifically authorized fixture and
+bounded scope. Preserve original evidence, existing cases and sealed revisions.
+
+## Forensic validation dependencies — core owns the work
+
+The [core roadmap](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/ROADMAP.md)
+tracks the following acceptance work. Workbench consumes the resulting catalog,
+limitations and evidence; importable command counts are not a support matrix.
+
+| Dependency | Gate before broader application claims or collection defaults |
+| --- | --- |
+| OS/build accuracy campaign | Explicitly authorized representative Windows/Linux images with matching symbols, known positive/negative artifacts, expected source offsets and measured byte/time/output costs. Preserve unsupported, incomplete and error outcomes separately from valid empty results. |
+| BitLocker | Establish Windows pool-layout coverage and independently known key roles/cipher modes. AES schedule candidates currently do not establish FVEK/tweak identity, BitLocker use or decryptability; raw-key/decryption-schedule variants need separate fixtures. |
+| Go | Validate selected Windows/Linux AMD64 builds and Go versions: current 1.16–1.25 gates, with heap/string modes starting at 1.18, are candidate layouts. Measure typed-heap, strings, functions and goroutine/frame coverage before widening claims. |
+| Python | Validate the exact pinned CPython 3.8 research layout with known runtime/object/frame addresses. Other builds/versions, frozen/permanent-generation and untracked-object coverage remain separate work; raw target bytecode must remain inert. |
+| Sensitive recovery | Validate fabricated known credentials/keys, false matches and output handling. PasswordManager is eligible for relevant authorized automatic investigation with an explicit browser PID; SSHKeys remains manual with a PID/address. Honor the core catalog policy for other sensitive/runtime commands. |
+| Deferred candidates | Separate core changes for SwapEnumerator (bounded PTE/PFN work), parent-spoof checks (independent heuristic accuracy), Docker (namespace/cgroup/symbol adapters and rights), and alternate EVTX (correct parsing, offsets, dependencies and comparative recovery). Keep PFNInfo/P2V/RamMap and WinObj deferred pending justification; CryptoScan needs an offline redesign first. |
+
+When the core publishes measured compatibility results, assess a concise UI view
+of the selected build/runtime prerequisites and known gaps. Reuse the existing
+catalog and coverage contracts instead of inventing a Workbench-only compatibility
+database. Updating a core pin or refreshing the catalog does not authorize a sweep.
 
 ## Proposed investigation modes — not implemented
 
-| Mode | Intended scope |
+| Mode | Remaining design and acceptance work |
 | --- | --- |
-| Quick triage | Identify OS/symbol readiness; collect a bounded process/command-line/network/module baseline; follow high-value anomalies within a declared time/output budget. Save leads, evidence and gaps, not a clean verdict. |
-| Targeted investigation | Pursue an explicit question or selected process/address, reusing saved results first and collecting only justified missing evidence. |
-| Compatibility sweep ("Run all applicable plugins") | A diagnostic mode: sequentially attempt OS-appropriate plugins with satisfiable arguments/prerequisites; record success, empty, skipped, unsupported, failure, duration, hashing overhead, reuse and output size separately. Extraction/credential/expensive operations require explicit inclusion and bounded settings. |
+| Quick triage | Define versioned OS-specific profiles using measured cost and human-reviewed lead yield on authorized benign/malicious fixtures. Start with OS/symbol readiness and bounded process/command-line/network/module observations; follow justified anomalies within a declared time/output budget. Preserve leads, citations and gaps without presenting a clean verdict. |
+| Compatibility sweep ("Run all applicable plugins") | Define an explicit diagnostic job that sequentially attempts suitable commands with satisfiable arguments/prerequisites. Record success, valid empty, skipped, unsupported, failure, duration, integrity-hashing cost, reuse and output volume separately. Require explicit inclusion for commands whose core policy is manual-only; apply bounded extraction/expensive-operation settings. |
 
-These buttons are a design proposal, not permission to start a sweep. Installed
-plugin count is not a coverage denominator: some plugins need PID/address/rules or
-particular symbols and artifacts. One XP image cannot establish support elsewhere.
-Use measured cost and human-reviewed lead yield from multiple representative
-malicious and benign fixtures to version OS-specific triage profiles/templates.
-Distinguish cache hits from physical execution; total duration alone includes
-integrity checks and is not a plugin-only benchmark. Never tune a template solely
-to a known malware filename or present a heuristic as a validated detector.
+These are proposed controls, not permission to execute them. Installation alone
+does not establish applicability: PID/address/rules, runtime layouts and matching
+symbols may be required. A future profile must respect the authorized case scope
+and core's current per-command policy, including PasswordManager's permitted
+automatic use and SSHKeys' manual restriction. Do not tune profiles only to known
+malware names or use installed-plugin count as a coverage denominator.
 
-## Biggest remaining gaps before wider use
+## Later, with an identified use case
 
-This is the prioritized work list. [UI validation](UI_VALIDATION.md) and
-[packaging validation](../packaging/VALIDATION.md) record what was actually tested;
-completing a task here requires recording the new evidence there. These are
-release readiness gaps, not claims that the listed feature is absent.
-
-| Priority | Gap supported by current validation | Acceptance check |
-| --- | --- | --- |
-| 1 | A real Codex/MCP report, follow-up, and revision were exercised on this developer Mac. They have not been repeated as one acceptance run of the current distributable app on a clean user account or second Mac. | From a clean install, use a harmless fixture to select a file, complete readiness, generate a report, ask a follow-up, revise it, quit, and reopen without lost case state or duplicate analysis. Record the app revision, OS, and results. |
-| 2 | Cancellation/restart work is tested, but forced process death cannot guarantee child cleanup; long hashing/conversion can delay Stop, and output storage has no quota. | Exercise interruption and restart with bounded large fixtures; verify child cleanup, incomplete state, preserved artifacts, predictable Stop latency, and a documented storage limit or warning. |
-| 3 | Saved-output/citation contracts and synthetic checks exist, but there is no independent demonstration of broad forensic or model-answer accuracy. | Use a small human-reviewed, multi-OS saved-evidence set to check supported observations, abstentions, citation values, and report conclusions. Record false leads and unknowns separately from contract-test pass rates; keep private images out of Git. |
-| 4 | Plugin discovery works, but real-image support across OS/build/symbol combinations is not established; the starter symbol profile is deliberately narrow, and selected community sources cannot yet be redistributed in the public bundle. | Record a supported OS/build/plugin matrix with real compatibility results and actionable failures; resolve upstream redistribution terms or retain explicit operator downloads for each excluded source. |
-| 5 | The macOS release pipeline is implemented and tested with simulated Apple responses; no Developer ID signed, notarized, downloaded-app Gatekeeper acceptance has been recorded. | Sign with an authorized Developer ID, notarize and staple, then test the downloaded archive on a second Mac with quarantine intact and document the outcome. |
-
-If a container distribution is added, keep the analyzer dependency profile explicit:
-install and pin the official Volatility 3 `full` extra in its analyzer environment;
-package any selected third-party plugin file and its own dependencies with pinned
-source provenance and license review. Treat cloud/Arrow extras and browser-test
-Playwright as separate opt-in profiles. At build time, check package requirements,
-`vol -h`, the core plugin inventory and Workbench's import-failure display. Use
-harmless fixtures for runtime plugin checks; import success alone does not prove
-image compatibility. The UI must not silently install plugin dependencies.
-
-The native app and future container plugin baseline is core's versioned
-`community-2026-10` profile: PteMalfind/Ptenum, ImgMalfind, Prefetch, AnyDesk,
-EVTXLog, Browser History Extractor and KeePass (plus ApiSearch support). Extend
-that single core inventory for later additions; do not create a Workbench copy
-of its installer or plugin implementations. The profile is locally installable
-now. Selected upstream redistribution licenses/source obligations remain unresolved;
-the native public bundle includes eligible plugins and provides explicit operator
-upstream download for the remainder. Future containers must preserve that policy. See [the core profile](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COMMUNITY_PLUGINS.md).
-
-## Community3 candidate review
-
-The [18 October 2026 source review](COMMUNITY3_REVIEW.md) compares all 14
-community3 projects and their linked sources against the existing 208-command
-local analyzer. It records 14 potentially new analysis commands, an alternative
-EVTX carver, existing/overlapping support, and components outside the headless
-profile. CobaltStrike, RichHeader, ZoneID3 and PteResolve were subsequently
-adapted through core's single inventory and merged in core PR #10. Inventory
-revision 4 also makes PasswordManager and SSHKeys available as manually selected
-sensitive extraction commands. The isolated analyzer discovers 214 commands,
-preserving all original 208 names, with zero import failures. Core forces these
-six new commands offline and exposes manual-only metadata for the two extraction
-commands; Workbench instructions exclude them from routine triage and automatic
-investigation/report flows. No upstream plugin implementation is added here.
-
-A bounded check against Volatility's public Windows 10 build 19041 corpus found
-one RichHeader fingerprint, an empty selected ZoneID3 range and a synthetic raw
-PTE decode. Missing process/swap pages produced explicit failures; this does not
-establish detection accuracy. No private cases were used. Broader compatibility,
-known-positive accuracy fixtures and the remaining candidate groups stay separate
-work. Quick triage and compatibility sweep buttons remain proposals.
-
-Workbench pins merged core `7f7cc1f0c4f4f6e6a17dfecca8c27db02e53c1d6`
-(core PRs #10–12), so rebuilt installations inherit inventory revision 4,
-source attribution and forced-offline dispatch. The public bundle's eligible
-200-command baseline is unchanged; the configured local analyzer has the full
-214-command installation through explicit upstream download.
-
-The theme follow-up adds the requested seasonal, game, film, anime and terminal
-skins while retaining existing preferences and the selected-report highlight.
-All decorative assets are packaged locally. Core PR #12 converts remaining
-displayed binary unit labels to accurate decimal KB/MB without changing page
-arithmetic, limits, adapter hashes or plugin inventory. These presentation changes
-do not implement any proposed investigation mode or broaden forensic validation.
-
-## Runtime addon integration
-
-Core compatibility revision 6 adds BitLocker AES-schedule candidates, ten Go
-runtime commands and twelve Python runtime commands. The configured analyzer
-discovers 237 commands, retaining all prior 214 names with no import failures.
-All additions are manually selected, forced offline by core, and carry bounded
-argument/layout requirements and source attribution in the existing catalog.
-Workbench contains no upstream plugin implementations or new investigation mode.
-
-The three installed fixture suites and prior-addon regressions pass. This does
-not establish real-image support across OS/runtime builds: Python uses an explicitly
-verified pinned CPython 3.8 research layout, Go supports only version-gated candidate
-layouts, and BitLocker reports AES candidates without guessing cipher mode/key role.
-See [core's runtime addon record](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/RUNTIME_ADDONS.md)
-for pins, validation and remaining representative-image work. SwapEnumerator,
-parent-spoof checks, Docker and alternate EVTX carving remain separately scoped.
+- Evaluate polished report exports against authorized representative reports while
+  preserving citation links, limitations, revision provenance and sealed originals.
+- Add provider protocols or model/effort controls only after defining their actual
+  capability, provenance, secret-storage and interruption contracts. The existing
+  compatible tool API and provider usage display do not imply support for every API.
+- Evaluate parallel analysis only after measuring evidence/output locking, resource
+  contention, cancellation and result-reuse behavior; sequential jobs remain the
+  baseline.
+- Scope Intel macOS, Windows and container distributions separately. A container
+  must pin the official analyzer dependency profile, use core's inventory and
+  license policy, and validate imports plus harmless runtime fixtures. Keep optional
+  cloud/Arrow and browser-test dependencies separate. Do not silently install
+  dependencies through the UI.
+- Coordinate independent model-answer/report accuracy evaluation with core using
+  authorized saved-evidence sets. Check citation values, unsupported conclusions,
+  uncertainty and abstentions separately from UI/contract test pass rates.

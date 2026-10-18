@@ -10,26 +10,42 @@
   const drafts = new Map(), choices = new Map();
   const session = () => snapshot.session;
   const bound = () => active(session()) && session().case_id === targetCase;
-  const ready = () => bound() && session().status === "running" && session().ready === true && !investigationBusy && !agentActive();
+  const ready = () => !disconnectAttempt && bound() && session().status === "running" && session().ready === true && !investigationBusy && !agentActive();
   const caseName = id => cases.find(item => item.id === id)?.title || id || "No case selected";
   const binding = () => ({case_id:session().case_id, session_id:session().id});
   const bindingKey = () => active(session()) ? JSON.stringify([targetCase, session().case_id, session().id]) : "";
   let shownBinding = "", notifiedApprovalKey = "";
   let polledSnapshot = snapshot, eventSource = null, streamCase = null, streamSnapshot = null, streamValid = false, streamFrame = 0;
   let streamRetry = null, streamRetryAttempt = 0;
-  let connectionAttempt = null, connectionFocus = null;
+  let connectionAttempt = null, connectionFocus = null, disconnectAttempt = null, closedSnapshot = null, establishedSession = null;
+  const sameSession = (left, right) => !!left && !!right && left.id === right.id && left.case_id === right.case_id;
+  const terminal = value => !!value && ["closed", "exited", "failed"].includes(value.status);
   const seenActivities = new Set();
   const agentActivity = () => snapshot.agent_activity?.case_id === targetCase ? snapshot.agent_activity : null;
   const agentActive = () => ["starting", "running"].includes(agentActivity()?.status);
 
   function effectiveSnapshot() {
-    if (!streamValid || streamSnapshot?.case_id !== targetCase) return polledSnapshot;
-    // Polling still owns investigation summaries and safe metadata needed to
-    // disconnect an interactive session bound to a different case. Streamed
-    // output always belongs to this exact case and wins over an older poll.
+    const stream = streamValid && streamSnapshot?.case_id === targetCase ? streamSnapshot : null;
+    // Polling owns safe metadata for an interactive session bound to another
+    // case. Streamed output belongs only to the selected case.
     const other = active(polledSnapshot.session) && polledSnapshot.session.case_id !== targetCase ? polledSnapshot.session : null;
-    return {...polledSnapshot, ...streamSnapshot,
-      session:streamSnapshot.session || (streamSnapshot.busy && other ? {...other, entries:[]} : null)};
+    let value = stream ? {...polledSnapshot, ...stream,
+      session:stream.session || (stream.busy && other ? {...other, entries:[]} : null)} : polledSnapshot;
+    if (disconnectAttempt) {
+      const confirmed = [stream, polledSnapshot].find(item => sameSession(item?.session, disconnectAttempt.session) && terminal(item.session));
+      if (confirmed) { closedSnapshot = confirmed; disconnectAttempt = null; }
+      // An older empty stream snapshot cannot extinguish the LED while the
+      // exact process we asked to close still awaits an exit confirmation.
+      else if (!value.session || sameSession(value.session, disconnectAttempt.session)) {
+        value = {...value, session:{...(value.session || disconnectAttempt.session), status:"stopping", ready:false}, busy:true};
+      }
+    }
+    // A confirmed exit is irreversible for this session ID. Keep a delayed
+    // poll or SSE frame from resurrecting it after a successful close response.
+    if (closedSnapshot && (sameSession(value.session, closedSnapshot.session) || !value.session && targetCase === closedSnapshot.session.case_id)) {
+      value = {...value, session:closedSnapshot.session, busy:closedSnapshot.busy};
+    }
+    return value;
   }
   function closeStream() {
     eventSource?.close();
@@ -249,9 +265,14 @@
     if (connectionAttempt && current?.case_id === connectionAttempt.caseId && current.id !== connectionAttempt.previousId) connectionAttempt = null;
     const key = bindingKey();
     if (key !== shownBinding) { shownBinding = key; forgetProposal(); showError(""); }
-    const led = agentActive() || current?.status === "running" && current.ready === true ? "ready" : connected || connectionAttempt ? "pending" : "off";
+    // The backend enters running only after its first prompt. Input readiness
+    // changes during a command; the connection LED does not.
+    if (current?.status === "running") establishedSession = {id:current.id, case_id:current.case_id};
+    const established = connected && sameSession(current, establishedSession);
+    const led = agentActive() || established ? "ready" : connected || connectionAttempt ? "pending" : "off";
     $("volshellLED").dataset.state = led;
-    $("volshellLEDLabel").textContent = " · " + (agentActive() ? "AI active in " + caseName(targetCase) : led === "ready" ? "connected to " + caseName(current.case_id) : connected ? current.status === "running" ? "busy" : current.status : connectionAttempt ? "connecting to " + caseName(connectionAttempt.caseId) : "disconnected");
+    $("volshellLEDLabel").textContent = " · " + (agentActive() ? "AI active in " + caseName(targetCase) : disconnectAttempt || current?.status === "stopping" ? "disconnecting from " + caseName(current?.case_id || disconnectAttempt.session.case_id) : led === "ready" ? "connected to " + caseName(current.case_id) : connected ? current.status : connectionAttempt ? "connecting to " + caseName(connectionAttempt.caseId) : "disconnected");
+    $("consoleVolshellMode").title = agentActive() ? "View AI VolShell activity" : investigationBusy ? "Manual VolShell controls are paused during the investigation" : disconnectAttempt || current?.status === "stopping" ? "Disconnecting VolShell…" : same && current.status === "running" && !investigationBusy ? "Disconnect VolShell from " + caseName(targetCase) : connected ? same ? "VolShell is connecting…" : "View VolShell connection options" : "Connect VolShell to " + caseName(targetCase);
     $("volshellTitle").textContent = "VolShell · " + caseName(targetCase);
     $("volshellBinding").textContent = current && current.case_id === targetCase
       ? "Session bound to " + caseName(current.case_id) + " · " + current.image_id + " · " + current.mode + ". Choose Manual commands, AI command suggestions or AI investigation."
@@ -263,10 +284,10 @@
         : investigationBusy || agentActive() ? "An investigation is active. Connect when it finishes." : "Disconnected";
     if (current?.case_id === targetCase && current.error && !$("volshellError").textContent) { showError(current.error); $("volshellConnection").open = true; }
     $("volshellConnect").disabled = pending || !!connectionAttempt || connected || snapshot.busy || investigationBusy || agentActive() || !targetCase || !$("volshellImage").value;
-    $("volshellDisconnect").disabled = pending || !connected || investigationBusy || agentActive();
-    $("volshellDisconnect").hidden = !connected;
+    $("volshellDisconnect").disabled = pending || !!disconnectAttempt || !connected || current.status === "stopping" || investigationBusy || agentActive();
+    $("volshellDisconnect").hidden = !connected || same;
     $("volshellDisconnect").textContent = connected && !same ? "Disconnect " + caseName(current.case_id) : "Disconnect";
-    $("volshellInterrupt").disabled = pending || !same || current?.status !== "running" || investigationBusy || agentActive() || (current.ready && !current.continuation);
+    $("volshellInterrupt").disabled = pending || !!disconnectAttempt || !same || current?.status !== "running" || investigationBusy || agentActive() || (current.ready && !current.continuation);
     $("volshellInput").disabled = pending || !ready();
     $("volshellRun").disabled = pending || !ready() || (!$("volshellInput").value.trim() && !current?.continuation);
     $("volshellRun").textContent = current?.continuation && !$("volshellInput").value.trim() ? "Finish block" : "Run command";
@@ -294,7 +315,10 @@
     render();
     try {
       const result = await adapter.api(globalRoute ? path : "volshell/" + path, payload);
-      if (result && Object.hasOwn(result, "session")) { polledSnapshot = result; snapshot = effectiveSnapshot(); }
+      if (result && Object.hasOwn(result, "session")) {
+        if (path === "close" && result.session?.case_id === payload.case_id && result.session.id === payload.session_id && terminal(result.session)) closedSnapshot = result;
+        polledSnapshot = result; snapshot = effectiveSnapshot();
+      }
       await adapter.refresh();
       return true;
     } catch (error) { showError(error); return false; }
@@ -320,10 +344,31 @@
       render();
     }
   }
-  function enterVolshell() {
+  async function disconnectSelected(button) {
+    const current = session();
+    if (pending || connectionAttempt || disconnectAttempt || !active(current) || current.status === "stopping" || investigationBusy || agentActive()) return;
+    const attempt = {session:current};
+    disconnectAttempt = attempt;
+    connectionFocus = null;
+    const focused = document.activeElement === button;
+    const closed = await perform("close", {case_id:current.case_id, session_id:current.id});
+    if (!closed && disconnectAttempt === attempt) disconnectAttempt = null;
+    if (closed && focused && $("consoleZoom").open && monitorMode === "volshell" &&
+        (document.activeElement === button || document.activeElement === document.body)) $("consoleVolshellMode").focus({preventScroll:true});
+    render();
+  }
+  function enterVolshell(event) {
+    // The second click in a pointer double-click must not reconnect a process
+    // whose first click already closed it. In-flight requests are guarded too.
+    if (event?.detail > 1) return;
     if (agentActive()) { setMode("agent", true); return; }
+    if (bound() && session().status === "running") {
+      setMode("volshell");
+      disconnectSelected($("consoleVolshellMode"));
+      return;
+    }
     setMode("volshell", true);
-    if (pending || connectionAttempt || bound()) return;
+    if (pending || connectionAttempt || disconnectAttempt || bound()) return;
     if (active(session()) || snapshot.busy || investigationBusy || !targetCase || !$("volshellImage").value) {
       $("volshellConnection").open = true;
       (active(session()) ? $("volshellCase") : $("volshellImage")).focus({preventScroll:true});
@@ -349,12 +394,8 @@
     };
     $("volshellMode").onchange = rememberChoice;
     $("volshellConnect").onclick = connectSelected;
-    $("volshellDisconnect").onclick = async () => {
-      const button = $("volshellDisconnect");
-      if (button.disabled) return;
-      const focused = document.activeElement === button;
-      if (await perform("close", binding()) && focused && $("consoleZoom").open && monitorMode === "volshell" &&
-          (document.activeElement === button || document.activeElement === document.body)) $("consoleVolshellMode").focus({preventScroll:true});
+    $("volshellDisconnect").onclick = () => {
+      if (!$("volshellDisconnect").disabled) disconnectSelected($("volshellDisconnect"));
     };
     $("volshellInterrupt").onclick = () => { if (!$("volshellInterrupt").disabled) perform("interrupt", binding()); };
     $("volshellForm").onsubmit = async event => {

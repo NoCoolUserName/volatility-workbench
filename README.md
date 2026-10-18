@@ -2,7 +2,7 @@
 
 Licensing scope is under review: see [LICENSING.md](LICENSING.md). The existing MIT notice does not establish MIT-only licensing for the Volatility integration.
 
-*18,252 lines of code*
+*19,023 lines of code*
 
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
@@ -148,7 +148,7 @@ and [security](SECURITY.md).
 
 ## Pinned core and plugins
 
-The tested core pin is `e49244fd753826c83ae581e371fd2ff7d24580a1`, API revision 1.
+The tested core pin is `88f06e2e953efc117d442f1e81175b21adca354d`, API revision 1.
 `core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on the
 immutable commit. `pip install .` brings in that dependency; the pin helper checks
 installed Git provenance even when successive core commits share a package version.
@@ -161,9 +161,9 @@ measured from the selected runtime and do not establish image compatibility.
 Core's single opt-in community inventory includes PteMalfind/Ptenum, ImgMalfind,
 Prefetch, AnyDesk, EVTXLog, Browser History Extractor and KeePass, plus CobaltStrike,
 RichHeader, ZoneID3, PteResolve, PasswordManager and SSHKeys. The six recent additions
-are forced offline. PasswordManager and SSHKeys are manual-only sensitive extraction
-commands, excluded from automatic investigation/report flows. PasswordManager needs
-an explicit browser PID; SSHKeys needs a Linux PID and one suspected `sshenc` address.
+are forced offline. PasswordManager is eligible for automatic investigation when relevant to the authorized
+case scope and needs an observed browser PID. SSHKeys remains manual-only, excluded
+from automatic flows, and needs a Linux PID and one suspected `sshenc` address.
 No installed command is silently removed.
 
 The runtime batch adds a BitLocker AES-schedule candidate scanner, ten Go commands
@@ -203,7 +203,10 @@ wheels, checks dependencies, assets, HTTP startup and both MCP protocol modes, t
 runs the full Workbench suite against installed packages outside the checkout.
 Browser scripts under `scripts/check_*_browser.cjs` use synthetic data and Playwright
 as a validation-only dependency; `check_themes_browser.cjs` checks all 31 skins under
-the production content-security policy. Normal application use needs no Playwright.
+the production content-security policy. `check_theme_persistence_browser.cjs` checks
+restart/port changes, shared preferences, migration and save races;
+`check_volshell_browser.cjs` checks the VolShell connection toggle and confirmed-disconnect lifecycle.
+Normal application use needs no Playwright.
 CI retains Python 3.12 and 3.13 compatibility checks.
 
 [UI validation](docs/UI_VALIDATION.md), [packaging validation](packaging/VALIDATION.md),

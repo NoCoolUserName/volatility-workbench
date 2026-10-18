@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
 license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md", "LICENSING.md", "licenses/DEPENDENCY_LICENSES.txt"]
-dependencies = ["volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@e49244fd753826c83ae581e371fd2ff7d24580a1"]
+dependencies = ["volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@88f06e2e953efc117d442f1e81175b21adca354d"]
 
 [project.optional-dependencies]
 desktop = ["pywebview==6.2.1; sys_platform == 'darwin'"]

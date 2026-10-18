@@ -147,5 +147,9 @@ Artwork and palette changes are cosmetic. A theme does not establish forensic
 accuracy or imply that a proposed investigation mode exists. Visual checks use
 harmless synthetic case data. They cannot cover every browser, display setting,
 user stylesheet or assistive technology; users can retain the simpler legacy
-themes when those better fit their viewing needs. If browser storage is disabled,
-the current page can still change themes, but the choice may not survive reload.
+themes when those better fit their viewing needs. Choices persist in application
+preferences outside cases and the installed bundle, including when browser storage
+is disabled or the desktop's loopback port changes. The browser cache supplies the
+initial appearance until an authenticated state response arrives. Failed saves
+show an inline message and a **Retry save** button. The current page keeps the
+choice; retrying saves that selection without requiring a change to another theme.

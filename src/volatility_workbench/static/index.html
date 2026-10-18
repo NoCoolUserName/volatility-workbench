@@ -212,10 +212,10 @@
                   <label for="volshellImage">Capture<select id="volshellImage"></select></label>
                   <label for="volshellMode">Operating system<select id="volshellMode"><option value="generic">Generic</option><option value="windows">Windows</option><option value="linux">Linux</option><option value="mac">macOS</option></select></label>
                 </div>
-                <div class="volshell-session-actions"><button id="volshellConnect" type="button">Connect</button><button id="volshellInterrupt" type="button" disabled>Interrupt command</button><button id="volshellShowAgent" type="button" hidden>AI activity</button><span id="volshellStatus" role="status" aria-live="polite">Disconnected</span></div>
+                <div class="volshell-session-actions"><button id="volshellConnect" type="button">Connect</button><button id="volshellDisconnect" type="button" hidden disabled>Disconnect</button><button id="volshellInterrupt" type="button" disabled>Interrupt command</button><button id="volshellShowAgent" type="button" hidden>AI activity</button><span id="volshellStatus" role="status" aria-live="polite">Disconnected</span></div>
                 <p id="volshellBinding" class="subtle"></p>
               </details>
-              <div class="volshell-header-actions"><button id="volshellDisconnect" type="button" hidden disabled>Disconnect</button><button id="collapseVolshell" type="button">Collapse</button></div>
+              <div class="volshell-header-actions"><button id="collapseVolshell" type="button">Collapse</button></div>
             </div>
             <p id="volshellError" role="alert" hidden></p>
             <label class="volshell-interaction" for="volshellInteractionMode">Mode<select id="volshellInteractionMode"><option value="manual">Manual commands</option><option value="suggestions">AI command suggestions</option><option value="investigation">AI investigation</option></select></label>

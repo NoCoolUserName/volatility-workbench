@@ -1912,6 +1912,7 @@ async function browse(path = "", location = "") {
 async function refresh() {
   const previous = state;
   state = await api("state");
+  window.WorkbenchThemes.sync(state.appearance);
   if (previous) {
     const active = status => ["queued", "running", "stopping"].includes(status);
     for (const job of state.jobs) {
