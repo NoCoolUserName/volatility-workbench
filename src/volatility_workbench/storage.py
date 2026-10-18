@@ -1,6 +1,7 @@
 """Private UI state and report packaging; never a core MCP requirement."""
 from __future__ import annotations
 import csv
+import codecs
 import hashlib
 import json
 import mimetypes
@@ -47,7 +48,16 @@ def read_chunk(root, path, offset=0, limit=32768):
     with target.open('rb') as stream:
         stream.seek(offset)
         data = stream.read(limit)
-    size = target.stat().st_size
+        size = target.stat().st_size
+        if offset + len(data) < size:
+            decoder = codecs.getincrementaldecoder('utf8')(errors='replace')
+            decoder.decode(data, final=False)
+            while decoder.getstate()[0] and offset + len(data) < size:
+                extra = stream.read(1)
+                if not extra:
+                    break
+                data += extra
+                decoder.decode(extra, final=False)
     return {'path': path, 'text': data.decode('utf8', errors='replace'), 'size': size,
             'next_offset': offset + len(data), 'truncated': offset + len(data) < size}
 

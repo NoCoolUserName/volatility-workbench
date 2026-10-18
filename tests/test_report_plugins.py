@@ -264,6 +264,8 @@ class InventoryTests(unittest.TestCase):
         rendered = inventory.markdown(text, result)
         self.assertEqual(rendered, inventory.markdown(rendered, result))
         self.assertEqual(rendered.count(inventory.START), 1)
+        self.assertIn('**Plugin:**', rendered)
+        self.assertNotIn('| Record |', rendered)
         self.assertIn('evil&#124;&lt;script&gt;', rendered)
         self.assertNotIn('[remote](https://invalid.test/x)', rendered)
         self.assertIn('display abbreviated', rendered);self.assertLess(len(rendered), 7000)

@@ -501,15 +501,15 @@ def markdown(text, inventory):
              f"reuse receipts: **{counts['reuse_receipts']}**; failed requests: **{counts['request_failures']}**; "
              f"runs with unknown execution metadata: **{counts['unknown_execution_records']}**; "
              f"explicitly simulated runs: **{counts['simulated_runs']}**.", '',
-             '[Complete saved inventory](plugin-inventory.json). Counts are metadata records, not a completeness or clean-system verdict.', '',
-             '| Record | Plugin | Arguments (bounded display) | Recorded argv (bounded display) | Result | Image | Run / call | Start / finish | Reuse receipts |',
-             '| --- | --- | --- | --- | --- | --- | --- | --- | --- |']
-    for entry in inventory['entries'][:100]:
+             '[Complete saved inventory](plugin-inventory.json). Counts are metadata records, not a completeness or clean-system verdict.', '']
+    labels = ('Record', 'Plugin', 'Arguments (bounded display)', 'Recorded argv (bounded display)',
+              'Result', 'Image', 'Run / call', 'Start / finish', 'Reuse receipts')
+    for number, entry in enumerate(inventory['entries'][:100], 1):
         values = [entry['kind'] + (' (simulated)' if entry.get('synthetic') else ''), entry['plugin'], entry['arguments'], entry['argv'], entry['status'], entry['image_id'],
                   (entry.get('run_id') or 'Unknown') + ' / ' + (entry.get('call_id') or 'Unknown'),
                   (entry.get('started_at') or 'Unknown') + ' / ' + (entry.get('finished_at') or 'Unknown'), entry['reuse_count']]
-        lines.append('| ' + ' | '.join(cell(v) for v in values) + ' |')
+        lines += [f'#### Saved record {number}', *(f'**{label}:** {cell(value)}' for label, value in zip(labels, values)), '']
     if len(inventory['entries']) > 100:
-        lines += ['', 'Table shows the first 100 metadata records; consult the complete saved inventory for all retained records.']
+        lines += ['', 'Entries above show the first 100 metadata records; consult the complete saved inventory for all retained records.']
     lines += ['', *('Metadata limitation: ' + cell(w) for w in inventory['warnings'] if w != SCOPE_WARNING), END, '']
     return text[:heading.end()] + '\n\n' + '\n'.join(lines).rstrip() + '\n\n' + text[heading.end():].lstrip('\n')
