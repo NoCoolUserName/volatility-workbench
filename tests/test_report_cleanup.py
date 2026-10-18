@@ -1,0 +1,212 @@
+"""Explicit incomplete-bundle cleanup, with no analysis or private evidence."""
+import asyncio
+import json
+from pathlib import Path
+import threading
+import unittest
+from unittest.mock import patch
+import urllib.error
+import urllib.request
+
+import support
+from volatility_workbench.app import Workbench
+from volatility_workbench.http import Server
+from volatility_workbench.storage import delete_incomplete_bundle
+
+
+class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        fixture = support.BackendFixture(); fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        self.fixture = fixture
+        self.config = fixture.root / 'config.json'
+        self.config.write_text(json.dumps(fixture.config.to_dict()))
+        self.app = Workbench(self.config, fixture.root / 'ui')
+        self.case = self.app.add([str(fixture.image)])[0]
+        self.shared = self.app.directory(self.case) / 'analysis' / 'saved.txt'
+        self.shared.parent.mkdir(); self.shared.write_text('shared original output')
+        self.source = fixture.image.read_bytes()
+
+    def report(self, ident='old', status='incomplete', case=None):
+        case = case or self.case
+        record = {'id':ident, 'status':status, 'created_at':'2026-10-18T12:00:00Z', 'previous':None}
+        case['reports'].append(record)
+        folder = self.app.directory(case) / 'reports' / ident
+        folder.mkdir(parents=True)
+        (folder/'report.md').write_text('Synthetic report, not an investigation')
+        (folder/'artifacts').mkdir(); (folder/'artifacts'/'copy.txt').write_text('private report copy')
+        (folder/'case-manifest.json').write_text(json.dumps({'case_id':case['id'], 'status':'in_progress'}))
+        self.app.save()
+        return record, folder
+
+    def assert_preserved(self):
+        self.assertEqual(self.fixture.image.read_bytes(), self.source)
+        self.assertEqual(self.shared.read_text(), 'shared original output')
+        self.assertFalse((self.fixture.root/'analysis-count.jsonl').exists())
+
+    async def test_hide_is_durable_without_changing_report_files(self):
+        record, folder = self.report()
+        before = {p.relative_to(folder):p.read_bytes() for p in folder.rglob('*') if p.is_file()}
+        await self.app.remove_report(self.case['id'], record['id'], 'hide')
+        reopened = Workbench(self.config, self.app.root)
+        self.assertTrue(reopened.case(self.case['id'])['reports'][0]['hidden'])
+        self.assertEqual(before, {p.relative_to(folder):p.read_bytes() for p in folder.rglob('*') if p.is_file()})
+        self.assertEqual(self.case['activity'][-1]['kind'], 'report_hidden')
+        self.assert_preserved()
+
+    async def test_delete_removes_only_bundle_retains_history_and_is_idempotent(self):
+        record, folder = self.report()
+        sealed, sealed_folder = self.report('sealed', 'sealed')
+        original = (sealed_folder/'report.md').read_bytes()
+        self.app.state['jobs'].append({'id':'old-job','case_id':self.case['id'],'report_id':record['id'],'status':'incomplete'})
+        with patch.object(self.app.backend, 'run_plugin', side_effect=AssertionError('analysis forbidden')):
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertFalse(folder.exists())
+        self.assertEqual((sealed_folder/'report.md').read_bytes(), original)
+        self.assertTrue(record['hidden']); self.assertTrue(record['deleted_at'])
+        self.assertEqual(self.app.state['jobs'][0]['report_id'], record['id'])
+        reopened = Workbench(self.config, self.app.root)
+        self.assertTrue(reopened.case(self.case['id'])['reports'][0]['deleted_at'])
+        self.assertTrue((await self.app.remove_report(self.case['id'], record['id'], 'delete'))['already_deleted'])
+        self.assert_preserved()
+
+    async def test_completed_draft_wrong_case_and_unknown_actions_are_rejected(self):
+        for status in ('sealed', 'draft'):
+            record, folder = self.report(status, status)
+            for action in ('hide', 'delete'):
+                with self.assertRaisesRegex(ValueError, 'Only incomplete'):
+                    await self.app.remove_report(self.case['id'], record['id'], action)
+            self.assertTrue(folder.exists())
+        other = self.app.add([str(self.fixture.image)])[0]
+        record, folder = self.report('other-case-report', case=other)
+        with self.assertRaisesRegex(ValueError, 'Unknown report'):
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        with self.assertRaisesRegex(ValueError, 'Choose hide or delete'):
+            await self.app.remove_report(other['id'], record['id'], 'anything')
+        self.assertTrue(folder.exists()); self.assert_preserved()
+
+    async def test_active_queued_and_referenced_reports_cannot_be_deleted(self):
+        record, folder = self.report()
+        for status in ('queued','running','stopping'):
+            self.app.state['jobs'] = [{'case_id':self.case['id'],'status':status}]
+            with self.assertRaisesRegex(ValueError, 'active and queued'):
+                await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.app.state['jobs'] = []
+        child, _ = self.report('child', 'sealed'); child['previous'] = record['id']
+        with self.assertRaisesRegex(ValueError, 'Another report references'):
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        await self.app.remove_report(self.case['id'], record['id'], 'hide')
+        self.assertTrue(folder.exists()); self.assert_preserved()
+
+    async def test_paths_symlinks_source_overlap_and_completed_manifest_rejected(self):
+        record, folder = self.report()
+        outside = self.fixture.root/'outside'; outside.mkdir(); sentinel = outside/'keep'; sentinel.write_text('keep')
+        for name in ('../outside', '/outside', '..', 'x\\y'):
+            with self.assertRaises(ValueError):
+                delete_incomplete_bundle(self.app.directory(self.case), name, [])
+        bad_case = {**self.case, 'id':str(outside)}
+        self.app.state['cases'].append(bad_case)
+        with self.assertRaisesRegex(ValueError, 'state root'):
+            await self.app.remove_report(bad_case['id'], record['id'], 'hide')
+        self.app.state['cases'].remove(bad_case)
+        link = folder/'escape'; link.symlink_to(outside, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, 'symlinks'):
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertTrue((folder/'report.md').exists()); link.unlink()
+        physical = folder.with_name('physical-copy')
+        folder.rename(physical); folder.symlink_to(physical, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, 'Symlink'):
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        folder.unlink(); physical.rename(folder)
+        with self.assertRaisesRegex(ValueError, 'source evidence'):
+            delete_incomplete_bundle(self.app.directory(self.case), record['id'], [folder/'artifacts/copy.txt'])
+        manifest = folder/'case-manifest.json'
+        manifest.write_text(json.dumps({'case_id':self.case['id'],'status':'complete_with_limitations'}))
+        with self.assertRaisesRegex(ValueError, 'Completed report'):
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        manifest.write_text(json.dumps({'case_id':'another-case','status':'in_progress'}))
+        with self.assertRaisesRegex(ValueError, 'another case'):
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertEqual(sentinel.read_text(), 'keep'); self.assert_preserved()
+
+    async def test_missing_and_malformed_incomplete_bundles_can_be_cleaned(self):
+        record, folder = self.report()
+        (folder/'case-manifest.json').write_text('{broken draft')
+        await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertFalse(folder.exists())
+        record, folder = self.report('missing')
+        import shutil
+        shutil.rmtree(folder)
+        result = await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertFalse(result['bundle_removed']); self.assertTrue(record['deleted_at'])
+        self.assert_preserved()
+
+    async def test_io_failure_keeps_card_and_records_error_for_retry(self):
+        record, folder = self.report()
+        def partial(*args):
+            (folder/'report.md').unlink()
+            raise OSError('Synthetic permission failure after partial cleanup')
+        with patch('volatility_workbench.app.delete_incomplete_bundle', side_effect=partial):
+            with self.assertRaises(OSError):
+                await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertNotIn('deleted_at', record); self.assertFalse(record.get('hidden'))
+        self.assertIn('permission', record['deletion_error']); self.assertTrue(folder.exists())
+        self.assertTrue((folder/'artifacts/copy.txt').exists())
+        await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertNotIn('deletion_error', record); self.assertFalse(folder.exists())
+        self.assert_preserved()
+
+    async def test_cleanup_blocks_duplicate_jobs_and_shutdown_waits_for_completion(self):
+        record, folder = self.report()
+        entered, release = threading.Event(), threading.Event()
+        def slow(*args):
+            entered.set()
+            if not release.wait(5): raise RuntimeError('Fixture cleanup release timed out')
+            return delete_incomplete_bundle(*args)
+        await self.app.start()
+        closing = None
+        with patch('volatility_workbench.app.delete_incomplete_bundle', side_effect=slow):
+            task = asyncio.create_task(self.app.remove_report(self.case['id'], record['id'], 'delete'))
+            try:
+                self.assertTrue(await asyncio.to_thread(entered.wait, 2))
+                self.assertEqual(self.app.snapshot()['report_cleanup_cases'], [self.case['id']])
+                with self.assertRaisesRegex(ValueError, 'cleanup'):
+                    self.app.enqueue(self.case['id'], 'question', 'synthetic')
+                with self.assertRaisesRegex(ValueError, 'already in progress'):
+                    await self.app.remove_report(self.case['id'], record['id'], 'delete')
+                closing = asyncio.create_task(self.app.close())
+                await asyncio.sleep(.02)
+                self.assertFalse(closing.done())
+            finally:
+                release.set()
+                await task
+                if closing is not None: await closing
+                else: await self.app.close()
+        self.assertFalse(folder.exists()); self.assert_preserved()
+
+    async def test_actual_http_requires_origin_and_auth_then_hides_and_deletes(self):
+        record, folder = self.report()
+        server = Server(self.app, 0, asyncio.get_running_loop())
+        thread = threading.Thread(target=server.serve_forever, daemon=True); thread.start()
+        def request(action, auth=True, origin=True):
+            headers = {'Content-Type':'application/json'}
+            if auth: headers['Cookie'] = 'volatility_ui='+server.token
+            if origin: headers['Origin'] = server.origin
+            body = json.dumps({'case_id':self.case['id'],'report_id':record['id'],'action':action}).encode()
+            req = urllib.request.Request(server.origin+'/api/reports/remove', body, headers=headers)
+            try:
+                with urllib.request.urlopen(req, timeout=5) as response:return response.status
+            except urllib.error.HTTPError as error:return error.code
+        try:
+            self.assertEqual(await asyncio.to_thread(request, 'delete', False), 403)
+            self.assertEqual(await asyncio.to_thread(request, 'delete', True, False), 403)
+            self.assertTrue(folder.exists())
+            self.assertEqual(await asyncio.to_thread(request, 'hide'), 200)
+            self.assertTrue(folder.exists())
+            self.assertEqual(await asyncio.to_thread(request, 'delete'), 200)
+            self.assertFalse(folder.exists()); self.assert_preserved()
+        finally:
+            await asyncio.to_thread(server.shutdown); server.server_close()
+
+
+if __name__ == '__main__': unittest.main()

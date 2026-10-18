@@ -49,6 +49,54 @@ def read_chunk(root, path, offset=0, limit=32768):
             'next_offset': offset + len(data), 'truncated': offset + len(data) < size}
 
 
+def delete_incomplete_bundle(case_dir, report_id, evidence_paths):
+    """Delete one registered revision's private copies, never shared analysis."""
+    if (not isinstance(report_id, str) or not report_id or report_id in ('.', '..')
+            or Path(report_id).name != report_id or '\\' in report_id
+            or any(ord(c) < 32 for c in report_id)):
+        raise ValueError('Invalid report revision identifier')
+    parent = Path(case_dir) / 'reports'
+    target = parent / report_id
+    check_components(target)
+    if not resolved_path(target).is_relative_to(resolved_path(parent)):
+        raise ValueError('Report revision escapes the case')
+    if any(Path(p).expanduser().resolve().is_relative_to(target.resolve()) for p in evidence_paths):
+        raise ValueError('Report directory overlaps registered source evidence')
+    if not target.exists():
+        return False  # A retry after interrupted cleanup may find no bundle.
+    if not target.is_dir():
+        raise ValueError('Report revision must be a directory')
+    # Refuse any redirect/special entry before removing even one file. rmtree's
+    # fd-based implementation also protects traversal if a symlink races this check.
+    if not shutil.rmtree.avoids_symlink_attacks:
+        raise ValueError('Safe report deletion is unavailable on this platform; Hide from UI is available')
+    device = target.stat().st_dev
+    def unreadable(error):
+        raise error
+    for root, dirs, files in os.walk(target, followlinks=False, onerror=unreadable):
+        for name in dirs + files:
+            entry = Path(root) / name
+            info = entry.lstat()
+            if (stat.S_ISLNK(info.st_mode) or info.st_dev != device
+                    or not (stat.S_ISREG(info.st_mode) or stat.S_ISDIR(info.st_mode))):
+                raise ValueError('Report cleanup refuses symlinks, mounted filesystems or special files')
+    manifest = target / 'case-manifest.json'
+    if manifest.exists():
+        if manifest.stat().st_size > 16 * 1024 * 1024:
+            raise ValueError('Report manifest exceeds safe inspection limit; Hide from UI is available')
+        try:
+            data = json.loads(safe_file(target, 'case-manifest.json').read_text())
+        except (ValueError, UnicodeError):
+            data = {}  # A malformed incomplete draft remains explicitly removable.
+        if isinstance(data, dict):
+            if data.get('case_id') not in (None, Path(case_dir).name):
+                raise ValueError('Report manifest belongs to another case')
+            if data.get('completed_at') or data.get('status') in ('complete', 'complete_with_limitations'):
+                raise ValueError('Completed report bundles cannot be deleted')
+    shutil.rmtree(target)
+    return True
+
+
 class Bundle:
     def __init__(self, case_dir, case, version, cancel=None, *, coverage_backend=None, jobs=None):
         self.case_dir, self.case, self.version = Path(case_dir), case, version

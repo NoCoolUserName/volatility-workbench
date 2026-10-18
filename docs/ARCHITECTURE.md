@@ -12,6 +12,16 @@ creates decorative assets from saved identities. `http.py` serves packaged stati
 assets with loopback Host/Origin/capability checks. The runtime fingerprint covers
 both installed packages, so a core update requires an idle process restart.
 
+Explicit incomplete-report hide/delete actions use the same authenticated,
+Origin-checked HTTP transport. Hidden/deleted timestamps and history remain in
+the existing case state. Only a registered incomplete revision can be targeted;
+file cleanup is confined to its bundle with symlink, source-overlap and completed
+manifest checks. Shared analysis is never deleted. Cleanup runs in a background
+thread, blocks new work for that case, and finishes before graceful shutdown.
+The native shell treats cleanup as maintenance. An interrupted cleanup remains
+retryable; startup never automatically deletes or regenerates reports. This is
+a UI action, not a new investigator/MCP tool or generic filesystem delete API.
+
 Case data roots, sealed bundles and conversations are independent of source paths.
 The optional legacy `--project` only keeps state outside a named source tree.
 Read the detailed boundaries in [LOCAL_UI.md](LOCAL_UI.md), the

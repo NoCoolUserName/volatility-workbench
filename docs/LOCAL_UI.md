@@ -97,6 +97,17 @@ saved evidence, and reports are unaffected.
    readable text views, JSON/JSONL, activity, failures, current operation and elapsed
    time are accessible in the other tabs. Large files are read in bounded chunks;
    complete originals remain on disk. Recovered HTML is never executed.
+   Incomplete report cards reveal **×** on hover or keyboard focus (always visible
+   on touch devices). Its popup offers **Hide from UI**, which persistently hides
+   the revision without changing files, or **Delete**, which permanently removes
+   only that revision's `reports/<revision>/` bundle, including its copied
+   artifacts and decorative assets. Shared analysis, original images, case/job
+   history, other revisions and independently saved exports are retained. Hidden
+   files remain accessible in Evidence; there is currently no unhide control.
+   Completed reports cannot be hidden/deleted this way. Delete is blocked while
+   the case has active/queued work or another revision names it as its predecessor.
+   A failed/partial deletion is recorded and can be retried; it is not rolled
+   back or silently marked successful. Closing the popup performs no action.
 6. **Ask / investigate further** resumes the same case conversation. It may run
    more MCP queries, but does not rewrite reports. **Update report** explicitly
    creates a new revision with a link to the previous version and preserved stable

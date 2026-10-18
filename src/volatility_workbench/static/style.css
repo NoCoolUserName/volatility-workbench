@@ -260,6 +260,18 @@ details {
   font-size: 12px;
   overflow-wrap: anywhere;
 }
+#versions { display: flex; flex-wrap: wrap; gap: 8px; }
+.report-version { position: relative; max-width: 100%; }
+.report-version > button:first-child { max-width: 100%; text-align: left; }
+.report-version.removable > button:first-child { padding-right: 32px; }
+.report-remove { position: absolute; top: 3px; right: 3px; padding: 0; width: 22px; height: 22px; line-height: 1; opacity: 0; pointer-events: none; color: var(--muted); border: 0; background: transparent; }
+.report-version:hover .report-remove, .report-version:focus-within .report-remove { opacity: 1; pointer-events: auto; }
+@media (hover: none) { .report-remove { opacity: 1; pointer-events: auto; } }
+#reportRemoval { position: fixed; max-width: min(520px, calc(100vw - 40px)); background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+#reportRemoval::backdrop { background: #0009; }
+#reportRemoval h2 { padding-right: 25px; }
+#reportRemoval .dialog-close { position: absolute; top: 7px; right: 9px; border: 0; background: transparent; padding: 0 7px; font-size: 22px; }
+#reportRemoval [role=alert] { color: var(--error-text); }
 .tabs {
   display: flex;
   gap: 8px;
