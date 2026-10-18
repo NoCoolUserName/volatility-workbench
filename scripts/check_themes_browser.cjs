@@ -1,0 +1,115 @@
+// Entirely offline visual/interaction check: synthetic case/report, no analysis.
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const csp="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
+const assets=path.join(__dirname,'../src/volatility_workbench/static');
+const state={cases:[{id:'theme-fixture',title:'Synthetic theme review',created_at:'2026-10-18T00:00:00Z',
+  images:[{id:'E001',path:'/synthetic/example.vmem',size_bytes:4096,sha256:'a'.repeat(64)}],coins:[],
+  readiness:{status:'Unchecked',reasons:['Synthetic fixture only']},reports:[{id:'sample-report',status:'sealed',created_at:'2026-10-18T01:00:00Z'}],messages:[],activity:[]}],
+  jobs:[],approvals:[],account:{},evidence_root:'/synthetic'};
+const settings={config:{evidence_root:'/synthetic',output_root:'/synthetic/output',vol_python:'/synthetic/python'},state_dir:'/synthetic/state',has_cases:true,
+  evidence_locations:[],symbols:{directory:'/synthetic/symbols',cache:'/synthetic/cache',matching:'Synthetic only',profile:{packs:[],macos_status:'Synthetic'}},
+  provider:{default_provider:{provider:'codex'},cases:[]},operation:{status:'idle'},readiness:{status:'Unchecked',reasons:[]}};
+const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless synthetic table entry',target_os:'windows',plugin_version:[1,0,0],source:{kind:'native',label:'Synthetic source'}}],total:1,volatility_version:'SYNTHETIC',architecture:'fixture',import_failures:[]};
+(async()=>{
+  const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
+  try{
+    const page=await browser.newPage({viewport:{width:1400,height:1050}});
+    const errors=[],network=[],policyErrors=[];
+    page.on('console',message=>{if(/Content Security Policy|violates the following/.test(message.text()))policyErrors.push(message.text());});
+    page.on('pageerror',e=>errors.push(e.message));
+    await page.route('**/*',route=>{
+      const u=new URL(route.request().url()); network.push(u.href);
+      assert.equal(u.origin,'http://localhost','No external request allowed');
+      if(u.pathname.startsWith('/api/')){
+        assert.equal(route.request().method(),'GET','Theme changes must never mutate cases or submit jobs');
+        if(u.pathname==='/api/state')return route.fulfill({json:state});
+        if(u.pathname==='/api/settings')return route.fulfill({json:settings});
+        if(u.pathname==='/api/plugins')return route.fulfill({json:plugins});
+        if(u.pathname==='/api/artifacts')return route.fulfill({json:{files:[],truncated:false}});
+        if(u.pathname==='/api/file')return route.fulfill({json:{text:'# Synthetic report\n\n## Observation\n\nHarmless fixture only.\n\n```\nPID   Process        Result\n123   fixture.exe    Review required\n```',truncated:false}});
+        throw Error('Unexpected API '+u.pathname);
+      }
+      const name=u.pathname==='/'?'index.html':u.pathname.slice(1);
+      return route.fulfill({body:fs.readFileSync(path.join(assets,name)),headers:{'content-security-policy':csp},contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.png')?'image/png':name.endsWith('.svg')?'image/svg+xml':'text/html'});
+    });
+    await page.goto('http://localhost/');
+    await page.waitForFunction(()=>document.querySelector('.report-version.selected'));
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'halloween');
+    assert.equal(await page.locator('#theme').inputValue(),'halloween');
+    const catalog=await page.evaluate(()=>window.WorkbenchThemes.catalog);
+    assert.equal(catalog.length,31);
+    assert.equal(catalog.filter(t=>t.group==='Fallout').length,12);
+    assert.equal(new Set(catalog.map(t=>t.id)).size,31);
+    const screenshotDir=process.env.WORKBENCH_THEME_SCREENSHOTS;
+    if(screenshotDir)fs.mkdirSync(screenshotDir,{recursive:true});
+    const measurements=[];
+    for(const theme of catalog){
+      await page.locator('#theme').selectOption(theme.id);
+      assert.equal(await page.locator('html').getAttribute('data-theme'),theme.id);
+      assert.equal(await page.locator('[data-theme-name]').textContent(),theme.label);
+      assert.equal(await page.locator('.report-version.selected').count(),1,'Theme must preserve selected report');
+      assert.match(await page.locator('.report-version.selected > button:first-child').evaluate(e=>getComputedStyle(e).boxShadow),/inset/);
+      const image=theme.id==='halloween-noir'?'halloween-night.png':`theme-${theme.id}.svg`;
+      assert.ok(fs.existsSync(path.join(assets,image)),'Every skin has a packaged scene');
+      if(image.endsWith('.svg')){
+        const source=fs.readFileSync(path.join(assets,image),'utf8');
+        assert.match(source,/<svg/);assert.doesNotMatch(source,/<script|foreignObject|(?:href|src)=|style=/i,'Art has no script, inline styles or linked resources');
+      }
+      await page.evaluate(name=>new Promise((resolve,reject)=>{const image=new Image();image.onload=resolve;image.onerror=()=>reject(Error('Scene could not load '+name));image.src='/'+name;}),image);
+      const contrast=await page.evaluate(()=>{
+        const css=getComputedStyle(document.documentElement);
+        const luminance=hex=>{
+          const x=hex.trim().slice(1).match(/../g).map(n=>parseInt(n,16)/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);
+          return x[0]*.2126+x[1]*.7152+x[2]*.0722;
+        };
+        const ratio=(a,b)=>{const x=luminance(css.getPropertyValue('--'+a)),y=luminance(css.getPropertyValue('--'+b));return(Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+        return {text:ratio('text','panel'),muted:ratio('muted','panel'),primary:ratio('accent','accent-text'),selection:ratio('accent','panel'),warning:ratio('status','panel'),danger:ratio('danger','panel'),error:ratio('error-text','panel'),border:ratio('border','control-bg')};
+      });
+      for(const token of ['text','muted','primary','selection','warning','danger','error'])assert.ok(contrast[token]>=4.5,`${theme.id} ${token} contrast ${contrast[token]}`);
+      assert.ok(contrast.border>=3,`${theme.id} control border contrast ${contrast.border}`);
+      measurements.push({id:theme.id,...contrast});
+      await page.locator('#theme').focus();
+      assert.equal(await page.locator('#theme').evaluate(e=>getComputedStyle(e).outlineStyle),'solid');
+      if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,theme.id+'.png'),fullPage:true});
+    }
+    // Every original preference remains honored on startup, including settings.
+    for(const id of ['matrix','mono','blue']){
+      await page.locator('#theme').selectOption(id);await page.reload();
+      assert.equal(await page.locator('#theme').inputValue(),id);
+      await page.goto('http://localhost/settings.html');
+      assert.equal(await page.locator('#settings-theme').inputValue(),id);
+      await page.goto('http://localhost/');
+    }
+    await page.goto('http://localhost/settings.html');
+    await page.locator('#settings-theme').selectOption('silpheed');
+    await page.goto('http://localhost/');
+    assert.equal(await page.locator('#theme').inputValue(),'silpheed');
+    await page.locator('#openPlugins').click();
+    await page.waitForFunction(()=>document.querySelector('#pluginRows tr'));
+    for(const id of catalog.map(t=>t.id)){
+      await page.locator('#theme').selectOption(id);
+      assert.equal(await page.locator('#pluginRows tr').count(),1);
+      assert.equal(await page.locator('#pluginRows').evaluate(e=>getComputedStyle(e).color),await page.locator('body').evaluate(e=>getComputedStyle(e).color));
+    }
+    await page.setViewportSize({width:390,height:844});
+    await page.locator('#theme').selectOption('halloween');
+    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile must not overflow horizontally');
+    if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,'mobile.png'),fullPage:true});
+    await page.emulateMedia({reducedMotion:'reduce',contrast:'more'});
+    assert.equal(await page.locator('html').evaluate(e=>getComputedStyle(e).getPropertyValue('--border').trim()),await page.locator('html').evaluate(e=>getComputedStyle(e).getPropertyValue('--muted').trim()));
+    // Storage unavailable and unknown future/removed IDs both keep a usable default.
+    await page.evaluate(()=>localStorage.setItem('volatility-workbench-theme','unknown-theme'));
+    await page.reload();assert.equal(await page.locator('#theme').inputValue(),'halloween');
+    await page.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw new Error('disabled for fixture');}});});
+    await page.reload();assert.equal(await page.locator('#theme').inputValue(),'halloween');
+    await page.locator('#theme').selectOption('8-bit');
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'8-bit');
+    assert.deepEqual(errors,[]);
+    assert.deepEqual(policyErrors,[],'Production CSP must allow all packaged artwork');
+    console.log(`Theme browser: ${catalog.length} skins, 12 Fallout choices, text/control contrast, selected report, focus, 3 legacy prefs, shared Settings, mobile, increased contrast and unavailable storage passed. ${network.length} local GET requests; zero analysis/mutation/external requests.`);
+    if(screenshotDir)fs.writeFileSync(path.join(screenshotDir,'contrast.json'),JSON.stringify(measurements,null,2)+'\n');
+  }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exit(1);});

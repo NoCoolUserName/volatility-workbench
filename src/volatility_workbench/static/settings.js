@@ -1,7 +1,6 @@
 'use strict';
 const byId=id=>document.getElementById(id);
 let initialized=false;
-try {const theme=localStorage.getItem('volatility-workbench-theme');if(['matrix','mono','blue'].includes(theme))document.documentElement.dataset.theme=theme;} catch {}
 async function request(path,body){
   const response=await fetch(path,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const data=await response.json();
