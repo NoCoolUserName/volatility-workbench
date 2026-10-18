@@ -22,8 +22,23 @@ compatible-provider turn. Default-only saves do not switch existing cases.
 
 ## Locations and maintenance
 
-Configured roots are authoritative. Existing case roots cannot be changed from
-this screen. Empty setups can select physical evidence/output directories through
+The configured evidence folder is the default for relative paths and folder
+browsing; it is not the only physical location an explicitly selected image may
+use. Add evidence in Workbench by absolute path or the native picker, including
+images on other mounted disks. **Registered image folders** in Settings lists
+each unique image parent folder, unique image count and case count, alongside the
+default folder. It refreshes from saved case metadata and survives reopening;
+unmounted locations remain listed. Opening Settings does not hash or open images.
+
+Each new case records its own evidence scope and exact selected-file allowlist.
+Unrelated selections still create separate cases. Explicitly related images from
+different folders can share one case; their common parent provides stable relative
+identities internally, while the scoped MCP rejects every unregistered sibling.
+Adding an image does not add or scan its entire folder, change the default MCP
+configuration, copy evidence, or widen an existing case. Symlinks, traversal,
+unsupported files and files in application outputs/state remain rejected.
+
+Existing case roots cannot be changed from this screen. Empty setups can select physical evidence/output directories through
 the desktop native picker or path entry. State remains in the configured private
 state directory; this is not a migration tool. Symlinks are refused.
 

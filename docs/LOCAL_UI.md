@@ -33,8 +33,9 @@ private output directory outside the repository, add:
 
 The chosen directory is the UI's configured case output root. Keep the same
 argument on later launches to reopen those cases. Do not put UI state under Git.
-Source images remain in the configured evidence root; output and source roots
-must not overlap in a way that makes the output directory contain the evidence.
+Source images remain at their selected physical locations. The configured evidence
+root is the default for relative paths and browsing. Each case scopes MCP to its
+explicitly registered files; output roots must never contain selected source evidence.
 No migration or rewrite of previous reports is performed.
 Use the physical location in both `--config` and `--state-dir`. Moving a case
 root requires an offline, backed-up rebase of mutable saved paths; changing only
@@ -62,9 +63,10 @@ saved evidence, and reports are unaffected.
 1. Add existing `.raw`, `.mem`, `.vmem`, `.dmp`, `.lime`, or `.dd` files through
    path entry, evidence-folder browsing, or **Choose in Finder** on macOS. The
    native helper returns filesystem paths; the browser does not upload files.
-   Selected files must remain inside the configured evidence root and cannot be
-   symlinks. To use another source location, deliberately configure that root
-   through the normal setup/configuration path first. No automatic copying occurs.
+   Absolute selections can use different physical folders; relative paths and
+   folder browsing use the default evidence root. Selected files cannot be symlinks
+   or application outputs. Their parent folders appear automatically under
+   Settings → Evidence locations. No automatic copying or folder scan occurs.
 2. Unrelated images become separate cases. Check **related captures** only when
    intentionally grouping them. Each capture keeps its own evidence ID, hash,
    discovery result, run associations, and report provenance. New cases get a

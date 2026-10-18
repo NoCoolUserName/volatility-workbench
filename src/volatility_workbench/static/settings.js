@@ -15,12 +15,17 @@ async function refresh(){
   const data=await request('/api/settings');
   byId('settings-readiness').textContent=data.readiness.status+': '+data.readiness.reasons.join(' ');
   byId('state-root').textContent=data.state_dir;
+  const locations=byId('evidence-locations');locations.replaceChildren();
+  for(const item of data.evidence_locations||[]){
+    const row=document.createElement('li');const path=document.createElement('code');path.textContent=item.path;row.append(path);
+    row.append(document.createTextNode((item.default?' — default folder; ':' — ')+item.image_count+' registered image(s), '+item.case_count+' case(s)'));locations.append(row);
+  }
   byId('analyzer-path').textContent=data.config.vol_python;
   byId('symbol-path').textContent=data.symbols.directory;
   byId('cache-path').textContent=data.symbols.cache;
   byId('symbol-matching').textContent=data.symbols.matching;
   byId('mac-symbol-note').textContent=data.symbols.profile.macos_status;
-  byId('location-note').textContent=data.has_cases?'Your existing paths are authoritative. Changing roots here is disabled while cases exist.':'Choose physical folders; this does not move or copy evidence. You can skip setup and return to saved material.';
+  byId('location-note').textContent=data.has_cases?'Existing case paths are preserved. Add images from other physical folders in Workbench; their locations appear below. Changing default roots here is disabled while cases exist.':'Choose physical folders; this does not move or copy evidence. You can skip setup and return to saved material.';
   byId('evidence-root').disabled=data.has_cases;byId('output-root').disabled=data.has_cases;
   document.querySelectorAll('[data-folder]').forEach(button=>button.disabled=data.has_cases||!data.native_folder_picker);
   byId('choose-symbol').disabled=!data.native_folder_picker;

@@ -14,3 +14,5 @@ body {display:block;overflow:auto}
 .settings [hidden] {display:none!important}
 
 .settings input[type=checkbox] {display:inline;width:auto;margin-right:8px}
+
+.settings #evidence-locations li {margin:10px 0;overflow-wrap:anywhere}

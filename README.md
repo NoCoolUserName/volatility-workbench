@@ -17,7 +17,9 @@ WebView with a Dock icon, native menus and Settings. It includes separate,
 relocatable Python application/analyzer runtimes; no checkout, Homebrew, shell
 startup file or development venv is needed. Closing the window hides it; Dock
 reopen restores it. Quit asks before cancelling active work. Existing configuration
-and case roots can be reused without moving evidence.
+and case roots can be reused without moving evidence. Images explicitly added
+from different physical folders stay in place; Settings lists their registered
+locations and counts while MCP access remains limited to each case’s selected files.
 
 See [build, install and rollback](packaging/README.md), [native application](docs/MACOS_APP.md),
 and [Settings, symbols and optional plugins](docs/SETTINGS_AND_SYMBOLS.md).
