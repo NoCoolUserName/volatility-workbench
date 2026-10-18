@@ -109,6 +109,7 @@ class Handler(BaseHTTPRequestHandler):
             return await app.settings_manager.dispatch(path,body)
         if path=='/api/cases':return {'cases':app.add(body['paths'],body.get('related',False),body.get('title',''),body.get('source',''))}
         if path=='/api/jobs':return app.enqueue(body['case_id'],body['kind'],body.get('text',''),body.get('request_id'))
+        if path=='/api/reports/remove':return await app.remove_report(body['case_id'],body['report_id'],body['action'])
         if path=='/api/stop':return await app.stop()
         if path=='/api/pick':return await app.native_pick()
         if path=='/api/approval':

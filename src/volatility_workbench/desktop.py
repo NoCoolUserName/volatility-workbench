@@ -138,7 +138,7 @@ class BackendHost:
         if not self.app:return {'active':False,'maintenance':False,'owned':False}
         async def read():
             return {'active':bool(self.app.active or any(j['status'] in ('queued','running','stopping') for j in self.app.state['jobs'])),
-                    'maintenance':self.app.settings_manager.busy,'owned':True}
+                    'maintenance':bool(self.app.settings_manager.busy or getattr(self.app, 'report_cleanup', {})),'owned':True}
         return asyncio.run_coroutine_threadsafe(read(),self.loop).result(timeout=5)
 
     def shutdown(self):
@@ -192,7 +192,7 @@ def install_cocoa_hooks(controller):
             if controller.quitting:return AppKit.NSTerminateCancel
             state=controller.host.activity()
             if state['maintenance']:
-                controller.alert('Maintenance is still running','Keep Workbench open until the plugin or symbol operation finishes. Your current runtime remains available.')
+                controller.alert('Maintenance is still running','Keep Workbench open until plugin, symbol or report cleanup finishes. Your current runtime remains available.')
                 return AppKit.NSTerminateCancel
             if state['active']:
                 alert=AppKit.NSAlert.alloc().init()

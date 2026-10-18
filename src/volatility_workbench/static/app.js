@@ -44,6 +44,7 @@ let state,
   selected = new URLSearchParams(location.search).get("case") || null,
   selectedVersion = null,
   shownReport = "",
+  shownVersions = "",
   shownActivity = "",
   shownMessages = "",
   shownImages = "",
@@ -257,7 +258,9 @@ function renderMarkdown(text, base) {
 async function showReport(version) {
   if (!version) {
     shownReport = "";
-    $("reportView").replaceChildren(el("p", "No report yet. Run readiness, then Generate report."));
+    $("reportView").replaceChildren(el("p", caseNow()?.reports.length
+      ? "No visible reports. Incomplete revisions may have been hidden or deleted."
+      : "No report yet. Run readiness, then Generate report."));
     $("toc").replaceChildren();
     return;
   }
@@ -313,6 +316,65 @@ async function showReport(version) {
     renderMarkdown("Report is not available yet: " + e.message, "reports/" + version.id);
     $("toc").replaceChildren();
   }
+}
+function removeReportDialog(c, report) {
+  let dialog = $("reportRemoval");
+  if (!dialog) {
+    dialog = el("dialog");
+    dialog.id = "reportRemoval";
+    dialog.setAttribute("aria-labelledby", "reportRemovalTitle");
+    dialog.onclick = (event) => { if (event.target === dialog) dialog.close(); };
+    document.body.append(dialog);
+  }
+  const key = c.id + "/" + report.id;
+  dialog.dataset.target = key;
+  const title = el("h2", "Remove incomplete report?");
+  title.id = "reportRemovalTitle";
+  const dismiss = el("button", "×", "dialog-close");
+  dismiss.setAttribute("aria-label", "Close report options");
+  dismiss.onclick = () => dialog.close();
+  const failure = el("p");
+  failure.setAttribute("role", "alert");
+  const buttons = el("div", undefined, "buttons");
+  const del = el("button", "Delete", "danger");
+  const hide = el("button", "Hide from UI");
+  const busy = (state.report_cleanup_cases || []).includes(c.id) || state.jobs.some(
+    (j) => j.case_id === c.id && ["queued", "running", "stopping"].includes(j.status),
+  );
+  del.disabled = busy;
+  if (busy) failure.textContent = "Finish this case's active work or cleanup before deleting. You can still hide this report.";
+  for (const [button, action] of [[del, "delete"], [hide, "hide"]]) {
+    button.onclick = async () => {
+      del.disabled = hide.disabled = true;
+      failure.textContent = action === "delete" ? "Deleting report files…" : "Hiding report…";
+      try {
+        await api("reports/remove", {case_id:c.id, report_id:report.id, action});
+        if (dialog.dataset.target === key) dialog.close();
+        if (selected === c.id) {
+          if (selectedVersion === report.id) { selectedVersion = null; shownReport = ""; }
+          if (action === "delete" && artifact?.path.startsWith("reports/" + report.id + "/")) {
+            artifact = null;
+            $("artifactMeta").textContent = "";
+            $("artifactView").textContent = "";
+            $("more").hidden = true;
+          }
+        }
+        await refresh();
+        if (selected === c.id) await loadArtifacts();
+      } catch (e) {
+        if (dialog.open && dialog.dataset.target === key) failure.textContent = e.message;
+        else error(e);
+        hide.disabled = false;
+        del.disabled = busy;
+      }
+    };
+  }
+  buttons.append(del, hide);
+  dialog.replaceChildren(dismiss, title, el("p", readableTime(report.created_at) + " · incomplete"),
+    el("p", "Hide from UI keeps all files. Delete permanently removes this revision's report bundle and its copied artifacts. Original images, shared analysis, case history and completed reports are retained."),
+    failure, buttons);
+  dialog.showModal();
+  hide.focus();
 }
 function render() {
   if (!state) return;
@@ -403,18 +465,31 @@ function render() {
         (running.status === "stopping" ? " · stopping…" : "")
       : "";
     const versions = $("versions");
+    const visibleReports = c.reports.filter((r) => !r.hidden && !r.deleted_at);
+    const versionsKey = JSON.stringify([c.id, visibleReports]);
+    if (shownVersions !== versionsKey) {
     versions.replaceChildren();
-    for (const r of [...c.reports].reverse()) {
+    for (const r of [...visibleReports].reverse()) {
+      const card = el("div", undefined, "report-version" + (r.status === "incomplete" ? " removable" : ""));
       const b = el("button", readableTime(r.created_at) + " · " + r.status);
       b.onclick = () => {
         selectedVersion = r.id;
         shownReport = "";
         showReport(r);
       };
-      versions.append(b);
+      card.append(b);
+      if (r.status === "incomplete") {
+        const remove = el("button", "×", "report-remove");
+        remove.setAttribute("aria-label", "Remove incomplete report " + readableTime(r.created_at));
+        remove.onclick = () => removeReportDialog(c, r);
+        card.append(remove);
+      }
+      versions.append(card);
+    }
+    shownVersions = versionsKey;
     }
     const v =
-      c.reports.find((r) => r.id === selectedVersion) || c.reports.at(-1);
+      visibleReports.find((r) => r.id === selectedVersion) || visibleReports.at(-1);
     showReport(v);
     const mkey = JSON.stringify(c.messages);
     if (shownMessages !== mkey) {

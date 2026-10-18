@@ -575,3 +575,32 @@ No private-case readiness job, private-image hash, investigation or report gener
 started. Repeat with `node scripts/check_case_header_browser.cjs`, Playwright in
 Node's module path and optionally `WORKBENCH_BROWSER_EXECUTABLE` for an existing
 Chromium installation.
+
+## Incomplete report hide/delete — 2026-10-18
+
+Nine new backend checks use temporary synthetic bundles. They verify persistent
+hiding without file changes; actual bundle removal with shared analysis, source
+bytes, completed reports and history retained; idempotent retries; rejection of
+completed/draft, wrong-case, active/queued and predecessor-linked revisions;
+traversal, root/nested symlink, source overlap and completed/mismatched manifest
+guards; malformed/missing incomplete bundles; partial I/O failure recording and
+retry; duplicate/new-job exclusion during cleanup; and shutdown waiting for
+cleanup. A real loopback HTTP check verifies authentication and Origin guards
+before hiding/deleting harmless files. The full suite and isolated installed-wheel
+smoke check pass 110 tests.
+
+The offline Chromium check passes hover/keyboard removal controls, two explicit
+choices, safe initial focus, dismissal without requests, hide/reload persistence,
+selected-report fallback, deletion failure/retry and completed-card protection.
+Newly completed revisions still display automatically when no older revision
+has been explicitly selected.
+Polling preserves the hovered card. Its synthetic popup screenshot was visually
+inspected. The prior readiness/header browser regression also passes. These
+checks invoke no private-case jobs or real memory analysis. Repeat the optional
+browser workflow with `node scripts/check_report_cleanup_browser.cjs` and the
+same Playwright/Chromium setup used for the header check.
+
+Deletion is permanent within the selected bundle; failures can leave partially
+removed files until an explicit retry. Case/job metadata and activity are audit
+records, not deleted bundles. No actual user's report was hidden or deleted by
+this verification, and no general filesystem cleanup or unhide UI is provided.

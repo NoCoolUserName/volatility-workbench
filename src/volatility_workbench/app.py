@@ -24,7 +24,7 @@ from .coins import populate
 from .codex import CodexClient, CodexError, child_environment
 from .providers import CompatibleClient, ProviderError, provider_config
 from .credentials import CredentialStore
-from .storage import Bundle, atomic_json, now, private_dir, read_chunk, safe_file, uid
+from .storage import Bundle, atomic_json, delete_incomplete_bundle, now, private_dir, read_chunk, safe_file, uid
 
 TOOLS = [
     {'type':'function','name':'case_set_plan','description':'Explicitly record declared investigative scope for a registered image, not completion. Never invent a historical plan. Does not submit analysis.',
@@ -74,6 +74,7 @@ class Workbench:
         self.approvals = {}
         self.turns = {}
         self.dynamic_tasks = set()
+        self.report_cleanup = {}
         self.loaded_threads = set()
         self.account = {'connected':False}
         self.save()
@@ -98,6 +99,49 @@ class Workbench:
             stream.write(json.dumps(entry) + '\n')
         case['activity'] = (case.get('activity',[]) + [entry])[-150:]
         self.save()
+
+    async def remove_report(self, case_id, report_id, action):
+        if action not in ('hide', 'delete'):
+            raise ValueError('Choose hide or delete')
+        case = self.case(case_id)
+        if self.directory(case).parent != self.root:
+            raise ValueError('Case directory escapes the Workbench state root')
+        check_components(self.directory(case))
+        report = next((r for r in case['reports'] if r['id'] == report_id), None)
+        if report is None:
+            raise ValueError('Unknown report revision in this case')
+        if report['status'] != 'incomplete':
+            raise ValueError('Only incomplete report revisions can be hidden or deleted')
+        if case_id in self.report_cleanup:
+            raise ValueError('Report cleanup is already in progress for this case')
+        if action == 'hide':
+            if not report.get('hidden'):
+                report.update(hidden=True, hidden_at=now())
+                self.event(case, 'report_hidden', {'report_id':report_id})
+            return {'report_id':report_id, 'action':action}
+        if report.get('deleted_at'):
+            return {'report_id':report_id, 'action':action, 'already_deleted':True}
+        if ((self.active and self.active['case_id'] == case_id) or
+                any(j['case_id'] == case_id and j['status'] in ('queued','running','stopping') for j in self.state['jobs'])):
+            raise ValueError('Finish or stop this case\'s active and queued work before deleting a report')
+        if any(r.get('previous') == report_id and not r.get('deleted_at') for r in case['reports']):
+            raise ValueError('Another report references this revision; use Hide from UI instead')
+        self.report_cleanup[case_id] = asyncio.current_task()
+        try:
+            self.event(case, 'report_delete_started', {'report_id':report_id})
+            removed = await asyncio.to_thread(delete_incomplete_bundle, self.directory(case), report_id,
+                [i['path'] for c in self.state['cases'] for i in c['images']])
+            report.update(hidden=True, deleted_at=now())
+            report.pop('deletion_error', None)
+            self.event(case, 'report_deleted', {'report_id':report_id, 'bundle_path':'reports/'+report_id,
+                'bundle_existed':removed, 'scope':'Only the incomplete revision bundle; shared analysis retained'})
+            return {'report_id':report_id, 'action':action, 'bundle_removed':removed}
+        except Exception as exc:
+            report['deletion_error'] = str(exc)
+            self.event(case, 'report_delete_failed', {'report_id':report_id, 'error':str(exc)})
+            raise
+        finally:
+            self.report_cleanup.pop(case_id, None)
 
     async def start(self):
         self.worker = asyncio.create_task(self._worker())
@@ -264,6 +308,8 @@ class Workbench:
         return cases
 
     def enqueue(self, case_id, kind, text='', request_id=None):
+        if case_id in self.report_cleanup:
+            raise ValueError('Finish report cleanup before starting work in this case')
         if getattr(getattr(self,'settings_manager',None),'busy',False):
             raise ValueError('Finish settings maintenance before starting analysis')
         case=self.case(case_id)
@@ -498,7 +544,7 @@ REPORT_SPEC follows:\n'''+spec
         else:
             prompt+=('Explicitly update the report in a NEW version, preserving earlier evidence. ' if job['kind']=='update' else 'Generate and save a complete evidence-backed report. ')
             prompt+='Readiness outputs already exist; reuse them rather than repeating discovery. Investigate adaptively. Focus: '+(job['text'] or 'Relevant system state and suspicious activity supported by the evidence.')
-        prompt+='\nExisting reports: '+json.dumps(case['reports'])
+        prompt+='\nExisting reports: '+json.dumps([r for r in case['reports'] if not r.get('deleted_at')])
         self.progress(job,'Investigating with '+self.case_provider(case)['provider'])
         case['messages'].append({'role':'user','text':job['text'] or job['kind'],'time':now(),'job_id':job['id']})
         self.save()
@@ -704,7 +750,7 @@ REPORT_SPEC follows:\n'''+spec
 
     def citations(self, case, report_id, offset=0, finding=None, index=0):
         from volatility_mcp.api import check_citation
-        if not any(r['id'] == report_id for r in case['reports']):
+        if not any(r['id'] == report_id and not r.get('deleted_at') for r in case['reports']):
             raise ValueError('Unknown report revision in this case')
         root = safe_file(self.directory(case), 'reports/'+report_id+'/case-manifest.json')
         manifest = json.loads(root.read_text())
@@ -761,6 +807,8 @@ REPORT_SPEC follows:\n'''+spec
 
     async def close(self):
         await self.stop()
+        if self.report_cleanup:
+            await asyncio.gather(*tuple(self.report_cleanup.values()), return_exceptions=True)
         if self.active_task:
             try:await asyncio.wait_for(asyncio.shield(self.active_task),30)
             except (Exception,asyncio.CancelledError):pass
@@ -794,7 +842,7 @@ REPORT_SPEC follows:\n'''+spec
                 encoded=json.dumps(event['detail'])
                 if len(encoded)>12000:
                     event['detail']={'preview':encoded[:12000],'truncated':True,'complete_record':'activity.jsonl in the private case directory'}
-        return {**view,'default_provider':self.provider['provider'],'account':self.account,'active_job':self.active['id'] if self.active else None,
+        return {**view,'report_cleanup_cases':list(self.report_cleanup),'default_provider':self.provider['provider'],'account':self.account,'active_job':self.active['id'] if self.active else None,
             'evidence_root':str(self.config.evidence_root),'state_dir':str(self.root),
             'native_picker':platform.system()=='Darwin',
             'approvals':[{k:v for k,v in a.items() if k!='future'} for a in self.approvals.values()]}
