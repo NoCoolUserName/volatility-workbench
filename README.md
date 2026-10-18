@@ -76,6 +76,11 @@ report-only counts stay explicit; sealed originals are never rewritten. Duplicat
 managed coin links are suppressed in the viewer and normalized on new report saves.
 See [AI connections](docs/AI_PROVIDERS.md) for counter scope and current selection limits.
 
+Incomplete and sealed report cards offer explicit Hide/Delete controls. Hide keeps
+all files; Delete removes only the selected bundle and its private copies, retaining
+source images, shared analysis and audit history. Active work and references from
+later revisions block deletion; hiding remains available. See the workflow limits.
+
 On macOS, launch and reopen use the system's default browser through `/usr/bin/open`.
 If opening fails, Workbench prints an explicit message and keeps the private launch
 URL available in Terminal. `--no-open` skips browser opening.

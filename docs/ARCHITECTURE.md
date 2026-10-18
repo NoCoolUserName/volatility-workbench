@@ -20,11 +20,13 @@ manifest and final checksums contain the final snapshot. Live presentation of ol
 reports labels missing metadata instead of altering their bundles. No model requests
 are made merely to display or calculate these counters.
 
-Explicit incomplete-report hide/delete actions use the same authenticated,
+Explicit incomplete/sealed-report hide/delete actions use the same authenticated,
 Origin-checked HTTP transport. Hidden/deleted timestamps and history remain in
-the existing case state. Only a registered incomplete revision can be targeted;
+the existing case state. Only a registered incomplete or sealed revision can be targeted;
 file cleanup is confined to its bundle with symlink, source-overlap and completed
-manifest checks. Shared analysis is never deleted. Cleanup runs in a background
+manifest checks. A completed manifest is removable only for an explicitly selected
+sealed case record; incomplete metadata cannot authorize deleting a completed bundle.
+Shared analysis is never deleted. Cleanup runs in a background
 thread, blocks new work for that case, and finishes before graceful shutdown.
 The native shell treats cleanup as maintenance. An interrupted cleanup remains
 retryable; startup never automatically deletes or regenerates reports. This is

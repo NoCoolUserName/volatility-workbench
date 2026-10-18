@@ -11,6 +11,23 @@ provider protocols, parallel analysis, Intel/Windows distributions and broader
 accessibility testing remain future work. Shared forensic evaluation and contracts are maintained
 in volatility-mcp; do not fork them here.
 
+## Proposed investigation modes — not implemented
+
+| Mode | Intended scope |
+| --- | --- |
+| Quick triage | Identify OS/symbol readiness; collect a bounded process/command-line/network/module baseline; follow high-value anomalies within a declared time/output budget. Save leads, evidence and gaps, not a clean verdict. |
+| Targeted investigation | Pursue an explicit question or selected process/address, reusing saved results first and collecting only justified missing evidence. |
+| Compatibility sweep ("Run all applicable plugins") | A diagnostic mode: sequentially attempt OS-appropriate plugins with satisfiable arguments/prerequisites; record success, empty, skipped, unsupported, failure, duration, hashing overhead, reuse and output size separately. Extraction/credential/expensive operations require explicit inclusion and bounded settings. |
+
+These buttons are a design proposal, not permission to start a sweep. Installed
+plugin count is not a coverage denominator: some plugins need PID/address/rules or
+particular symbols and artifacts. One XP image cannot establish support elsewhere.
+Use measured cost and human-reviewed lead yield from multiple representative
+malicious and benign fixtures to version OS-specific triage profiles/templates.
+Distinguish cache hits from physical execution; total duration alone includes
+integrity checks and is not a plugin-only benchmark. Never tune a template solely
+to a known malware filename or present a heuristic as a validated detector.
+
 ## Biggest remaining gaps before wider use
 
 This is the prioritized work list. [UI validation](UI_VALIDATION.md) and

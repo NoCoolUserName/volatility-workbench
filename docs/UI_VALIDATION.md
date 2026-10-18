@@ -659,3 +659,25 @@ live model accuracy or cross-provider compatibility.
 The final fresh-wheel smoke passed all 116 installed application tests, dependency
 checks and ten-tool MCP discovery in both SDK modes. Its HTTP/assets guard observed
 zero analysis/model subprocesses. No real images were opened for those checks.
+
+## Explicit sealed-report Hide/Delete — 2026-10-18
+
+The cleanup path now accepts registered incomplete and sealed revisions. Eleven
+focused cleanup tests pass, including durable sealed hide without byte changes,
+explicit sealed deletion of only its private bundle, idempotent retry, preserved
+shared analysis/source fixtures/history, and active-job/reference/source-overlap
+guards. An incomplete record still cannot authorize deleting a completed manifest.
+Authentication, Origin, cross-case, traversal, symlink, malformed-draft and partial
+I/O failure regressions remain covered. No actual private report was deleted.
+
+The offline Chrome cleanup fixture passes incomplete/sealed hover and keyboard
+controls, status-specific dialogs, dismissal, hide/reload/selection fallback,
+delete/error/retry and sealed Hide/Delete. It submitted no analysis requests.
+The existing one-time private narrative note is removed in a new presentation
+revision with checksums/provenance; the sealed source and raw evidence are retained.
+The proposed triage/targeted/compatibility-sweep modes in ROADMAP.md are design
+intentions only, not implemented buttons or forensic evaluation results.
+
+Final fresh-wheel validation passed all 118 installed application tests, dependency
+checks, and ten-tool MCP discovery in both SDK modes. The smoke guard observed
+zero analysis/model subprocesses; no private images were analyzed or rehashed.

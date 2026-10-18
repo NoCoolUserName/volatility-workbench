@@ -1,4 +1,4 @@
-"""Explicit incomplete-bundle cleanup, with no analysis or private evidence."""
+"""Explicit incomplete/sealed-bundle cleanup, with no analysis or private evidence."""
 import asyncio
 import json
 from pathlib import Path
@@ -11,7 +11,7 @@ import urllib.request
 import support
 from volatility_workbench.app import Workbench
 from volatility_workbench.http import Server
-from volatility_workbench.storage import delete_incomplete_bundle
+from volatility_workbench.storage import delete_report_bundle
 
 
 class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
@@ -35,7 +35,8 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         folder.mkdir(parents=True)
         (folder/'report.md').write_text('Synthetic report, not an investigation')
         (folder/'artifacts').mkdir(); (folder/'artifacts'/'copy.txt').write_text('private report copy')
-        (folder/'case-manifest.json').write_text(json.dumps({'case_id':case['id'], 'status':'in_progress'}))
+        (folder/'case-manifest.json').write_text(json.dumps({'case_id':case['id'],
+            'status':'complete_with_limitations' if status=='sealed' else 'in_progress'}))
         self.app.save()
         return record, folder
 
@@ -70,13 +71,12 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue((await self.app.remove_report(self.case['id'], record['id'], 'delete'))['already_deleted'])
         self.assert_preserved()
 
-    async def test_completed_draft_wrong_case_and_unknown_actions_are_rejected(self):
-        for status in ('sealed', 'draft'):
-            record, folder = self.report(status, status)
-            for action in ('hide', 'delete'):
-                with self.assertRaisesRegex(ValueError, 'Only incomplete'):
-                    await self.app.remove_report(self.case['id'], record['id'], action)
-            self.assertTrue(folder.exists())
+    async def test_draft_wrong_case_and_unknown_actions_are_rejected(self):
+        record, folder = self.report('draft', 'draft')
+        for action in ('hide', 'delete'):
+            with self.assertRaisesRegex(ValueError, 'Only incomplete or sealed'):
+                await self.app.remove_report(self.case['id'], record['id'], action)
+        self.assertTrue(folder.exists())
         other = self.app.add([str(self.fixture.image)])[0]
         record, folder = self.report('other-case-report', case=other)
         with self.assertRaisesRegex(ValueError, 'Unknown report'):
@@ -103,7 +103,7 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         outside = self.fixture.root/'outside'; outside.mkdir(); sentinel = outside/'keep'; sentinel.write_text('keep')
         for name in ('../outside', '/outside', '..', 'x\\y'):
             with self.assertRaises(ValueError):
-                delete_incomplete_bundle(self.app.directory(self.case), name, [])
+                delete_report_bundle(self.app.directory(self.case), name, [])
         bad_case = {**self.case, 'id':str(outside)}
         self.app.state['cases'].append(bad_case)
         with self.assertRaisesRegex(ValueError, 'state root'):
@@ -119,7 +119,7 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
             await self.app.remove_report(self.case['id'], record['id'], 'delete')
         folder.unlink(); physical.rename(folder)
         with self.assertRaisesRegex(ValueError, 'source evidence'):
-            delete_incomplete_bundle(self.app.directory(self.case), record['id'], [folder/'artifacts/copy.txt'])
+            delete_report_bundle(self.app.directory(self.case), record['id'], [folder/'artifacts/copy.txt'])
         manifest = folder/'case-manifest.json'
         manifest.write_text(json.dumps({'case_id':self.case['id'],'status':'complete_with_limitations'}))
         with self.assertRaisesRegex(ValueError, 'Completed report'):
@@ -143,10 +143,10 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_io_failure_keeps_card_and_records_error_for_retry(self):
         record, folder = self.report()
-        def partial(*args):
+        def partial(*args, **kwargs):
             (folder/'report.md').unlink()
             raise OSError('Synthetic permission failure after partial cleanup')
-        with patch('volatility_workbench.app.delete_incomplete_bundle', side_effect=partial):
+        with patch('volatility_workbench.app.delete_report_bundle', side_effect=partial):
             with self.assertRaises(OSError):
                 await self.app.remove_report(self.case['id'], record['id'], 'delete')
         self.assertNotIn('deleted_at', record); self.assertFalse(record.get('hidden'))
@@ -159,13 +159,13 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
     async def test_cleanup_blocks_duplicate_jobs_and_shutdown_waits_for_completion(self):
         record, folder = self.report()
         entered, release = threading.Event(), threading.Event()
-        def slow(*args):
+        def slow(*args, **kwargs):
             entered.set()
             if not release.wait(5): raise RuntimeError('Fixture cleanup release timed out')
-            return delete_incomplete_bundle(*args)
+            return delete_report_bundle(*args, **kwargs)
         await self.app.start()
         closing = None
-        with patch('volatility_workbench.app.delete_incomplete_bundle', side_effect=slow):
+        with patch('volatility_workbench.app.delete_report_bundle', side_effect=slow):
             task = asyncio.create_task(self.app.remove_report(self.case['id'], record['id'], 'delete'))
             try:
                 self.assertTrue(await asyncio.to_thread(entered.wait, 2))
@@ -183,6 +183,32 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
                 if closing is not None: await closing
                 else: await self.app.close()
         self.assertFalse(folder.exists()); self.assert_preserved()
+
+    async def test_sealed_hide_persists_and_explicit_delete_removes_only_its_bundle(self):
+        record, folder = self.report('sealed', 'sealed')
+        original = {p.relative_to(folder):p.read_bytes() for p in folder.rglob('*') if p.is_file()}
+        await self.app.remove_report(self.case['id'], record['id'], 'hide')
+        self.assertTrue(Workbench(self.config,self.app.root).case(self.case['id'])['reports'][0]['hidden'])
+        self.assertEqual(original,{p.relative_to(folder):p.read_bytes() for p in folder.rglob('*') if p.is_file()})
+        with patch('subprocess.Popen', side_effect=AssertionError('No analysis or model allowed')):
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertFalse(folder.exists())
+        self.assertTrue(record['deleted_at']);self.assertEqual(record['status'],'sealed')
+        self.assertTrue((await self.app.remove_report(self.case['id'], record['id'], 'delete'))['already_deleted'])
+        self.assert_preserved()
+
+    async def test_sealed_delete_keeps_active_reference_and_source_guards(self):
+        record, folder = self.report('sealed', 'sealed')
+        self.app.state['jobs']=[{'case_id':self.case['id'],'status':'running'}]
+        with self.assertRaisesRegex(ValueError,'active and queued'):
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.app.state['jobs']=[]
+        child,_=self.report('child','sealed');child['previous']=record['id']
+        with self.assertRaisesRegex(ValueError,'Another report references'):
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        with self.assertRaisesRegex(ValueError,'source evidence'):
+            delete_report_bundle(self.app.directory(self.case),record['id'],[folder/'artifacts/copy.txt'],allow_completed=True)
+        self.assertTrue(folder.exists());self.assert_preserved()
 
     async def test_actual_http_requires_origin_and_auth_then_hides_and_deletes(self):
         record, folder = self.report()

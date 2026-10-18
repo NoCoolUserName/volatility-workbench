@@ -354,7 +354,7 @@ function removeReportDialog(c, report) {
   }
   const key = c.id + "/" + report.id;
   dialog.dataset.target = key;
-  const title = el("h2", "Remove incomplete report?");
+  const title = el("h2", "Remove " + report.status + " report?");
   title.id = "reportRemovalTitle";
   const dismiss = el("button", "×", "dialog-close");
   dismiss.setAttribute("aria-label", "Close report options");
@@ -367,8 +367,10 @@ function removeReportDialog(c, report) {
   const busy = (state.report_cleanup_cases || []).includes(c.id) || state.jobs.some(
     (j) => j.case_id === c.id && ["queued", "running", "stopping"].includes(j.status),
   );
-  del.disabled = busy;
+  const referenced = c.reports.some(r => r.previous === report.id && !r.deleted_at);
+  del.disabled = busy || referenced;
   if (busy) failure.textContent = "Finish this case's active work or cleanup before deleting. You can still hide this report.";
+  else if (referenced) failure.textContent = "A later report references this revision. Hide from UI keeps that history intact; delete the dependent revision first to delete this one.";
   for (const [button, action] of [[del, "delete"], [hide, "hide"]]) {
     button.onclick = async () => {
       del.disabled = hide.disabled = true;
@@ -391,13 +393,13 @@ function removeReportDialog(c, report) {
         if (dialog.open && dialog.dataset.target === key) failure.textContent = e.message;
         else error(e);
         hide.disabled = false;
-        del.disabled = busy;
+        del.disabled = busy || referenced;
       }
     };
   }
   buttons.append(del, hide);
-  dialog.replaceChildren(dismiss, title, el("p", readableTime(report.created_at) + " · incomplete"),
-    el("p", "Hide from UI keeps all files. Delete permanently removes this revision's report bundle and its copied artifacts. Original images, shared analysis, case history and completed reports are retained."),
+  dialog.replaceChildren(dismiss, title, el("p", readableTime(report.created_at) + " · " + report.status),
+    el("p", "Hide from UI keeps all files. Delete permanently removes this revision's report bundle and its copied artifacts, including a sealed report if selected. Original images, shared analysis, case history and other report versions are retained."),
     failure, buttons);
   dialog.showModal();
   hide.focus();
@@ -499,7 +501,8 @@ function render() {
     if (shownVersions !== versionsKey) {
     versions.replaceChildren();
     for (const r of [...visibleReports].reverse()) {
-      const card = el("div", undefined, "report-version" + (r.status === "incomplete" ? " removable" : ""));
+      const removable = ["incomplete", "sealed"].includes(r.status);
+      const card = el("div", undefined, "report-version" + (removable ? " removable" : ""));
       const b = el("button", readableTime(r.created_at) + " · " + r.status);
       b.onclick = () => {
         selectedVersion = r.id;
@@ -507,9 +510,9 @@ function render() {
         showReport(r);
       };
       card.append(b);
-      if (r.status === "incomplete") {
+      if (removable) {
         const remove = el("button", "×", "report-remove");
-        remove.setAttribute("aria-label", "Remove incomplete report " + readableTime(r.created_at));
+        remove.setAttribute("aria-label", "Remove " + r.status + " report " + readableTime(r.created_at));
         remove.onclick = () => removeReportDialog(c, r);
         card.append(remove);
       }
