@@ -30,8 +30,8 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
    const u=new URL(route.request().url());assert.equal(u.origin,'http://localhost');assert.equal(route.request().method(),'GET','Inventory never starts work');calls.push(u.pathname+u.search);
    if(u.pathname==='/api/state')return route.fulfill({json:state});
    if(u.pathname==='/api/plugins')return route.fulfill({json:{total:4,plugins:[
-    {name:'windows.synthetic.Plugin4',description:'Lists synthetic processes.'},
-    {name:'windows.synthetic.NotUsed',target_os:'windows',description:'Shows a harmless unused fixture.'},
+    {name:'windows.synthetic.Plugin4',source:{kind:'native',label:'Native · Volatility 3',url:'https://github.com/volatilityfoundation/volatility3'},description:'Lists synthetic processes.'},
+    {name:'windows.synthetic.NotUsed',target_os:'windows',source:{kind:'third_party',label:'Synthetic source',url:'https://github.com/example/synthetic'},description:'Shows a harmless unused fixture.'},
     {name:'windows.synthetic.NotUsed2',target_os:'windows',description:'Checks another synthetic fixture.'},
     {name:'windows.synthetic.Plugin5',description:'Describes another saved run.'}],import_failures:[]}});
    if(u.pathname==='/api/artifacts')return route.fulfill({json:{files:[],truncated:false}});
@@ -55,9 +55,11 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   const focus=page.locator('#focus');
   const assertReadableFocus=async()=>assert.ok(await focus.evaluate(node=>{
    const style=getComputedStyle(node);
-   return node.clientHeight>=3*parseFloat(style.lineHeight)+parseFloat(style.paddingTop)+parseFloat(style.paddingBottom)-1;
-  }),'Investigation focus retains at least three readable lines');
+   return node.clientHeight>=2*parseFloat(style.lineHeight)+parseFloat(style.paddingTop)+parseFloat(style.paddingBottom)-1;
+  }),'Investigation focus retains at least two readable lines');
   await assertReadableFocus();
+  assert.equal(await focus.getAttribute('rows'),'2');
+  assert.ok(await focus.evaluate(node=>node.clientHeight<3*parseFloat(getComputedStyle(node).lineHeight)+parseFloat(getComputedStyle(node).paddingTop)+parseFloat(getComputedStyle(node).paddingBottom)), 'Empty prompt defaults to two lines, not three');
   assert.equal(await inventory.locator('> details.report-plugin-inventory').first().getAttribute('open'),null,'Large inventory starts collapsed');
   assert.equal(await inventory.locator('> details').count(),3,'Used, errored, and unused sections are siblings');
   assert.equal(calls.filter(x=>x==='/api/plugins').length,0,'Collapsed sections do not discover the catalog');
@@ -65,7 +67,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.match(await inventory.locator('.report-plugin-errors-table').innerText(),/failed.*No plugin execution recorded/s);
   await inventory.locator('> details').nth(2).locator('> summary').click();
   await page.waitForFunction(()=>document.querySelector('.report-plugin-unused-table')?.textContent.includes('Shows a harmless unused fixture.'));
-  assert.deepEqual(await inventory.locator('.report-plugin-unused-table thead th').allTextContents(),['Plugin name','Add to prompt','Quick Description']);
+  assert.deepEqual(await inventory.locator('.report-plugin-unused-table thead th').allTextContents(),['Plugin name','Add to prompt','Quick Description','Source provenance']);
   assert.match(await inventory.locator('.report-plugin-unused-table').innerText(),/windows\.synthetic\.NotUsed.*Shows a harmless unused fixture/s);
   assert.equal(await inventory.locator('> details').nth(2).getAttribute('open'),'','Catalog response preserves the expanded section');
   assert.doesNotMatch(await inventory.locator('.report-plugin-unused-table').innerText(),/windows\.synthetic\.Plugin4/);
@@ -127,7 +129,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.match(await table.locator('tr').nth(1).innerText(),/Saved result reuse.*No execution recorded/s);
   assert.match(await table.locator('tr').nth(2).innerText(),/Failed or denied request.*No execution recorded/s);
   assert.deepEqual(await inventory.locator('.report-plugin-used-table thead th').allTextContents(),
-    ['Plugin','Image','Quick Description','Outcome & record kind','Exact arguments','Run provenance & recorded time','Local source']);
+    ['Plugin','Image','Quick Description','Outcome & record kind','Exact arguments','Run provenance & recorded time','Local source','Source provenance']);
   assert.match(await table.locator('tr').nth(4).locator('td').nth(2).innerText(),/Lists synthetic processes/);
   const provenance=table.locator('tr').nth(4).locator('td').nth(5);
   assert.match(await provenance.innerText(),/Run: run-4.*Speed: 1 second.*Source: core_manifest/s);
@@ -145,6 +147,22 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
     pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'bad',finished_at:'2026-10-18T12:00:01Z'}),
     pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'2026-10-18T12:00:02Z',finished_at:'2026-10-18T12:00:01Z'})
   ]),['1 second','1 minute 1 second','2 seconds','0.5 seconds','1 second','Not recorded','Not recorded','Not recorded']);
+  for(const tableName of ['used','errors','unused']){
+    assert.equal(await inventory.locator(`.report-plugin-${tableName}-table th`).last().textContent(),'Source provenance');
+  }
+  assert.equal(await table.locator('tr').nth(4).locator('td').last().getByRole('link',{name:'Plugin documentation'}).getAttribute('href'),
+    'https://volatility3.readthedocs.io/en/latest/volatility3.plugins.windows.synthetic.html');
+  const sourceLink=inventory.locator('.report-plugin-unused-table tbody tr').first().locator('td').last().locator('a');
+  assert.equal(await sourceLink.getAttribute('href'),'https://github.com/example/synthetic#readme');
+  assert.equal(await sourceLink.getAttribute('rel'),'noopener noreferrer');
+  assert.equal(await sourceLink.getAttribute('target'),'_blank');
+  assert.deepEqual(await page.evaluate(()=>{
+    const saved=reportPluginCatalog;
+    reportPluginCatalog={plugins:[{name:'unsafe',source:{url:'javascript:alert(1)',label:'Unknown'}},
+      {name:'credentials',source:{url:'https://user:secret@example.com',label:'Unknown'}}]};
+    const counts=['unsafe','credentials','missing'].map(name=>reportPluginSource(name).querySelectorAll('a').length);
+    reportPluginCatalog=saved;return counts;
+  }),[0,0,0]);
   assert.equal(await inventory.locator('img,script').count(),0);assert.equal(await page.evaluate(()=>window.injected),undefined);
   assert.equal(await inventory.getByRole('link',{name:'Open manifest'}).count(),1,'Traversal path never becomes link');
   await table.locator('tr').first().locator('td').nth(4).locator('summary').first().click();

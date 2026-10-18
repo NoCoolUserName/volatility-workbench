@@ -395,6 +395,30 @@ function pluginDescription(name) {
   if (!reportPluginCatalog || !name) return reportPluginCatalogError ? "Description unavailable" : "Loading description…";
   return reportPluginCatalog.plugins.find(p => p.name === name)?.description || "No description provided in the installed catalog.";
 }
+function reportPluginSource(name) {
+  const cell = el("td"), plugin = reportPluginCatalog?.plugins.find(p => p.name === name);
+  if (!reportPluginCatalog) { cell.textContent = reportPluginCatalogError ? "Source unavailable" : "Loading source…"; return cell; }
+  const source = plugin?.source || {};
+  let url;
+  try { url = new URL(source.url); } catch { /* No attributed public source. */ }
+  if (url?.protocol !== "https:" || url.username || url.password) {
+    cell.textContent = source.label || "Source unknown";
+    return cell;
+  }
+  if (url.hostname === "github.com" && /^\/[^/]+\/[^/]+\/?$/.test(url.pathname) && !url.hash) url.hash = "readme";
+  const link = el("a", source.label || "Public plugin source");
+  link.href = url.href; link.target = "_blank"; link.rel = "noopener noreferrer";
+  link.title = source.basis || "Attribution from the current installed plugin catalog.";
+  cell.append(link);
+  if (source.kind === "native" && url.hostname === "github.com" && url.pathname.replace(/\/$/, "") === "/volatilityfoundation/volatility3" &&
+      /^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+$/.test(name)) {
+    const documentation = el("a", "Plugin documentation");
+    documentation.href = "https://volatility3.readthedocs.io/en/latest/volatility3.plugins." + name.split(".").slice(0, -1).join(".") + ".html";
+    documentation.target = "_blank"; documentation.rel = "noopener noreferrer";
+    const line = el("p"); line.append(documentation); cell.append(line);
+  }
+  return cell;
+}
 function recordedPluginExecution(entry) {
   return entry.kind === "plugin_run" && entry.execution_recorded === true && entry.synthetic !== true && entry.execution_kind !== "simulated";
 }
@@ -570,9 +594,9 @@ function renderReportPlugins(record) {
             await visitReportEvidence(link, isCurrent => viewArtifact("reports/" + record.reportId + "/" + localPath, 0, isCurrent));
           }); source.append(link);
         } else source.append(el("span", "Not recorded", "subtle"));
-        row.append(source); rows.push(row);
+        row.append(source, reportPluginSource(entry.plugin)); rows.push(row);
       }
-      details.append(inventoryTable(["Plugin", "Image", "Quick Description", "Outcome & record kind", "Exact arguments", "Run provenance & recorded time", "Local source"],
+      details.append(inventoryTable(["Plugin", "Image", "Quick Description", "Outcome & record kind", "Exact arguments", "Run provenance & recorded time", "Local source", "Source provenance"],
         rows, "Bundled saved plugin records for report " + record.reportId, "report-plugin-table report-plugin-used-table"));
       details.append(el("p", record.entries.length.toLocaleString() + " saved record(s) shown", "subtle"));
     } else if (data.source_status === "available") details.append(el("p", "No plugin records are bundled with this report snapshot."));
@@ -616,10 +640,10 @@ function renderReportPlugins(record) {
       }
       row.append(el("td", entry.plugin || "Plugin name not recorded"), el("td", pluginDescription(entry.plugin)),
         el("td", entry.image_id || "Image not recorded"), outcome,
-        el("td", "Run: " + (entry.run_id || "Not recorded") + " · Call: " + (entry.call_id || "Not recorded")));
+        el("td", "Run: " + (entry.run_id || "Not recorded") + " · Call: " + (entry.call_id || "Not recorded")), reportPluginSource(entry.plugin));
       return row;
     });
-    errors.append(inventoryTable(["Plugin", "Quick Description", "Image", "Recorded error", "Run provenance"], rows,
+    errors.append(inventoryTable(["Plugin", "Quick Description", "Image", "Recorded error", "Run provenance", "Source provenance"], rows,
       "Saved plugin errors for report " + record.reportId, "report-plugin-table report-plugin-errors-table"));
   }
   const unused = el("details", undefined, "report-plugin-inventory report-plugin-secondary");
@@ -649,9 +673,9 @@ function renderReportPlugins(record) {
       add.setAttribute("aria-label", "Add " + plugin.name + " to investigation prompt");
       add.onclick = () => addPluginToFocus(plugin.name, record);
       action.append(add);
-      row.append(el("td", plugin.name), action, el("td", plugin.description || "No description provided in the installed catalog.")); return row;
+      row.append(el("td", plugin.name), action, el("td", plugin.description || "No description provided in the installed catalog."), reportPluginSource(plugin.name)); return row;
     });
-    if (rows.length) unused.append(inventoryTable(["Plugin name", "Add to prompt", "Quick Description"], rows,
+    if (rows.length) unused.append(inventoryTable(["Plugin name", "Add to prompt", "Quick Description", "Source provenance"], rows,
       "Installed plugins without a recorded execution in report " + record.reportId, "report-plugin-table report-plugin-unused-table"));
     else unused.append(el("p", "Every currently installed plugin has a recorded physical execution in this snapshot."));
   }

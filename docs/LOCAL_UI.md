@@ -354,7 +354,12 @@ supporting execution metadata. The new Quick Description column comes from the
 currently installed plugin catalog. Run provenance shows elapsed execution time
 computed from saved start/finish timestamps; Call, Started, and Finished stay
 under Details. Missing or invalid timestamps are labelled rather than estimated.
-Pages keep large inventories manageable.
+Pages keep large inventories manageable. All three expanded tables end with
+**Source provenance**, taken from the current catalog's registered attribution.
+Public repository links target their README; official Volatility plugins also link
+to their plugin documentation. Links open externally without a referrer. Unknown
+attribution stays explicit; a source link does not authenticate historical plugin
+bytes. Local run/manifest links remain separate from public project provenance.
 
 Below the used records, **Plugins that errored** lists saved failed runs and failed
 or denied requests, distinguishing requests that never executed a plugin. Links
@@ -382,7 +387,7 @@ When either job finishes, the UI selects its new revision and reads fresh used,
 errored and unused inventories, including when an older revision was selected or
 the new revision's draft had been viewed. Historical snapshots stay unchanged.
 
-The focus box keeps at least three readable lines, grows with added plugin requests,
+The focus box keeps at least two readable lines, grows with added plugin requests,
 and is vertically resizable. Sizing waits until the selected case is visible. Focus
 drafts stay separate when switching cases during the app session.
 The comparison uses all bundled records even when the used table displays one page.
