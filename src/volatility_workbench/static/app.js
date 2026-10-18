@@ -42,6 +42,8 @@ let state,
   artifact = null;
 let consoleJob = null;
 let consolePagePosition = null;
+let currentConsole = null, savedConsoleKey = "";
+const savedConsoleCache = new Map();
 const consoleNodes = new Map();
 const dismissedReportFailures = new Set();
 const rerunningReportFailures = new Set();
@@ -680,9 +682,30 @@ function inventoryPath(source) {
   return typeof source === "string" && source && !/[\\:\x00-\x1f]/.test(source) &&
     source.split("/").every(part => part && part !== "." && part !== "..") ? source : null;
 }
+function inventorySearch(section, rows, record, field, id, title) {
+  const filters = el("div", undefined, "plugin-filters"), label = el("label", title), search = el("input");
+  search.id = id; search.type = "search"; search.placeholder = "Plugin name, description, status, or run details";
+  search.value = record[field] || ""; label.htmlFor = id;
+  const count = el("p", "", "subtle"), empty = el("p", "No plugin records match this search.");
+  count.setAttribute("role", "status");
+  const apply = () => {
+    const query = search.value.trim().toLocaleLowerCase(); let shown = 0;
+    for (const row of rows) { row.hidden = !row.textContent.toLocaleLowerCase().includes(query); if (!row.hidden) shown++; }
+    count.textContent = `Showing ${inventoryCount(shown)} of ${inventoryCount(rows.length)} ${field === "usedSearch" ? "loaded plugin records" : "recorded errors"}` +
+      (field === "usedSearch" && record.nextOffset != null ? (record.error ? " · Remaining records could not be loaded." : query ? " · Searching remaining saved records…" : " · More records are available below.") : "");
+    empty.hidden = shown !== 0 || (field === "usedSearch" && record.nextOffset != null && !!query);
+  };
+  search.oninput = () => {
+    record[field] = search.value; apply();
+    if (field === "usedSearch" && search.value.trim() && record.nextOffset != null && !record.loading) loadReportPlugins(record, record.nextOffset);
+  };
+  filters.append(label, search);section.append(filters, count, empty);apply();
+}
 function renderReportPlugins(record) {
   if (reportPluginKey !== record.key || reportPluginCache.get(record.key) !== record) return;
   const host = $("reportPluginInventory");
+  const focusedSearch = ["usedPluginSearch", "erroredPluginSearch"].includes(document.activeElement?.id)
+    ? {id:document.activeElement.id, start:document.activeElement.selectionStart, end:document.activeElement.selectionEnd} : null;
   host.hidden = false;
   const details = el("details", undefined, "report-plugin-inventory");
   details.open = record.open || false;
@@ -760,9 +783,9 @@ function renderReportPlugins(record) {
         } else source.append(el("span", "Not recorded", "subtle"));
         row.append(source, reportPluginSource(entry.plugin)); rows.push(row);
       }
+      inventorySearch(details, rows, record, "usedSearch", "usedPluginSearch", "Search plugins used");
       details.append(inventoryTable(["Plugin", "Image", "Quick Description", "Outcome & record kind", "Exact arguments", "Run provenance & recorded time", "Local source", "Source provenance"],
         rows, "Bundled saved plugin records for report " + record.reportId, "report-plugin-table report-plugin-used-table"));
-      details.append(el("p", record.entries.length.toLocaleString() + " saved record(s) shown", "subtle"));
     } else if (data.source_status === "available") details.append(el("p", "No plugin records are bundled with this report snapshot."));
   }
   const live = el("p", record.loading ? "Loading saved plugin records…" : "");
@@ -822,6 +845,8 @@ function renderReportPlugins(record) {
         el("td", "Run: " + (entry.run_id || "Not recorded") + " · Call: " + (entry.call_id || "Not recorded")), reportPluginSource(entry.plugin));
       return row;
     });
+    inventorySearch(errors, rows, record, "errorSearch", "erroredPluginSearch", "Search plugins that errored");
+    errors.append(el("p", "Search changes the displayed rows. Add all failed requests still includes all recorded errors.", "subtle"));
     errors.append(inventoryTable(["Plugin", "Add to prompt", "Quick Description", "Image", "Recorded error", "Run provenance", "Source provenance"], rows,
       "Saved plugin errors for report " + record.reportId, "report-plugin-table report-plugin-errors-table"));
   }
@@ -893,6 +918,10 @@ function renderReportPlugins(record) {
   }
   host.replaceChildren(details, errors, unused);
   updateBulkPluginAction();
+  if (focusedSearch && $(focusedSearch.id)) {
+    const input = $(focusedSearch.id); input.focus({preventScroll:true});input.setSelectionRange(focusedSearch.start, focusedSearch.end);
+    record.restoreFocus = null;
+  }
   if (!record.loading && record.restoreFocus) {
     const target = record.restoreFocus === "more" ? [...details.querySelectorAll("button")].find(button => button.textContent === "More plugin records") : refresh;
     if (target) target.focus(); else { live.textContent = "All saved plugin records loaded."; live.tabIndex = -1; live.focus(); }
@@ -913,6 +942,7 @@ async function loadReportPlugins(record, offset = 0, reset = false) {
   } catch (e) { record.error = e.message || String(e); }
   record.loading = false;
   renderReportPlugins(record);
+  if (!record.error && record.usedSearch?.trim() && record.nextOffset != null) loadReportPlugins(record, record.nextOffset);
 }
 async function loadReportPluginCatalog() {
   if (reportPluginCatalog || reportPluginCatalogLoading) return;
@@ -1288,7 +1318,10 @@ function render() {
     renderApprovals(c);
   }
   const pending = state.jobs.filter(j => ["queued", "running", "stopping"].includes(j.status));
-  $("queueSection").hidden = pending.length === 0;
+  const stream = consoleForView();
+  $("queueSection").hidden = pending.length === 0 && !stream;
+  $("workTitle").textContent = pending.length ? "Current work" : "Report console";
+  $("stop").hidden = pending.length === 0;
   const reportJob = pending.find(j => j.id === state.active_job && ["report", "update"].includes(j.kind)) ||
     pending.find(j => ["running", "stopping"].includes(j.status) && ["report", "update"].includes(j.kind));
   const activeProgress = $("activeReportProgress");
@@ -1319,7 +1352,7 @@ function render() {
     }));
     shownQueue = queueKey;
   }
-  renderLiveConsole();
+  renderLiveConsole(stream);
   renderReportFailure(c);
   updateBackToTop();
 }
@@ -1357,18 +1390,48 @@ function renderReportFailure(c) {
   dismiss.onclick = () => { dismissedReportFailures.add(latest.id); renderReportFailure(c); };
   host.append(activity, rerun, dismiss);
 }
-function renderLiveConsole() {
-  const stream = state.live_console, pre = $("liveConsole");
+function consoleForView() {
+  if (state.live_console) return state.live_console;
+  const job = [...state.jobs].reverse().find(j => j.case_id === selected && ["report", "update"].includes(j.kind) && ["completed", "failed", "incomplete"].includes(j.status));
+  if (!job) return null;
+  const key = JSON.stringify([job.case_id, job.id, job.status, job.finished_at]);
+  savedConsoleKey = key;
+  if (!savedConsoleCache.has(key)) {
+    const record = {job_id:job.id, case_id:job.case_id, status:job.status, finished_at:job.finished_at, report_id:job.report_id, loading:true};
+    savedConsoleCache.set(key, record);
+    if (savedConsoleCache.size > 8) savedConsoleCache.delete(savedConsoleCache.keys().next().value);
+    api("report-console?case=" + encodeURIComponent(job.case_id) + "&job=" + encodeURIComponent(job.id)).then(data => {
+      if (data.job_id !== job.id || data.case_id !== job.case_id || !Array.isArray(data.entries)) throw Error("Unexpected saved console response");
+      if (savedConsoleCache.get(key) === record) savedConsoleCache.set(key, data);
+    }).catch(e => {
+      if (savedConsoleCache.get(key) === record) savedConsoleCache.set(key, {...record, loading:false, entries:[], error:e.message});
+    }).finally(() => render());
+  }
+  return savedConsoleCache.get(key);
+}
+function renderLiveConsole(stream) {
+  currentConsole = stream;
+  const pre = $("liveConsole");
   if ($("consoleZoom").open && (!stream || stream.job_id !== consoleJob)) $("consoleZoom").close();
   $("liveConsoleSection").hidden = !stream;
   if (!stream) { consoleJob = null; consoleNodes.clear(); pre.replaceChildren(); return; }
   const follow = $("consoleFollow");
-  $("liveConsoleTitle").textContent = "Live investigation console · " +
-    (state.cases.find(c => c.id === stream.case_id)?.title || stream.case_id);
+  const status = stream.status || state.jobs.find(j => j.id === stream.job_id)?.status || "running";
+  const saved = ["completed", "failed", "incomplete"].includes(status);
+  $("liveConsoleTitle").textContent = (saved ? "Saved investigation console" : "Live investigation console") + " · " +
+    (state.cases.find(c => c.id === stream.case_id)?.title || stream.case_id) + (saved ? " · " + status : "");
+  $("consolePowerText").textContent = saved ? "SAVED" : "LIVE";
+  $("retryConsole").hidden = !stream.error;
   if (consoleJob !== stream.job_id) {
     consoleJob = stream.job_id; consoleNodes.clear(); pre.replaceChildren(); follow.checked = true;
   }
   const top = pre.scrollTop;
+  $("consoleNote").textContent = (saved ? "Saved read-only tool output from this case’s latest report request" + (stream.finished_at ? " · Finished " + readableTime(stream.finished_at) : "") + ". " : "Read-only tool output. ") +
+    "Scroll up to pause following. Full plugin results remain available in Evidence." +
+    (stream.earlier_entries ? " Showing the latest output in this window." : "") +
+    (stream.warnings?.length ? " " + stream.warnings.join(" ") : "");
+  if (stream.loading) { if (!pre.textContent) pre.textContent = "Loading saved tool output…"; return; }
+  if (stream.error) { $("consoleNote").textContent = "Saved console could not be loaded: " + stream.error; return; }
   const entries = stream.entries || [], ids = new Set(entries.map(entry => entry.id));
   let changed = false;
   for (const [id, node] of consoleNodes) {
@@ -1380,17 +1443,16 @@ function renderLiveConsole() {
       consoleNodes.set(entry.id, node); pre.append(node); changed = true;
     }
   }
-  if (!entries.length && !pre.textContent) pre.textContent = "Waiting for tool output…";
+  if (!entries.length && !pre.textContent) pre.textContent = saved ? "No tool output was recorded for this report request." : "Waiting for tool output…";
   if (entries.length && pre.firstChild?.nodeType === Node.TEXT_NODE) pre.firstChild.remove();
   if (changed) pre.scrollTop = follow.checked ? pre.scrollHeight : top;
-  $("consoleNote").textContent = "Read-only tool output. Scroll up to pause following. Full plugin results remain available in Evidence." +
-    (stream.earlier_entries ? " Showing the latest output in this window." : "");
 }
+$("retryConsole").onclick = () => { savedConsoleCache.delete(savedConsoleKey); render(); };
 function resizeConsoleView(expanded) {
   const pre = $("liveConsole"), top = pre.scrollTop, follow = $("consoleFollow").checked;
   const button = $("expandConsole"), dialog = $("consoleZoom");
   if (expanded) {
-    if (!state?.live_console || dialog.open || button.getAttribute("aria-expanded") === "true") return;
+    if (!currentConsole || dialog.open || button.getAttribute("aria-expanded") === "true") return;
     consolePagePosition = window.scrollY;
     $("expandedConsoleHost").append($("liveConsoleSection"));
     document.body.classList.add("console-zoom-open");
@@ -1407,7 +1469,7 @@ function resizeConsoleView(expanded) {
   }
   pre.scrollTop = follow ? pre.scrollHeight : top;
   $("consoleFollow").checked = follow;
-  if (state?.live_console) button.focus({preventScroll:true});
+  if (currentConsole) button.focus({preventScroll:true});
   else $("caseTitle").focus({preventScroll:true});
 }
 $("expandConsole").onclick = () => {

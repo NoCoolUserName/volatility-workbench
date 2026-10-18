@@ -23,6 +23,7 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     await page.route('http://localhost/**',async route=>{
       const u=new URL(route.request().url());
       if(u.pathname==='/api/state')return route.fulfill({json:state});
+      if(u.pathname==='/api/report-console')return route.fulfill({json:{job_id:job.id,case_id:job.case_id,status:job.status,entries:[],earlier_entries:0}});
       if(u.pathname==='/api/stop'){calls.push('stop');return route.fulfill({json:{ok:true}});}
       if(u.pathname==='/api/jobs'){
         calls.push(route.request().postDataJSON());
@@ -118,7 +119,7 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     assert.equal(await page.locator('#reportJobFailure').evaluate(node=>!!(node.compareDocumentPosition(document.querySelector('#case'))&Node.DOCUMENT_POSITION_FOLLOWING)),true);
     assert.match(await page.locator('#reportView').innerText(),/Saved synthetic paragraph 89/,'Failure preserves the readable sealed report');
     assert.equal(await page.getByRole('progressbar').count(),0,'Failed work must not keep animating');
-    assert.equal(await page.locator('#liveConsoleSection').isHidden(),true);
+    assert.equal(await page.locator('#liveConsoleSection').isVisible(),true,'Failed requests retain their saved console for review');
     const rerun=page.locator('#reportJobFailure').getByRole('button',{name:'Rerun',exact:true});
     await page.locator('#focus').fill('Keep this newer unsubmitted prompt');
     rejectUpdate=true;

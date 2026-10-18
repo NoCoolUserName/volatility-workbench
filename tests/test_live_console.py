@@ -1,6 +1,7 @@
 """Only explicit tool events appear in the read-only live report console."""
 import json
 import unittest
+from unittest.mock import patch
 
 from volatility_workbench import live_console
 from volatility_workbench.app import Workbench
@@ -46,6 +47,48 @@ class ConsoleTests(unittest.TestCase):
 
 
 class ConsoleEventTests(unittest.IsolatedAsyncioTestCase):
+    def saved_app(self):
+        fixture=BackendFixture();fixture.setUp();self.addCleanup(fixture.doCleanups)
+        config=fixture.root/'config.json';config.write_text(json.dumps(fixture.config.to_dict()))
+        app=Workbench(config,fixture.root/'ui',codex_factory=FakeCodex)
+        case=app.add([str(fixture.image)])[0]
+        return app,case,config,fixture
+
+    async def test_finished_console_survives_restart_and_activity_window_rollover(self):
+        app,case,config,fixture=self.saved_app()
+        job={'id':'job','case_id':case['id'],'kind':'update','status':'completed','finished_at':'2026-10-18T12:00:00Z'}
+        app.state['jobs'].append(job)
+        records=[event(1,'local_tool_completed',{'tool':'synthetic','output':'Saved plugin output'}),
+                 event(2,'job_completed',{})]+[event(i,'tool_progress',{'message':'Other request'},'other') for i in range(3,180)]
+        log=app.directory(case)/'activity.jsonl';log.write_text(''.join(json.dumps(r)+'\n' for r in records));original=log.read_bytes()
+        case['activity']=records[-150:];app.save()
+        restarted=Workbench(config,fixture.root/'ui',codex_factory=FakeCodex)
+        view=restarted.report_console(restarted.case(case['id']),'job')
+        self.assertEqual(view['status'],'completed');self.assertIn('Saved plugin output',json.dumps(view))
+        self.assertNotIn('Other request',json.dumps(view));self.assertEqual(view['warnings'],[])
+        self.assertEqual(log.read_bytes(),original)
+        with patch.object(live_console,'saved_snapshot',side_effect=AssertionError('Cached view should not reread log')):
+            self.assertEqual(restarted.report_console(restarted.case(case['id']),'job'),view)
+        with self.assertRaises(ValueError):restarted.report_console(case,'another-job')
+        with self.assertRaises(ValueError):restarted.report_console({**case,'id':'different-case'},'job')
+        job['status']='running'
+        with self.assertRaises(ValueError):app.report_console(case,'job')
+
+    async def test_saved_console_bounds_corrupt_records_and_missing_log(self):
+        app,case,_,_=self.saved_app()
+        job={'id':'job','case_id':case['id'],'kind':'report','status':'failed'};app.state['jobs'].append(job)
+        log=app.directory(case)/'activity.jsonl'
+        records=[event(i,'local_tool_completed',{'tool':'synthetic','output':'x'*12000}) for i in range(120)]
+        log.write_text('invalid json\n'+''.join(json.dumps(r)+'\n' for r in records))
+        view=app.report_console(case,'job')
+        self.assertGreater(view['earlier_entries'],0);self.assertTrue(view['warnings'])
+        self.assertLessEqual(sum(len(e['text']) for e in view['entries']),live_console.MAX_CHARS)
+        with patch.object(live_console,'MAX_LOG_RECORD',20):
+            self.assertIn('oversized',json.dumps(live_console.saved_snapshot(job,log)))
+        log.unlink();app.console_cache.clear();case['activity']=[event(9,'tool_progress',{'message':'Recent fallback'})]
+        self.assertIn('Recent fallback',json.dumps(app.report_console(case,'job')))
+        self.assertTrue(app.report_console(case,'job')['warnings'])
+
     async def test_actual_tool_progress_is_tagged_and_available_to_polling(self):
         fixture=BackendFixture();fixture.setUp();self.addCleanup(fixture.doCleanups)
         config=fixture.root/'config.json';config.write_text(json.dumps(fixture.config.to_dict()))
