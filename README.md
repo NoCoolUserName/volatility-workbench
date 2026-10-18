@@ -1,6 +1,6 @@
 # Volatility Workbench
 
-A local browser application for existing memory acquisitions: case navigation,
+A local application for existing memory acquisitions, with an optional native macOS window and browser/CLI modes: case navigation,
 sequential jobs, a case conversation, report exploration, saved evidence, coverage,
 a searchable installed-plugin catalog, and decorative image coins. It uses the separately maintained
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp) core; there is one
@@ -8,11 +8,26 @@ implementation of execution, integrity, result reuse, artifact inspection, queri
 references, citation validation and forensic coverage.
 
 Experimental. macOS ARM64 is the tested local host. POSIX/Linux uses path entry
-and folder browsing; Finder is macOS-only. Windows hosts are unsupported. Codex
-app-server 0.160.0 is the existing model adapter; this separation does not change
-provider/account selection. The UI adds no runtime dependency beyond core.
+and folder browsing; Finder is macOS-only. Windows hosts are unsupported. The Codex adapter reuses existing sign-in. An optional compatible chat/tool API adapter supports explicitly configured endpoints after a synthetic capability check. Desktop dependencies are optional; browser mode retains the core-only dependency set. See [AI providers](docs/AI_PROVIDERS.md).
 
-## Install and launch
+## Native macOS application
+
+The macOS ARM64 distribution opens the same UI/backend in a decorated system
+WebView with a Dock icon, native menus and Settings. It includes separate,
+relocatable Python application/analyzer runtimes; no checkout, Homebrew, shell
+startup file or development venv is needed. Closing the window hides it; Dock
+reopen restores it. Quit asks before cancelling active work. Existing configuration
+and case roots can be reused without moving evidence.
+
+See [build, install and rollback](packaging/README.md), [native application](docs/MACOS_APP.md),
+and [Settings, symbols and optional plugins](docs/SETTINGS_AND_SYMBOLS.md).
+The distribution manifest selects pinned core, Volatility and optional addon
+profiles. Public bundles contain redistributable additions; optional community
+sources are downloaded explicitly into a separate managed environment. Catalog
+counts come from the configured runtime. Local builds are ad-hoc signed unless
+an explicit release identity is supplied; notarization is a separate release step.
+
+## Browser / CLI install and launch
 
 Use Python 3.12+ and Git. Install official Volatility separately as described in
 [core setup](https://github.com/NoCoolUserName/volatility-mcp#quick-start-1-use-the-mcp-server).
@@ -62,8 +77,8 @@ swift scripts/macos-icon.swift /tmp/workbench-icon.png "/absolute/path/to/Launch
 
 The Swift source draws the icon using AppKit; it requires Apple's Swift tools.
 To regenerate the packaged image, use `src/volatility_workbench/static/icon.png`
-as the output path and omit the launcher argument. The launcher remains a Terminal
-script, with no separate desktop application to install.
+as the output path and omit the launcher argument. This optional browser-mode fallback opens Terminal. The native application uses
+the same artwork as a packaged `.icns` and does not open Terminal or a browser tab.
 
 ## Optional analysis plugins
 

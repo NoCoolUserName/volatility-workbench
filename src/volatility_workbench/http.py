@@ -7,6 +7,7 @@ import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from http.cookies import SimpleCookie
 import json
+import os
 from pathlib import Path
 import secrets
 import re
@@ -104,6 +105,8 @@ class Handler(BaseHTTPRequestHandler):
 
     async def dispatch(self,path,body):
         app=self.server.app
+        if path.startswith('/api/settings/'):
+            return await app.settings_manager.dispatch(path,body)
         if path=='/api/cases':return {'cases':app.add(body['paths'],body.get('related',False),body.get('title',''),body.get('source',''))}
         if path=='/api/jobs':return app.enqueue(body['case_id'],body['kind'],body.get('text',''),body.get('request_id'))
         if path=='/api/stop':return await app.stop()
@@ -118,6 +121,7 @@ class Handler(BaseHTTPRequestHandler):
         app=self.server.app
         one=lambda k,d='':query.get(k,[d])[0]
         if path=='/api/state':return app.snapshot()
+        if path=='/api/settings':return app.settings_manager.snapshot()
         if path=='/api/plugins':
             if one('refresh', '0') not in ('0', '1'):
                 raise ValueError('refresh must be 0 or 1')
@@ -138,6 +142,9 @@ class Handler(BaseHTTPRequestHandler):
             self.guard()
             url=urlsplit(self.path)
             assets={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/icon.png':('icon.png','image/png')}
+            assets.update({'/settings.html':('settings.html','text/html; charset=utf-8'),
+                '/settings.js':('settings.js','text/javascript; charset=utf-8'),
+                '/settings.css':('settings.css','text/css; charset=utf-8')})
             if url.path in assets:
                 name,mime=assets[url.path]
                 return self.send(200,(Path(__file__).parent/'static'/name).read_bytes(),mime)
@@ -187,6 +194,10 @@ async def serve(args):
         if not args.no_open:await asyncio.to_thread(open_browser,session['url'])
         return
     app=Workbench(args.config,root,getattr(args,'project',None))
+    from .settings import SettingsManager
+    from .desktop import preferences_directory
+    settings_config=Path(args.config or os.environ.get('VOLATILITY_MCP_CONFIG') or Path.home()/'.config/volatility-mcp/config.json').expanduser().absolute()
+    app.settings_manager=SettingsManager(app,settings_config,preferences_directory())
     await app.start()
     server=Server(app,args.port,asyncio.get_running_loop())
     thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()

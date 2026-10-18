@@ -11,11 +11,15 @@ requires-python = ">=3.12"
 license = "MIT"
 dependencies = ["volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@e3a74a6e7861b66c6074510093d8b520f6657e16"]
 
+[project.optional-dependencies]
+desktop = ["pywebview==6.2.1; sys_platform == 'darwin'"]
+
 [project.scripts]
 volatility-workbench = "volatility_workbench.cli:main"
+volatility-workbench-desktop = "volatility_workbench.desktop:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-volatility_workbench = ["static/*.html", "static/*.js", "static/*.css", "static/*.png", "templates/*.md"]
+volatility_workbench = ["static/*.html", "static/*.js", "static/*.css", "static/*.png", "templates/*.md", "resources/*.json"]

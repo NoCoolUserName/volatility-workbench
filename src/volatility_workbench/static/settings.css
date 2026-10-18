@@ -1,0 +1,16 @@
+body {display:block;overflow:auto}
+.settings {display:block;max-width:960px;margin:0 auto;padding:28px 32px;height:auto;overflow:visible}
+.settings header {display:block;margin-bottom:20px}
+.settings section {display:block;border:1px solid var(--border,#33474d);border-radius:10px;margin:20px 0;padding:20px}
+.settings h2 {margin-top:0}
+.settings label {display:block;margin:12px 0 5px}
+.settings input {display:block;width:100%;max-width:760px;margin-top:5px}
+.settings select {display:block;margin-top:5px}
+.settings button {margin:10px 8px 8px 0}
+.settings pre {white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto}
+.settings code {overflow-wrap:anywhere}
+.settings .pack {padding:12px 0;border-bottom:1px solid var(--border,#33474d)}
+.settings .pack small {display:block;overflow-wrap:anywhere}
+.settings [hidden] {display:none!important}
+
+.settings input[type=checkbox] {display:inline;width:auto;margin-right:8px}

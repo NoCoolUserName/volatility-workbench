@@ -4,6 +4,49 @@ import asyncio
 import json
 import os
 import time
+from pathlib import Path
+import platform
+import shutil
+
+
+def child_environment():
+    """GUI-safe child environment without inherited API keys or provider secrets."""
+    allowed = {'HOME','USER','LOGNAME','PATH','TMPDIR','LANG','LC_ALL','LC_CTYPE',
+               'SYSTEMROOT','WINDIR','APPDATA','LOCALAPPDATA','CODEX_HOME'}
+    result = {key:value for key,value in os.environ.items() if key in allowed}
+    result['PATH'] = os.pathsep.join(dict.fromkeys([
+        '/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin',
+        *result.get('PATH','').split(os.pathsep)]))
+    return result
+
+
+def discover_codex(explicit=None):
+    """Find the existing native CLI without sourcing a shell or installing software."""
+    candidates = [Path(explicit).expanduser()] if explicit else [
+        Path(p) for p in (shutil.which('codex'),
+            '/opt/homebrew/bin/codex', '/usr/local/bin/codex',
+            str(Path.home()/'.local/bin/codex'),
+            '/Applications/Codex.app/Contents/Resources/codex') if p]
+    for candidate in candidates:
+        if not candidate.is_file() or not os.access(candidate, os.X_OK):
+            continue
+        resolved = candidate.resolve()
+        if resolved.suffix == '.js':
+            # Official npm launcher uses /usr/bin/env node. Prefer its own native
+            # payload so Finder's PATH does not require Node or a shell startup.
+            base = resolved.parent.parent
+            arch = 'arm64' if platform.machine() in ('arm64','aarch64') else 'x64'
+            system = 'darwin' if platform.system() == 'Darwin' else 'linux'
+            matches = list((base/'node_modules'/'@openai'/('codex-'+system+'-'+arch)/'vendor').glob('*/bin/codex'))
+            matches += list((base/'vendor').glob('*/codex/codex'))
+            native = next((p for p in matches if p.is_file() and os.access(p, os.X_OK)), None)
+            if native:
+                return str(native.resolve())
+            if shutil.which('node', path=child_environment()['PATH']):
+                return str(resolved)
+            continue
+        return str(resolved)
+    raise CodexError('Codex executable was not found. Select an installed Codex CLI in Settings; no account or billing configuration was changed.')
 
 
 class CodexError(RuntimeError):
@@ -12,7 +55,8 @@ class CodexError(RuntimeError):
 
 class CodexClient:
     def __init__(self, event, request, executable='codex'):
-        self.event, self.request_handler, self.executable = event, request, executable
+        self.event, self.request_handler = event, request
+        self.executable = discover_codex(None if executable == 'codex' else executable)
         self.pending = {}
         self.counter = 0
         self.proc = None
@@ -25,7 +69,7 @@ class CodexClient:
         self.proc = await asyncio.create_subprocess_exec(
             self.executable, 'app-server', '--listen', 'stdio://',
             stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE, limit=16 * 1024 * 1024)
+            stderr=asyncio.subprocess.PIPE, limit=16 * 1024 * 1024, env=child_environment())
         self.reader = asyncio.create_task(self._read())
         self.errors = asyncio.create_task(self._stderr())
         await self.call('initialize', {'clientInfo': {'name': 'volatility_workbench',
