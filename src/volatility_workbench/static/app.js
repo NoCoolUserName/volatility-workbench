@@ -755,6 +755,10 @@ function pluginSource(p) {
 }
 function updatePluginSourceSummary() {
   const checked = availablePluginSources.filter(key => selectedPluginSources.has(key)).length;
+  const all = $("pluginSourceAll");
+  all.disabled = availablePluginSources.length === 0;
+  all.checked = availablePluginSources.length > 0 && checked === availablePluginSources.length;
+  all.indeterminate = checked > 0 && checked < availablePluginSources.length;
   $("pluginSource").querySelector("summary").textContent =
     checked === availablePluginSources.length ? "Source" : `Source (${checked}/${availablePluginSources.length})`;
 }
@@ -765,8 +769,26 @@ function renderPluginSourceOptions() {
     if (!sources.has(key)) sources.set(key, {label, count: 0});
     sources.get(key).count++;
   }
-  availablePluginSources = [...sources.keys()].sort((a, b) => sources.get(a).label.localeCompare(sources.get(b).label));
+  function sourcePriority(key) {
+    const [kind, label] = JSON.parse(key);
+    if (kind === "native") return 0;
+    if (kind === "local" && label === "Local addon · volatility-mcp") return 1;
+    return 2;
+  }
+  availablePluginSources = [...sources.keys()].sort((a, b) =>
+    sourcePriority(a) - sourcePriority(b) || sources.get(a).label.localeCompare(sources.get(b).label));
   if (allPluginSourcesSelected) selectedPluginSources = new Set(availablePluginSources);
+  const allLabel = el("label"), allCheckbox = el("input");
+  allLabel.className = "plugin-source-all";
+  allCheckbox.id = "pluginSourceAll";
+  allCheckbox.type = "checkbox";
+  allCheckbox.onchange = () => {
+    allPluginSourcesSelected = allCheckbox.checked;
+    selectedPluginSources = allCheckbox.checked ? new Set(availablePluginSources) : new Set();
+    renderPluginSourceOptions();
+    renderPlugins();
+  };
+  allLabel.append(allCheckbox, el("span", "All"));
   const options = availablePluginSources.map(key => {
     const item = sources.get(key), label = el("label"), checkbox = el("input");
     checkbox.type = "checkbox";
@@ -780,7 +802,7 @@ function renderPluginSourceOptions() {
     label.append(checkbox, el("span", `${item.label} (${item.count})`));
     return label;
   });
-  $("pluginSourceOptions").replaceChildren(...options);
+  $("pluginSourceOptions").replaceChildren(allLabel, ...options);
   updatePluginSourceSummary();
 }
 function renderPlugins() {
