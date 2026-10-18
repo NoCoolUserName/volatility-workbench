@@ -551,6 +551,11 @@ The console's upper-right Expand button opens a near-full-screen modal with a
 resolution-independent CSS CRT casing, recessed screen, vents and power indicator.
 It moves the existing read-only console rather than duplicating the feed. Output
 keeps updating with the same theme colors, follow state and scrolling controls.
+While expanded, the matching live job's current operation and elapsed time appear
+in amber immediately beside the console title, wrapping below it on narrow screens.
+This mirrors the existing case progress label and refresh cycle; elapsed time is
+measured from the job's start, not the current tool's start. The label clears on
+collapse, job/case-stream changes and completion, and is absent from saved consoles.
 Collapse or Escape restores the inline console and focus; background page scrolling
 is locked while expanded. The view closes when its job changes. No shell
 input or additional analysis request is introduced.

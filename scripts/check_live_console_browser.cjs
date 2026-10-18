@@ -4,10 +4,11 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const assets=path.join(__dirname,'../src/volatility_workbench/static');
-const job={id:'job',case_id:'synthetic',kind:'update',status:'running',report_id:null,progress:'Starting'};
+const fixtureNow=Date.parse('2026-10-18T12:02:42Z');
+const job={id:'job',case_id:'synthetic',kind:'update',status:'running',report_id:null,progress:'case_report_context',started_at:'2026-10-18T12:00:00Z'};
 const version={id:'saved-report',status:'sealed',created_at:'2026-10-17T12:00:00Z'};
 const report='# Synthetic saved report\n## Executive summary\nAI Determination: Undetermined\n'+Array.from({length:90},(_,i)=>'\nSaved synthetic paragraph '+i+'. '+ 'Synthetic saved detail. '.repeat(12)).join('');
-const state={cases:[{id:'synthetic',title:'Synthetic case',created_at:'2026-10-18T12:00:00Z',
+const state={cases:[{id:'synthetic',title:'Synthetic case · Win XP',created_at:'2026-10-18T12:00:00Z',
   images:[],coins:[],readiness:{status:'Unchecked',reasons:[]},reports:[version],messages:[],activity:[]}],
   jobs:[job],approvals:[],account:{},evidence_root:'/synthetic',
   live_console:{job_id:'job',case_id:'synthetic',entries:[],earlier_entries:0}};
@@ -16,10 +17,12 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
  const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
  try{
   const page=await browser.newPage({viewport:{width:1400,height:1000}}),errors=[],calls=[];
+  await page.addInitScript(now=>{window.fixtureNow=now;Date.now=()=>window.fixtureNow;},fixtureNow);
   let retained=null,rejectSaved=false;
   page.on('pageerror',error=>errors.push(error.message));
-  await page.route('http://localhost/**',route=>{
+  await page.route('**/*',route=>{
    const url=new URL(route.request().url());calls.push(url.pathname);
+   assert.equal(url.origin,'http://localhost','Synthetic console check makes no external requests');
    assert.equal(route.request().method(),'GET');
    if(url.pathname==='/api/state')return route.fulfill({json:state});
    if(url.pathname==='/api/report-console')return rejectSaved?route.fulfill({status:503,json:{error:'Synthetic saved-console read failure'}}):route.fulfill({json:retained});
@@ -31,7 +34,13 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
    return route.fulfill({body:fs.readFileSync(path.join(assets,name)),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html'});
   });
   await page.goto('http://localhost/');
-  const pre=page.locator('#liveConsole');await pre.waitFor();
+  const pre=page.locator('#liveConsole'),consoleOperation=page.locator('#consoleOperation');await pre.waitFor();
+  async function expectConsoleOperation(text){
+   assert.equal(await consoleOperation.textContent(),text);
+   assert.equal(await consoleOperation.isVisible(),!!text,'Tool/elapsed label is visible only for matching expanded live work');
+  }
+  await expectConsoleOperation('');
+  assert.equal(await page.locator('#operation').textContent(),'case_report_context · 162s elapsed');
   assert.match(await pre.innerText(),/Waiting for tool output/);
   await page.locator('.report-determinations').waitFor();
   assert.equal(await page.locator('#queueSection').evaluate(node=>!!(node.compareDocumentPosition(document.querySelector('#case'))&Node.DOCUMENT_POSITION_FOLLOWING)),true,'Console and Current work precede the long report');
@@ -63,6 +72,13 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   await pre.evaluate(node=>window.retainedConsole=node);
   await expand.scrollIntoViewIfNeeded();const originalPagePosition=await page.evaluate(()=>scrollY);
   await expand.click();await zoom.waitFor();
+  await expectConsoleOperation('case_report_context · 162s elapsed');
+  assert.equal(await consoleOperation.textContent(),await page.locator('#operation').textContent(),'Expanded status mirrors the existing progress source');
+  assert.equal(await consoleOperation.evaluate(node=>getComputedStyle(node).color),await page.locator('#operation').evaluate(node=>getComputedStyle(node).color),'Expanded status keeps the existing amber status color');
+  assert.equal(await consoleOperation.evaluate(node=>{
+   const status=node.getBoundingClientRect(),title=document.querySelector('#liveConsoleTitle').getBoundingClientRect();
+   return status.left>=title.right&&Math.abs((status.top+status.bottom-title.top-title.bottom)/2)<12;
+  }),true,'Desktop tool status sits immediately to the right of the case title');
   assert.equal(await expand.innerText(),'Collapse');assert.equal(await expand.getAttribute('aria-expanded'),'true');
   assert.equal(await pre.evaluate(node=>node===window.retainedConsole),true,'Expansion moves the same live console');
   assert.equal(await zoom.evaluate(node=>{const box=node.getBoundingClientRect();return box.width>=innerWidth*.9&&box.height>=innerHeight*.9;}),true,'Expanded monitor nearly fills the viewport');
@@ -70,7 +86,13 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   for(let i=0;i<5;i++){await page.keyboard.press('Tab');assert.equal(await zoom.evaluate(node=>node.contains(document.activeElement)),true,'Modal keeps keyboard focus in the monitor');}
   for(let i=0;i<5;i++){await page.keyboard.press('Shift+Tab');assert.equal(await zoom.evaluate(node=>node.contains(document.activeElement)),true,'Reverse tab remains inside the monitor');}
   state.live_console.entries.push(entry('follow','Following output while monitor is expanded'));
+  job.progress='windows.pslist';await page.evaluate(()=>{window.fixtureNow+=5000;});
   await page.evaluate(()=>refresh());
+  await expectConsoleOperation('windows.pslist · 167s elapsed');
+  assert.equal(await consoleOperation.textContent(),await page.locator('#operation').textContent(),'Existing refresh updates both elapsed labels together');
+  job.status='stopping';await page.evaluate(()=>refresh());
+  await expectConsoleOperation('windows.pslist · 167s elapsed · stopping…');
+  job.status='running';await page.evaluate(()=>refresh());
   assert.ok(await pre.evaluate(node=>node.scrollHeight-node.scrollTop-node.clientHeight<3),'Expanded output still follows appended events');
   await pre.focus();await pre.evaluate(node=>{node.scrollTop=0;node.dispatchEvent(new Event('scroll'));});
   state.live_console.entries.push(entry(41,'Live update while monitor is expanded'));
@@ -79,6 +101,7 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   assert.equal(await pre.evaluate(node=>node===document.activeElement),true,'Live polling keeps expanded console focus');
   assert.equal(await pre.evaluate(node=>node.scrollTop),0,'Expanded paused output does not jump');
   await expand.click();await page.locator('#liveConsoleDock #liveConsoleSection').waitFor();
+  await expectConsoleOperation('');
   assert.equal(await expand.innerText(),'Expand');assert.equal(await page.locator('#consoleFollow').isChecked(),false);
   assert.equal(await expand.evaluate(node=>node===document.activeElement),true,'Collapse returns focus to its control');
   assert.ok(Math.abs(await page.evaluate(()=>scrollY)-originalPagePosition)<2,'Collapse returns to the same page position');
@@ -86,11 +109,14 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   await expand.click();await zoom.waitFor();await page.keyboard.press('Escape');
   await page.waitForFunction(()=>document.querySelector('#expandConsole').getAttribute('aria-expanded')==='false');
   assert.equal(await zoom.isHidden(),true,'Escape closes the monitor');
+  await expectConsoleOperation('');
   assert.equal(await page.locator('body').evaluate(node=>node.classList.contains('console-zoom-open')),false);
   for(const theme of ['matrix','blue','8-bit','fallout-2']){
    if(await page.locator('#theme').isHidden())await page.locator('#toggleTheme').click();
    await page.locator('#theme').selectOption(theme);
    await expand.click();await zoom.waitFor();
+   await expectConsoleOperation('windows.pslist · 167s elapsed');
+   assert.equal(await consoleOperation.evaluate(node=>getComputedStyle(node).color),await page.locator('#operation').evaluate(node=>getComputedStyle(node).color),theme+' keeps matching progress colors');
    if(theme!=='fallout-2')assert.equal(await pre.evaluate(node=>getComputedStyle(node).backgroundColor),await page.locator('body').evaluate(node=>getComputedStyle(node).backgroundColor));
    else assert.ok(await pre.evaluate(node=>{
     const style=getComputedStyle(node),luminance=value=>{
@@ -115,16 +141,46 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   assert.equal(await zoom.evaluate(node=>node.scrollWidth<=node.clientWidth+1),true,'Mobile monitor has no horizontal overflow');
   assert.ok((await pre.boundingBox()).height>300,'Mobile console remains usable');
+  await expectConsoleOperation('windows.pslist · 167s elapsed');
+  assert.equal(await consoleOperation.evaluate(node=>{
+   const status=node.getBoundingClientRect(),title=document.querySelector('#liveConsoleTitle').getBoundingClientRect(),screen=document.querySelector('.crt-screen').getBoundingClientRect();
+   return status.top>=title.bottom&&status.left>=screen.left&&status.right<=screen.right;
+  }),true,'Narrow CRT wraps tool status below the title within the screen');
   if(process.env.WORKBENCH_CRT_MOBILE_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_CRT_MOBILE_SCREENSHOT});
+  // Live console follows its stream's job, even when a different case is selected.
+  const otherCase={...state.cases[0],id:'other-live-case',title:'Other synthetic case',reports:[]};
+  const otherJob={...job,id:'other-live-job',case_id:otherCase.id,progress:'other_case_tool'};
+  const originalStream=state.live_console;
+  state.cases.push(otherCase);state.jobs=[job,otherJob];
+  state.live_console={job_id:otherJob.id,case_id:otherCase.id,entries:[entry('other','Other synthetic case output')],earlier_entries:0};
+  await page.evaluate(()=>refresh());
+  await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  await expectConsoleOperation('');
+  await expand.click();await zoom.waitFor();
+  await expectConsoleOperation('other_case_tool · 167s elapsed');
+  assert.match(await page.locator('#liveConsoleTitle').textContent(),/Other synthetic case/);
+  assert.doesNotMatch(await consoleOperation.textContent(),/windows\.pslist/,'Changing the stream case never retains another job label');
+  state.jobs=[job];await page.evaluate(()=>refresh());await expectConsoleOperation('');
+  state.jobs=[job,{...otherJob,case_id:'mismatched-case'}];await page.evaluate(()=>refresh());await expectConsoleOperation('');
+  state.jobs=[job,otherJob];state.live_console.status='completed';await page.evaluate(()=>refresh());await expectConsoleOperation('');
+  state.jobs=[job];state.live_console=originalStream;await page.evaluate(()=>refresh());
+  await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  await expectConsoleOperation('');
+  await expand.click();await zoom.waitFor();await expectConsoleOperation('windows.pslist · 167s elapsed');
   state.live_console={job_id:'next',case_id:'synthetic',entries:[entry('next','New job output')],earlier_entries:0};
   await page.evaluate(()=>refresh());assert.doesNotMatch(await pre.innerText(),/Actual synthetic output/);
   await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open&&document.querySelector('#expandConsole').getAttribute('aria-expanded')==='false');
+  await expectConsoleOperation('');
+  const nextJob={...job,id:'next',progress:'next_tool',started_at:'2026-10-18T12:02:00Z'};
+  state.jobs=[nextJob];await page.evaluate(()=>refresh());
   await expand.click();await zoom.waitFor();
+  await expectConsoleOperation('next_tool · 47s elapsed');
   const finished={id:'next',case_id:'synthetic',kind:'update',status:'completed',finished_at:'2026-10-18T12:05:00Z'};
   retained={...state.live_console,status:'completed',finished_at:finished.finished_at};
   state.jobs=[finished];state.live_console=null;await page.evaluate(()=>refresh());
   await page.waitForFunction(()=>document.querySelector('#liveConsoleTitle').textContent.includes('completed'));
   assert.equal(await zoom.isVisible(),true,'Finishing a job keeps the CRT open for review');
+  await expectConsoleOperation('');
   assert.match(await pre.innerText(),/New job output/);
   assert.equal(await page.locator('#consolePowerText').innerText(),'SAVED');
   assert.equal(await page.locator('#stop').isHidden(),true,'Saved output must not expose an active Stop button');
@@ -137,13 +193,15 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   await page.getByText('New job output',{exact:false}).waitFor();
   assert.match(await pre.innerText(),/New job output/,'Saved output loads after a page restart');
   await expand.click();await zoom.waitFor();assert.match(await pre.innerText(),/New job output/);
+  await expectConsoleOperation('');
   await expand.click();await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
   state.cases.push({...state.cases[0],id:'empty-case',title:'Different case',reports:[]});await page.evaluate(()=>refresh());
   await page.getByRole('button',{name:'Different case',exact:true}).click();
   assert.equal(await page.locator('#queueSection').isHidden(),true,'Another case must not inherit saved output');
-  await page.getByRole('button',{name:'Synthetic case',exact:true}).click();await pre.waitFor();
+  await expectConsoleOperation('');
+  await page.getByRole('button',{name:'Synthetic case · Win XP',exact:true}).click();await pre.waitFor();
   assert.match(await pre.innerText(),/New job output/,'Returning to the case restores its saved console');
   assert.deepEqual(errors,[]);assert.ok(calls.every(url=>['/api/state','/api/artifacts','/api/file','/api/report-plugins','/api/report-console'].includes(url)||!url.startsWith('/api/')));
-  console.log('Live/saved console: safe bounded output and CRT interactions; completion keeps expanded review open, completed status and no active controls, saved reload, case isolation; zero work requests.');
+  console.log('Live/saved console: safe bounded output and CRT interactions; mirrored amber tool/elapsed updates, desktop/mobile placement, stopping and stale-label clearing across collapse/job/case/completion; completion keeps expanded review open, saved reload, case isolation; zero work/external requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

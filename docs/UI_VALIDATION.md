@@ -784,3 +784,11 @@ rerun successfully; the theme check made 233 local GET requests with no external
 analysis or mutation requests. Desktop, 320px report and 390px CRT captures were
 reviewed again. Decoration remains on the housing, with clean text surfaces and
 unchanged geometry and controls.
+
+The expanded CRT now mirrors the live job's amber operation/elapsed label beside
+the case title. The focused synthetic console browser check passed exact text and
+color matching, a deterministic 162-to-167-second update, stopping status, desktop
+placement, mobile wrapping, expand/collapse, and clearing after job, case-stream or
+completion changes. Missing or mismatched jobs and saved consoles retain no stale
+label. Matrix and Fallout 2 desktop/mobile captures were visually reviewed. The
+check made no work or external requests and did not inspect active investigations.

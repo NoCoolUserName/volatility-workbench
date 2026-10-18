@@ -1275,8 +1275,16 @@ function markSelectedReport(versionId) {
     else button.removeAttribute("aria-current");
   }
 }
+function operationLabel(job, now = Date.now()) {
+  if (!job || job.kind === "readiness" || !["running", "stopping"].includes(job.status)) return "";
+  const started = timestampMillis(job.started_at);
+  return readableTime(job.progress || job.kind) +
+    (Number.isFinite(started) ? " · " + Math.floor((now - started) / 1000) + "s elapsed" : "") +
+    (job.status === "stopping" ? " · stopping…" : "");
+}
 function render() {
   if (!state) return;
+  const renderedAt = Date.now();
   const connectedProvider = state.account.provider || (state.account.type ? "codex" : state.default_provider);
   $("connection").textContent = state.account.connected
     ? (connectedProvider === "compatible"
@@ -1363,13 +1371,7 @@ function render() {
     const running = state.jobs.find(
       (j) => j.case_id === c.id && ["running", "stopping"].includes(j.status),
     );
-    $("operation").textContent = running && running.kind !== "readiness"
-      ? readableTime(running.progress || running.kind) +
-        " · " +
-        Math.floor((Date.now() - timestampMillis(running.started_at)) / 1000) +
-        "s elapsed" +
-        (running.status === "stopping" ? " · stopping…" : "")
-      : "";
+    $("operation").textContent = operationLabel(running, renderedAt);
     const versions = $("versions");
     const visibleReports = c.reports.filter((r) => !r.hidden && !r.deleted_at);
     const versionsKey = JSON.stringify([c.id, visibleReports]);
@@ -1466,7 +1468,7 @@ function render() {
     }));
     shownQueue = queueKey;
   }
-  renderLiveConsole(stream);
+  renderLiveConsole(stream, renderedAt);
   renderReportFailure(c);
   updateBackToTop();
 }
@@ -1523,10 +1525,20 @@ function consoleForView() {
   }
   return savedConsoleCache.get(key);
 }
-function renderLiveConsole(stream) {
+function renderConsoleOperation(stream, now = Date.now()) {
+  const label = $("consoleOperation");
+  // The global live stream can belong to a different case than the selected one.
+  const job = $("consoleZoom").open && stream &&
+    (!stream.status || ["running", "stopping"].includes(stream.status))
+    ? state.jobs.find(j => j.id === stream.job_id && j.case_id === stream.case_id) : null;
+  label.textContent = operationLabel(job, now);
+  label.hidden = !label.textContent;
+}
+function renderLiveConsole(stream, now = Date.now()) {
   currentConsole = stream;
   const pre = $("liveConsole");
   if ($("consoleZoom").open && (!stream || stream.job_id !== consoleJob)) $("consoleZoom").close();
+  renderConsoleOperation(stream, now);
   $("liveConsoleSection").hidden = !stream;
   if (!stream) { consoleJob = null; consoleNodes.clear(); pre.replaceChildren(); return; }
   const follow = $("consoleFollow");
@@ -1581,6 +1593,7 @@ function resizeConsoleView(expanded) {
     if (consolePagePosition !== null) window.scrollTo({top:consolePagePosition, behavior:"instant"});
     consolePagePosition = null;
   }
+  renderConsoleOperation(currentConsole);
   pre.scrollTop = follow ? pre.scrollHeight : top;
   $("consoleFollow").checked = follow;
   if (currentConsole) button.focus({preventScroll:true});
