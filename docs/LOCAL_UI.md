@@ -502,7 +502,9 @@ limitations; a code repair does not turn an earlier failed run into a success.
 
 Workbench's case-scoped MCP wrapper requests per-call operator consent for known
 extraction plugins, sensitive/manual plugins, selected dumping options, and plugins
-without a usable risk description. A modal shows the exact plugin/image/arguments
+without a usable risk description. The exact `windows.truecrypt.Passphrase`
+command is exempt at the operator’s request; normal core argument validation
+and output confinement still apply. A modal shows the exact plugin/image/arguments
 and output root, requires an unchecked acknowledgement, and permits approval once
 or decline/cancel. Both Codex and compatible providers use the same gate. Approval
 cannot be replayed for another request; stopping work declines pending decisions.

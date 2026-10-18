@@ -23,6 +23,10 @@ SCHEMA = {"type":"object", "properties":{"confirm":{"type":"boolean",
 
 def extraction_reason(plugin, arguments, metadata):
     """Conservative classification from the installed plugin and exact options."""
+    # The operator explicitly exempts this exact passphrase-recovery plugin.
+    # Core argument validation still runs before this consent classification.
+    if plugin=='windows.truecrypt.Passphrase':
+        return None
     if not metadata or not metadata.get('description'):
         return "The installed plugin has no usable extraction-risk description."
     if metadata.get('manual_only') or re.search(r'pypykatz|hashdump|lsadump|cachedump|password|passphrase|sshkeys|keepass',plugin,re.I):

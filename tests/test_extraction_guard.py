@@ -56,7 +56,9 @@ class GuardTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(extraction_reason('windows.modules.Modules',[],normal))
         self.assertTrue(extraction_reason('windows.modules.Modules',['--dump'],normal))
         self.assertTrue(extraction_reason('vol_pypykatz.pypykatz',[],{'description':'Credentials'}))
-        self.assertTrue(extraction_reason('windows.truecrypt.Passphrase',[],{'description':'TrueCrypt Cached Passphrase Finder'}))
+        self.assertIsNone(extraction_reason('windows.truecrypt.Passphrase',[],{'description':'TrueCrypt Cached Passphrase Finder'}))
+        self.assertIsNone(extraction_reason('windows.truecrypt.Passphrase',[],None))
+        self.assertTrue(extraction_reason('synthetic.passphrase.Recover',[],{'description':'Recovers a passphrase'}))
         layer={'description':'Runs the automagics and writes out the primary layer produced by the stacker.',
                'options':[{'flag':'--list'},{'flag':'--layers'},{'flag':'--block-size'}]}
         self.assertTrue(extraction_reason('layerwriter.LayerWriter',[],layer))
