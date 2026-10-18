@@ -18,16 +18,26 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   summary:status==='unavailable'?{executions:null,plugins:null,failures:null,reuse_receipts:null,request_failures:null}:{executions:18,plugins:20,failures:1,reuse_receipts:1,request_failures:1,unknown_execution_records:1,simulated_runs:1},
   entries:rows,next_offset:next,
   executed_plugin_names:status==='unavailable'?[]:entries.filter(e=>e.kind==='plugin_run'&&e.execution_recorded&&!e.synthetic).map(e=>e.plugin),
-  errored_entries:status==='unavailable'?[]:entries.filter(e=>e.kind==='request_failure'||/fail|error|denied/.test(e.status)).map(({plugin,image_id,status,kind,run_id,call_id,arguments:args})=>({plugin,image_id,status,kind,run_id,call_id,arguments:args,requested_image:kind==='request_failure'?'/synthetic/image.raw':null})),
+  errored_entries:status==='unavailable'?[]:entries.filter(e=>e.kind==='request_failure'||/fail|error|denied/.test(e.status)).map(({plugin,image_id,status,kind,run_id,call_id,arguments:args})=>({plugin,image_id,status,kind,run_id,call_id,arguments:args,requested_image:kind==='request_failure'?'/synthetic/image.raw':null,error_id:call_id})),
   warnings:status==='partial'?['Synthetic missing manifest <script>window.injected=true</script>']:[]});
 (async()=>{
  const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
  try{
   const page=await browser.newPage({viewport:{width:1400,height:1000}});
-  const calls=[],errors=[],policies=[];let delayedRelease=null,failCurrent=false;
+  const calls=[],errors=[],policies=[];let delayedRelease=null,failCurrent=false,failAcknowledgment=false;
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/Content Security Policy|violates the following/.test(m.text()))policies.push(m.text());});
   await page.route('**/*',async route=>{
-   const u=new URL(route.request().url());assert.equal(u.origin,'http://localhost');assert.equal(route.request().method(),'GET','Inventory never starts work');calls.push(u.pathname+u.search);
+   const u=new URL(route.request().url());assert.equal(u.origin,'http://localhost');calls.push(u.pathname+u.search);
+   if(u.pathname==='/api/reports/error-acknowledgment'){
+    assert.equal(route.request().method(),'POST');
+    if(failAcknowledgment){failAcknowledgment=false;return route.fulfill({status:500,json:{error:'Synthetic save failure'}});}
+    const body=route.request().postDataJSON(),c=state.cases.find(c=>c.id===body.case_id);
+    c.plugin_error_acknowledgments ||= {};
+    if(body.acknowledged)c.plugin_error_acknowledgments[body.error_id]={acknowledged_at:'2026-10-18T12:00:00Z'};
+    else delete c.plugin_error_acknowledgments[body.error_id];
+    return route.fulfill({json:{...body,acknowledgments:c.plugin_error_acknowledgments}});
+   }
+   assert.equal(route.request().method(),'GET','Inventory never starts work');
    if(u.pathname==='/api/state')return route.fulfill({json:state});
    if(u.pathname==='/api/plugins')return route.fulfill({json:{total:4,plugins:[
     {name:'windows.synthetic.Plugin4',source:{kind:'native',label:'Native · Volatility 3',url:'https://github.com/volatilityfoundation/volatility3'},description:'Lists synthetic processes.'},
@@ -75,8 +85,50 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   const retryButtons=inventory.locator('.report-plugin-errors-table tbody button[data-retry-index]');
   const retryAll=page.getByRole('button',{name:'Add all failed requests to prompt',exact:true});
   assert.deepEqual(await inventory.locator('.report-plugin-errors-table thead th').allTextContents(),
-    ['Plugin','Add to prompt','Quick Description','Image','Recorded error','Run provenance','Source provenance']);
+    ['Plugin','Add to prompt','Acknowledged / Resolved','Quick Description','Image','Recorded error','Run provenance','Source provenance']);
   assert.equal(await retryButtons.count(),2);
+  const checks=inventory.locator('.report-plugin-errors-table input[type="checkbox"]');
+  const badge=page.locator('#errorAcknowledgmentProgress');
+  assert.match(await badge.innerText(),/0% acknowledged\/resolved/);assert.equal(await badge.getAttribute('data-level'),'red');
+  await checks.first().check();await page.waitForFunction(()=>document.querySelector('#errorAcknowledgmentProgress').textContent.includes('50%'));
+  assert.equal(await badge.getAttribute('data-level'),'orange');
+  await checks.nth(1).check();await page.waitForFunction(()=>document.querySelector('#errorAcknowledgmentProgress').textContent.includes('100%'));
+  assert.equal(await badge.getAttribute('data-level'),'green');
+  await page.locator('#erroredPluginSearch').fill('Plugin2');
+  assert.match(await badge.innerText(),/100%/,'Search does not change the denominator');
+  await page.locator('#erroredPluginSearch').fill('');
+  failAcknowledgment=true;await checks.first().click();
+  await page.waitForFunction(()=>document.querySelector('#errorAcknowledgmentStatus').textContent.includes('not saved'));
+  assert.equal(await checks.first().isChecked(),true,'Failed save restores saved checkbox');
+  await checks.first().uncheck();await page.waitForFunction(()=>document.querySelector('#errorAcknowledgmentProgress').textContent.includes('50%'));
+  await page.reload();await page.waitForFunction(()=>document.querySelector('#errorAcknowledgmentProgress')?.textContent.includes('50%'));
+  await inventory.locator('> details').nth(1).locator('> summary').click();
+  assert.equal(await checks.nth(1).isChecked(),true,'Acknowledgments survive reload');
+  assert.equal(await checks.first().isChecked(),false);
+  await inventory.locator('> details').nth(2).locator('> summary').click();
+  await page.waitForFunction(()=>document.querySelector('.report-plugin-unused-table')?.textContent.includes('Shows a harmless unused fixture.'));
+  // Ten total records, one checked: red 10%; exact thirds switch evenly.
+  await page.evaluate(()=>{
+    const record=reportPluginCache.get(reportPluginKey);window.originalErrors=record.data.errored_entries;
+    record.data.errored_entries=Array.from({length:10},(_,i)=>({...window.originalErrors[0],error_id:'threshold-'+i}));
+    state.cases.find(c=>c.id===selected).plugin_error_acknowledgments={'threshold-0':{}};
+    renderReportPlugins(record);
+  });
+  assert.match(await badge.innerText(),/10%/);assert.equal(await badge.getAttribute('data-level'),'red');
+  for (const [count,level] of [[3,'red'],[4,'orange'],[6,'orange'],[7,'green'],[10,'green']]) {
+    await page.evaluate(count=>{
+      state.cases.find(c=>c.id===selected).plugin_error_acknowledgments=Object.fromEntries(Array.from({length:count},(_,i)=>['threshold-'+i,{}]));
+      refreshErrorAcknowledgments(reportPluginCache.get(reportPluginKey));
+    },count);
+    assert.equal(await badge.getAttribute('data-level'),level);
+    assert.match(await badge.innerText(),new RegExp(count*10+'%'));
+  }
+
+  await page.evaluate(()=>{
+    const record=reportPluginCache.get(reportPluginKey);record.data.errored_entries=window.originalErrors;
+    state.cases.find(c=>c.id===selected).plugin_error_acknowledgments={'call-2':{}};renderReportPlugins(record);
+  });
+
   await retryButtons.nth(1).click();
   const oneRetry=await focus.inputValue();
   assert.match(oneRetry,/"report":"current".*"requested_image":"\/synthetic\/image.raw".*"arguments":\["--pid","123",""\].*"run":"run-2","call":"call-2"/);
@@ -339,6 +391,6 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.equal(await page.locator('#report').getAttribute('class'),'primary');
   assert.equal(await page.locator('#update').isDisabled(),true);
   assert.deepEqual(errors,[]);assert.deepEqual(policies,[]);assert.equal(await page.evaluate(()=>window.injected),undefined);
-  console.log('Report plugins browser: counts/scope, errors/unused, failed-request retry drafts/exact metadata/dedup/disabled state, descriptions/timing/details, OS-matched bulk prompts, primary action order, completion refresh, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, 31 themes passed; only synthetic local GETs.');
+  console.log('Report plugins browser: persistent error acknowledgments/colors/save failures, counts/scope, errors/unused, failed-request retry drafts/exact metadata/dedup/disabled state, descriptions/timing/details, OS-matched bulk prompts, primary action order, completion refresh, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, 31 themes passed; only synthetic local reads and acknowledgment saves.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

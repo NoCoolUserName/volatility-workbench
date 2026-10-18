@@ -1,5 +1,7 @@
 """Report-only metadata inventory; harmless fixtures, no analysis or private state."""
 import copy
+import asyncio
+import shutil
 import dataclasses
 import hashlib
 import json
@@ -344,6 +346,57 @@ class InventoryTests(unittest.TestCase):
         many = inventory.markdown(text, result)
         self.assertIn('first 100 metadata records', many)
         self.assertLess(len(many), 250000)
+
+    def test_acknowledgments_follow_errors_across_revisions_and_persist(self):
+        self.add_run('old-error', status='error');self.write()
+        case = {'id':'case', 'reports':[{'id':'revision'}, {'id':'updated'}]}
+        app = object.__new__(Workbench)
+        app.root = self.root.parents[2]
+        app.state_path = app.root / 'state.json'
+        app.state = {'cases':[case], 'jobs':[]}
+        app.save()
+        initial = {str(p):p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
+        first = app.report_plugins(case, 'revision')['errored_entries'][0]['error_id']
+        asyncio.run(app.set_plugin_error_acknowledgment('case', 'revision', first, True))
+        # A newer report packages the same failure and a newly failed rerun.
+        self.root = self.root.parent / 'updated'
+        shutil.copytree(self.root.parent / 'revision', self.root)
+        self.add_run('new-error', status='error');self.write()
+        updated = app.report_plugins(case, 'updated')['errored_entries']
+        self.assertEqual(updated[0]['error_id'], first)
+        self.assertNotEqual(updated[1]['error_id'], first)
+        restarted = object.__new__(Workbench)
+        restarted.root = app.root;restarted.state_path = app.state_path
+        restarted.state = json.loads(app.state_path.read_text())
+        saved = restarted.case('case')['plugin_error_acknowledgments']
+        self.assertIn(first, saved);self.assertNotIn(updated[1]['error_id'], saved)
+        asyncio.run(restarted.set_plugin_error_acknowledgment('case', 'updated', first, False))
+        self.assertEqual(json.loads(app.state_path.read_text())['cases'][0]['plugin_error_acknowledgments'], {})
+        for path, content in initial.items():self.assertEqual(Path(path).read_bytes(), content)
+        # The same ID cannot mark an error in an unrelated case or empty report.
+        other = {'id':'other', 'reports':[{'id':'revision'}]}
+        app.state['cases'].append(other)
+        other_root = app.directory(other) / 'reports/revision';other_root.mkdir(parents=True)
+        atomic_json(other_root / 'case-manifest.json', {'case_id':'other','runs':[],'artifacts':[],'evidence':[]})
+        with self.assertRaisesRegex(ValueError, 'Unknown recorded error'):
+            asyncio.run(app.set_plugin_error_acknowledgment('other', 'revision', first, True))
+        for value in ('true', 1, None):
+            with self.assertRaises(ValueError):asyncio.run(app.set_plugin_error_acknowledgment('case', 'revision', first, value))
+        with self.assertRaises(ValueError):asyncio.run(app.set_plugin_error_acknowledgment('case', 'revision', 'f'*64, True))
+        with self.assertRaises(ValueError):asyncio.run(app.set_plugin_error_acknowledgment('case', '../revision', first, True))
+        with patch.object(restarted, 'save', side_effect=OSError('Synthetic write failure')):
+            with self.assertRaises(OSError):asyncio.run(restarted.set_plugin_error_acknowledgment('case', 'revision', first, True))
+        self.assertEqual(restarted.case('case')['plugin_error_acknowledgments'], {})
+
+    def test_ambiguous_error_identity_does_not_carry_to_new_report(self):
+        app = object.__new__(Workbench)
+        app.directory = lambda case:self.root.parents[1]
+        case = {'id':'case', 'reports':[{'id':'revision'}, {'id':'other'}]}
+        result = {'errored_entries':[{'plugin':'synthetic.Plugin', 'kind':'request_failure', 'reason':'missing identity'}]}
+        with patch.object(inventory, 'read', side_effect=lambda *args:copy.deepcopy(result)):
+            first = app.report_plugins(case, 'revision')['errored_entries'][0]['error_id']
+            second = app.report_plugins(case, 'other')['errored_entries'][0]['error_id']
+        self.assertNotEqual(first, second)
 
     def test_app_requires_registered_report_and_safe_id(self):
         self.add_run('run0'); self.write()

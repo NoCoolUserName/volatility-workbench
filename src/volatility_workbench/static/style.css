@@ -554,14 +554,15 @@ button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); 
 .report-plugin-used-table th:nth-child(6) { width: 17%; }
 .report-plugin-used-table th:nth-child(7) { width: 7%; }
 .report-plugin-used-table th:nth-child(8) { width: 10%; }
-.report-plugin-errors-table { min-width: 1300px; }
-.report-plugin-errors-table th:nth-child(1) { width: 15%; }
-.report-plugin-errors-table th:nth-child(2) { width: 12%; }
-.report-plugin-errors-table th:nth-child(3) { width: 18%; }
-.report-plugin-errors-table th:nth-child(4) { width: 6%; }
-.report-plugin-errors-table th:nth-child(5) { width: 23%; }
-.report-plugin-errors-table th:nth-child(6) { width: 15%; }
-.report-plugin-errors-table th:nth-child(7) { width: 11%; }
+.report-plugin-errors-table { min-width: 1450px; }
+.report-plugin-errors-table th:nth-child(1) { width: 14%; }
+.report-plugin-errors-table th:nth-child(2) { width: 10%; }
+.report-plugin-errors-table th:nth-child(3) { width: 10%; }
+.report-plugin-errors-table th:nth-child(4) { width: 17%; }
+.report-plugin-errors-table th:nth-child(5) { width: 5%; }
+.report-plugin-errors-table th:nth-child(6) { width: 20%; }
+.report-plugin-errors-table th:nth-child(7) { width: 14%; }
+.report-plugin-errors-table th:nth-child(8) { width: 10%; }
 .report-plugin-unused-table { min-width: 900px; }
 .report-plugin-unused-table th:first-child { width: 25%; }
 .report-plugin-unused-table th:nth-child(2) { width: 18%; }
@@ -587,3 +588,9 @@ dialog.approval pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .report-job-failure { margin: 0 0 20px; padding: 14px 18px; border: 1px solid var(--error-text); border-radius: 8px; background: var(--panel); }
 .report-job-failure h3 { margin-top: 0; }
 .report-job-failure button { margin-right: 8px; }
+
+.error-acknowledgment-progress { font-weight: 700; }
+.error-acknowledgment-progress[data-level="red"] { color: #ff8080; }
+.error-acknowledgment-progress[data-level="orange"] { color: #ffb45e; }
+.error-acknowledgment-progress[data-level="green"] { color: #7fe4a3; }
+.report-plugin-errors-table input[type="checkbox"] { width: 1.2em; height: 1.2em; accent-color: var(--accent); }
