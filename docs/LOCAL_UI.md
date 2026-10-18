@@ -237,6 +237,10 @@ Opening a report citation, saved result or plugin manifest shows a sticky
 **Back to report** button in Evidence. It restores the clicked link's position
 and keyboard focus in the same report; the Reports tab also restores that
 position. Switching cases or report versions clears the return location.
+When you scroll deep into a report, an up-arrow near the lower right edge
+returns to the top. It disappears near the top and outside the Reports tab.
+The case header shows evidence image sizes in decimal MB, or GB at 1 GB and
+above, rounded to two decimal places.
 
 Other supported command/file approvals and scoped Volatility MCP form requests are
 shown with details and approve-once/decline/cancel choices; user-input requests

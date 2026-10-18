@@ -7,7 +7,7 @@ const path = require('node:path');
 const assets = path.join(__dirname, '../src/volatility_workbench/static');
 const coin = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lWQAAAAASUVORK5CYII=';
 const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:'2026-10-18T00:00:00Z',
-  images:[{id:'E001',path:'/synthetic/evidence/example.vmem',size_bytes:4096,sha256:'a'.repeat(64)}],
+  images:[{id:'E001',path:'/synthetic/evidence/example.vmem',size_bytes:536870912,sha256:'a'.repeat(64)}],
   coins:[{image_id:'E001',path:'assets/coins/'+'a'.repeat(64)+'.png',label:'Synthetic coin'}],
   readiness:{status:'Unchecked',reasons:['Synthetic readiness fixture']},
   reports:[{id:'synthetic-report',status:'sealed',created_at:'2026-10-18T12:01:00Z'}],
@@ -107,7 +107,10 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
       const color=await control.evaluate(e=>({text:getComputedStyle(e).color,border:getComputedStyle(e).borderTopColor}));
       assert.deepEqual(color,{text:'rgb(134, 230, 165)',border:'rgb(134, 230, 165)'});
     }
-    assert.match(await page.locator('#images').innerText(),/example\.vmem.*4,096 bytes · SHA-256 a+/s);
+    assert.match(await page.locator('#images').innerText(),/example\.vmem.*536\.87MB · SHA-256 a+/s);
+    state.cases[0].images[0].size_bytes=1250000000;
+    await page.waitForFunction(()=>document.querySelector('#images').textContent.includes('1.25GB'));
+    assert.doesNotMatch(await page.locator('#images').innerText(),/bytes/);
     assert.equal(await page.locator('#images .challenge-coin').count(),0);
     assert.equal(await page.locator('#reportView .challenge-coin').count(),1);
     assert.equal(await page.locator('#images .image').evaluate(e=>getComputedStyle(e).borderTopWidth),'0px');
