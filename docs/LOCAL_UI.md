@@ -55,9 +55,10 @@ Background refreshes preserve the selected case, including a manual selection.
 If the selected/requested case no longer exists, selection falls back to the
 first displayed case; an empty list shows the start screen.
 The **Add evidence** panel starts collapsed; click its heading to expand it.
-The **Theme** selector in the upper-right header offers Matrix green (default),
-Soft black and white, and Light blue. The selection is stored in this browser's
-local storage and restored on reload. It changes presentation only; case state,
+The **Theme** selector beside Plugins offers Matrix green (default),
+Soft black and white, and Light blue; Settings sits directly below it. The
+selection is stored in this browser's local storage and restored on reload.
+It changes presentation only; case state,
 saved evidence, and reports are unaffected.
 
 1. Add existing `.raw`, `.mem`, `.vmem`, `.dmp`, `.lime`, or `.dd` files through
@@ -114,8 +115,9 @@ saved evidence, and reports are unaffected.
    evidence IDs. Previous sealed versions are immutable through UI operations.
 7. Multiple cases/jobs run sequentially. Refreshing/reopening the browser reads
    existing state and cannot start a scan. **Stop all work** interrupts the active
-   turn/readiness operation and cancels all queued follow-on work. Completed
-   artifacts remain, and interrupted jobs/drafts are marked incomplete. An app
+   turn/readiness operation and cancels all queued follow-on work. It sits below
+   the connection status and is disabled when no work is queued or running.
+   Completed artifacts remain, and interrupted jobs/drafts are marked incomplete. An app
    restart marks unfinished jobs incomplete; it never automatically restarts them.
    Explicitly queue a new question/report operation to continue a saved completed
    conversation. An interrupted compatible-API turn requires an explicit new

@@ -386,6 +386,7 @@ function render() {
     : (connectedProvider === "compatible"
       ? "Local UI connected · Check API connection in Settings"
       : "Local UI connected · Codex checked on readiness");
+  $("stop").disabled = !state.jobs.some((job) => ["queued", "running"].includes(job.status));
   $("root").textContent = "Default evidence folder: " + state.evidence_root;
   $("pick").disabled = !state.native_picker;
   const cases = $("cases");
@@ -449,7 +450,9 @@ function render() {
     shownImages = imageKey;
     }
     $("reasons").replaceChildren(
-      ...c.readiness.reasons.map((r) => el("p", r, "subtle")),
+      ...c.readiness.reasons
+        .filter((r) => r !== "Ready means ready to attempt analysis; plugin compatibility and forensic conclusions still require review.")
+        .map((r) => el("p", r, "subtle")),
     );
     $("report").disabled = !ready;
     $("update").disabled =

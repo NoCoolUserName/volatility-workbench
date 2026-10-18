@@ -115,7 +115,9 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         job=self.app.enqueue(self.case['id'],'readiness')
         await self.wait_job(job)
         self.assertEqual(job['status'],'completed',job)
-        self.assertIn(self.case['readiness']['status'],('Ready','Ready with limitations'))
+        readiness=self.case['readiness']
+        self.assertEqual(readiness['status'],'Ready with limitations' if readiness['reasons'] else 'Ready')
+        self.assertFalse(any('Ready means ready to attempt analysis' in r for r in readiness['reasons']))
     async def test_stage_a_readiness_report_evidence(self):
         await self.ready()
         before=self.fixture.image.read_bytes()

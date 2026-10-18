@@ -15,19 +15,21 @@
         <h1>Volatility Workbench<span class="dot">●</span></h1>
         <div class="header-tools">
           <button id="openPlugins" class="plugin-nav" aria-controls="plugins" aria-pressed="false">Plugins</button>
-          <label class="theme-control" for="theme">Theme
-            <select id="theme" aria-label="Workbench theme">
-              <option value="matrix">Matrix green</option>
-              <option value="mono">Soft black and white</option>
-              <option value="blue">Light blue</option>
-            </select>
-          </label>
+          <div class="header-preferences">
+            <label class="theme-control" for="theme">Theme
+              <select id="theme" aria-label="Workbench theme">
+                <option value="matrix">Matrix green</option>
+                <option value="mono">Soft black and white</option>
+                <option value="blue">Light blue</option>
+              </select>
+            </label>
+            <a href="/settings.html">Settings</a>
+          </div>
         </div>
       </div>
       <div class="header-controls">
-        <a href="/settings.html">Settings</a>
         <span id="connection">Connecting…</span>
-        <button id="stop" class="danger">Stop all work</button>
+        <button id="stop" class="danger" disabled>Stop all work</button>
       </div>
     </header>
     <div class="privacy">

@@ -78,17 +78,22 @@ header {
 }
 .header-controls {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
 }
 .header-tools {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 10px;
+}
+.header-preferences {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
 }
 .theme-control {
   display: flex;
@@ -411,7 +416,7 @@ footer {
     padding: 20px;
   }
   .header-controls {
-    justify-content: flex-start;
+    align-items: flex-start;
   }
   .tabs {
     flex-wrap: wrap;
