@@ -56,6 +56,14 @@ const narratives={
     assert.equal(await ai.evaluate(node=>getComputedStyle(node).fontWeight),'700');
     assert.equal(await page.locator('#reportView h2').first().innerText(),'Executive summary');
     assert.equal(await page.locator('#reportView h2 + .report-determinations').count(),1);
+    const rowSizes=await page.locator('.report-determinations').evaluate(panel=>{
+      const ai=panel.querySelector('p.determination-row');
+      const human=panel.querySelector('label.determination-row');
+      return [ai,human,human.querySelector('select'),human.querySelector('.determination-save-status')]
+        .map(node=>getComputedStyle(node).fontSize);
+    });
+    assert.deepEqual(rowSizes,[rowSizes[0],rowSizes[0],rowSizes[0],rowSizes[0]],
+      'AI and human labels, choice, and save status use the same font size');
 
     await page.locator('[data-report-id="legacy"] button:first-child').click();
     await page.waitForFunction(()=>document.querySelector('.determination-value')?.textContent==='Malicious');

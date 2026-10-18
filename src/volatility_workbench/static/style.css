@@ -263,7 +263,7 @@ article h2:first-child {
   margin-top: 0;
 }
 .report-determinations { margin: 12px 0 22px; }
-.determination-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 7px 0; }
+.determination-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 7px 0; font-size: 1em; }
 .determination-row strong { color: var(--text); }
 .determination-value, #humanDetermination { font-weight: 700; }
 .determination-value[data-determination="Benign"],
@@ -272,7 +272,7 @@ article h2:first-child {
 #humanDetermination[data-determination="Malicious"] { color: #ff8989; }
 .determination-value[data-determination="Undetermined"],
 #humanDetermination[data-determination="Undetermined"] { color: #fff; }
-.determination-save-status { color: var(--muted); font-size: 13px; }
+.determination-save-status { color: var(--muted); font-size: inherit; }
 article p {
   white-space: pre-wrap;
 }
