@@ -113,3 +113,18 @@ On the development Mac, native Codex discovery plus `account/read` succeeded usi
 the existing ChatGPT login without a model turn. A synthetic Keychain item was
 created, read, replaced and deleted successfully. Those checks do not establish
 compatibility with every model endpoint or with other host operating systems.
+
+### Large saved histories and transport recovery
+
+Codex `thread/resume` requests set `excludeTurns: true`: Workbench needs the saved
+thread's metadata and live state, not an inline copy of every past tool result.
+The original history remains stored by Codex. This field is supported by the
+installed generated schema and the [official app-server protocol](https://learn.chatgpt.com/docs/app-server).
+
+The adapter reads bounded chunks and frames complete JSON-RPC lines, accepting
+large replies without asyncio's old 16 MiB `readline` ceiling. Each record has a
+128 MiB cap; malformed, incomplete or larger records fail explicitly rather than
+being truncated. A dead reader invalidates its transport and pending requests;
+a later user request reconnects instead of waiting on a live process with no
+reader. Timeout messages identify the operation and deadline. These checks use
+synthetic subprocesses and do not require model turns or memory-image scans.

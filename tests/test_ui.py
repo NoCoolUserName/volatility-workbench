@@ -8,7 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 import threading
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
 import urllib.error
 import urllib.request
 from volatility_workbench.app import Workbench, report_ai_determination
@@ -355,6 +355,14 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         report={'id':'draft','status':'draft','created_at':now()}
         with self.assertRaisesRegex(ValueError,'integrity/identity'):
             Bundle(self.app.directory(self.case),self.case,report).prepare()
+    async def test_blank_startup_exception_remains_visible_in_saved_job(self):
+        with patch.object(self.app,'_execute',new=AsyncMock(side_effect=TimeoutError())):
+            job=self.app.enqueue(self.case['id'],'question','Synthetic startup failure')
+            await self.wait_job(job)
+        self.assertEqual(job['status'],'failed')
+        self.assertEqual(job['error'],'TimeoutError')
+        self.assertFalse((self.fixture.root/'analysis-count.jsonl').exists())
+
     async def test_missing_symbols_is_limitation_not_clean(self):
         self.fixture.image.write_text('error')
         await self.ready()

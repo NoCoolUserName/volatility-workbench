@@ -341,7 +341,7 @@ pre {
   color: var(--status);
   white-space: pre-wrap;
 }
-#reportView .dos-progress {
+.dos-progress {
   display: block;
   width: min(100%, 620px);
   height: 22px;
@@ -353,13 +353,13 @@ pre {
   box-shadow: inset 1px 1px 0 var(--border);
   overflow: hidden;
 }
-#reportView .dos-progress-fill {
+.dos-progress-fill {
   display: block;
   width: var(--completion, 0%);
   height: 100%;
   background: repeating-linear-gradient(90deg, var(--accent) 0 12px, transparent 12px 16px);
 }
-#reportView .dos-progress.indeterminate .dos-progress-fill {
+.dos-progress.indeterminate .dos-progress-fill {
   width: 30%;
   animation: dos-progress-scan 3s linear infinite alternate;
 }
@@ -368,7 +368,7 @@ pre {
   to { transform: translateX(230%); }
 }
 @media (prefers-reduced-motion: reduce) {
-  #reportView .dos-progress.indeterminate .dos-progress-fill { animation: none; }
+  .dos-progress.indeterminate .dos-progress-fill { animation: none; }
 }
 #messages .message {
   background: var(--panel);
@@ -391,7 +391,7 @@ pre {
   margin: 12px 0;
 }
 .queue {
-  margin-top: 35px;
+  margin: 0 0 24px;
   border-top: 1px solid var(--border);
 }
 .queue li {
@@ -548,3 +548,7 @@ button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); 
 dialog.approval { width: min(680px, calc(100vw - 48px)); max-height: 85vh; overflow: auto; background: var(--panel); color: var(--text); border: 2px solid var(--accent); border-radius: 8px; }
 dialog.approval::backdrop { background: rgb(0 0 0 / 65%); }
 dialog.approval pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.report-job-failure { margin: 0 0 20px; padding: 14px 18px; border: 1px solid var(--error-text); border-radius: 8px; background: var(--panel); }
+.report-job-failure h3 { margin-top: 0; }
+.report-job-failure button { margin-right: 8px; }

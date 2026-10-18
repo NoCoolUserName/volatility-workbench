@@ -295,7 +295,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
    state.cases[0].reports.push({id,status:'draft',created_at:'2026-10-18T13:00:00Z'});
    state.jobs.push({id:'job-'+kind,kind,case_id:'Synthetic A',report_id:id,status:'running',started_at:'2026-10-18T13:00:00Z'});
    await page.evaluate(()=>refresh());await choose(id);
-   await page.getByRole('heading',{name:'Report running…',exact:true}).waitFor();
+   await page.locator('#reportView').getByRole('heading',{name:'Report running…',exact:true}).waitFor();
    assert.equal(await inventory.isHidden(),true);
    assert.ok(!calls.some(url=>url.startsWith('/api/report-plugins?')&&new URL('http://localhost'+url).searchParams.get('report')===id));
    await choose('current');
