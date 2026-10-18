@@ -109,21 +109,23 @@ saved evidence, and reports are unaffected.
    Duplicate managed coin links copied from an older narrative are suppressed by
    the viewer; the packager normalizes managed badges on new saves, retaining
    distinct image coins and leaving other report images intact.
-   Incomplete report cards reveal **×** on hover or keyboard focus (always visible
+   Incomplete and sealed report cards reveal **×** on hover or keyboard focus (always visible
    on touch devices). Its popup offers **Hide from UI**, which persistently hides
    the revision without changing files, or **Delete**, which permanently removes
    only that revision's `reports/<revision>/` bundle, including its copied
    artifacts and decorative assets. Shared analysis, original images, case/job
    history, other revisions and independently saved exports are retained. Hidden
    files remain accessible in Evidence; there is currently no unhide control.
-   Completed reports cannot be hidden/deleted this way. Delete is blocked while
+   Deleting a selected sealed revision also removes that revision's sealed bundle.
+   Delete is blocked while
    the case has active/queued work or another revision names it as its predecessor.
    A failed/partial deletion is recorded and can be retried; it is not rolled
    back or silently marked successful. Closing the popup performs no action.
 6. **Ask / investigate further** resumes the same case conversation. It may run
    more MCP queries, but does not rewrite reports. **Update report** explicitly
    creates a new revision with a link to the previous version and preserved stable
-   evidence IDs. Previous sealed versions are immutable through UI operations.
+   evidence IDs. Sealed content is not edited in place; explicit Hide/Delete is
+   separate from report generation and retains the case's audit metadata.
 7. Multiple cases/jobs run sequentially. Refreshing/reopening the browser reads
    existing state and cannot start a scan. **Stop all work** interrupts the active
    turn/readiness operation and cancels all queued follow-on work. It sits below

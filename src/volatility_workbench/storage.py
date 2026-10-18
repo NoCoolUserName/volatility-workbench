@@ -51,7 +51,7 @@ def read_chunk(root, path, offset=0, limit=32768):
             'next_offset': offset + len(data), 'truncated': offset + len(data) < size}
 
 
-def delete_incomplete_bundle(case_dir, report_id, evidence_paths):
+def delete_report_bundle(case_dir, report_id, evidence_paths, *, allow_completed=False):
     """Delete one registered revision's private copies, never shared analysis."""
     if (not isinstance(report_id, str) or not report_id or report_id in ('.', '..')
             or Path(report_id).name != report_id or '\\' in report_id
@@ -93,7 +93,7 @@ def delete_incomplete_bundle(case_dir, report_id, evidence_paths):
         if isinstance(data, dict):
             if data.get('case_id') not in (None, Path(case_dir).name):
                 raise ValueError('Report manifest belongs to another case')
-            if data.get('completed_at') or data.get('status') in ('complete', 'complete_with_limitations'):
+            if not allow_completed and (data.get('completed_at') or data.get('status') in ('complete', 'complete_with_limitations')):
                 raise ValueError('Completed report bundles cannot be deleted')
     shutil.rmtree(target)
     return True

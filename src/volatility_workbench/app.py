@@ -25,7 +25,7 @@ from .codex import CodexClient, CodexError, child_environment
 from .providers import CompatibleClient, ProviderError, provider_config
 from .credentials import CredentialStore
 from . import generation
-from .storage import Bundle, atomic_json, delete_incomplete_bundle, now, private_dir, read_chunk, safe_file, uid
+from .storage import Bundle, atomic_json, delete_report_bundle, now, private_dir, read_chunk, safe_file, uid
 
 TOOLS = [
     {'type':'function','name':'case_set_plan','description':'Explicitly record declared investigative scope for a registered image, not completion. Never invent a historical plan. Does not submit analysis.',
@@ -111,8 +111,8 @@ class Workbench:
         report = next((r for r in case['reports'] if r['id'] == report_id), None)
         if report is None:
             raise ValueError('Unknown report revision in this case')
-        if report['status'] != 'incomplete':
-            raise ValueError('Only incomplete report revisions can be hidden or deleted')
+        if report['status'] not in ('incomplete','sealed'):
+            raise ValueError('Only incomplete or sealed report revisions can be hidden or deleted')
         if case_id in self.report_cleanup:
             raise ValueError('Report cleanup is already in progress for this case')
         if action == 'hide':
@@ -130,12 +130,12 @@ class Workbench:
         self.report_cleanup[case_id] = asyncio.current_task()
         try:
             self.event(case, 'report_delete_started', {'report_id':report_id})
-            removed = await asyncio.to_thread(delete_incomplete_bundle, self.directory(case), report_id,
-                [i['path'] for c in self.state['cases'] for i in c['images']])
+            removed = await asyncio.to_thread(delete_report_bundle, self.directory(case), report_id,
+                [i['path'] for c in self.state['cases'] for i in c['images']],allow_completed=report['status']=='sealed')
             report.update(hidden=True, deleted_at=now())
             report.pop('deletion_error', None)
             self.event(case, 'report_deleted', {'report_id':report_id, 'bundle_path':'reports/'+report_id,
-                'bundle_existed':removed, 'scope':'Only the incomplete revision bundle; shared analysis retained'})
+                'bundle_existed':removed, 'scope':'Only the selected revision bundle; shared analysis retained'})
             return {'report_id':report_id, 'action':action, 'bundle_removed':removed}
         except Exception as exc:
             report['deletion_error'] = str(exc)
