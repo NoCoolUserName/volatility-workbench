@@ -11,18 +11,20 @@
   <body>
     <header>
       <div>
-        <span class="eyebrow">LOCAL FORENSICS · EXPERIMENTAL</span>
+        <span class="eyebrow">LOCAL MEMORY FORENSICS · EXPERIMENTAL</span>
         <h1>Volatility Workbench<span class="dot">●</span></h1>
-        <button id="openPlugins" class="plugin-nav" aria-controls="plugins" aria-pressed="false">Plugins</button>
+        <div class="header-tools">
+          <button id="openPlugins" class="plugin-nav" aria-controls="plugins" aria-pressed="false">Plugins</button>
+          <label class="theme-control" for="theme">Theme
+            <select id="theme" aria-label="Workbench theme">
+              <option value="matrix">Matrix green</option>
+              <option value="mono">Soft black and white</option>
+              <option value="blue">Light blue</option>
+            </select>
+          </label>
+        </div>
       </div>
       <div class="header-controls">
-        <label class="theme-control" for="theme">Theme
-          <select id="theme" aria-label="Workbench theme">
-            <option value="matrix">Matrix green</option>
-            <option value="mono">Soft black and white</option>
-            <option value="blue">Light blue</option>
-          </select>
-        </label>
         <a href="/settings.html">Settings</a>
         <span id="connection">Connecting…</span>
         <button id="stop" class="danger">Stop all work</button>
@@ -95,14 +97,16 @@
         <section id="case" hidden>
           <div class="case-heading">
             <h2 id="caseTitle"></h2>
-            <span id="ready" class="badge"></span>
+            <div class="readiness-row">
+              <button id="readiness" class="badge" aria-describedby="readyDetails">Check Readiness</button>
+              <span id="readinessProgress" class="subtle" role="status" aria-live="polite"></span>
+            </div>
             <span id="readyDetails" class="subtle"></span>
           </div>
           <div id="images"></div>
           <div id="reasons"></div>
           <div class="buttons">
-            <button id="readiness">Check readiness</button
-            ><input
+            <input
               id="focus"
               placeholder="Optional investigation focus"
               aria-label="Investigation focus"

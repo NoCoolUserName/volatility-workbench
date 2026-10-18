@@ -82,6 +82,7 @@ function act(fn) {
   };
 }
 let activeView = "case", pluginCatalog = null, pluginsLoading = false;
+let submittingReadiness = false;
 let selectedPluginSources = new Set(), allPluginSourcesSelected = true, availablePluginSources = [];
 function choose(id, activate = true) {
   if (activate) activeView = "case";
@@ -344,7 +345,22 @@ function render() {
   $("case").hidden = !c || activeView === "plugins";
   if (c) {
     $("caseTitle").textContent = c.title;
-    $("ready").textContent = c.readiness.status;
+    const readinessJob = state.jobs.find(
+      (j) => j.case_id === c.id && j.kind === "readiness" && ["queued", "running", "stopping"].includes(j.status),
+    );
+    const ready = ["Ready", "Ready with limitations"].includes(c.readiness.status);
+    const checking = !!readinessJob || submittingReadiness;
+    $("readiness").textContent = checking
+      ? readinessJob?.status === "queued" ? "Queued…" : readinessJob?.status === "stopping" ? "Stopping…" : "Checking…"
+      : ready ? c.readiness.status : "Check Readiness";
+    $("readiness").disabled = checking;
+    $("readiness").classList.toggle("is-ready", ready && !checking);
+    $("readiness").setAttribute("aria-busy", String(checking));
+    $("readiness").title = ready ? "Run readiness checks again" : "Check this case's readiness";
+    $("readinessProgress").textContent = readinessJob
+      ? (readinessJob.progress || "Waiting for the current job") +
+        (readinessJob.started_at ? " · " + Math.floor((Date.now() - timestampMillis(readinessJob.started_at)) / 1000) + "s elapsed" : "")
+      : submittingReadiness ? "Submitting readiness check…" : c.readiness.status === "Blocked" ? "Blocked · see reasons below" : "";
     const checkedAt = c.readiness.checked_at;
     $("readyDetails").textContent = checkedAt
       ? "Last checked " + readableTime(checkedAt) + " · image access and SHA-256 verified then"
@@ -373,16 +389,13 @@ function render() {
     $("reasons").replaceChildren(
       ...c.readiness.reasons.map((r) => el("p", r, "subtle")),
     );
-    const ready = ["Ready", "Ready with limitations"].includes(
-      c.readiness.status,
-    );
     $("report").disabled = !ready;
     $("update").disabled =
       !ready || !c.reports.some((r) => r.status === "sealed");
     const running = state.jobs.find(
       (j) => j.case_id === c.id && ["running", "stopping"].includes(j.status),
     );
-    $("operation").textContent = running
+    $("operation").textContent = running && running.kind !== "readiness"
       ? readableTime(running.progress || running.kind) +
         " · " +
         Math.floor((Date.now() - timestampMillis(running.started_at)) / 1000) +
@@ -742,7 +755,13 @@ $("pick").onclick = act(async () => {
   if (r.cancelled) return;
   $("paths").value = r.paths.join("\n");
 });
-$("readiness").onclick = act(() => job("readiness"));
+$("readiness").onclick = act(async () => {
+  if (submittingReadiness || $("readiness").disabled) return;
+  submittingReadiness = true;
+  render();
+  try { await job("readiness"); }
+  finally { submittingReadiness = false; render(); }
+});
 $("report").onclick = act(() => job("report", $("focus").value));
 $("update").onclick = act(() => job("update", $("focus").value));
 $("stop").onclick = act(async () => {

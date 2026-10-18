@@ -74,15 +74,19 @@ saved evidence, and reports are unaffected.
    intentionally grouping them. Each capture keeps its own evidence ID, hash,
    discovery result, run associations, and report provenance. New cases get a
    dedicated conversation; the UI never controls an unrelated open Codex session.
-3. **Check readiness** checks the case's selected provider (existing Codex account
+3. **Check Readiness**, below the case title, checks the case's selected provider (existing Codex account
    or a previously checked compatible endpoint), initializes the ten actual scoped MCP tools, discovers plugins, hashes each image with byte progress,
    and runs OS/symbol discovery through MCP. **Ready** means ready to attempt
    analysis. **Ready with limitations** records discovery/import/compatibility
    gaps. **Blocked** records authentication, tool, file, or integrity errors that
-   prevent readiness. The badge below the case title is the **saved result of the
-   last check**, with its check time; it does not continuously monitor whether a
-   drive is still connected. The separate **Check readiness** button performs a
-   new check. None is a malware verdict or guarantee every plugin works.
+   prevent readiness. This single control displays queued/checking status and
+   live progress to its right, then the **saved result of the last check**, with
+   its check time below. Successful Ready states have green text and outline in
+   every theme; limitations retain their label and reasons. Clicking it again
+   explicitly starts a new check. It is disabled while a check is pending and
+   does not continuously monitor whether a drive is still connected. Blocked
+   checks show **Check Readiness** again with their failure reasons. None is a
+   malware verdict or guarantee every plugin works.
 4. **Generate report** starts an adaptive investigation, optionally narrowed by
    your focus. The report must follow `the installed core report contract`. The agent records
    important runs and saves Markdown/findings/IOCs; the application packages actual

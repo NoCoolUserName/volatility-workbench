@@ -83,6 +83,13 @@ header {
   gap: 12px;
   flex-wrap: wrap;
 }
+.header-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
 .theme-control {
   display: flex;
   align-items: center;
@@ -98,6 +105,7 @@ h1 {
   letter-spacing: -0.7px;
   margin: 2px 0;
 }
+header h1 { font-size: 29px; }
 h2 {
   font-size: 19px;
   margin: 12px 0;
@@ -235,6 +243,10 @@ details {
 #case .case-heading { margin-bottom: 12px; }
 #case .case-heading h2 { margin-bottom: 8px; }
 #case .case-heading .badge { display: inline-block; }
+.readiness-row { display: flex; align-items: center; gap: 12px; }
+#readiness { flex: 0 0 auto; }
+#readiness.is-ready { color: #86e6a5; border-color: #86e6a5; }
+#readinessProgress { overflow-wrap: anywhere; font-size: 12px; }
 #readyDetails { display: block; margin-top: 5px; font-size: 12px; }
 .badge {
   border: 1px solid var(--border);
@@ -409,7 +421,6 @@ footer {
 #coinZoom img { width: min(85vw, 80vh, 1000px); height: min(85vw, 80vh, 1000px); object-fit: contain; }
 #coinZoom p { margin: 0; text-align: center; font-size: 13px; }
 
-.plugin-nav { margin-top: 10px; }
 .plugin-nav.selected { border-color: var(--accent); color: var(--accent); }
 .plugin-filters { display: flex; flex-wrap: wrap; gap: 16px; }
 .plugin-filters label:first-child { flex: 1 1 220px; }

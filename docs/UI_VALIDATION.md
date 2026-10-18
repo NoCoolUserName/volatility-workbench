@@ -551,3 +551,27 @@ state refresh with zero analysis requests or JavaScript page errors. The
 synthetic screenshot was visually inspected. No private image was opened or
 hashed, and no live investigation/report generation was run. The prioritized
 follow-up list and acceptance checks are in [ROADMAP.md](ROADMAP.md).
+
+## Combined readiness control and header — 2026-10-18
+
+The saved status and Check Readiness action now share one button under the case
+title. Queued/running/stopping checks disable it and show the existing job's live
+progress to its right. A successful check shows Ready with fixed green text and
+outline in every theme; Ready with limitations keeps its full label and reasons.
+Clicking a completed status explicitly requests another check. Failed checks
+restore Check Readiness with Blocked and the existing failure reasons. The
+saved timestamp still describes the last successful check, not live monitoring.
+Theme now follows Plugins; only the application title is enlarged, and its
+eyebrow reads Local Memory Forensics.
+
+All 101 application tests and the isolated installed-wheel smoke check passed.
+The offline Chromium fixture exercised two simulated readiness submissions,
+queued/running progress, reload without duplicate submission, successful status,
+explicit recheck, failure/retry display, limitations, green colors in all three
+themes, header placement, mobile width and unchanged report coins/title size.
+Its synthetic screenshot was inspected. The fixture uses intercepted loopback
+requests so browser secure-context request IDs match the actual application.
+No private-case readiness job, private-image hash, investigation or report generation was
+started. Repeat with `node scripts/check_case_header_browser.cjs`, Playwright in
+Node's module path and optionally `WORKBENCH_BROWSER_EXECUTABLE` for an existing
+Chromium installation.
