@@ -6,7 +6,7 @@ const path=require('node:path');
 const assets=path.join(__dirname,'../src/volatility_workbench/static');
 const csp="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
 const report=id=>({id,status:'sealed',created_at:'2026-10-18T12:00:00Z'});
-const sample=(id,reports,created_at)=>({id,title:id,created_at,images:[],coins:[],readiness:{status:'Unchecked',reasons:[]},reports,messages:[],activity:[]});
+const sample=(id,reports,created_at)=>({id,title:id,created_at,images:[{id:'E001',path:'/synthetic/image.raw',size_bytes:12,discovery:{detected_os:'windows'}}],coins:[],readiness:{status:'Unchecked',reasons:[]},reports,messages:[],activity:[]});
 const state={cases:[sample('Synthetic A',['legacy','partial','delayed','current'].map(report),'2026-10-18T12:00:00Z'),sample('Synthetic B',[report('other')],'2026-10-17T12:00:00Z')],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'};
 const hostile='<img src=x onerror="window.injected=true">';
 const entries=Array.from({length:21},(_,i)=>({kind:i===1?'reuse_receipt':i===2?'request_failure':'plugin_run',execution_recorded:i===1||i===2?false:true,
@@ -30,15 +30,17 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
    const u=new URL(route.request().url());assert.equal(u.origin,'http://localhost');assert.equal(route.request().method(),'GET','Inventory never starts work');calls.push(u.pathname+u.search);
    if(u.pathname==='/api/state')return route.fulfill({json:state});
    if(u.pathname==='/api/plugins')return route.fulfill({json:{total:4,plugins:[
-    {name:'windows.synthetic.Plugin4',description:'Lists synthetic processes.'},
-    {name:'windows.synthetic.NotUsed',description:'Shows a harmless unused fixture.'},
-    {name:'windows.synthetic.NotUsed2',description:'Checks another synthetic fixture.'},
+    {name:'windows.synthetic.Plugin4',source:{kind:'native',label:'Native · Volatility 3',url:'https://github.com/volatilityfoundation/volatility3'},description:'Lists synthetic processes.'},
+    {name:'windows.synthetic.NotUsed',target_os:'windows',source:{kind:'third_party',label:'Synthetic source',url:'https://github.com/example/synthetic'},description:'Shows a harmless unused fixture.'},
+    {name:'windows.synthetic.NotUsed2',target_os:'windows',description:'Checks another synthetic fixture.'},
     {name:'windows.synthetic.Plugin5',description:'Describes another saved run.'}],import_failures:[]}});
    if(u.pathname==='/api/artifacts')return route.fulfill({json:{files:[],truncated:false}});
    if(u.pathname==='/api/file')return route.fulfill({json:{text:u.searchParams.get('path').endsWith('manifest.json')?'{"synthetic":"manifest only"}':'# Synthetic report\n## Investigative workflow\n<!-- report-plugin-inventory -->\nDuplicate generated inventory text\n<!-- /report-plugin-inventory -->\n## Observation\nHarmless fixture only.',size:128,next_offset:128,truncated:false}});
    if(u.pathname==='/api/report-plugins'){
     const id=u.searchParams.get('report'),offset=Number(u.searchParams.get('offset'));assert.equal(u.searchParams.get('limit'),'20');
     if(id==='delayed')await new Promise(resolve=>{delayedRelease=resolve;});
+    if(id==='finished-update'||id==='finished-report')return route.fulfill({json:{...payload(id,[{...entries[4],plugin:'windows.synthetic.NotUsed'}]),
+     executed_plugin_names:['windows.synthetic.NotUsed'],errored_entries:[{plugin:'windows.synthetic.NewFailure',status:'error',kind:'plugin_run',run_id:'new-run',call_id:'new-call',error_sources:[{path:'artifacts/C-synthetic/manifest.json',label:'Run manifest'}]}]}});
     if(id==='current'&&failCurrent){failCurrent=false;return route.fulfill({status:500,json:{error:'Synthetic inventory failure'}});}
     return route.fulfill({json:id==='legacy'?payload(id,[],'unavailable'):id==='partial'?payload(id,[entries[0]],'partial'):id==='current'?payload(id,entries.slice(offset,offset+20),'available',offset===0?20:null):payload(id,[{...entries[3],plugin:id+'-plugin'}])});
    }
@@ -53,9 +55,11 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   const focus=page.locator('#focus');
   const assertReadableFocus=async()=>assert.ok(await focus.evaluate(node=>{
    const style=getComputedStyle(node);
-   return node.clientHeight>=3*parseFloat(style.lineHeight)+parseFloat(style.paddingTop)+parseFloat(style.paddingBottom)-1;
-  }),'Investigation focus retains at least three readable lines');
+   return node.clientHeight>=2*parseFloat(style.lineHeight)+parseFloat(style.paddingTop)+parseFloat(style.paddingBottom)-1;
+  }),'Investigation focus retains at least two readable lines');
   await assertReadableFocus();
+  assert.equal(await focus.getAttribute('rows'),'2');
+  assert.ok(await focus.evaluate(node=>node.clientHeight<3*parseFloat(getComputedStyle(node).lineHeight)+parseFloat(getComputedStyle(node).paddingTop)+parseFloat(getComputedStyle(node).paddingBottom)), 'Empty prompt defaults to two lines, not three');
   assert.equal(await inventory.locator('> details.report-plugin-inventory').first().getAttribute('open'),null,'Large inventory starts collapsed');
   assert.equal(await inventory.locator('> details').count(),3,'Used, errored, and unused sections are siblings');
   assert.equal(calls.filter(x=>x==='/api/plugins').length,0,'Collapsed sections do not discover the catalog');
@@ -63,7 +67,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.match(await inventory.locator('.report-plugin-errors-table').innerText(),/failed.*No plugin execution recorded/s);
   await inventory.locator('> details').nth(2).locator('> summary').click();
   await page.waitForFunction(()=>document.querySelector('.report-plugin-unused-table')?.textContent.includes('Shows a harmless unused fixture.'));
-  assert.deepEqual(await inventory.locator('.report-plugin-unused-table thead th').allTextContents(),['Plugin name','Add to prompt','Quick Description']);
+  assert.deepEqual(await inventory.locator('.report-plugin-unused-table thead th').allTextContents(),['Plugin name','Add to prompt','Quick Description','Source provenance']);
   assert.match(await inventory.locator('.report-plugin-unused-table').innerText(),/windows\.synthetic\.NotUsed.*Shows a harmless unused fixture/s);
   assert.equal(await inventory.locator('> details').nth(2).getAttribute('open'),'','Catalog response preserves the expanded section');
   assert.doesNotMatch(await inventory.locator('.report-plugin-unused-table').innerText(),/windows\.synthetic\.Plugin4/);
@@ -78,6 +82,38 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.match(await focus.inputValue(),/windows\.synthetic\.NotUsed2`/);
   assert.ok(await focus.evaluate(node=>node.clientHeight>=node.scrollHeight-2),'Short multi-plugin drafts are fully visible');
   assert.equal(calls.filter(x=>x.startsWith('/api/jobs')).length,0,'Adding to the prompt never submits work');
+  assert.equal(await page.locator('#update').evaluate(n=>n.nextElementSibling.id),'report');
+  assert.equal(await page.locator('#update').getAttribute('class'),'primary');
+  assert.equal(await page.locator('#report').getAttribute('class'),'');
+  const bulk=page.getByRole('button',{name:'Add all OS-relevant to prompt',exact:true});
+  await bulk.click();
+  const bulkDraft=await focus.inputValue();
+  assert.match(bulkDraft,/E001 \(windows\): `windows.synthetic.NotUsed`, `windows.synthetic.NotUsed2`/);
+  assert.match(bulkDraft,/Check each image's saved OS, build, architecture, symbols/);
+  assert.equal(await bulk.isDisabled(),true);
+  await focus.fill('Investigate persistence.');assert.equal(await bulk.isEnabled(),true);
+  await focus.fill(bulkDraft);assert.equal(await bulk.isDisabled(),true);
+  // OS must come from saved image discovery, including mixed-image cases.
+  const osChecks=await page.evaluate(()=>{
+    const c=caseNow(),oldImages=c.images,oldCatalog=reportPluginCatalog;
+    const record=reportPluginCache.get(reportPluginKey);
+    reportPluginCatalog={plugins:[{name:'windows.Test',target_os:'windows'},{name:'mac.Test',target_os:'mac'},
+      {name:'linux.Test',target_os:'linux'},{name:'unknown.Test',target_os:'other'},
+      {name:'windowsMisleading.Test',target_os:'mac'}]};
+    c.images=[{id:'E002',discovery:{detected_os:'macos'}},{id:'E003',discovery:{detected_os:'linux'}},{id:'E004',discovery:{detected_os:'unknown'}}];
+    const mixed=bulkPluginRequest(record);
+    c.images=[{id:'E001',discovery:{detected_os:'mixed'}}];
+    const unknown=bulkPluginRequest(record);
+    c.images=oldImages;reportPluginCatalog=oldCatalog;
+    return {mixed,unknown};
+  });
+  assert.match(osChecks.mixed.text,/E002 \(macOS\): `mac.Test`, `windowsMisleading.Test`/);
+  assert.match(osChecks.mixed.text,/E003 \(linux\): `linux.Test`/);
+  assert.doesNotMatch(osChecks.mixed.text,/`windows.Test`|unknown.Test|E004/);
+  assert.match(osChecks.mixed.note,/1 image\(s\) have unresolved/);
+  assert.equal(osChecks.unknown.text,'');
+  assert.equal(calls.filter(x=>x.startsWith('/api/jobs')).length,0);
+
   if(process.env.WORKBENCH_REPORT_PLUGIN_UNUSED_SCREENSHOT)await page.screenshot({path:process.env.WORKBENCH_REPORT_PLUGIN_UNUSED_SCREENSHOT,fullPage:true});
   await inventory.locator('> details').nth(1).locator('> summary').click();
   await inventory.locator('> details').nth(2).locator('> summary').click();
@@ -93,7 +129,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.match(await table.locator('tr').nth(1).innerText(),/Saved result reuse.*No execution recorded/s);
   assert.match(await table.locator('tr').nth(2).innerText(),/Failed or denied request.*No execution recorded/s);
   assert.deepEqual(await inventory.locator('.report-plugin-used-table thead th').allTextContents(),
-    ['Plugin','Image','Quick Description','Outcome & record kind','Exact arguments','Run provenance & recorded time','Local source']);
+    ['Plugin','Image','Quick Description','Outcome & record kind','Exact arguments','Run provenance & recorded time','Local source','Source provenance']);
   assert.match(await table.locator('tr').nth(4).locator('td').nth(2).innerText(),/Lists synthetic processes/);
   const provenance=table.locator('tr').nth(4).locator('td').nth(5);
   assert.match(await provenance.innerText(),/Run: run-4.*Speed: 1 second.*Source: core_manifest/s);
@@ -111,6 +147,22 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
     pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'bad',finished_at:'2026-10-18T12:00:01Z'}),
     pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'2026-10-18T12:00:02Z',finished_at:'2026-10-18T12:00:01Z'})
   ]),['1 second','1 minute 1 second','2 seconds','0.5 seconds','1 second','Not recorded','Not recorded','Not recorded']);
+  for(const tableName of ['used','errors','unused']){
+    assert.equal(await inventory.locator(`.report-plugin-${tableName}-table th`).last().textContent(),'Source provenance');
+  }
+  assert.equal(await table.locator('tr').nth(4).locator('td').last().getByRole('link',{name:'Plugin documentation'}).getAttribute('href'),
+    'https://volatility3.readthedocs.io/en/latest/volatility3.plugins.windows.synthetic.html');
+  const sourceLink=inventory.locator('.report-plugin-unused-table tbody tr').first().locator('td').last().locator('a');
+  assert.equal(await sourceLink.getAttribute('href'),'https://github.com/example/synthetic#readme');
+  assert.equal(await sourceLink.getAttribute('rel'),'noopener noreferrer');
+  assert.equal(await sourceLink.getAttribute('target'),'_blank');
+  assert.deepEqual(await page.evaluate(()=>{
+    const saved=reportPluginCatalog;
+    reportPluginCatalog={plugins:[{name:'unsafe',source:{url:'javascript:alert(1)',label:'Unknown'}},
+      {name:'credentials',source:{url:'https://user:secret@example.com',label:'Unknown'}}]};
+    const counts=['unsafe','credentials','missing'].map(name=>reportPluginSource(name).querySelectorAll('a').length);
+    reportPluginCatalog=saved;return counts;
+  }),[0,0,0]);
   assert.equal(await inventory.locator('img,script').count(),0);assert.equal(await page.evaluate(()=>window.injected),undefined);
   assert.equal(await inventory.getByRole('link',{name:'Open manifest'}).count(),1,'Traversal path never becomes link');
   await table.locator('tr').first().locator('td').nth(4).locator('summary').first().click();
@@ -164,7 +216,32 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   await inventory.getByRole('link',{name:'Open manifest'}).click();
   await page.waitForFunction(()=>document.querySelector('#artifactView').textContent.includes('manifest only'));
   assert.ok(calls.some(x=>x.startsWith('/api/file?')&&decodeURIComponent(x).includes('reports/current/artifacts/C-synthetic/manifest.json')));
+  await page.locator('[data-tab="reports"]').click();
+  // Complete each job type while an older revision is selected. All three lists
+  // must follow the new snapshot, even if its draft inventory was already cached.
+  for(const kind of ['update','report']){
+   const id='finished-'+kind;
+   state.cases[0].reports.push({id,status:'draft',created_at:'2026-10-18T13:00:00Z'});
+   state.jobs.push({id:'job-'+kind,kind,case_id:'Synthetic A',report_id:id,status:'running',started_at:'2026-10-18T13:00:00Z'});
+   await page.evaluate(()=>refresh());await choose(id);
+   await page.waitForFunction(id=>reportPluginCache.get(reportPluginKey)?.data?.report_id===id,id);
+   await choose('current');
+   state.cases[0].reports.at(-1).status='sealed';state.jobs.at(-1).status='completed';
+   await page.evaluate(()=>refresh());
+   await page.waitForFunction(id=>document.querySelector('.report-version.selected')?.dataset.reportId===id,id);
+   await inventory.locator('> details').first().locator('> summary').click();
+   await page.waitForFunction(()=>document.querySelector('.report-plugin-used-table')?.textContent.includes('windows.synthetic.NotUsed'));
+   await inventory.locator('> details').nth(1).locator('> summary').click();
+   assert.match(await inventory.locator('.report-plugin-errors-table').innerText(),/windows.synthetic.NewFailure/);
+   await inventory.locator('> details').nth(2).locator('> summary').click();
+   assert.doesNotMatch(await inventory.locator('.report-plugin-unused-table').innerText(),/windows.synthetic.NotUsed\s/);
+   assert.match(await inventory.locator('.report-plugin-unused-table').innerText(),/windows.synthetic.NotUsed2/);
+  }
+  state.cases[0].reports=[];await page.evaluate(()=>refresh());
+  assert.equal(await page.locator('#report').evaluate(n=>n.nextElementSibling.id),'update');
+  assert.equal(await page.locator('#report').getAttribute('class'),'primary');
+  assert.equal(await page.locator('#update').isDisabled(),true);
   assert.deepEqual(errors,[]);assert.deepEqual(policies,[]);assert.equal(await page.evaluate(()=>window.injected),undefined);
-  console.log('Report plugins browser: counts/scope, errors/unused, descriptions/timing/details, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, 31 themes passed; only synthetic local GETs.');
+  console.log('Report plugins browser: counts/scope, errors/unused, descriptions/timing/details, OS-matched bulk prompts/disabled state, primary action order, completion refresh, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, 31 themes passed; only synthetic local GETs.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

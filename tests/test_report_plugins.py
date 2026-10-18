@@ -107,6 +107,43 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual({e['kind'] for e in page['errored_entries']}, {'plugin_run', 'request_failure'})
         self.assertNotIn('arguments', page['errored_entries'][0], 'Error summary does not duplicate exact command data')
 
+    def test_saved_error_sources_and_request_diagnostic_are_read_only(self):
+        self.add_run('failed', status='error')
+        self.artifact('artifacts/C-failed/json/stderr.txt', 'Synthetic error only', 'failed')
+        self.add_run('other')
+        self.artifact('artifacts/C-other/json/stderr.txt', 'Other run', 'other')
+        self.steps.append({'call_id':'UI-denied', 'tool':'run_plugin', 'status':'error',
+                           'arguments':{'plugin':'windows.example.Plugin', 'arguments':[]}})
+        event = {'id':'denied', 'detail':{'arguments':{'plugin':'windows.example.Plugin'},
+                 'result':{'content':[{'type':'text', 'text':'Synthetic invalid argument <script>not executable</script>'}]}}}
+        saved = self.artifact('artifacts/UI-denied.json', event)
+        self.persist(self.derive())
+        before = {p: p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
+        with offline_guard():
+            result = inventory.read(self.root, 'case', 'revision')
+        run, request = result['errored_entries']
+        self.assertEqual({s['path'] for s in run['error_sources']},
+                         {'artifacts/C-failed/manifest.json', 'artifacts/C-failed/json/stderr.txt'})
+        self.assertEqual(request['reason'], event['detail']['result']['content'][0]['text'])
+        self.assertEqual(request['error_sources'], [{'path':'artifacts/UI-denied.json', 'label':'Saved request error'}])
+        self.assertEqual(before, {p: p.read_bytes() for p in self.root.rglob('*') if p.is_file()})
+        saved.write_text('{}')
+        result = inventory.read(self.root, 'case', 'revision')
+        self.assertEqual(result['errored_entries'][1]['error_sources'], [])
+        self.assertNotIn('Synthetic invalid', result['errored_entries'][1]['reason'])
+        self.assertTrue(any('hash/size' in w for w in result['warnings']))
+
+    def test_request_diagnostic_rejects_wrong_identity_and_plugin(self):
+        self.steps.append({'call_id':'UI-denied', 'tool':'run_plugin', 'status':'error',
+                           'arguments':{'plugin':'windows.example.Plugin', 'arguments':[]}})
+        for ident, plugin in [('other', 'windows.example.Plugin'), ('denied', 'windows.other.Plugin')]:
+            self.artifact('artifacts/UI-denied.json', {'id':ident, 'detail':{'arguments':{'plugin':plugin},
+                          'error':'Must not be attached to a different request'}})
+            self.write()
+            result = inventory.read(self.root, 'case', 'revision')
+            self.assertEqual(result['errored_entries'][0]['error_sources'], [])
+            self.assertNotIn('Must not', result['errored_entries'][0]['reason'])
+
     def test_explicit_simulations_never_become_physical_executions(self):
         self.add_run('run0', synthetic=True)
         result = self.derive()
