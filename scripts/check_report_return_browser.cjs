@@ -47,7 +47,9 @@ const narrative='# Synthetic report\n## Technical findings\n'+
     const link=page.locator('#reportView').getByRole('link',{name:'F5:7',exact:true});
     await link.waitFor();
     const back=page.getByRole('button',{name:'← Back to report',exact:true});
+    const top=page.getByRole('button',{name:'Back to top',exact:true});
     assert.equal(await back.isVisible(),false,'No return action before opening report evidence');
+    assert.equal(await top.isVisible(),false,'Back to top stays hidden near the page start');
     const position=async source=>{
       await source.evaluate(node=>node.scrollIntoView({block:'center'}));
       return source.evaluate(node=>({top:node.getBoundingClientRect().top,y:window.scrollY}));
@@ -62,8 +64,19 @@ const narrative='# Synthetic report\n## Technical findings\n'+
     };
     let before=await position(link);
     assert.ok(before.y>3000,'Fixture starts deep in the report');
+    await top.waitFor({state:'visible'});
+    const topBox=await top.boundingBox();
+    assert.ok(topBox.x+topBox.width<=1400 && topBox.y+topBox.height<=900,
+      'Back to top stays inside the viewport near the right scrollbar');
+    if(process.env.WORKBENCH_BACK_TO_TOP_SCREENSHOT)
+      await page.screenshot({path:process.env.WORKBENCH_BACK_TO_TOP_SCREENSHOT});
+    await top.click();
+    await page.waitForFunction(()=>window.scrollY<2);
+    assert.equal(await top.isVisible(),false,'Back to top hides again at the page start');
+    before=await position(link);
     await link.click();
     await back.waitFor({state:'visible'});
+    assert.equal(await top.isVisible(),false,'Back to top does not cover Evidence');
     assert.ok(Math.abs(await page.locator('#evidence').evaluate(node=>node.getBoundingClientRect().top))<=2,
       'Evidence opens at its beginning even when the linked artifact is tall');
     assert.ok(await back.evaluate(node=>document.activeElement===node),'Return action receives keyboard focus');
@@ -84,7 +97,12 @@ const narrative='# Synthetic report\n## Technical findings\n'+
     await restored(link,before);
 
     await page.setViewportSize({width:390,height:844});
-    before=await position(link);await link.click();await back.waitFor({state:'visible'});
+    before=await position(link);
+    await top.waitFor({state:'visible'});
+    const narrowTop=await top.boundingBox();
+    assert.ok(narrowTop.x>=0 && narrowTop.x+narrowTop.width<=390,
+      'Back to top fits a narrow viewport');
+    await link.click();await back.waitFor({state:'visible'});
     assert.ok((await back.boundingBox()).x>=0,'Return action fits a narrow viewport');
     await back.click();await restored(link,before);
     await page.setViewportSize({width:1400,height:900});
@@ -113,6 +131,6 @@ const narrative='# Synthetic report\n## Technical findings\n'+
     assert.equal(await back.isVisible(),false);
     assert.deepEqual(errors,[]);
     assert.ok(!calls.some(p=>/jobs|coverage|stop|pick/.test(p)));
-    console.log('Report return: exact deep scroll and focus; keyboard; Reports tab; sticky action; artifact pagination; saved-result and citation-panel links; case switch; stale request; zero work submissions.');
+    console.log('Report return: deep-scroll back to top; exact evidence return and focus; keyboard; Reports tab; sticky action; artifact pagination; saved-result and citation-panel links; case switch; stale request; zero work submissions.');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

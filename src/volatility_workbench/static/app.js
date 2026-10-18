@@ -142,6 +142,15 @@ function choose(id, activate = true) {
 function caseNow() {
   return state.cases.find((c) => c.id === selected);
 }
+function imageSize(sizeBytes) {
+  const gigabyte = 1_000_000_000;
+  const unit = sizeBytes >= gigabyte ? "GB" : "MB";
+  return (sizeBytes / (unit === "GB" ? gigabyte : 1_000_000)).toFixed(2) + unit;
+}
+function updateBackToTop() {
+  $("backToTop").hidden = $("case").hidden || $("reports").hidden || !shownReport ||
+    window.scrollY < Math.max(500, window.innerHeight / 2);
+}
 async function job(kind, text = "") {
   if (!selected) throw Error("Select a case");
   await api("jobs", {
@@ -161,6 +170,7 @@ function setTab(name) {
   if (name === "evidence") loadArtifacts().catch(error);
   if (name === "coverage") loadCoverage().catch(error);
   if (name === "reports") restoreReportPosition();
+  updateBackToTop();
 }
 function inline(node, text, base) {
   const re = /\*\*([^*\n]+)\*\*|\[([^\]]+)\]\(([^)]+)\)/g;
@@ -931,8 +941,8 @@ function render() {
             " · " +
             i.path +
             "\n" +
-            i.size_bytes.toLocaleString() +
-            " bytes · SHA-256 " +
+            imageSize(i.size_bytes) +
+            " · SHA-256 " +
             (i.sha256 || "pending"),
           "image",
         ),
@@ -1040,6 +1050,7 @@ function render() {
     }));
     shownQueue = queueKey;
   }
+  updateBackToTop();
 }
 function renderApprovals(c) {
   const list = state.approvals.filter((a) => a.case_id === c.id),
@@ -1375,6 +1386,10 @@ $("questionForm").onsubmit = act(async () => {
 });
 $("more").onclick = act(() => viewArtifact(artifact.path, artifact.offset));
 $("backToReport").onclick = () => setTab("reports");
+$("backToTop").onclick = () => window.scrollTo({top:0,
+  behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"});
+window.addEventListener("scroll", updateBackToTop, {passive:true});
+window.addEventListener("resize", updateBackToTop);
 document
   .querySelectorAll("[data-tab]")
   .forEach((b) => (b.onclick = () => setTab(b.dataset.tab)));

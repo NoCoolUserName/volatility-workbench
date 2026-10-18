@@ -295,6 +295,22 @@ pre {
   margin-bottom: 12px;
 }
 #reportReturn .subtle { display: inline-block; margin: 6px 10px; }
+#backToTop {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-color: var(--accent);
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--accent);
+  box-shadow: 0 2px 12px #0006;
+  font-size: 18px;
+  line-height: 1;
+}
 #artifacts {
   max-height: 280px;
   overflow: auto;
