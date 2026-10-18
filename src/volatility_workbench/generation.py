@@ -27,7 +27,8 @@ def begin(provider, settings):
     return {'schema': 'report-generation/1', 'provider': provider, 'status': 'in_progress',
             'model': model, 'models': [model] if model else [],
             'model_source': 'thread_response' if provider == 'codex' else 'configured_request',
-            'reasoning_effort': label(settings.get('reasoningEffort')),
+            'reasoning_effort': label(settings.get('reasoningEffort') if provider == 'codex' else settings.get('reasoning_effort')),
+            'reasoning_effort_source': 'thread_response' if provider == 'codex' else 'configured_request',
             'token_usage': {'status': 'unavailable', 'scope': 'report_generation_turn',
                 'total_tokens': None, 'reason': 'No usable provider usage received.'}}
 
@@ -60,6 +61,8 @@ def summary(generation):
         model += ' (configured model; effective model not reported)'
     effort = label(generation.get('reasoning_effort'))
     text = 'with ' + model + ' (reasoning effort: ' + ('`' + effort + '`' if effort else 'not reported') + ')'
+    if effort and generation.get('reasoning_effort_source') == 'configured_request':
+        text += ' (requested effort; effective effort not reported)'
     counts = generation.get('token_usage', {})
     total = counts.get('total_tokens')
     if counts.get('status') == 'recorded' and type(total) is int:

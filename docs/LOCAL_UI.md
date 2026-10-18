@@ -395,7 +395,8 @@ Its progress bar is indeterminate when the prompt has no explicit plugin list or
 one of the listed plugins has no successful saved timing history. For a known list,
 the bar weights completed planned plugin runs by their historical average durations.
 The segmented, square-edged meter uses the selected theme's accent color and
-stops animating when reduced motion is requested.
+uses a three-second sweep when indeterminate. It stops animating when reduced
+motion is requested.
 It estimates *plugin work only*: model reasoning, evidence review, validation and
 report writing have no reliable plugin-based ETA. The private `plugin-speeds.json`
 table keeps the last ten successful physical execution times for each plugin;

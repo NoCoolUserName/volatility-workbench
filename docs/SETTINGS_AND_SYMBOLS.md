@@ -19,13 +19,30 @@ existing case explicitly switches that idle case to the chosen connection; earli
 provider sessions and evidence remain saved. **Start a new conversation** applies
 only to the explicitly selected case and allows recovery from an interrupted
 compatible-provider turn. Default-only saves do not switch existing cases.
+Saving a named case changes only that case, and the check button tests that saved
+scope. Codex model/effort changes keep its thread unless a new conversation is
+explicitly selected. Existing sealed report provenance is never rewritten.
 
-Workbench's Codex forensic sessions request GPT-6 Astra with high reasoning effort
-for new and resumed case conversations, including each new turn. This is an app
-default; it does not edit the user's global Codex configuration or override an
-explicitly selected compatible provider. Higher effort can take longer and should
-be considered only after representative memory-analysis comparisons show a useful
-improvement.
+**Model** and **Reasoning effort** are dropdowns. The Workbench Codex default is
+**GPT-6 Astra / High**; choose **Extra high** to request `xhigh`. **Load available
+models** explicitly reads Codex's `model/list` catalog, including each model's
+supported efforts and default. It sends no case data and starts no thread or
+analysis. Opening Settings does not load that catalog. Saving a Codex selection
+checks it against the available catalog and rejects unavailable models or effort
+levels. The selected model and effort are used on new threads, resumed threads,
+and each subsequent turn. The user's global Codex configuration is unchanged.
+
+Compatible APIs use their endpoint's `GET /models` catalog when available and
+provide **Custom model identifier** when discovery is unavailable or incomplete.
+Discovery uses only credentials already saved for that exact endpoint; it never
+uses an unsaved secret or forwards credentials through redirects. A model list
+does not establish tool-calling or reasoning support. **Provider default** omits
+`reasoning_effort`; an explicit override sends that OpenAI-compatible field only
+when selected. Other parameter formats are not mapped automatically. Save and run
+the synthetic tool-capability check before case work. Changing model or effort
+invalidates the old capability result; a successful check confirms tool round-trip
+compatibility, not that a provider honored the requested effort. Reports label a
+compatible override as requested rather than verified effective effort.
 
 ## Locations and maintenance
 

@@ -191,7 +191,7 @@ class WorkbenchProviderTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_compatible_stop_cancels_queued_work_and_preserves_incomplete_session(self):
         cfg={'provider':'compatible','endpoint':'http://127.0.0.1:9876/v1','model':'synthetic','allow_case_content':True,'case_id':self.case['id']}
-        await self.app.configure_provider(cfg);self.app.provider['capability_check']='passed'
+        await self.app.configure_provider(cfg);self.case['provider']['capability_check']='passed'
         started=asyncio.Event()
         async def handler(request):started.set();await asyncio.sleep(20)
         self.app.compatible_factory=lambda config,secrets:CompatibleClient(config,secrets,httpx.MockTransport(handler))
@@ -211,7 +211,7 @@ class WorkbenchProviderTests(unittest.IsolatedAsyncioTestCase):
     async def test_real_mcp_saved_coverage_tool_mock_model_zero_analysis(self):
         cfg={'provider':'compatible','endpoint':'http://127.0.0.1:9876/v1','model':'synthetic','allow_case_content':True,'case_id':self.case['id']}
         await self.app.configure_provider(cfg)
-        self.app.provider['capability_check']='passed'  # separate capability test uses synthetic nonce above
+        self.case['provider']['capability_check']='passed'  # separate capability test uses synthetic nonce above
         requests=[]
         def handler(request):
             data=json.loads(request.content);requests.append(data)

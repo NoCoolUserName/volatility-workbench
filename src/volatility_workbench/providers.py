@@ -14,6 +14,7 @@ from urllib.parse import urlsplit, urlunsplit
 import httpx2 as httpx
 from jsonschema import validate, ValidationError
 from .storage import atomic_json
+from .models import DEFAULT_MODEL, DEFAULT_EFFORT, model_name, reasoning_effort
 
 MAX_RESPONSE = 4 * 1024 * 1024
 MAX_TRANSCRIPT = 8 * 1024 * 1024
@@ -55,28 +56,30 @@ def normalize_endpoint(value):
     return urlunsplit((parsed.scheme, authority, path, '', ''))
 
 
-def provider_config(data):
+def provider_config(data, *, resolve_executable=True):
     if not isinstance(data, dict):
         raise ValueError('Provider configuration must be an object')
     kind = data.get('provider', 'codex')
     if kind == 'codex':
-        result = {'provider': 'codex', 'id': 'codex'}
+        result = {'provider': 'codex', 'id': 'codex', 'model': model_name(data.get('model', DEFAULT_MODEL)),
+                  'reasoning_effort': reasoning_effort(data.get('reasoning_effort', DEFAULT_EFFORT))}
         if data.get('codex_executable'):
             from .codex import discover_codex
-            result['codex_executable'] = discover_codex(data['codex_executable'])
+            if not isinstance(data['codex_executable'], str):
+                raise ValueError('Codex executable must be a path')
+            result['codex_executable'] = discover_codex(data['codex_executable']) if resolve_executable else data['codex_executable']
         return result
     if kind != 'compatible':
         raise ValueError('Choose Codex or compatible API explicitly')
     endpoint = normalize_endpoint(data.get('endpoint', ''))
-    model = data.get('model', '')
-    if not isinstance(model, str) or not model.strip() or len(model) > 200 or any(ord(c) < 32 for c in model):
-        raise ValueError('Compatible API requires a model identifier of at most 200 characters')
-    model = model.strip()
+    model = model_name(data.get('model', ''))
     identity = hashlib.sha256((endpoint + '\n' + model).encode()).hexdigest()[:24]
     storage = data.get('credential_storage', 'none')
     if storage not in ('none', 'session', 'keychain'):
         raise ValueError('Unknown credential storage mode')
-    return {'provider': kind, 'id': 'compatible-' + identity, 'endpoint': endpoint, 'model': model, 'credential_storage': storage, 'allow_case_content': data.get('allow_case_content') is True}
+    return {'provider': kind, 'id': 'compatible-' + identity, 'endpoint': endpoint, 'model': model,
+            'reasoning_effort': reasoning_effort(data.get('reasoning_effort')),
+            'credential_storage': storage, 'allow_case_content': data.get('allow_case_content') is True}
 
 
 class CompatibleClient:
@@ -91,6 +94,8 @@ class CompatibleClient:
                    'tools': [{'type': 'function', 'function': {'name': t['name'],
                        'description': t.get('description', '')[:8000], 'parameters': t['inputSchema']}} for t in tools],
                    'tool_choice': 'auto'}
+        if self.config.get('reasoning_effort'):
+            payload['reasoning_effort'] = self.config['reasoning_effort']
         encoded = json.dumps(payload).encode()
         if len(encoded) > MAX_TRANSCRIPT:
             raise ProviderError('Conversation exceeds the 8.39 MB request limit. Start a new explicit provider session; saved evidence is retained.')
@@ -143,6 +148,39 @@ class CompatibleClient:
         except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError):
             raise ProviderError('Compatible provider returned an invalid response or could not be reached. Check connectivity and chat-completions tool support.') from None
 
+    async def list_models(self):
+        """Explicit metadata-only discovery; never send case content or follow redirects."""
+        secret = await asyncio.to_thread(self.credentials.get, self.config['endpoint'], self.config.get('credential_storage', 'none'))
+        headers = {'Authorization': 'Bearer ' + secret} if secret else {}
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(30, connect=15), follow_redirects=False,
+                                         trust_env=False, transport=self.transport) as client:
+                async with client.stream('GET', self.config['endpoint'] + '/models', headers=headers) as response:
+                    if response.is_redirect:
+                        raise ProviderError('Model discovery redirected; configure the intended endpoint explicitly. Credentials were not forwarded.')
+                    if response.status_code != 200:
+                        raise ProviderError(f'Model discovery returned HTTP {response.status_code}. You can enter a custom model identifier if this endpoint does not list models.')
+                    data = bytearray()
+                    async for chunk in response.aiter_bytes():
+                        data.extend(chunk)
+                        if len(data) > MAX_RESPONSE:
+                            raise ProviderError('Model catalog exceeds the 4.19 MB limit')
+            if secret and secret.encode() in data:
+                raise ProviderError('Model catalog contained the configured credential; response discarded')
+            entries = json.loads(data)['data']
+            if not isinstance(entries, list) or len(entries) > 1000:
+                raise ValueError('Invalid model catalog')
+            names = list(dict.fromkeys(model_name(item.get('id')) for item in entries if isinstance(item, dict)))
+            if secret and any(secret in name for name in names):
+                raise ProviderError('Model catalog contained the configured credential; response discarded')
+            if not names:
+                raise ValueError('Empty model catalog')
+            return [{'model': name, 'label': name} for name in names]
+        except ProviderError:
+            raise
+        except (httpx.HTTPError, ValueError, KeyError, TypeError):
+            raise ProviderError('No usable model catalog was returned. Enter the endpoint\'s documented model identifier instead.') from None
+
     async def check(self):
         """Bound the complete capability exchange below the HTTP dispatch deadline."""
         try:
@@ -170,6 +208,8 @@ class CompatibleClient:
         if second.get('tool_calls') or (second.get('content') or '').strip() != answer:
             raise ProviderError('Capability check failed: model did not consume and return the synthetic tool result')
         return {'connected': True, 'provider': 'compatible', 'model': self.config['model'],
+                'requested_reasoning_effort': self.config.get('reasoning_effort'),
+                'reasoning_note': 'Effort is a requested override; this check cannot verify that the provider honored it.',
                 'tool_round_trip': 'passed', 'scope': 'Synthetic tool request/result only; no case content transmitted or forensic accuracy evaluated.'}
 
     @staticmethod

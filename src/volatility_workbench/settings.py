@@ -175,5 +175,7 @@ class SettingsManager:
         if path=='/api/settings/provider':
             return await self.exclusive(lambda:self.app.configure_provider(body.get('config',{}),secret=body.get('secret'),storage=body.get('storage','session')))
         if path=='/api/settings/provider/check':
-            return await self.exclusive(self.app.check_provider)
+            return await self.exclusive(lambda:self.app.check_provider(body.get('case_id')))
+        if path=='/api/settings/provider/models':
+            return await self.exclusive(lambda:self.app.provider_models(body.get('config',{})))
         raise ValueError('Unknown settings action')

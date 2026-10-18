@@ -357,7 +357,7 @@ pre {
 }
 #reportView .dos-progress.indeterminate .dos-progress-fill {
   width: 30%;
-  animation: dos-progress-scan 1.5s linear infinite alternate;
+  animation: dos-progress-scan 3s linear infinite alternate;
 }
 @keyframes dos-progress-scan {
   from { transform: translateX(0); }
