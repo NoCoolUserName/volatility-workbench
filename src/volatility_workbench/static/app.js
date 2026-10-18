@@ -178,7 +178,12 @@ function enlargeCoin(img) {
   const large = el("img");
   large.src = img.src;
   large.alt = img.alt;
-  dialog.replaceChildren(large, el("p", "Click anywhere to close · Right-click the coin to save image"));
+  const save = el("a", "Save image…");
+  save.href = img.src;
+  const sourcePath = new URL(img.src, location.href).searchParams.get("path") || "";
+  save.download = "challenge-coin" + (sourcePath.endsWith(".svg") ? ".svg" : ".png");
+  save.onclick = (event) => event.stopPropagation();
+  dialog.replaceChildren(large, el("p", "Click anywhere to close · Right-click the coin to save image"), save);
   dialog.showModal();
 }
 function coinImage(path, label) {
@@ -310,9 +315,14 @@ async function showReport(version) {
 }
 function render() {
   if (!state) return;
+  const connectedProvider = state.account.provider || (state.account.type ? "codex" : state.default_provider);
   $("connection").textContent = state.account.connected
-    ? "Codex · " + state.account.type
-    : "Local UI connected · Codex checked on readiness";
+    ? (connectedProvider === "compatible"
+      ? "Compatible API · " + (state.account.model || "Connected")
+      : "Codex · " + (state.account.type || "Connected"))
+    : (connectedProvider === "compatible"
+      ? "Local UI connected · Check API connection in Settings"
+      : "Local UI connected · Codex checked on readiness");
   $("root").textContent = "Evidence root: " + state.evidence_root;
   $("pick").disabled = !state.native_picker;
   const cases = $("cases");

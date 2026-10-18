@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "profile": "starter-2026-10",
+  "source": "https://github.com/volatilityfoundation/volatility3-test-data/releases/tag/v0.0.1",
+  "packs": [
+    {
+      "id": "linux-legacy-v1",
+      "label": "Legacy Linux: CentOS and Debian (4 exact kernels)",
+      "os": "linux",
+      "version": "v0.0.1",
+      "url": "https://github.com/volatilityfoundation/volatility3-test-data/releases/download/v0.0.1/linux.zip",
+      "size": 2980184,
+      "sha256": "58bb7da2ed1e491ce922d04a59881d201e233b5605c9fd5a7f0c08ee528253c6",
+      "identifiers": [
+        {
+          "banner": "Linux version 2.6.18-8.1.15.el5 (mockbuild@builder6.centos.org) (gcc version 4.1.1 20070105 (Red Hat 4.1.1-52)) #1 SMP Mon Oct 22 08:32:28 EDT 2007\n"
+        },
+        {
+          "banner": "Linux version 3.2.0-4-amd64 (debian-kernel@lists.debian.org) (gcc version 4.6.3 (Debian 4.6.3-14) ) #1 SMP Debian 3.2.57-3+deb7u2\n"
+        },
+        {
+          "banner": "Linux version 2.6.32-5-amd64 (Debian 2.6.32-48squeeze6) (jmm@debian.org) (gcc version 4.3.5 (Debian 4.3.5-4) ) #1 SMP Tue May 13 16:34:35 UTC 2014\n"
+        },
+        {
+          "banner": "Linux version 4.9.0-3-amd64 (debian-kernel@lists.debian.org) (gcc version 6.3.0 20170516 (Debian 6.3.0-18) ) #1 SMP Debian 4.9.30-2+deb9u2 (2017-06-26)\n"
+        }
+      ],
+      "limitations": "Four historical CentOS/Debian kernel banners only; not current Linux distribution coverage.",
+      "verification": "Archive hash, ISF structure and matching identifiers inspected; no memory analysis performed."
+    },
+    {
+      "id": "windows10-19041-v1",
+      "label": "Windows 10: one exact 19041 PDB",
+      "os": "windows",
+      "version": "v0.0.1",
+      "url": "https://github.com/volatilityfoundation/volatility3-test-data/releases/download/v0.0.1/symbols_win-10_19041-2025_03.zip",
+      "size": 789065,
+      "sha256": "abd6500fba6a59c9a7c21f2c4b8a4d7edc2da417ec3161311a19a0e0beffd94e",
+      "identifiers": [
+        {
+          "GUID": "167FE94B5641C005AC3036212A01F8DC",
+          "age": 1,
+          "database": "ntkrnlmp.pdb",
+          "machine_type": 34404
+        }
+      ],
+      "limitations": "One Windows 10 kernel PDB only; build number alone is insufficient.",
+      "verification": "Archive hash, ISF structure and matching identifiers inspected; no memory analysis performed."
+    }
+  ],
+  "default_downloads": [],
+  "macos_status": "No macOS pack is recommended: historical collection incompleteness and kernel-type issues require exact separately verified ISFs. Local import is available.",
+  "references": [
+    "https://github.com/volatilityfoundation/volatility3/issues/155",
+    "https://github.com/volatilityfoundation/volatility3/issues/848"
+  ]
+}
