@@ -11,6 +11,21 @@ provider protocols, parallel analysis, Intel/Windows distributions and broader
 accessibility testing remain future work. Shared forensic evaluation and contracts are maintained
 in volatility-mcp; do not fork them here.
 
+## Biggest remaining gaps before wider use
+
+This is the prioritized work list. [UI validation](UI_VALIDATION.md) and
+[packaging validation](../packaging/VALIDATION.md) record what was actually tested;
+completing a task here requires recording the new evidence there. These are
+release readiness gaps, not claims that the listed feature is absent.
+
+| Priority | Gap supported by current validation | Acceptance check |
+| --- | --- | --- |
+| 1 | A real Codex/MCP report, follow-up, and revision were exercised on this developer Mac. They have not been repeated as one acceptance run of the current distributable app on a clean user account or second Mac. | From a clean install, use a harmless fixture to select a file, complete readiness, generate a report, ask a follow-up, revise it, quit, and reopen without lost case state or duplicate analysis. Record the app revision, OS, and results. |
+| 2 | Cancellation/restart work is tested, but forced process death cannot guarantee child cleanup; long hashing/conversion can delay Stop, and output storage has no quota. | Exercise interruption and restart with bounded large fixtures; verify child cleanup, incomplete state, preserved artifacts, predictable Stop latency, and a documented storage limit or warning. |
+| 3 | Saved-output/citation contracts and synthetic checks exist, but there is no independent demonstration of broad forensic or model-answer accuracy. | Use a small human-reviewed, multi-OS saved-evidence set to check supported observations, abstentions, citation values, and report conclusions. Record false leads and unknowns separately from contract-test pass rates; keep private images out of Git. |
+| 4 | Plugin discovery works, but real-image support across OS/build/symbol combinations is not established; the starter symbol profile is deliberately narrow, and selected community sources cannot yet be redistributed in the public bundle. | Record a supported OS/build/plugin matrix with real compatibility results and actionable failures; resolve upstream redistribution terms or retain explicit operator downloads for each excluded source. |
+| 5 | The macOS release pipeline is implemented and tested with simulated Apple responses; no Developer ID signed, notarized, downloaded-app Gatekeeper acceptance has been recorded. | Sign with an authorized Developer ID, notarize and staple, then test the downloaded archive on a second Mac with quarantine intact and document the outcome. |
+
 If a container distribution is added, keep the analyzer dependency profile explicit:
 install and pin the official Volatility 3 `full` extra in its analyzer environment;
 package any selected third-party plugin file and its own dependencies with pinned

@@ -533,3 +533,21 @@ navigation with zero case/job submissions. Tests use synthetic files/responses;
 no real memory analysis or live model was launched. Run the optional browser check
 with Playwright available: `node scripts/check_picker_browser.cjs`; an existing
 Chromium may be selected through `WORKBENCH_BROWSER_EXECUTABLE`.
+
+## Case header and release-readiness backlog — 2026-10-18
+
+The case header now places the saved Ready status below the case title and shows
+its recorded check time. The readiness job, not this badge, verifies image access,
+SHA-256 and OS/symbol discovery at that time. The badge does not continuously
+monitor an external drive. A saved legacy status without a check time is labeled
+as unverified for current file access. The path and hash remain visible without
+an enclosing panel or duplicate top coin; report coins and their zoom control
+remain in the report viewer.
+
+All 101 application tests and the isolated installed-wheel smoke check passed.
+An offline Chromium fixture verified badge placement, unboxed evidence metadata,
+absence of the header coin, retained report coin, and stable display after a
+state refresh with zero analysis requests or JavaScript page errors. The
+synthetic screenshot was visually inspected. No private image was opened or
+hashed, and no live investigation/report generation was run. The prioritized
+follow-up list and acceptance checks are in [ROADMAP.md](ROADMAP.md).

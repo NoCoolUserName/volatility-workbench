@@ -79,7 +79,10 @@ saved evidence, and reports are unaffected.
    and runs OS/symbol discovery through MCP. **Ready** means ready to attempt
    analysis. **Ready with limitations** records discovery/import/compatibility
    gaps. **Blocked** records authentication, tool, file, or integrity errors that
-   prevent readiness. None is a malware verdict or guarantee every plugin works.
+   prevent readiness. The badge below the case title is the **saved result of the
+   last check**, with its check time; it does not continuously monitor whether a
+   drive is still connected. The separate **Check readiness** button performs a
+   new check. None is a malware verdict or guarantee every plugin works.
 4. **Generate report** starts an adaptive investigation, optionally narrowed by
    your focus. The report must follow `the installed core report contract`. The agent records
    important runs and saves Markdown/findings/IOCs; the application packages actual

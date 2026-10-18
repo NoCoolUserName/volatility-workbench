@@ -345,7 +345,13 @@ function render() {
   if (c) {
     $("caseTitle").textContent = c.title;
     $("ready").textContent = c.readiness.status;
-    const imageKey = JSON.stringify([c.id, c.images, c.coins]);
+    const checkedAt = c.readiness.checked_at;
+    $("readyDetails").textContent = checkedAt
+      ? "Last checked " + readableTime(checkedAt) + " · image access and SHA-256 verified then"
+      : ["Ready", "Ready with limitations"].includes(c.readiness.status)
+        ? "Saved status has no check time · current image access is unverified"
+        : "";
+    const imageKey = JSON.stringify([c.id, c.images]);
     if (shownImages !== imageKey) {
     $("images").replaceChildren(
       ...c.images.map((i) =>
@@ -362,10 +368,6 @@ function render() {
         ),
       ),
     );
-    for (const [index, image] of c.images.entries()) {
-      const coin = (c.coins || []).find(x => x.image_id === image.id && x.path);
-      if (coin) $("images").children[index].prepend(coinImage(coin.path, coin.label));
-    }
     shownImages = imageKey;
     }
     $("reasons").replaceChildren(
