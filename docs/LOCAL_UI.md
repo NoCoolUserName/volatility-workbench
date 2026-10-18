@@ -537,7 +537,8 @@ report cannot bury the DOS progress indicator or live tool console. Report/updat
 progress starts while the job is connecting, before a draft ID exists, and stays
 visible when an older sealed report is selected. A draft points to this single
 progress display. Known timings still describe planned plugin work; unknown plans
-and durations use the existing indeterminate animation. The console remains a
+and durations use a six-second indeterminate sweep (twelve seconds for a full
+back-and-forth cycle). The console remains a
 bounded read-only feed of tool events, not an interactive shell.
 
 The latest failed or interrupted report request has a dismissible notice above the

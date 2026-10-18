@@ -361,7 +361,7 @@ pre {
 }
 .dos-progress.indeterminate .dos-progress-fill {
   width: 30%;
-  animation: dos-progress-scan 3s linear infinite alternate;
+  animation: dos-progress-scan 6s linear infinite alternate;
 }
 @keyframes dos-progress-scan {
   from { transform: translateX(0); }
