@@ -16,10 +16,8 @@
   background-color: var(--bg);
   border-bottom: 1px solid var(--border);
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  padding: 22px 32px;
 }
+:root[data-theme-shape=plain] .skin-scene { display: none; }
 .skin-scene::before {
   content: ''; position: absolute; z-index: -1; inset: 0;
   background-image: var(--theme-scene);
@@ -31,26 +29,17 @@
   content: ''; position: absolute; z-index: -1; inset: 0;
   background: linear-gradient(90deg, var(--bg) 0%, var(--bg) 24%, transparent 64%);
 }
-.skin-caption { max-width: 430px; padding: 0 12px 0 0; }
-.skin-caption strong { color: var(--accent); display: block; font-size: 17px; letter-spacing: .2px; }
-.skin-caption p { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
 .theme-control select { max-width: min(370px, 66vw); font-size: 13px; }
 .theme-control::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; }
 .settings .theme-control { display: flex; align-items: center; gap: 8px; }
 .settings .theme-control select { margin: 0; max-width: 100%; }
-.settings .skin-scene { border: 1px solid var(--border); border-radius: 8px; margin: 16px 0; padding: 20px; }
-.settings .skin-caption { max-width: 360px; }
+.settings .skin-scene { border: 1px solid var(--border); border-radius: 8px; margin: 16px 0; }
 .settings section { background: var(--panel); }
-:root[data-theme-shape=terminal] .skin-caption strong,
 :root[data-theme-shape=terminal] .eyebrow { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: 1px; }
 :root[data-theme-shape=pixel] button,
 :root[data-theme-shape=pixel] select,
 :root[data-theme-shape=pixel] input,
 :root[data-theme-shape=pixel] pre { border-radius: 0; }
-:root[data-theme-shape=pixel] .skin-caption strong { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight: 800; letter-spacing: 2px; }
-:root[data-theme-shape=serif] .skin-caption strong { font-family: Georgia, 'Times New Roman', serif; font-size: 21px; }
-:root[data-theme-shape=industrial] .skin-caption strong { text-transform: uppercase; letter-spacing: 1.8px; font-size: 15px; }
-:root[data-theme-shape=rounded] .skin-caption strong { font-weight: 750; letter-spacing: .4px; }
 :root[data-theme-shape=rounded] button { border-radius: 9px; }
 /* Selection is always more than a color change, including the saved report. */
 .case-button.selected, .tabs .selected, .plugin-nav.selected,
@@ -72,11 +61,9 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 .plugin-table thead { background: var(--panel); }
 .approval { background: var(--panel); color: var(--text); }
 @media (max-width: 850px) {
-  .skin-scene { padding: 17px 20px; min-height: 116px; }
+  .skin-scene { min-height: 116px; }
   .skin-scene::before { opacity: .65; background-position: right center; background-size: auto 116px; }
   .skin-scene::after { background: linear-gradient(90deg, var(--bg), transparent 120%); }
-  .skin-caption { max-width: 75%; }
-  .skin-caption strong { font-size: 15px; }
   .settings .theme-control { align-items: start; flex-direction: column; }
   .theme-control select { max-width: 65vw; }
 }

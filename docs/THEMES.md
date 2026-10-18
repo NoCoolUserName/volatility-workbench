@@ -15,6 +15,9 @@ rendered into background artwork. No theme downloads assets or requests an
 external page at runtime. The links below document visual references and release
 scope; they are not application dependencies.
 
+Theme names appear in the selector. The artwork band has no caption or tagline;
+the two plain classic themes omit that band entirely.
+
 ## Fallout coverage
 
 Each of these released games or playable table experiences has its own skin.
