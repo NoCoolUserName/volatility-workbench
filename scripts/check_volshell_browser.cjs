@@ -226,6 +226,8 @@ async function checkBezelConnection(browser){
   state.volshell.session.entries=[entry('output','Volshell 2.28.2 · synthetic fixture\n(layer) >>> '),entry('output','<img src=x onerror="window.injected=true">\n')];
   await ready();
   assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'ready');
+  assert.equal(await page.locator('#volshellDisconnect').isVisible(),true,'Disconnect is visible beside Collapse without opening connection options');
+  assert.equal(await page.locator('#volshellConnection').evaluate(node=>node.open),false);
   for(const [value,id] of [['manual','volshellInput'],['suggestions','volshellAIInput'],['investigation','volshellInvestigationInput']]){
    await mode(value);await page.locator('#consoleOutputMode').click();await page.locator('#consoleVolshellMode').click();
    assert.equal(await page.locator('#'+id).evaluate(node=>document.activeElement===node),true,'Returning to '+value+' focuses its visible input');
@@ -371,8 +373,15 @@ async function checkBezelConnection(browser){
   state.volshell.session.status='exited';state.volshell.session.error=null;await refresh();
   assert.equal(count('volshell/start'),1,'EOF, failure, refresh and mode changes never restart the interpreter');
   state.volshell.session.status='running';state.volshell.session.ready=true;state.volshell.busy=true;await refresh();
-  await chooseShellCase('case-b');await connectionOptions();await page.locator('#volshellDisconnect').click();await settle();
+  await chooseShellCase('case-b');
+  assert.equal(await page.locator('#volshellConnection').evaluate(node=>node.open),false);
+  assert.equal(await page.locator('#volshellDisconnect').isVisible(),true,'Other-case session disconnect is also available without opening options');
+  await page.locator('#volshellDisconnect').click();await settle();
   assert.equal(count('volshell/close'),1,'Other-case disconnect is an explicit request bound to the original session');
+  assert.equal(await page.locator('#volshellDisconnect').isVisible(),false,'Disconnect hides when the session has closed');
+  assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'off');
+  assert.equal(await input.isDisabled(),true);
+  assert.equal(await page.locator('#consoleVolshellMode').evaluate(node=>document.activeElement===node),true,'Closing a session restores focus to the reconnect bezel');
   await page.locator('#consoleOutputMode').click();assert.equal(await page.locator('#expandedConsoleHost').isVisible(),true);
   await page.locator('#consoleVolshellMode').click();assert.equal(await page.locator('#volshellPanel').isVisible(),true);
   await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);

@@ -264,6 +264,7 @@
     if (current?.case_id === targetCase && current.error && !$("volshellError").textContent) { showError(current.error); $("volshellConnection").open = true; }
     $("volshellConnect").disabled = pending || !!connectionAttempt || connected || snapshot.busy || investigationBusy || agentActive() || !targetCase || !$("volshellImage").value;
     $("volshellDisconnect").disabled = pending || !connected || investigationBusy || agentActive();
+    $("volshellDisconnect").hidden = !connected;
     $("volshellDisconnect").textContent = connected && !same ? "Disconnect " + caseName(current.case_id) : "Disconnect";
     $("volshellInterrupt").disabled = pending || !same || current?.status !== "running" || investigationBusy || agentActive() || (current.ready && !current.continuation);
     $("volshellInput").disabled = pending || !ready();
@@ -348,7 +349,13 @@
     };
     $("volshellMode").onchange = rememberChoice;
     $("volshellConnect").onclick = connectSelected;
-    $("volshellDisconnect").onclick = () => { if (!$("volshellDisconnect").disabled) perform("close", binding()); };
+    $("volshellDisconnect").onclick = async () => {
+      const button = $("volshellDisconnect");
+      if (button.disabled) return;
+      const focused = document.activeElement === button;
+      if (await perform("close", binding()) && focused && $("consoleZoom").open && monitorMode === "volshell" &&
+          (document.activeElement === button || document.activeElement === document.body)) $("consoleVolshellMode").focus({preventScroll:true});
+    };
     $("volshellInterrupt").onclick = () => { if (!$("volshellInterrupt").disabled) perform("interrupt", binding()); };
     $("volshellForm").onsubmit = async event => {
       event.preventDefault();
