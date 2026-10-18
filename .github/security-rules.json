@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "engine_version": "1.181.0",
+  "repository": "semgrep/semgrep-rules",
+  "commit": "17e31e11ebac99fb7dfe1cd288f7a32151b6f3f9",
+  "archive_sha256": "9dfe6866fbecd557f507078cb79721a9eb8f4764fc2f6163648ea1320be25933",
+  "rule_count": 458,
+  "rule_folders": ["python", "javascript", "typescript"],
+  "category": "security",
+  "blocking_impacts": ["HIGH", "CRITICAL"]
+}

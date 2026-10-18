@@ -11,11 +11,34 @@ concurrency:
   cancel-in-progress: true
 jobs:
   security:
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
-    uses: NoCoolUserName/code-quality/.github/workflows/codeql.yml@7301db3486bf182012a0ab8005207dd9b35f471c
-    with:
-      framework-ref: 7301db3486bf182012a0ab8005207dd9b35f471c
-      languages: python,javascript-typescript
+    name: Security / SAST
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Install pinned private-source scanner
+        run: |
+          python -m venv "$RUNNER_TEMP/security-venv"
+          version=$(python -c 'import json; print(json.load(open(".github/security-rules.json"))["engine_version"])')
+          "$RUNNER_TEMP/security-venv/bin/python" -m pip install "semgrep==$version"
+      - name: Test fail-closed security gate
+        run: python -m unittest discover -s tests -p test_security_scan.py -v
+      - name: Scan Python and JavaScript; block high or critical impact
+        run: '"$RUNNER_TEMP/security-venv/bin/python" scripts/security_scan.py --work-dir "$RUNNER_TEMP/security-scan"'
+      - name: Retain private security findings and coverage inventory
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: security-scan
+          path: |
+            ${{ runner.temp }}/security-scan/findings.json
+            ${{ runner.temp }}/security-scan/inventory.json
+            ${{ runner.temp }}/security-scan/gate.json
+            ${{ runner.temp }}/security-scan/semgrep.log
+          if-no-files-found: error
+          retention-days: 14

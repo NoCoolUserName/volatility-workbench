@@ -9,9 +9,127 @@ const makeCase=(id,title,os)=>({id,title,created_at:stamp,images:[{id:'E001',pat
 const state={cases:[makeCase('case-a','Synthetic Windows case','windows'),makeCase('case-b','Synthetic Linux case','linux')],jobs:[],approvals:[],account:{},evidence_root:'/synthetic',live_console:null,volshell:{session:null,busy:false}};
 const entry=(kind,text)=>({id:String(++entryId),kind,text,time:stamp});
 let entryId=0;
+// Fresh fixtures isolate connection decisions from the long-lived interaction
+// tests below. Every POST is intercepted; no interpreter or image is opened.
+async function checkBezelConnection(browser){
+ const existing=(caseId='case-b',status='running')=>({id:'existing-shell',case_id:caseId,image_id:'E001',mode:caseId==='case-b'?'linux':'windows',status,ready:status==='running',entries:[entry('output','Private output for '+caseId)],earlier_entries:0});
+ const fixture=async({images,session=null,jobs=[],reply='start'}={})=>{
+  const page=await browser.newPage({viewport:{width:1400,height:1000}}),requests=[],errors=[];
+  const value={cases:[makeCase('case-a','Synthetic Windows case','windows'),makeCase('case-b','Synthetic Linux case','linux')],jobs,approvals:[],account:{},evidence_root:'/synthetic',live_console:null,volshell:{session,busy:!!session}};
+  if(images)value.cases[1].images=images;
+  const control={reply,returned:null};
+  await page.addInitScript(()=>{
+   window.fixtureStreams=[];window.EventSource=class extends EventTarget{static CLOSED=2;constructor(){super();this.readyState=1;fixtureStreams.push(this);}close(){this.readyState=2;}emit(value){this.dispatchEvent(new MessageEvent('volshell',{data:JSON.stringify(value)}));}};
+   const interval=setInterval;window.setInterval=(callback,delay,...args)=>delay===1500?0:interval(callback,delay,...args);
+  });
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.route('**/*',async route=>{
+   const request=route.request(),url=new URL(request.url());
+   assert.equal(url.origin,'http://localhost');
+   if(request.method()==='GET'){
+    if(url.pathname==='/api/state')return route.fulfill({json:value});
+    if(url.pathname==='/api/artifacts')return route.fulfill({json:{files:[],truncated:false}});
+    if(url.pathname==='/api/report-console')return route.fulfill({json:null});
+    assert.ok(!url.pathname.startsWith('/api/'),'Unexpected read '+url.pathname);
+    const name=url.pathname==='/'?'index.html':url.pathname.slice(1);
+    return route.fulfill({body:fs.readFileSync(path.join(assets,name)),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html'});
+   }
+   assert.equal(url.pathname,'/api/volshell/start','Connection controls never execute commands or disconnect implicitly');
+   const body=request.postDataJSON();requests.push(body);
+   if(control.reply==='fail')return route.fulfill({status:500,json:{error:'Synthetic interpreter could not start'}});
+   control.returned={busy:true,session:{id:'new-shell-'+requests.length,case_id:body.case_id,image_id:body.image_id,mode:body.mode,status:control.reply==='ready'?'running':'starting',ready:control.reply==='ready',entries:[],earlier_entries:0}};
+   if(control.reply!=='lag')value.volshell=control.returned;
+   return route.fulfill({json:control.returned});
+  });
+  await page.goto('http://localhost/?case=case-b');await page.locator('#openCaseConsole').click();
+  const refresh=()=>page.evaluate(()=>refresh());
+  const click=async()=>{await page.locator('#consoleVolshellMode').click();await page.waitForFunction(()=>document.querySelector('#volshellStatus').textContent!=='Request in progress…');};
+  const close=async()=>{assert.deepEqual(errors,[]);await page.close();};
+  return {page,value,requests,control,refresh,click,close};
+ };
+ let f=await fixture();
+ assert.equal(await f.page.locator('#volshellConnection').evaluate(node=>node.open),false);
+ await f.page.locator('#collapseVolshell').click();await f.page.locator('#openCaseConsole').click();
+ await f.page.locator('#consoleOutputMode').click();
+ assert.equal(f.requests.length,0,'Opening/reopening the monitor and viewing Output never connect');
+ await f.click();assert.deepEqual(f.requests,[{case_id:'case-b',image_id:'E001',mode:'linux'}],'Bezel connects the selected Linux case, not the first Windows case');
+ await f.click();await f.refresh();assert.equal(f.requests.length,1,'A starting session is reused');
+ f.value.volshell.session.status='running';f.value.volshell.session.ready=true;await f.refresh();
+ assert.equal(await f.page.locator('#volshellInput').evaluate(node=>document.activeElement===node),true,'The first ready prompt focuses its input when focus stayed on Collapse');await f.click();
+ assert.equal(f.requests.length,1);assert.equal(await f.page.locator('#volshellInput').isDisabled(),false);await f.close();
+
+ f=await fixture({reply:'ready'});await f.click();
+ assert.equal(await f.page.locator('#volshellInput').evaluate(node=>document.activeElement===node),true,'An immediately ready POST response waits for the input to be enabled before focusing it');await f.close();
+ for(const selector of ['#volshellInteractionMode','#volshellConnection summary']){
+  f=await fixture();await f.click();await f.page.locator(selector).focus();
+  f.value.volshell.session.status='running';f.value.volshell.session.ready=true;await f.refresh();
+  assert.equal(await f.page.locator(selector).evaluate(node=>document.activeElement===node),true,'Readiness never steals focus from '+selector);await f.close();
+ }
+ f=await fixture();await f.click();await f.page.locator('#collapseVolshell').click();
+ f.value.volshell.session.status='running';f.value.volshell.session.ready=true;await f.refresh();
+ assert.equal(await f.page.locator('#consoleZoom').isHidden(),true,'Readiness never reopens a collapsed monitor');
+ assert.equal(await f.page.locator('#volshellInput').evaluate(node=>document.activeElement===node),false);await f.close();
+
+ f=await fixture({session:existing()});await f.click();
+ assert.equal(f.requests.length,0,'An existing same-case connection is reused');assert.equal(await f.page.locator('#volshellInput').isDisabled(),false);await f.close();
+ f=await fixture({session:existing('case-a')});await f.click();
+ assert.equal(f.requests.length,0,'Another case is never disconnected or rebound implicitly');
+ assert.equal(await f.page.locator('#volshellConnection').evaluate(node=>node.open),true);
+ assert.match(await f.page.locator('#volshellDisconnect').textContent(),/Synthetic Windows case/);
+ assert.doesNotMatch(await f.page.locator('#volshellOutput').textContent(),/Private output for case-a/);await f.close();
+
+ f=await fixture({jobs:[{id:'busy-job',case_id:'case-a',kind:'question',status:'running'}]});await f.click();
+ assert.equal(f.requests.length,0,'An unrelated active investigation blocks connection');
+ assert.match(await f.page.locator('#volshellStatus').textContent(),/investigation is active/);
+ f.value.jobs=[];await f.refresh();assert.equal(f.requests.length,0,'Finishing an investigation does not submit a deferred connection');
+ await f.click();assert.equal(f.requests.length,1);await f.close();
+
+ f=await fixture({images:[]});await f.click();
+ assert.equal(f.requests.length,0);assert.equal(await f.page.locator('#volshellConnection').evaluate(node=>node.open),true);
+ assert.equal(await f.page.locator('#volshellImage').isDisabled(),true);assert.equal(await f.page.locator('#volshellConnect').isDisabled(),true);await f.close();
+ const images=[{id:'E001',path:'/synthetic/linux.vmem',discovery:{detected_os:'linux'}},{id:'E002',path:'/synthetic/mac.vmem',discovery:{detected_os:'macos'}}];
+ f=await fixture({images});await f.click();
+ assert.equal(f.requests.length,0,'Multiple captures require an explicit choice');
+ assert.equal(await f.page.locator('#volshellImage').evaluate(node=>document.activeElement===node),true);
+ await f.page.locator('#volshellImage').selectOption('E002');await f.click();
+ assert.deepEqual(f.requests[0],{case_id:'case-b',image_id:'E002',mode:'mac'});
+ f.value.volshell.session.status='exited';f.value.volshell.session.ready=false;f.value.volshell.busy=false;await f.refresh();
+ assert.equal(f.requests.length,1,'Interpreter EOF does not reconnect automatically');
+ await f.click();assert.deepEqual(f.requests[1],f.requests[0],'A deliberate reconnect retains the chosen capture and OS');
+ f.value.volshell.session.status='exited';f.value.volshell.busy=false;await f.refresh();
+ await f.page.locator('#volshellConnection summary').click();await f.page.locator('#volshellMode').selectOption('generic');
+ await f.page.locator('#volshellConnect').click();await f.page.waitForFunction(()=>document.querySelector('#volshellStatus').textContent!=='Request in progress…');
+ assert.deepEqual(f.requests[2],{case_id:'case-b',image_id:'E002',mode:'generic'},'Explicit connection options retain OS overrides');await f.close();
+ for(const [detected,expected] of [['darwin','mac'],['unknown','generic']]){
+  f=await fixture({images:[{id:'E007',path:'/synthetic/fixture.vmem',discovery:{detected_os:detected}}]});await f.click();
+  assert.deepEqual(f.requests[0],{case_id:'case-b',image_id:'E007',mode:expected});await f.close();
+ }
+ f=await fixture({reply:'fail'});await f.click();
+ assert.equal(f.requests.length,1);assert.equal(await f.page.locator('#volshellConnection').evaluate(node=>node.open),true);
+ assert.match(await f.page.locator('#volshellError').innerText(),/Synthetic interpreter could not start/);
+ assert.equal(await f.page.locator('#volshellInput').isDisabled(),true);
+ await f.refresh();await f.page.locator('#collapseVolshell').click();await f.page.locator('#openCaseConsole').click();await f.refresh();
+ assert.equal(f.requests.length,1,'A failed start never retries from polling or monitor reopen');
+ f.control.reply='start';await f.click();assert.equal(f.requests.length,2,'Retry requires another explicit bezel action');await f.close();
+
+ f=await fixture({reply:'lag'});await f.click();await f.click();await f.refresh();await f.click();
+ assert.equal(f.requests.length,1,'A successful start response stays latched while the full-state poll still lacks its session');
+ assert.equal(await f.page.locator('#volshellLED').getAttribute('data-state'),'pending');
+ f.value.volshell=f.control.returned;await f.refresh();await f.click();assert.equal(f.requests.length,1);await f.close();
+ f=await fixture();
+ const emit=async value=>{await f.page.evaluate(value=>fixtureStreams.at(-1).emit(value),value);await f.page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));};
+ await emit({case_id:'case-b',session:null,busy:false,agent_activity:null});
+ await f.click();await f.refresh();await f.click();
+ assert.equal(f.requests.length,1,'An older valid SSE snapshot cannot cause a duplicate start after the POST and poll already saw the new session');
+ assert.equal(await f.page.locator('#volshellInput').isDisabled(),true);
+ f.value.volshell.session.status='running';f.value.volshell.session.ready=true;
+ await emit({case_id:'case-b',...f.value.volshell,agent_activity:null});
+ assert.equal(await f.page.locator('#volshellInput').isDisabled(),false);await f.close();
+}
 (async()=>{
  const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
  try{
+  await checkBezelConnection(browser);
   const page=await browser.newPage({viewport:{width:1400,height:1000}}),errors=[],posts=[];
   await page.addInitScript(()=>{Date.now=()=>Date.parse('2026-10-18T12:02:42Z');});
   await page.addInitScript(()=>{
@@ -83,6 +201,8 @@ let entryId=0;
   const settle=()=>page.waitForFunction(()=>document.querySelector('#volshellStatus').textContent!=='Request in progress…');
   const refresh=()=>page.evaluate(()=>refresh());
   const mode=value=>page.locator('#volshellInteractionMode').selectOption(value);
+  const connectionOptions=async()=>{if(!await page.locator('#volshellConnection').evaluate(node=>node.open))await page.locator('#volshellConnection summary').click();};
+  const chooseShellCase=async value=>{await connectionOptions();await page.locator('#volshellCase').selectOption(value);};
   const ready=async()=>{state.volshell.session.ready=true;state.volshell.session.status='running';await refresh();await settle();};
   const screenshot=async name=>{
    if(!process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)return;
@@ -97,9 +217,12 @@ let entryId=0;
   assert.equal(await page.locator('#volshellMode').inputValue(),'windows');
   assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'off');
   assert.equal(await input.isDisabled(),true);assert.equal(posts.length,0,'Opening the CRT never starts a session');
-  await page.locator('#volshellConnect').click();await settle();
+  for(const selector of ['#volshellCase','#volshellImage','#volshellMode','#volshellConnect','#volshellInterrupt','#volshellDisconnect','#volshellStatus','#volshellBinding'])assert.equal(await page.locator(selector).isVisible(),false,'Connection setup stays collapsed: '+selector);
+  assert.equal(await page.locator('#collapseVolshell').isVisible(),true);
+  await page.locator('#consoleVolshellMode').evaluate(node=>{node.click();node.click();});await settle();
   assert.equal(count('volshell/start'),1);assert.equal(await input.isDisabled(),true);
   assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'pending');
+  await page.locator('#consoleVolshellMode').click();await refresh();assert.equal(count('volshell/start'),1,'Starting session is reused on repeated bezel clicks and refresh');
   state.volshell.session.entries=[entry('output','Volshell 2.28.2 · synthetic fixture\n(layer) >>> '),entry('output','<img src=x onerror="window.injected=true">\n')];
   await ready();
   assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'ready');
@@ -107,6 +230,7 @@ let entryId=0;
    await mode(value);await page.locator('#consoleOutputMode').click();await page.locator('#consoleVolshellMode').click();
    assert.equal(await page.locator('#'+id).evaluate(node=>document.activeElement===node),true,'Returning to '+value+' focuses its visible input');
   }
+  assert.equal(count('volshell/start'),1,'All three modes reuse the existing connection');
   await mode('manual');
   assert.equal(await page.locator('#volshellInterrupt').isDisabled(),true,'Idle prompt has no command to interrupt');
   assert.equal(await page.locator('#volshellOutput img, #volshellOutput script').count(),0);
@@ -118,7 +242,7 @@ let entryId=0;
   assert.equal(posts.find(item=>item.path==='/api/volshell/input').body.text,'ps','Enter executes only typed text, never the ghost suffix');
   assert.equal(await input.isDisabled(),true);assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'pending');
   assert.equal(await page.locator('#volshellInterrupt').isDisabled(),false);
-  await page.locator('#volshellInterrupt').click();await settle();
+  await connectionOptions();await page.locator('#volshellInterrupt').click();await settle();
   assert.equal(count('volshell/interrupt'),1);await input.fill('value = 1');await input.press('Shift+Enter');
   assert.match(await input.inputValue(),/\n$/);assert.equal(count('volshell/input'),1,'Shift+Enter adds a line without submitting');
   state.volshell.session.continuation=true;await input.fill('');await refresh();
@@ -126,10 +250,10 @@ let entryId=0;
   await page.locator('#volshellRun').click();await settle();
   assert.equal(posts.filter(item=>item.path==='/api/volshell/input').at(-1).body.text,'');
   state.volshell.session.continuation=false;await ready();
-  await input.fill('case_a_draft');await page.locator('#volshellCase').selectOption('case-b');
+  await input.fill('case_a_draft');await chooseShellCase('case-b');
   assert.equal(await input.isDisabled(),true);assert.doesNotMatch(await page.locator('#volshellOutput').innerText(),/Volshell 2.28.2/);
-  assert.match(await page.locator('#volshellDisconnect').innerText(),/Synthetic Windows case/);
-  await page.locator('#volshellCase').selectOption('case-a');assert.equal(await input.inputValue(),'case_a_draft');
+  assert.match(await page.locator('#volshellDisconnect').textContent(),/Synthetic Windows case/);
+  await chooseShellCase('case-a');assert.equal(await input.inputValue(),'case_a_draft');
   await mode('suggestions');
   await page.locator('#volshellAIInput').fill('List processes');await page.locator('#volshellAISubmit').click();
   await page.waitForFunction(()=>document.querySelector('#volshellAIStatus').textContent.includes('Proposal ready'));
@@ -148,9 +272,9 @@ let entryId=0;
   assert.equal(await page.locator('#volshellProposal').isHidden(),true);
   suggestion={command:'ps()',explanation:'Late fixture proposal'};holdSuggestion=true;
   await page.locator('#volshellAISubmit').click();await page.waitForFunction(()=>document.querySelector('#volshellAIStatus').textContent.includes('Preparing'));
-  await page.locator('#volshellCase').selectOption('case-b');
+  await chooseShellCase('case-b');
   assert.ok(heldSuggestion);await heldSuggestion();heldSuggestion=null;
-  await page.locator('#volshellCase').selectOption('case-a');await mode('suggestions');
+  await chooseShellCase('case-a');await mode('suggestions');
   assert.equal(await page.locator('#volshellProposal').isHidden(),true,'Late response cannot populate a different case/session view');
   assert.equal(count('volshell/input'),submittedBeforeProposal);
   await mode('investigation');assert.equal(count('volshell/investigate'),0,'Selecting AI investigation never starts work');
@@ -179,7 +303,9 @@ let entryId=0;
   state.volshell.investigation.messages=[{role:'assistant',text:'The saved process records are ready to review. This demonstration uses only synthetic evidence.'}];
   await refresh();
   await page.locator('#collapseVolshell').click();await page.locator('#toggleTheme').click();await page.locator('#theme').selectOption('fallout-2');
-  await page.locator('#openCaseConsole').click();await screenshot('volshell-ai-desktop');
+  await page.locator('#openCaseConsole').click();
+  if(await page.locator('#volshellConnection').evaluate(node=>node.open))await page.locator('#volshellConnection summary').click();
+  await screenshot('volshell-ai-desktop');
   state.jobs[0].status='completed';await refresh();await mode('manual');assert.equal(await input.isDisabled(),false,'Manual session resumes after the AI job completes');
   await input.fill('ps');await screenshot('volshell-manual-desktop');
   const themeStyles=[];
@@ -245,7 +371,7 @@ let entryId=0;
   state.volshell.session.status='exited';state.volshell.session.error=null;await refresh();
   assert.equal(count('volshell/start'),1,'EOF, failure, refresh and mode changes never restart the interpreter');
   state.volshell.session.status='running';state.volshell.session.ready=true;state.volshell.busy=true;await refresh();
-  await page.locator('#volshellCase').selectOption('case-b');await page.locator('#volshellDisconnect').click();await settle();
+  await chooseShellCase('case-b');await connectionOptions();await page.locator('#volshellDisconnect').click();await settle();
   assert.equal(count('volshell/close'),1,'Other-case disconnect is an explicit request bound to the original session');
   await page.locator('#consoleOutputMode').click();assert.equal(await page.locator('#expandedConsoleHost').isVisible(),true);
   await page.locator('#consoleVolshellMode').click();assert.equal(await page.locator('#volshellPanel').isVisible(),true);
@@ -308,7 +434,7 @@ let entryId=0;
   await page.locator('#volshellInteractiveMode').click();assert.equal(await input.isDisabled(),true,'Streamed AI activity pauses manual input before the jobs poll');
   assert.equal(await page.locator('#volshellDisconnect').isDisabled(),true);assert.equal(await page.locator('#volshellInterrupt').isDisabled(),true);
   await page.evaluate(index=>fixtureStreams[index].fail(true),source);
-  await page.locator('#volshellCase').selectOption('case-b');
+  await chooseShellCase('case-b');
   assert.equal(await page.evaluate(()=>fixtureRetries.size),0,'Changing case cancels a pending retry');
   assert.equal(await page.evaluate(index=>fixtureStreams[index].closed,source),true,'Changing selected case closes its stream');
   const otherSource=await streamIndex();assert.notEqual(otherSource,source);
@@ -330,6 +456,9 @@ let entryId=0;
   const activity={...earlyActivity,id:'observation-1',job_id:ordinaryJob.id,command:'db(0x1000, count=32)',entries:[entry('output','00001000  41 42 43 44  ABCD\nPartial synthetic observation')],observation_path:'volshell-observations/synthetic.json'};
   await deliver({case_id:'case-a',session:null,busy:false,agent_activity:activity},source);
   assert.equal(await page.locator('#volshellAgentPanel').isVisible(),true,'Active shell tool switches an already expanded matching case CRT');
+  const startsBeforeAgent=count('volshell/start');await page.locator('#consoleVolshellMode').click();
+  assert.equal(count('volshell/start'),startsBeforeAgent,'The bezel keeps active AI output read-only without starting a manual session');
+
   assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'ready');assert.match(await page.locator('#volshellLEDLabel').textContent(),/AI active/);
   assert.equal(await page.locator('#volshellAgentPanel input,#volshellAgentPanel textarea').count(),0,'AI output is read-only');
   assert.equal(await page.locator('#volshellAgentOutput').evaluate(node=>getComputedStyle(node).color),await page.locator('#volshellOutput').evaluate(node=>getComputedStyle(node).color),'AI output shares the theme terminal color');
@@ -370,6 +499,6 @@ let entryId=0;
   assert.equal(await zoom.isVisible(),false,'Late events from a closed source cannot reopen the CRT');
   assert.equal(await page.evaluate(()=>window.injected),undefined);assert.deepEqual(errors,[]);
   if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)fs.writeFileSync(path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-contrast.json'),JSON.stringify(themeStyles,null,2)+'\n');
-  console.log('VolShell: explicit connection/input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;31 distinct bezels/New Vegas desktop/mobile; fully synthetic requests.');
+  console.log('VolShell: bezel connection and explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;31 distinct bezels/New Vegas desktop/mobile; fully synthetic requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

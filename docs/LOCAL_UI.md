@@ -547,6 +547,11 @@ Stop all work sits beside Report running (or Stopping report) during report work
 For other queued/active tasks it sits beside Current work. The same global stop
 control is retained across progress updates and hides with the work panel at idle.
 
+The small arrow beside Report console (Current work while a job is active) toggles
+the inline console. Collapsing preserves its output and follow state; polling and
+returning from the expanded CRT keep that choice for the current page. Active job
+progress and Stop all work remain visible.
+
 The console's upper-right Expand button opens a near-full-screen modal with a
 resolution-independent CSS CRT casing, recessed screen, vents and power indicator.
 It moves the existing read-only console rather than duplicating the feed. Output
@@ -561,13 +566,24 @@ is locked while expanded. The view closes when its job changes. No shell
 input or additional analysis request is introduced by the Output view itself.
 
 The CRT bezel also has a **VolShell** button and a small rectangular connection
-LED. Open it from a selected case even when no report console exists, select a
-registered capture and operating-system mode, then Connect. The application
+LED. Clicking the bezel button connects to the selected case's chosen capture and
+operating-system mode. A sole registered capture is selected automatically; its
+saved detected OS is used when available, otherwise Generic. Capture and OS choices
+are remembered per case while the page is open. If a case has multiple captures
+and none is chosen, the Connection options gear opens so the operator can choose
+explicitly. The gear also contains Connect, Interrupt and Disconnect; this setup
+stays collapsed during ordinary use. Opening **Console / VolShell** from the case
+only opens the view; the bezel button starts the session. The application
 launches the configured analyzer's official Volatility 3 Volshell locally, with
 installed symbols and offline symbol lookup. The LED becomes green only when the
 manual interpreter reaches its input prompt. A busy or starting manual session is
 amber; an ended session is off. Active AI VolShell inspection also lights the LED
 green, with an accessible label identifying AI activity. Missing symbols and startup errors remain visible.
+Repeated clicks reuse the current session or pending connection rather than
+starting another process. A session bound to another case must be disconnected
+explicitly; an active investigation prevents a new interactive connection.
+Clicking the bezel during active AI VolShell inspection opens its read-only view.
+Connection failures open the options and remain visible without automatic retries.
 
 VolShell offers three explicit modes:
 

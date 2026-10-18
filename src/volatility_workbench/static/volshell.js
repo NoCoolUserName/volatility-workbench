@@ -17,6 +17,7 @@
   let shownBinding = "", notifiedApprovalKey = "";
   let polledSnapshot = snapshot, eventSource = null, streamCase = null, streamSnapshot = null, streamValid = false, streamFrame = 0;
   let streamRetry = null, streamRetryAttempt = 0;
+  let connectionAttempt = null, connectionFocus = null;
   const seenActivities = new Set();
   const agentActivity = () => snapshot.agent_activity?.case_id === targetCase ? snapshot.agent_activity : null;
   const agentActive = () => ["starting", "running"].includes(agentActivity()?.status);
@@ -114,6 +115,8 @@
     imageKey = "";
     forgetProposal();
     interactionMode = "manual";
+    connectionFocus = null;
+    $("volshellConnection").open = false;
     showError("");
     render();
   }
@@ -128,7 +131,7 @@
     $("consoleZoom").setAttribute("aria-labelledby", agent ? "volshellAgentTitle" : shell ? "volshellTitle" : adapter?.hasConsole() ? "liveConsoleTitle" : "emptyConsoleTitle");
     if (focus && $("consoleZoom").open) {
       const input = interactionMode === "suggestions" ? $("volshellAIInput") : interactionMode === "investigation" ? $("volshellInvestigationInput") : $("volshellInput");
-      (agent ? $("volshellAgentOutput") : shell ? ready() ? input : $("volshellCase") : adapter.hasConsole() ? $("expandConsole") : $("collapseEmptyConsole")).focus({preventScroll:true});
+      (agent ? $("volshellAgentOutput") : shell ? ready() ? input : $("volshellConnection").open ? $("volshellCase") : $("collapseVolshell") : adapter.hasConsole() ? $("expandConsole") : $("collapseEmptyConsole")).focus({preventScroll:true});
     }
   }
   function populateTargets() {
@@ -195,7 +198,7 @@
     const output = (current?.entries || []).map(entry => entry.kind === "output" ? entry.text : entry.text + "\n").join("");
     const text = current && current.case_id === targetCase ? (current.earlier_entries ? "[Earlier output is retained in the private session transcript.]\n" : "") + (output || (active(current) ? "Waiting for VolShell output…" : "No output was recorded."))
       : active(current) ? "An interactive session belongs to " + caseName(current.case_id) + ". Select that case to view its output and enter commands, or disconnect it."
-        : "Choose a registered capture and connect to VolShell.";
+        : "Select VolShell on the bezel to connect. Connection options let you choose a capture or operating system.";
     if (pre.textContent !== text) {
       const follow = pre.scrollHeight - pre.scrollTop - pre.clientHeight < 24;
       const top = pre.scrollTop;
@@ -243,22 +246,23 @@
     showAgentActivity();
     populateTargets();
     const current = session(), connected = active(current), same = bound();
+    if (connectionAttempt && current?.case_id === connectionAttempt.caseId && current.id !== connectionAttempt.previousId) connectionAttempt = null;
     const key = bindingKey();
     if (key !== shownBinding) { shownBinding = key; forgetProposal(); showError(""); }
-    const led = agentActive() || current?.status === "running" && current.ready === true ? "ready" : connected ? "pending" : "off";
+    const led = agentActive() || current?.status === "running" && current.ready === true ? "ready" : connected || connectionAttempt ? "pending" : "off";
     $("volshellLED").dataset.state = led;
-    $("volshellLEDLabel").textContent = " · " + (agentActive() ? "AI active in " + caseName(targetCase) : led === "ready" ? "connected to " + caseName(current.case_id) : connected ? current.status === "running" ? "busy" : current.status : "disconnected");
+    $("volshellLEDLabel").textContent = " · " + (agentActive() ? "AI active in " + caseName(targetCase) : led === "ready" ? "connected to " + caseName(current.case_id) : connected ? current.status === "running" ? "busy" : current.status : connectionAttempt ? "connecting to " + caseName(connectionAttempt.caseId) : "disconnected");
     $("volshellTitle").textContent = "VolShell · " + caseName(targetCase);
     $("volshellBinding").textContent = current && current.case_id === targetCase
       ? "Session bound to " + caseName(current.case_id) + " · " + current.image_id + " · " + current.mode + ". Choose Manual commands, AI command suggestions or AI investigation."
       : connected ? "Active session: " + caseName(current.case_id) + " · " + current.image_id + ". Disconnect it before connecting a different capture."
         : "Interactive commands use the selected original capture. Previous reports and investigation output remain separate.";
     $("volshellBinding").textContent += " VolShell runs Python locally with your account permissions.";
-    $("volshellStatus").textContent = pending ? "Request in progress…" : current?.status === "failed" && current.case_id === targetCase ? "Connection failed"
+    $("volshellStatus").textContent = pending ? "Request in progress…" : connectionAttempt ? "Connecting…" : current?.status === "failed" && current.case_id === targetCase ? "Connection failed"
       : connected ? !same ? "Connected to another case" : investigationBusy || agentActive() ? "AI investigation active · manual input paused" : current.status === "starting" ? "Connecting…" : current.status === "stopping" ? "Disconnecting…" : current.ready ? current.continuation ? "Connected · finish the continued block" : "Connected · ready" : "Connected · command running"
         : investigationBusy || agentActive() ? "An investigation is active. Connect when it finishes." : "Disconnected";
-    if (current?.case_id === targetCase && current.error && !$("volshellError").textContent) showError(current.error);
-    $("volshellConnect").disabled = pending || connected || snapshot.busy || investigationBusy || agentActive() || !targetCase || !$("volshellImage").value;
+    if (current?.case_id === targetCase && current.error && !$("volshellError").textContent) { showError(current.error); $("volshellConnection").open = true; }
+    $("volshellConnect").disabled = pending || !!connectionAttempt || connected || snapshot.busy || investigationBusy || agentActive() || !targetCase || !$("volshellImage").value;
     $("volshellDisconnect").disabled = pending || !connected || investigationBusy || agentActive();
     $("volshellDisconnect").textContent = connected && !same ? "Disconnect " + caseName(current.case_id) : "Disconnect";
     $("volshellInterrupt").disabled = pending || !same || current?.status !== "running" || investigationBusy || agentActive() || (current.ready && !current.continuation);
@@ -277,6 +281,10 @@
     renderInvestigation();
     syncGhost();
     setMode(monitorMode);
+    if (connectionFocus && current?.case_id === connectionFocus.caseId && current.id !== connectionFocus.previousId && (current.ready && !pending || !active(current))) {
+      if (ready() && monitorMode === "volshell" && $("consoleZoom").open && document.activeElement === $("collapseVolshell")) setMode("volshell", true);
+      connectionFocus = null;
+    }
   }
   async function perform(path, payload, globalRoute = false) {
     if (pending) return;
@@ -295,10 +303,37 @@
     choices.set(targetCase, {image:$("volshellImage").value, mode:$("volshellMode").value});
     render();
   }
+  async function connectSelected() {
+    if ($("volshellConnect").disabled) return;
+    rememberChoice();
+    const attempt = {caseId:targetCase, previousId:session()?.id};
+    connectionAttempt = attempt;
+    connectionFocus = attempt;
+    $("volshellConnection").open = false;
+    if ($("consoleZoom").open && monitorMode === "volshell") $("collapseVolshell").focus({preventScroll:true});
+    const started = await perform("start", {case_id:targetCase, image_id:$("volshellImage").value, mode:$("volshellMode").value});
+    if (!started) {
+      if (connectionAttempt === attempt) connectionAttempt = null;
+      if (connectionFocus === attempt) connectionFocus = null;
+      if (targetCase === attempt.caseId) $("volshellConnection").open = true;
+      render();
+    }
+  }
+  function enterVolshell() {
+    if (agentActive()) { setMode("agent", true); return; }
+    setMode("volshell", true);
+    if (pending || connectionAttempt || bound()) return;
+    if (active(session()) || snapshot.busy || investigationBusy || !targetCase || !$("volshellImage").value) {
+      $("volshellConnection").open = true;
+      (active(session()) ? $("volshellCase") : $("volshellImage")).focus({preventScroll:true});
+      return;
+    }
+    connectSelected();
+  }
   function mount(options) {
     adapter = options;
     window.addEventListener("pagehide", closeStream);
-    $("consoleVolshellMode").onclick = () => setMode(agentActive() ? "agent" : "volshell", true);
+    $("consoleVolshellMode").onclick = enterVolshell;
     $("consoleOutputMode").onclick = () => { chooseCase(adapter.consoleCase()); setMode("output", true); };
     $("volshellInteractiveMode").onclick = () => setMode("volshell", true);
     $("volshellShowAgent").onclick = () => setMode("agent", true);
@@ -312,11 +347,7 @@
       rememberChoice();
     };
     $("volshellMode").onchange = rememberChoice;
-    $("volshellConnect").onclick = () => {
-      if ($("volshellConnect").disabled) return;
-      rememberChoice();
-      perform("start", {case_id:targetCase, image_id:$("volshellImage").value, mode:$("volshellMode").value});
-    };
+    $("volshellConnect").onclick = connectSelected;
     $("volshellDisconnect").onclick = () => { if (!$("volshellDisconnect").disabled) perform("close", binding()); };
     $("volshellInterrupt").onclick = () => { if (!$("volshellInterrupt").disabled) perform("interrupt", binding()); };
     $("volshellForm").onsubmit = async event => {
@@ -418,7 +449,7 @@
     hasActiveSession: () => active(session()),
     showOutput: () => { chooseCase(adapter.consoleCase()); setMode("output"); },
     opened: () => { if (monitorMode === "output") chooseCase(adapter.consoleCase()); render(); },
-    closed: () => { closeStream(); snapshot = polledSnapshot; setMode("output"); },
+    closed: () => { closeStream(); connectionFocus = null; snapshot = polledSnapshot; setMode("output"); },
     open: caseId => { chooseCase(caseId); const mode = agentActive() ? "agent" : "volshell"; setMode(mode); adapter.openMonitor(); setMode(mode, true); },
   });
 })();

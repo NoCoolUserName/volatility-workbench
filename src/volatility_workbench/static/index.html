@@ -71,7 +71,7 @@
       </aside>
       <main>
         <section class="queue" id="queueSection" hidden>
-          <div id="currentWorkHeading" class="work-heading"><h2 id="workTitle">Current work</h2>
+          <div id="currentWorkHeading" class="work-heading"><h2><button id="toggleReportConsole" type="button" aria-expanded="true" aria-controls="liveConsoleDock" title="Collapse report console"><span class="report-console-arrow" aria-hidden="true">▾</span><span id="workTitle">Current work</span></button></h2>
             <button id="stop" class="danger" disabled>Stop all work</button></div>
           <div id="activeReportProgress" hidden></div>
           <ol id="queue" aria-live="polite"></ol>
@@ -205,14 +205,19 @@
             <pre id="volshellAgentOutput" tabindex="0" role="log" aria-label="AI VolShell output" aria-live="off"></pre>
           </section>
           <section id="volshellPanel" class="crt-console-pane volshell-panel" aria-labelledby="volshellTitle" hidden>
-            <div class="volshell-heading"><h3 id="volshellTitle">VolShell</h3><div><button id="volshellShowAgent" type="button" hidden>AI activity</button><button id="collapseVolshell" type="button">Collapse</button></div></div>
-            <div class="volshell-targets">
-              <label for="volshellCase">Case<select id="volshellCase"></select></label>
-              <label for="volshellImage">Capture<select id="volshellImage"></select></label>
-              <label for="volshellMode">Operating system<select id="volshellMode"><option value="generic">Generic</option><option value="windows">Windows</option><option value="linux">Linux</option><option value="mac">macOS</option></select></label>
+            <div class="volshell-compact-heading"><h3 id="volshellTitle" class="sr-only">VolShell</h3>
+              <details id="volshellConnection" class="volshell-connection"><summary aria-label="Connection options" title="Connection options">⚙</summary>
+                <div class="volshell-targets">
+                  <label for="volshellCase">Case<select id="volshellCase"></select></label>
+                  <label for="volshellImage">Capture<select id="volshellImage"></select></label>
+                  <label for="volshellMode">Operating system<select id="volshellMode"><option value="generic">Generic</option><option value="windows">Windows</option><option value="linux">Linux</option><option value="mac">macOS</option></select></label>
+                </div>
+                <div class="volshell-session-actions"><button id="volshellConnect" type="button">Connect</button><button id="volshellInterrupt" type="button" disabled>Interrupt command</button><button id="volshellDisconnect" type="button" disabled>Disconnect</button><button id="volshellShowAgent" type="button" hidden>AI activity</button><span id="volshellStatus" role="status" aria-live="polite">Disconnected</span></div>
+                <p id="volshellBinding" class="subtle"></p>
+              </details>
+              <button id="collapseVolshell" type="button">Collapse</button>
             </div>
-            <div class="volshell-session-actions"><button id="volshellConnect" type="button">Connect</button><button id="volshellInterrupt" type="button" disabled>Interrupt command</button><button id="volshellDisconnect" type="button" disabled>Disconnect</button><span id="volshellStatus" role="status" aria-live="polite">Disconnected</span></div>
-            <p id="volshellBinding" class="subtle"></p><p id="volshellError" role="alert" hidden></p>
+            <p id="volshellError" role="alert" hidden></p>
             <label class="volshell-interaction" for="volshellInteractionMode">Mode<select id="volshellInteractionMode"><option value="manual">Manual commands</option><option value="suggestions">AI command suggestions</option><option value="investigation">AI investigation</option></select></label>
             <pre id="volshellOutput" tabindex="0" role="log" aria-label="VolShell output" aria-live="off"></pre>
             <form id="volshellForm" class="volshell-form">

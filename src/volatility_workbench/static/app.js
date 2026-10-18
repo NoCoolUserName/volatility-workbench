@@ -298,7 +298,8 @@ function coinImage(path, label) {
 }
 function reportPresentation(text, generation) {
   // Presentation only: historical Markdown/checksums remain byte-for-byte intact.
-  const lines = text.replace(/<!-- report-plugin-inventory -->[\s\S]*?<!-- \/report-plugin-inventory -->/g, "").split("\n");
+  const inventoryBlock = new RegExp("<!-- report-plugin-inventory -->[\\s\\S]*?<!-- /report-plugin-inventory -->", "g");
+  const lines = text.replace(inventoryBlock, "").split("\n");
   const section = lines.findIndex(line => line.startsWith("## "));
   const end = section < 0 ? lines.length : section;
   const preamble = lines.slice(0, end).filter(line => !line.startsWith("AI generation: "));
@@ -1578,6 +1579,13 @@ function renderLiveConsole(stream, now = Date.now()) {
   if (entries.length && pre.firstChild?.nodeType === Node.TEXT_NODE) pre.firstChild.remove();
   if (changed) pre.scrollTop = follow.checked ? pre.scrollHeight : top;
 }
+$("toggleReportConsole").onclick = () => {
+  const collapsed = !$("liveConsoleDock").hidden;
+  $("liveConsoleDock").hidden = collapsed;
+  $("toggleReportConsole").setAttribute("aria-expanded", String(!collapsed));
+  $("toggleReportConsole").title = (collapsed ? "Expand" : "Collapse") + " report console";
+  $("toggleReportConsole").querySelector(".report-console-arrow").textContent = collapsed ? "▸" : "▾";
+};
 $("retryConsole").onclick = () => { savedConsoleCache.delete(savedConsoleKey); render(); };
 function resizeConsoleView(expanded) {
   const pre = $("liveConsole"), top = pre.scrollTop, follow = $("consoleFollow").checked;
@@ -1603,7 +1611,7 @@ function resizeConsoleView(expanded) {
   renderConsoleOperation(currentConsole);
   pre.scrollTop = follow ? pre.scrollHeight : top;
   $("consoleFollow").checked = follow;
-  if (currentConsole) button.focus({preventScroll:true});
+  if (currentConsole) (!expanded && $("liveConsoleDock").hidden ? $("toggleReportConsole") : button).focus({preventScroll:true});
   else $("caseTitle").focus({preventScroll:true});
 }
 $("expandConsole").onclick = () => {
@@ -1614,7 +1622,7 @@ $("openCaseConsole").onclick = () => window.WorkbenchVolshell.open(selected);
 $("consoleZoom").addEventListener("close", () => resizeConsoleView(false));
 $("consoleZoom").addEventListener("keydown", (event) => {
   if (event.key !== "Tab" || event.defaultPrevented) return;
-  const controls = [...$("consoleZoom").querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')]
+  const controls = [...$("consoleZoom").querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), details > summary, [tabindex="0"]')]
     .filter(node => node.getClientRects().length && !node.closest("[hidden]"));
   const first = controls[0], last = controls.at(-1);
   if (!first) return;
