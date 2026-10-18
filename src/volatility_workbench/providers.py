@@ -15,6 +15,7 @@ import httpx2 as httpx
 from jsonschema import validate, ValidationError
 from .storage import atomic_json
 from .models import DEFAULT_MODEL, DEFAULT_EFFORT, model_name, reasoning_effort
+from .live_console import excerpt
 
 MAX_RESPONSE = 4 * 1024 * 1024
 MAX_TRANSCRIPT = 8 * 1024 * 1024
@@ -281,13 +282,13 @@ class CompatibleClient:
                     if call['id'] in seen:
                         raise ProviderError('Duplicate provider tool-call ID; no duplicate tool was executed')
                     seen.add(call['id'])
-                    await event('provider_tool_started', {'tool': name, 'call_id': call['id']})
+                    await event('provider_tool_started', {'tool': name, 'call_id': call['id'], 'arguments':excerpt(args,2000)})
                     result = await execute(name, args)
                     encoded = json.dumps(result)
                     if len(encoded.encode()) > MAX_TOOL_RESULT:
                         encoded = json.dumps({'error': 'Tool response exceeds the 1.05 MB provider limit. Query a smaller bounded page; saved outputs remain intact.', 'truncated': True})
                     messages.append({'role': 'tool', 'tool_call_id': call['id'], 'content': encoded})
-                    await event('provider_tool_completed', {'tool': name, 'call_id': call['id']})
+                    await event('provider_tool_completed', {'tool': name, 'call_id': call['id'], 'output':excerpt(encoded)})
                     save()
             raise ProviderError('Tool-round limit reached (16); completed evidence is retained')
         except BaseException:

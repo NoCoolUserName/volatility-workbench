@@ -28,6 +28,7 @@ from .credentials import CredentialStore
 from .models import codex_models, same_model_settings
 from . import generation
 from . import plugin_speeds
+from . import live_console
 from .storage import Bundle, atomic_json, delete_report_bundle, now, private_dir, read_chunk, safe_file, uid
 
 MAX_JOB_PLUGIN_RUNS = 500
@@ -138,6 +139,8 @@ class Workbench:
 
     def event(self, case, kind, detail):
         entry = {'id':uid(),'time':now(),'kind':kind,'detail':detail}
+        if self.active and self.active.get('id') and self.active['case_id']==case['id']:
+            entry['job_id']=self.active['id']
         path = self.directory(case) / 'activity.jsonl'
         with path.open('a') as stream:
             stream.write(json.dumps(entry) + '\n')
@@ -834,6 +837,9 @@ REPORT_SPEC follows:\n'''+spec
                 case['messages'].append(message)
             message['text']+=params.get('delta','')
             # Persist at item completion, avoiding one disk rewrite per token.
+        elif method=='item/mcpToolCall/progress':
+            if self.active and self.active['case_id']==case['id'] and params.get('turnId')==self.active.get('turn_id'):
+                self.event(case,'tool_progress',{'message':live_console.excerpt(params.get('message','')),'turn_id':params.get('turnId')})
         elif method in ('item/started','item/completed'):
             item=params.get('item',{})
             if item.get('type') in ('reasoning','userMessage'):return
@@ -843,11 +849,11 @@ REPORT_SPEC follows:\n'''+spec
                     if existing is None:case['messages'].append({'role':'assistant','text':item.get('text',''),'time':now(),'item_id':item.get('id')})
                     self.save()
                 return
-            self.event(case,method,item)
+            self.event(case,method,{**item,'turn_id':params.get('turnId')})
             if self.active:
                 self.active['progress']=item.get('tool') or item.get('type','Codex activity')
         elif method=='error':
-            self.event(case,'agent_error',params)
+            self.event(case,'agent_error',{**params,'turn_id':params.get('turnId')})
 
     async def agent_request(self,message):
         params=message.get('params',{})
@@ -856,13 +862,16 @@ REPORT_SPEC follows:\n'''+spec
             raise ValueError('Request is not for the active case')
         method=message['method']
         if method=='item/tool/call':
+            self.event(case,'local_tool_started',{'tool':params['tool'],'arguments':live_console.excerpt(params.get('arguments',{}),2000),'turn_id':params.get('turnId')})
             try:
                 task=asyncio.create_task(asyncio.to_thread(self.dynamic,case,params['tool'],params['arguments']))
                 self.dynamic_tasks.add(task)
                 task.add_done_callback(self.dynamic_tasks.discard)
                 result=await asyncio.shield(task)
+                self.event(case,'local_tool_completed',{'tool':params['tool'],'output':live_console.excerpt(result),'turn_id':params.get('turnId')})
                 return {'success':True,'contentItems':[{'type':'inputText','text':json.dumps(result)}]}
             except Exception as exc:
+                self.event(case,'local_tool_completed',{'tool':params['tool'],'output':live_console.excerpt(str(exc)),'turn_id':params.get('turnId')})
                 return {'success':False,'contentItems':[{'type':'inputText','text':str(exc)}]}
         supported={'item/commandExecution/requestApproval','item/fileChange/requestApproval','item/tool/requestUserInput','mcpServer/elicitation/request'}
         if method not in supported:
@@ -1052,7 +1061,8 @@ REPORT_SPEC follows:\n'''+spec
                 encoded=json.dumps(event['detail'])
                 if len(encoded)>12000:
                     event['detail']={'preview':encoded[:12000],'truncated':True,'complete_record':'activity.jsonl in the private case directory'}
-        return {**view,'plugin_speed_summary':plugin_speeds.summary(self.plugin_speed_history),
+        console=live_console.snapshot(self.active,self.case(self.active['case_id']).get('activity',[])) if self.active else None
+        return {**view,'live_console':console,'plugin_speed_summary':plugin_speeds.summary(self.plugin_speed_history),
             'report_cleanup_cases':list(self.report_cleanup),'default_provider':self.provider['provider'],'account':self.account,'active_job':self.active['id'] if self.active else None,
             'evidence_root':str(self.config.evidence_root),'state_dir':str(self.root),
             'native_picker':platform.system()=='Darwin',

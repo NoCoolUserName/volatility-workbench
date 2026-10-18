@@ -170,6 +170,12 @@
         <section class="queue" id="queueSection" hidden>
           <h2>Current work</h2>
           <ol id="queue" aria-live="polite"></ol>
+          <section id="liveConsoleSection" class="live-console-section" hidden aria-labelledby="liveConsoleTitle">
+            <div class="live-console-heading"><h3 id="liveConsoleTitle">Live investigation console</h3>
+              <label class="check"><input id="consoleFollow" type="checkbox" checked> Follow output</label></div>
+            <p id="consoleNote" class="subtle">Read-only tool output. Scroll up to pause following. Full plugin results remain available in Evidence.</p>
+            <pre id="liveConsole" tabindex="0" role="log" aria-label="Live investigation console" aria-live="off"></pre>
+          </section>
         </section>
       </main>
     </div>

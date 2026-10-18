@@ -153,6 +153,15 @@ saved evidence, and reports are unaffected.
    the connection status and is disabled when no work is queued or running.
    The **Current work** panel appears only while jobs are queued, running, or
    stopping; completed and failed job history remains in the case's Activity tab.
+   During report generation/update, a **Live investigation console** shows actual
+   tool starts, progress notifications and returned text as they arrive through
+   the provider connection. This read-only terminal-style panel uses the theme's
+   background and accent color. It has no shell or input forwarding. Tool output
+   arrives only when emitted; a long-running plugin may be quiet until completion.
+   Scroll up to pause following, or enable **Follow output** to return to the
+   bottom. The recent window is bounded; full plugin results remain in Evidence.
+   Entries are isolated to the active job/turn and render as plain text. The
+   console does not expose model reasoning or raw protocol/credential traffic.
    Completed artifacts remain, and interrupted jobs/drafts are marked incomplete. An app
    restart marks unfinished jobs incomplete; it never automatically restarts them.
    Explicitly queue a new question/report operation to continue a saved completed
