@@ -17,3 +17,12 @@ Playwright as separate opt-in profiles. At build time, check package requirement
 `vol -h`, the core plugin inventory and Workbench's import-failure display. Use
 harmless fixtures for runtime plugin checks; import success alone does not prove
 image compatibility. The UI must not silently install plugin dependencies.
+
+The requested future app/container plugin baseline is core's versioned
+`community-2026-10` profile: PteMalfind/Ptenum, ImgMalfind, Prefetch, AnyDesk,
+EVTXLog, Browser History Extractor and KeePass (plus ApiSearch support). Extend
+that single core inventory for later additions; do not create a Workbench copy
+of its installer or plugin implementations. The profile is locally installable
+now. Two upstream source redistribution licenses remain unresolved; future public
+bundles must resolve permissions/GPL obligations or retain explicit operator
+fetch-on-install. See [the core profile](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COMMUNITY_PLUGINS.md).

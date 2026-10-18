@@ -9,7 +9,7 @@ description = "Local case and report application powered by volatility-mcp"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-dependencies = ["volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@e9d9e12021c8ff51940beb810e0bbd95b69f4be6"]
+dependencies = ["volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@e3a74a6e7861b66c6074510093d8b520f6657e16"]
 
 [project.scripts]
 volatility-workbench = "volatility_workbench.cli:main"
