@@ -64,6 +64,8 @@ const narrative='# Synthetic report\n## Technical findings\n'+
     assert.ok(before.y>3000,'Fixture starts deep in the report');
     await link.click();
     await back.waitFor({state:'visible'});
+    assert.ok(Math.abs(await page.locator('#evidence').evaluate(node=>node.getBoundingClientRect().top))<=2,
+      'Evidence opens at its beginning even when the linked artifact is tall');
     assert.ok(await back.evaluate(node=>document.activeElement===node),'Return action receives keyboard focus');
     assert.match(await page.locator('#artifactView').innerText(),/"index": 7/);
     assert.ok((await back.boundingBox()).y>=0,'Return action is in the viewport');

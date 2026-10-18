@@ -90,7 +90,7 @@ async function visitReportEvidence(source, open) {
   reportReturn = point;
   $("reportReturn").hidden = false;
   $("backToReport").focus({preventScroll:true});
-  $("reportReturn").scrollIntoView({block:"start", behavior:"instant"});
+  $("evidence").scrollIntoView({block:"start", behavior:"instant"});
 }
 function restoreReportPosition() {
   const point = reportReturn;
