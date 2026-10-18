@@ -942,6 +942,8 @@ function showReportPlugins(version) {
 function reportProgress(job) {
   const root = el("div");
   const title = el("h3", job?.status === "stopping" ? "Stopping report…" : "Report running…");
+  const heading = el("div", undefined, "report-progress-heading");
+  heading.append(title);
   const stage = el("p", job?.progress ? "Current step: " + readableTime(job.progress) : "Preparing the report.", "subtle");
   const planned = job?.planned_plugins || [];
   const completed = [...(job?.completed_plugins || [])];
@@ -971,7 +973,7 @@ function reportProgress(job) {
       : "Investigating and writing the report. The plugin plan is adaptive, so completion time cannot yet be estimated.";
   }
   progress.setAttribute("aria-label", "Estimated plugin work");
-  root.append(title, stage, progress, note);
+  root.append(heading, stage, progress, note);
   return root;
 }
 function renderRunningReport(version) {
@@ -1289,13 +1291,18 @@ function render() {
   const reportJob = pending.find(j => j.id === state.active_job && ["report", "update"].includes(j.kind)) ||
     pending.find(j => ["running", "stopping"].includes(j.status) && ["report", "update"].includes(j.kind));
   const activeProgress = $("activeReportProgress");
+  const stopWasFocused = document.activeElement === $("stop");
   activeProgress.hidden = !reportJob;
   const progressKey = reportJob ? JSON.stringify([reportJob.id, reportJob.status, reportJob.progress,
     reportJob.planned_plugins, reportJob.completed_plugins, state.plugin_speed_summary]) : "";
   if (shownReportProgress !== progressKey) {
+    $("currentWorkHeading").append($("stop"));
     activeProgress.replaceChildren(...(reportJob ? [reportProgress(reportJob)] : []));
     shownReportProgress = progressKey;
   }
+  const stopHost = reportJob ? activeProgress.querySelector(".report-progress-heading") : $("currentWorkHeading");
+  if ($("stop").parentElement !== stopHost) stopHost.append($("stop"));
+  if (stopWasFocused && pending.length) $("stop").focus({preventScroll:true});
   const queueItems = pending.map(j => ({
     id: j.id,
     title: state.cases.find(c => c.id === j.case_id)?.title || j.case_id,

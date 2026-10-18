@@ -28,7 +28,6 @@
       <div class="header-controls">
         <a class="settings-link" href="/settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M10.2 2h3.6l.5 2.3 1.4.6 2-1.3 2.5 2.5-1.3 2 .6 1.4 2.3.5v3.6l-2.3.5-.6 1.4 1.3 2-2.5 2.5-2-1.3-1.4.6-.5 2.3h-3.6l-.5-2.3-1.4-.6-2 1.3-2.5-2.5 1.3-2-.6-1.4-2.3-.5v-3.6l2.3-.5.6-1.4-1.3-2 2.5-2.5 2 1.3 1.4-.6.5-2.3z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a>
         <span id="connection">Connecting…</span>
-        <button id="stop" class="danger" disabled>Stop all work</button>
       </div>
     </header>
     <div class="skin-scene" aria-hidden="true"></div>
@@ -70,7 +69,8 @@
       </aside>
       <main>
         <section class="queue" id="queueSection" hidden>
-          <h2>Current work</h2>
+          <div id="currentWorkHeading" class="work-heading"><h2>Current work</h2>
+            <button id="stop" class="danger" disabled>Stop all work</button></div>
           <div id="activeReportProgress" hidden></div>
           <ol id="queue" aria-live="polite"></ol>
           <section id="liveConsoleSection" class="live-console-section" hidden aria-labelledby="liveConsoleTitle">

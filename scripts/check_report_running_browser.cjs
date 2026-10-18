@@ -23,6 +23,7 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     await page.route('http://localhost/**',async route=>{
       const u=new URL(route.request().url());
       if(u.pathname==='/api/state')return route.fulfill({json:state});
+      if(u.pathname==='/api/stop'){calls.push('stop');return route.fulfill({json:{ok:true}});}
       if(u.pathname==='/api/jobs'){
         calls.push(route.request().postDataJSON());
         if(holdSubmission)await new Promise(resolve=>releaseSubmission=resolve);
@@ -50,14 +51,23 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     assert.equal(await active.getByRole('progressbar').evaluate(node=>{const box=node.getBoundingClientRect();return box.top>=0&&box.bottom<=innerHeight;}),true,'Progress appears in the initial viewport');
     assert.match(await page.locator('#reportView').innerText(),/Saved synthetic paragraph 89/,'Existing sealed report remains fully accessible while the update starts');
     assert.equal(await page.getByRole('progressbar').count(),1,'One progress indicator for the active update');
+    const stop=page.getByRole('button',{name:'Stop all work',exact:true});
+    assert.equal(await stop.count(),1,'Only one global stop control');
+    assert.equal(await stop.evaluate(node=>node.parentElement.classList.contains('report-progress-heading')),true,'Stop sits beside Report running');
+    assert.equal(await stop.evaluate(node=>{const button=node.getBoundingClientRect(),title=node.previousElementSibling.getBoundingClientRect();return button.left>=title.right&&Math.abs((button.top+button.bottom-title.top-title.bottom)/2)<2;}),true,'Stop is aligned to the right of the report title');
     assert.equal(calls.filter(item=>item==='saved-file').length,1);
     await page.locator('#focus').fill('Unsubmitted synthetic focus');
     await page.locator('#focus').focus();
     await active.getByRole('progressbar').evaluate(node=>window.syntheticProgressNode=node);
+    await stop.evaluate(node=>window.syntheticStopNode=node);
     await page.evaluate(()=>refresh());
     assert.equal(await active.getByRole('progressbar').evaluate(node=>node===window.syntheticProgressNode),true,'Polling preserves the running animation node');
+    assert.equal(await stop.evaluate(node=>node===window.syntheticStopNode),true,'Polling preserves the stop control');
     assert.equal(await page.locator('#focus').evaluate(node=>node===document.activeElement),true,'Progress polling preserves input focus');
     assert.equal(await page.locator('#focus').inputValue(),'Unsubmitted synthetic focus');
+    await stop.focus();job.progress='Preparing synthetic draft';
+    await page.evaluate(()=>refresh());
+    assert.equal(await stop.evaluate(node=>node===document.activeElement),true,'Progress changes preserve keyboard access to Stop');
     job.report_id=version.id;job.progress='Investigating with Codex';
     state.cases[0].reports.push(version);
     await page.reload();
@@ -89,13 +99,17 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     await active.getByRole('heading',{name:'Stopping report…'}).waitFor();
     assert.equal(await active.getByRole('progressbar').isVisible(),true,'Initial-generation stop state still exposes progress without a draft');
     assert.match(await active.innerText(),/plugin plan is adaptive/,'Unknown initial plan has an honest indeterminate estimate');
+    assert.equal(await stop.isDisabled(),true,'Stopping state disables repeat stop');
     job.kind='readiness';job.status='running';
     await page.evaluate(()=>refresh());
     assert.equal(await page.locator('#queueSection').isVisible(),true);
     assert.equal(await active.isHidden(),true,'Readiness does not show fake report progress');
     assert.equal(await page.getByRole('progressbar').count(),0);
+    assert.equal(await stop.evaluate(node=>node.parentElement.id),'currentWorkHeading','Nonreport work retains access to global stop');
+    await stop.click();assert.equal(calls.filter(item=>item==='stop').length,1,'Relocated stop retains its action');
     job.status='completed';await page.evaluate(()=>refresh());
     assert.equal(await page.locator('#queueSection').isHidden(),true,'Idle work panel hides');
+    assert.equal(await stop.isHidden(),true,'Idle stop control hides with Current work');
     job.kind='update';job.status='failed';job.report_id=null;job.error='Synthetic transport failure before a draft was created.';
     state.cases[0].activity.push({time:'2026-10-18T12:01:00Z',kind:'job_failed',detail:{error:job.error}});
     await page.evaluate(()=>refresh());

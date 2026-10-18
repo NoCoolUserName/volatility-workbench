@@ -541,6 +541,10 @@ and durations use a six-second indeterminate sweep (twelve seconds for a full
 back-and-forth cycle). The console remains a
 bounded read-only feed of tool events, not an interactive shell.
 
+Stop all work sits beside Report running (or Stopping report) during report work.
+For other queued/active tasks it sits beside Current work. The same global stop
+control is retained across progress updates and hides with the work panel at idle.
+
 The latest failed or interrupted report request has a dismissible notice above the
 case, with its recorded error and a link to Activity & failures. This also covers
 failure before any draft exists. A new request replaces that notice; old sealed
