@@ -112,5 +112,9 @@ class BackendHostTests(unittest.TestCase):
                     host.app.settings_manager.busy=True
                     self.assertTrue(host.activity()['maintenance'])
                     host.app.settings_manager.busy=False;host.app.state['jobs']=[]
+                    host.app.volshell=SimpleNamespace(busy=True)
+                    self.assertTrue(host.activity()['active'],'An interactive shell protects native quit even without a job')
+                    host.app.volshell.busy=False
+                    self.assertFalse(host.activity()['active'])
                 finally:host.shutdown()
                 self.assertFalse(host.thread.is_alive());self.assertEqual(FakeWorkbench.closes,1)

@@ -91,10 +91,11 @@ class CompatibleClient:
         self.transport = transport  # test injection; not user configurable
 
     async def request(self, messages, tools):
-        payload = {'model': self.config['model'], 'messages': messages, 'stream': False,
-                   'tools': [{'type': 'function', 'function': {'name': t['name'],
+        payload = {'model': self.config['model'], 'messages': messages, 'stream': False}
+        if tools:
+            payload.update({'tools': [{'type': 'function', 'function': {'name': t['name'],
                        'description': t.get('description', '')[:8000], 'parameters': t['inputSchema']}} for t in tools],
-                   'tool_choice': 'auto'}
+                            'tool_choice': 'auto'})
         if self.config.get('reasoning_effort'):
             payload['reasoning_effort'] = self.config['reasoning_effort']
         encoded = json.dumps(payload).encode()

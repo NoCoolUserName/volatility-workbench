@@ -37,7 +37,8 @@ def event_text(event):
     if kind == 'job_started':
         return str(detail.get('kind', 'Report')) + ' started'
     if kind in ('job_completed', 'job_failed', 'job_incomplete'):
-        return 'Report ' + kind.removeprefix('job_') + (': ' + excerpt(detail['error']) if detail.get('error') else '')
+        label = 'Investigation' if detail.get('kind') == 'question' else 'Report'
+        return label + ' ' + kind.removeprefix('job_') + (': ' + excerpt(detail['error']) if detail.get('error') else '')
     if kind in ('local_tool_started', 'provider_tool_started'):
         return '> ' + str(detail.get('tool', 'tool')) + '\n' + excerpt(detail.get('arguments', {}), 2000)
     if kind in ('local_tool_completed', 'provider_tool_completed'):
@@ -57,8 +58,8 @@ def event_text(event):
     return None
 
 
-def snapshot(job, activity):
-    if not job or job.get('kind') not in ('report', 'update'):
+def snapshot(job, activity, *, include_question=False):
+    if not job or job.get('kind') not in (('report', 'update', 'question') if include_question else ('report', 'update')):
         return None
     entries, size, dropped = deque(), 0, 0
     for event in activity:

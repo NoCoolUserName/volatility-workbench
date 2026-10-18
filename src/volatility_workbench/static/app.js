@@ -162,6 +162,7 @@ function updateBackToTop() {
 }
 async function job(kind, text = "") {
   if (!selected) throw Error("Select a case");
+  if (window.WorkbenchVolshell.hasActiveSession()) throw Error("Disconnect VolShell before starting investigation work.");
   const caseId = selected;
   await api("jobs", {
     case_id: caseId,
@@ -1285,6 +1286,8 @@ function operationLabel(job, now = Date.now()) {
 function render() {
   if (!state) return;
   const renderedAt = Date.now();
+  window.WorkbenchVolshell.update(state, selected);
+  const shellActive = window.WorkbenchVolshell.hasActiveSession();
   const connectedProvider = state.account.provider || (state.account.type ? "codex" : state.default_provider);
   $("connection").textContent = state.account.connected
     ? (connectedProvider === "compatible"
@@ -1323,7 +1326,7 @@ function render() {
     $("readiness").textContent = checking
       ? readinessJob?.status === "queued" ? "Queued…" : readinessJob?.status === "stopping" ? "Stopping…" : "Checking…"
       : ready ? c.readiness.status : "Check Readiness";
-    $("readiness").disabled = checking;
+    $("readiness").disabled = checking || shellActive;
     $("readiness").classList.toggle("is-ready", ready && !checking);
     $("readiness").setAttribute("aria-busy", String(checking));
     $("readiness").title = ready ? "Run readiness checks again" : "Check this case's readiness";
@@ -1362,8 +1365,9 @@ function render() {
         .map((r) => el("p", r, "subtle")),
     );
     const hasSealedReport = c.reports.some(r => r.status === "sealed" && !r.deleted_at);
-    $("report").disabled = !ready;
-    $("update").disabled = !ready || !hasSealedReport;
+    $("report").disabled = !ready || shellActive;
+    $("update").disabled = !ready || !hasSealedReport || shellActive;
+    $("questionForm").querySelector("button").disabled = shellActive;
     $("report").classList.toggle("primary", !hasSealedReport);
     $("update").classList.toggle("primary", hasSealedReport);
     const first = hasSealedReport ? $("update") : $("report"), second = hasSealedReport ? $("report") : $("update");
@@ -1480,7 +1484,7 @@ function renderReportFailure(c) {
   if (!visible) { shownReportFailure = ""; return; }
   const ready = ["Ready", "Ready with limitations"].includes(c.readiness.status);
   const busy = state.jobs.some(j => j.case_id === c.id && ["queued", "running", "stopping"].includes(j.status));
-  const blocked = !ready || busy || rerunningReportFailures.has(latest.id) || state.report_cleanup_cases?.includes(c.id);
+  const blocked = !ready || busy || window.WorkbenchVolshell.hasActiveSession() || rerunningReportFailures.has(latest.id) || state.report_cleanup_cases?.includes(c.id);
   const key = JSON.stringify([latest.id, latest.kind, latest.status, latest.error, !!blocked]);
   if (shownReportFailure === key) return;
   shownReportFailure = key;
@@ -1537,8 +1541,9 @@ function renderConsoleOperation(stream, now = Date.now()) {
 function renderLiveConsole(stream, now = Date.now()) {
   currentConsole = stream;
   const pre = $("liveConsole");
-  if ($("consoleZoom").open && (!stream || stream.job_id !== consoleJob)) $("consoleZoom").close();
+  if ($("consoleZoom").open && consoleJob && !window.WorkbenchVolshell.isShellMode() && (!stream || stream.job_id !== consoleJob)) $("consoleZoom").close();
   renderConsoleOperation(stream, now);
+  $("emptyConsole").hidden = !!stream;
   $("liveConsoleSection").hidden = !stream;
   if (!stream) { consoleJob = null; consoleNodes.clear(); pre.replaceChildren(); return; }
   const follow = $("consoleFollow");
@@ -1578,7 +1583,7 @@ function resizeConsoleView(expanded) {
   const pre = $("liveConsole"), top = pre.scrollTop, follow = $("consoleFollow").checked;
   const button = $("expandConsole"), dialog = $("consoleZoom");
   if (expanded) {
-    if (!currentConsole || dialog.open || button.getAttribute("aria-expanded") === "true") return;
+    if ((!currentConsole && !caseNow()) || dialog.open || button.getAttribute("aria-expanded") === "true") return;
     consolePagePosition = window.scrollY;
     $("expandedConsoleHost").append($("liveConsoleSection"));
     document.body.classList.add("console-zoom-open");
@@ -1592,6 +1597,7 @@ function resizeConsoleView(expanded) {
     button.setAttribute("aria-expanded", "false");
     if (consolePagePosition !== null) window.scrollTo({top:consolePagePosition, behavior:"instant"});
     consolePagePosition = null;
+    window.WorkbenchVolshell.closed();
   }
   renderConsoleOperation(currentConsole);
   pre.scrollTop = follow ? pre.scrollHeight : top;
@@ -1601,13 +1607,16 @@ function resizeConsoleView(expanded) {
 }
 $("expandConsole").onclick = () => {
   if ($("consoleZoom").open) $("consoleZoom").close();
-  else resizeConsoleView(true);
+  else { window.WorkbenchVolshell.showOutput(); resizeConsoleView(true); }
 };
+$("openCaseConsole").onclick = () => window.WorkbenchVolshell.open(selected);
 $("consoleZoom").addEventListener("close", () => resizeConsoleView(false));
 $("consoleZoom").addEventListener("keydown", (event) => {
-  if (event.key !== "Tab") return;
-  const controls = [...$("consoleZoom").querySelectorAll('button:not(:disabled), input:not(:disabled), [tabindex="0"]')];
+  if (event.key !== "Tab" || event.defaultPrevented) return;
+  const controls = [...$("consoleZoom").querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')]
+    .filter(node => node.getClientRects().length && !node.closest("[hidden]"));
   const first = controls[0], last = controls.at(-1);
+  if (!first) return;
   if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
   else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
 });
@@ -1963,6 +1972,15 @@ $("backToTop").onclick = () => window.scrollTo({top:0,
   behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"});
 window.addEventListener("scroll", updateBackToTop, {passive:true});
 window.addEventListener("resize", updateBackToTop);
+window.WorkbenchVolshell.mount({api, refresh, formatOperation: operationLabel, formatTime: readableTime,
+  hasConsole: () => !!currentConsole, openMonitor: () => resizeConsoleView(true),
+  showApprovals: caseId => {
+    $("volshellApprovalNotice").textContent = "AI investigation needs your decision. Review the pending approval below; the VolShell session remains connected.";
+    $("volshellApprovalNotice").hidden = false;
+    choose(caseId);
+    $("approvals").scrollIntoView({block:"center"});
+  },
+});
 document
   .querySelectorAll("[data-tab]")
   .forEach((b) => (b.onclick = () => setTab(b.dataset.tab)));

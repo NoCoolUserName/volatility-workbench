@@ -111,7 +111,7 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   assert.equal(await zoom.isHidden(),true,'Escape closes the monitor');
   await expectConsoleOperation('');
   assert.equal(await page.locator('body').evaluate(node=>node.classList.contains('console-zoom-open')),false);
-  for(const theme of ['matrix','blue','8-bit','fallout-2']){
+  for(const theme of ['matrix','blue','8-bit','fallout-new-vegas','fallout-2']){
    if(await page.locator('#theme').isHidden())await page.locator('#toggleTheme').click();
    await page.locator('#theme').selectOption(theme);
    await expand.click();await zoom.waitFor();
@@ -129,6 +129,14 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
    assert.equal(await pre.evaluate(node=>getComputedStyle(node).color),await page.locator('header a').evaluate(node=>getComputedStyle(node).color));
    if(theme==='matrix'&&process.env.WORKBENCH_CRT_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_CRT_SCREENSHOT});
    if(theme==='fallout-2'&&process.env.WORKBENCH_FALLOUT_CRT_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_FALLOUT_CRT_SCREENSHOT});
+   if(theme==='fallout-new-vegas'){
+    if(process.env.WORKBENCH_NEW_VEGAS_CRT_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_NEW_VEGAS_CRT_SCREENSHOT});
+    await page.setViewportSize({width:320,height:844});
+    assert.equal(await zoom.evaluate(node=>node.scrollWidth<=node.clientWidth+1),true,'New Vegas output CRT fits the narrow viewport');
+    assert.ok((await pre.boundingBox()).height>200,'New Vegas sign preserves a usable output area');
+    if(process.env.WORKBENCH_NEW_VEGAS_CRT_MOBILE_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_NEW_VEGAS_CRT_MOBILE_SCREENSHOT});
+    await page.setViewportSize({width:1400,height:1000});
+   }
    await expand.click();await page.waitForFunction(()=>document.querySelector('#expandConsole').getAttribute('aria-expanded')==='false');
   }
   await page.setViewportSize({width:2560,height:1440});

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/themes.css" />
     <script src="/themes.js"></script>
+    <script src="/volshell.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
   <body>
@@ -37,6 +38,7 @@
       require human review.
     </div>
     <div id="error" role="alert" hidden></div>
+    <p id="volshellApprovalNotice" role="status" hidden></p>
     <div class="layout">
       <aside>
         <h2>Cases</h2>
@@ -117,6 +119,7 @@
               <button id="readiness" class="badge" aria-describedby="readyDetails">Check Readiness</button>
               <span id="readinessProgress" class="subtle" role="status" aria-live="polite"></span>
               <span id="readyDetails" class="subtle"></span>
+              <button id="openCaseConsole" type="button">Console / VolShell</button>
             </div>
           </div>
           <div id="images"></div>
@@ -189,10 +192,44 @@
     </footer>
     <dialog id="consoleZoom" class="console-zoom" aria-labelledby="liveConsoleTitle">
       <div class="crt-monitor">
+        <div class="vegas-lamps" aria-hidden="true"><span class="vegas-lamps-top"></span><span class="vegas-lamps-bottom"></span><span class="vegas-lamps-left"></span><span class="vegas-lamps-right"></span></div>
+        <div class="crt-vegas-sign" aria-hidden="true"><span class="vegas-star"></span><span class="vegas-welcome"><i>W</i><i>E</i><i>L</i><i>C</i><i>O</i><i>M</i><i>E</i></span></div>
         <div class="crt-top-vents" aria-hidden="true"></div>
-        <div class="crt-recess"><div id="expandedConsoleHost" class="crt-screen"></div></div>
-        <div class="crt-chin" aria-hidden="true"><span class="crt-brand">WORKBENCH <span>MONOCHROME DISPLAY</span></span>
-          <span class="crt-bottom-vents"></span><span class="crt-power"><i></i> <span id="consolePowerText">LIVE</span></span></div>
+        <div class="crt-recess"><div class="crt-screen">
+          <div id="expandedConsoleHost" class="crt-console-pane"><div id="emptyConsole" hidden><h3 id="emptyConsoleTitle">Investigation output</h3><p>No live or saved investigation output is available. Select VolShell to open an interactive session for a registered capture.</p><button id="collapseEmptyConsole" type="button">Collapse</button></div></div>
+          <section id="volshellPanel" class="crt-console-pane volshell-panel" aria-labelledby="volshellTitle" hidden>
+            <div class="volshell-heading"><h3 id="volshellTitle">VolShell</h3><button id="collapseVolshell" type="button">Collapse</button></div>
+            <div class="volshell-targets">
+              <label for="volshellCase">Case<select id="volshellCase"></select></label>
+              <label for="volshellImage">Capture<select id="volshellImage"></select></label>
+              <label for="volshellMode">Operating system<select id="volshellMode"><option value="generic">Generic</option><option value="windows">Windows</option><option value="linux">Linux</option><option value="mac">macOS</option></select></label>
+            </div>
+            <div class="volshell-session-actions"><button id="volshellConnect" type="button">Connect</button><button id="volshellInterrupt" type="button" disabled>Interrupt command</button><button id="volshellDisconnect" type="button" disabled>Disconnect</button><span id="volshellStatus" role="status" aria-live="polite">Disconnected</span></div>
+            <p id="volshellBinding" class="subtle"></p><p id="volshellError" role="alert" hidden></p>
+            <label class="volshell-interaction" for="volshellInteractionMode">Mode<select id="volshellInteractionMode"><option value="manual">Manual commands</option><option value="suggestions">AI command suggestions</option><option value="investigation">AI investigation</option></select></label>
+            <pre id="volshellOutput" tabindex="0" role="log" aria-label="VolShell output" aria-live="off"></pre>
+            <form id="volshellForm" class="volshell-form">
+              <label for="volshellInput">Command</label>
+              <div class="volshell-command"><div id="volshellGhost" class="volshell-ghost" aria-hidden="true"><span id="volshellGhostPrefix"></span><span id="volshellGhostSuffix"></span></div><textarea id="volshellInput" rows="2" spellcheck="false" autocomplete="off" autocapitalize="off" aria-autocomplete="inline" aria-describedby="volshellInputHelp volshellSuggestion" disabled></textarea></div>
+              <div class="volshell-command-actions"><button id="volshellRun" type="submit" class="primary" disabled>Run command</button><button id="volshellAccept" type="button" hidden>Accept suggestion</button></div>
+              <p id="volshellInputHelp" class="subtle">Enter runs the typed command. Shift+Enter adds a line. Tab accepts a visible suggestion; otherwise it moves focus. Never execute recovered code.</p><span id="volshellSuggestion" class="sr-only"></span>
+            </form>
+            <section id="volshellAI" class="volshell-ai" hidden>
+              <form id="volshellAIForm"><label for="volshellAIInput">Describe the command you need<textarea id="volshellAIInput" rows="2" placeholder="For example: list processes, then inspect one process"></textarea></label><button id="volshellAISubmit" type="submit">Suggest a command</button></form>
+              <p id="volshellAIStatus" class="subtle" role="status"></p><div id="volshellProposal" hidden><pre id="volshellProposalCommand"></pre><p id="volshellProposalExplanation"></p><button id="volshellUseProposal" type="button">Use command draft</button></div>
+              <p class="subtle">AI only proposes a command. Review the draft and select Run command to execute it.</p>
+            </section>
+            <section id="volshellInvestigation" class="volshell-investigation" hidden>
+              <form id="volshellInvestigationForm"><label for="volshellInvestigationInput">Ask AI to investigate this case<textarea id="volshellInvestigationInput" rows="2" placeholder="Describe the evidence question to investigate"></textarea></label><button id="volshellInvestigate" type="submit" class="primary">Start AI investigation</button></form>
+              <div class="volshell-session-actions"><span id="volshellInvestigationStatus" role="status"></span><button id="volshellStopAI" type="button" class="danger" hidden>Stop all work</button></div>
+              <p class="subtle">AI runs case investigation tools. Manual shell input is paused during AI work. Stop all work ends the investigation and disconnects VolShell.</p>
+              <pre id="volshellInvestigationOutput" tabindex="0" role="log" aria-label="AI investigation tool output" aria-live="off"></pre><div id="volshellInvestigationMessages" aria-label="AI investigation response"></div>
+            </section>
+          </section>
+        </div></div>
+        <div class="crt-chin"><span class="crt-brand" aria-hidden="true">WORKBENCH <span>MONOCHROME DISPLAY</span></span>
+          <div class="crt-mode-controls"><button id="consoleOutputMode" type="button" aria-pressed="true" aria-controls="expandedConsoleHost">Output</button><button id="consoleVolshellMode" type="button" aria-pressed="false" aria-controls="volshellPanel"><span id="volshellLED" class="volshell-led" aria-hidden="true"></span>VolShell<span id="volshellLEDLabel" class="sr-only"> · disconnected</span></button></div>
+          <span class="crt-power" aria-hidden="true"><i></i> <span id="consolePowerText">LIVE</span></span></div>
       </div>
     </dialog>
   </body>

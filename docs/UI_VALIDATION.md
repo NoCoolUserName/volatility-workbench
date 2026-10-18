@@ -792,3 +792,34 @@ placement, mobile wrapping, expand/collapse, and clearing after job, case-stream
 completion changes. Missing or mismatched jobs and saved consoles retain no stale
 label. Matrix and Fallout 2 desktop/mobile captures were visually reviewed. The
 check made no work or external requests and did not inspect active investigations.
+
+## Interactive VolShell and New Vegas sign console — 2026-10-18
+
+The installed-wheel package smoke passed all 199 application tests, dependency
+checks and packaged asset routes. VolShell lifecycle tests use temporary synthetic
+captures and a toy interpreter: exact session/case binding, authenticated routes,
+persistent variables, multiline input, interrupts, startup failure/timeouts, output
+bounds, prompt-spoof resistance and descendant cleanup. A separate smoke launched
+the configured official Volatility 3 2.28.2 Volshell against a fresh 64 KiB zero
+fixture in generic mode and verified an interactive arithmetic command. No private
+capture or live model was used. OS-specific forensic accuracy is not established
+by this smoke; symbol availability and upstream support still apply.
+
+The three-mode browser check passed manual Tab completion versus Enter execution,
+plain-text output, inert AI drafts including clarification/empty responses, stale
+session rejection, explicit AI investigation, pending approval navigation, paused
+manual input, resume and Stop. Live/saved console, case header, picker, plugin
+catalog, report cleanup/determinations/metadata/plugins/return/running and Settings
+browser regressions also passed with synthetic fixtures.
+
+New Vegas uses scalable CSS neon letter discs, a star, aged sign trim and perimeter
+bulbs with fixed dark sockets. Its decoration stays outside the text surface. Each
+of the 31 palettes has a distinct VolShell bezel treatment; the rectangular LED
+continues to indicate actual session readiness. Desktop, 390px and 320px visual
+review caught and corrected a narrow Mode selector overflow. No flashing or
+animation is used for the decorative failed bulbs.
+
+Final theme checks passed all 31 palettes, Settings/mobile layout and CSP. The
+VolShell bezel audit measured minimum text contrast of 5.07:1 and verified distinct
+styles, keyboard focus and the ready LED. The existing live-console check also
+passed New Vegas with actual output at desktop and 320px widths.

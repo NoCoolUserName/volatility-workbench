@@ -107,6 +107,18 @@ class Handler(BaseHTTPRequestHandler):
         app=self.server.app
         if path.startswith('/api/settings/'):
             return await app.settings_manager.dispatch(path,body)
+        if path=='/api/volshell/start':
+            return await app.start_volshell(body['case_id'],body['image_id'],body.get('mode','generic'))
+        if path=='/api/volshell/input':
+            return await app.input_volshell(body['case_id'],body['session_id'],body['text'])
+        if path=='/api/volshell/interrupt':
+            return await app.volshell.interrupt(body['case_id'],body['session_id'])
+        if path=='/api/volshell/close':
+            return await app.close_volshell(body['case_id'],body['session_id'])
+        if path=='/api/volshell/suggest':
+            return await app.suggest_volshell(body['case_id'],body['session_id'],body['text'])
+        if path=='/api/volshell/investigate':
+            return app.investigate_volshell(body['case_id'],body['session_id'],body['text'],body.get('request_id'))
         if path=='/api/cases':return {'cases':app.add(body['paths'],body.get('related',False),body.get('title',''),body.get('source',''))}
         if path=='/api/jobs':return app.enqueue(body['case_id'],body['kind'],body.get('text',''),body.get('request_id'))
         if path=='/api/reports/remove':return await app.remove_report(body['case_id'],body['report_id'],body['action'])
@@ -127,6 +139,9 @@ class Handler(BaseHTTPRequestHandler):
         app=self.server.app
         one=lambda k,d='':query.get(k,[d])[0]
         if path=='/api/state':return app.snapshot()
+        if path=='/api/volshell':
+            app.case(one('case'))
+            return app.volshell_snapshot()
         if path=='/api/settings':return app.settings_manager.snapshot()
         if path=='/api/plugins':
             if one('refresh', '0') not in ('0', '1'):
@@ -157,6 +172,7 @@ class Handler(BaseHTTPRequestHandler):
                 '/settings.js':('settings.js','text/javascript; charset=utf-8'),
                 '/settings.css':('settings.css','text/css; charset=utf-8'),
                 '/themes.js':('themes.js','text/javascript; charset=utf-8'),
+                '/volshell.js':('volshell.js','text/javascript; charset=utf-8'),
                 '/themes.css':('themes.css','text/css; charset=utf-8'),
                 '/halloween-night.png':('halloween-night.png','image/png')})
             # Asset paths originate only in the package, never in request text.

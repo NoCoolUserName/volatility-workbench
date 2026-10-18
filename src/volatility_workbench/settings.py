@@ -31,6 +31,8 @@ class SettingsManager:
                 atomic_json(self.operation_path,self.operation)
 
     def require_idle(self):
+        if getattr(getattr(self.app,'volshell',None),'busy',False):
+            raise ValueError('Disconnect VolShell before changing settings')
         if self.app.active or any(j.get('status') in ('queued','running','stopping') for j in self.app.state.get('jobs',[])):
             raise ValueError('Wait for investigations and queued work to finish before changing settings')
         if self.busy: raise ValueError('Settings maintenance is already running')
@@ -63,7 +65,8 @@ class SettingsManager:
 
     async def _activate(self, config):
         """Atomic configuration change, with rollback and existing-case path preservation."""
-        if self.app.active: raise ValueError('Investigation became active; configuration activation refused')
+        if self.app.active or getattr(getattr(self.app,'volshell',None),'busy',False):
+            raise ValueError('Investigation or VolShell became active; configuration activation refused')
         backups=private_dir(self.root/'backups'/uuid.uuid4().hex)
         originals={self.config_path:self.config_path.read_bytes()}
         for case in self.app.state['cases']:

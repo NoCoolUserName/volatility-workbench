@@ -558,7 +558,49 @@ measured from the job's start, not the current tool's start. The label clears on
 collapse, job/case-stream changes and completion, and is absent from saved consoles.
 Collapse or Escape restores the inline console and focus; background page scrolling
 is locked while expanded. The view closes when its job changes. No shell
-input or additional analysis request is introduced.
+input or additional analysis request is introduced by the Output view itself.
+
+The CRT bezel also has a **VolShell** button and a small rectangular connection
+LED. Open it from a selected case even when no report console exists, select a
+registered capture and operating-system mode, then Connect. The application
+launches the configured analyzer's official Volatility 3 Volshell locally, with
+installed symbols and offline symbol lookup. The LED becomes green only when the
+interpreter reaches its input prompt. A busy or starting session is amber; an
+ended session is off. Missing symbols and startup errors remain visible.
+
+VolShell offers three explicit modes:
+
+- **Manual commands** sends the operator's Python input to Volshell. Enter submits,
+  Shift+Enter adds a line, and an empty submission completes a continued Python
+  block. Gray starter-command suggestions are editable examples: Tab fills the
+  visible suggestion, and a separate Enter executes it. Tab otherwise moves focus.
+- **AI command suggestions** sends the typed question and selected OS mode to the
+  case's configured provider in a separate session with tools disabled. It attaches
+  no memory contents or terminal transcript. The returned explanation and command
+  are inert until the operator copies, reviews, and explicitly runs the draft.
+- **AI investigation** submits a follow-up to the existing case agent, using its
+  current provider, MCP tools, saved evidence and extraction-approval workflow.
+  It preserves reports and does not create a report revision. Tool output and the
+  answer appear inside the CRT. Manual input pauses until this job finishes; the
+  idle Python session and its variables remain available afterward. Pending
+  approvals bring the operator back to the case approval controls.
+
+There is one interactive session at a time. Every input request carries its exact
+case and session identity; selecting another case cannot redirect commands or
+inherit the previous transcript. Disconnect ends the session, Interrupt interrupts
+the current Python command, and Stop all work ends both AI work and VolShell.
+Native quit and settings maintenance treat an open shell as active work. Restart
+never reconnects or replays commands automatically.
+
+This is a real local Python interpreter, not a code sandbox. Case binding selects
+the starting memory image; it does not restrict arbitrary Python to that case.
+Manual commands run with the operator's account permissions. Upstream user startup
+scripts and IPython startup configuration are disabled for this integration. The
+adapter uses the official Volshell implementation rather than duplicating forensic
+logic. It records commands/output in private `case/volshell/<session>/transcript.jsonl`
+and gives the session its own output directory. These manual transcripts are not
+automatically promoted to validated core evidence, report findings or plugin-run
+coverage. Original reports remain separate.
 
 After a report completes, fails or stops, its console remains expandable and an
 already expanded CRT stays open. The title/status changes to Saved investigation
@@ -612,3 +654,11 @@ unrelated failure reviewed. Unchecking clears that acknowledgment across snapsho
 This is a human review marker, not evidence that a failed plugin has been repaired.
 Original errors and sealed report files remain unchanged. Failed saves are shown
 inline and leave the checkbox at its previously saved value.
+
+### New Vegas console housing
+
+The Fallout: New Vegas expanded console takes its CSS housing from the weathered
+Welcome sign: neon letter discs and star, warm perimeter bulbs with several dark
+sockets, faded red lettering and aged trim. The display remains opaque and legible.
+All 31 themes give the VolShell bezel button their own treatment while retaining
+a separate rectangular connection LED and visible keyboard focus.
