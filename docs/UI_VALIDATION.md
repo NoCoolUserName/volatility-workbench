@@ -504,3 +504,32 @@ Run the optional browser check with Playwright available in Node's module path:
 set `WORKBENCH_BROWSER_EXECUTABLE` to its actual executable. This browser fixture
 simulates settings data; the real scoped MCP tests exercise backend access limits.
 Existing cases retain their saved roots and reports. No legacy manifest is rebased.
+
+
+## Finder cancellation and remaining folder assumptions — 2026-10-18
+
+Finder's normal AppleScript cancellation (`-128`) is caught at its source and
+returned as an explicit cancelled selection. The empty-result newline emitted by
+`osascript` is filtered; Cancel neither shows an error nor clears typed paths.
+Genuine picker failure remains actionable, without displaying the raw interpreter
+trace. Three picker fixtures cover cancellation, failure and successful external
+image selection with retained symlink rejection. An actual AppleScript execution
+raised `-128` in place of the dialog and passed its real stdout through the picker
+handler successfully; no native dialog or evidence was opened by that check.
+
+The single-folder audit found and repaired Finder's remaining default-only
+validator and Browse folder's fixed root. Browsing now selects only the default
+or an already registered image folder, keeps that root during child/parent
+navigation, excludes case/global outputs, and rejects traversal, symlinks and
+unregistered roots. It does not add files or widen scoped MCP access. Review
+confirmed readiness/report hashing and saved queries/coverage/citations use saved
+per-case scope; runtime/symbol changes retain case evidence roots. Standalone
+configuration still keeps its deliberate default root.
+
+The 101-test installed-wheel suite passed, followed by nine affected picker/location
+checks after the newline refinement. Offline Chromium checks passed quiet Cancel,
+preserved input, actionable real failure, external selection and registered-folder
+navigation with zero case/job submissions. Tests use synthetic files/responses;
+no real memory analysis or live model was launched. Run the optional browser check
+with Playwright available: `node scripts/check_picker_browser.cjs`; an existing
+Chromium may be selected through `WORKBENCH_BROWSER_EXECUTABLE`.

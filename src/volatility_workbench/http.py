@@ -126,7 +126,7 @@ class Handler(BaseHTTPRequestHandler):
             if one('refresh', '0') not in ('0', '1'):
                 raise ValueError('refresh must be 0 or 1')
             return await app.plugin_catalog(refresh=one('refresh', '0') == '1')
-        if path=='/api/browse':return app.browse(one('path'))
+        if path=='/api/browse':return app.browse(one('path'),one('location') or None)
         if path=='/api/artifacts':return app.artifacts(app.case(one('case')))
         if path=='/api/coverage':
             return await asyncio.to_thread(app.coverage, app.case(one('case')), one('image'),

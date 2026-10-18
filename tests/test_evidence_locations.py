@@ -88,6 +88,27 @@ class EvidenceLocationsTests(unittest.IsolatedAsyncioTestCase):
         for value in ('ui-state/derived.raw', str(nested.root / 'derived.raw')):
             with self.assertRaises(ValueError): nested.add([value])
 
+    async def test_browser_switches_registered_roots_without_expanding_case_scope(self):
+        case = self.app.add([str(self.external)])[0]
+        nested = self.external.parent / 'nested'; nested.mkdir()
+        capture = nested / 'other.raw'; capture.write_text('SYNTHETIC SECOND IMAGE')
+        listing = self.app.browse(location=str(self.external.parent))
+        self.assertEqual(listing['root'], str(self.external.parent))
+        self.assertEqual({e['name'] for e in listing['entries']}, {'capture.mem', 'not-selected.mem', 'nested'})
+        child = self.app.browse('nested', str(self.external.parent))
+        self.assertEqual(child['entries'][0]['path'], str(capture))
+        for relative, location in [('../', str(self.external.parent)), ('', str(self.root))]:
+            with self.assertRaises(ValueError): self.app.browse(relative, location)
+        linked = self.external.parent / 'escape'; linked.symlink_to(self.fixture.evidence)
+        with self.assertRaises(ValueError): self.app.browse('escape', str(self.external.parent))
+        with self.assertRaises(ValueError): self.app.case_backend(case).resolve_input(str(capture))
+        derived = self.external.parent / '_outputs'; derived.mkdir()
+        (derived / 'not-source.raw').touch()
+        with self.assertRaises(ValueError): self.app.browse('_outputs', str(self.external.parent))
+        self.assertNotIn('_outputs', {e['name'] for e in self.app.browse(location=str(self.external.parent))['entries']})
+        self.assertEqual(self.app.browse()['root'], str(self.fixture.evidence))
+        self.assertFalse((self.root / 'analysis-count.jsonl').exists())
+
     async def test_real_scoped_mcp_lists_external_images_and_rejects_sibling(self):
         case = self.app.add([str(self.external)])[0]
         transport = StdioServerParameters(command=sys.executable,

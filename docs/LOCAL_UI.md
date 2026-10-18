@@ -63,10 +63,13 @@ saved evidence, and reports are unaffected.
 1. Add existing `.raw`, `.mem`, `.vmem`, `.dmp`, `.lime`, or `.dd` files through
    path entry, evidence-folder browsing, or **Choose in Finder** on macOS. The
    native helper returns filesystem paths; the browser does not upload files.
-   Absolute selections can use different physical folders; relative paths and
-   folder browsing use the default evidence root. Selected files cannot be symlinks
+   Absolute selections can use different physical folders. Relative paths use the
+   default evidence root. Folder browsing starts there; its folder selector can
+   switch to any registered image folder. Selected files cannot be symlinks
    or application outputs. Their parent folders appear automatically under
-   Settings → Evidence locations. No automatic copying or folder scan occurs.
+   Settings → Evidence locations. Finder Cancel is a quiet no-op that preserves
+   typed paths; actual chooser failures offer path entry/folder browsing. No automatic
+   copying or folder scan occurs.
 2. Unrelated images become separate cases. Check **related captures** only when
    intentionally grouping them. Each capture keeps its own evidence ID, hash,
    discovery result, run associations, and report provenance. New cases get a
