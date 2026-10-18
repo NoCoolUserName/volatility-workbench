@@ -132,11 +132,12 @@ button:disabled {
 }
 .buttons {
   display: flex;
+  align-items: flex-start;
   gap: 8px;
   flex-wrap: wrap;
   margin: 12px 0;
 }
-.buttons input {
+.buttons textarea {
   flex: 1;
   min-width: 180px;
 }
@@ -426,21 +427,34 @@ button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); 
 /* The selected report inventory is separate from historical Markdown content. */
 .report-plugin-inventory { margin: 14px 0 24px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); }
 .report-plugin-inventory > summary { color: var(--accent); font-weight: 650; }
+.report-plugin-secondary { margin-top: 10px; }
 .report-plugin-inventory .inventory-counts { color: var(--muted); font-size: 12px; font-weight: 400; }
 .report-plugin-inventory p { margin: 8px 0; }
 .inventory-warning { color: var(--error-text); }
 .report-plugin-scroll { max-width: 100%; overflow-x: auto; margin: 12px 0; border: 1px solid var(--border); border-radius: 5px; }
 .report-plugin-scroll:focus { outline: 2px solid var(--accent); outline-offset: 3px; }
-.report-plugin-table { border-collapse: collapse; table-layout: fixed; width: 100%; min-width: 1000px; font-size: 12px; }
+.report-plugin-table { border-collapse: collapse; table-layout: fixed; width: 100%; min-width: 1100px; font-size: 12px; }
 .report-plugin-table caption { text-align: left; padding: 10px 12px; color: var(--muted); }
 .report-plugin-table th, .report-plugin-table td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
 .report-plugin-table th { color: var(--muted); }
-.report-plugin-table th:nth-child(1) { width: 16%; }
-.report-plugin-table th:nth-child(2) { width: 8%; }
-.report-plugin-table th:nth-child(3) { width: 19%; }
-.report-plugin-table th:nth-child(4) { width: 24%; }
-.report-plugin-table th:nth-child(5) { width: 23%; }
-.report-plugin-table th:nth-child(6) { width: 10%; }
+.report-plugin-used-table th:nth-child(1) { width: 13%; }
+.report-plugin-used-table th:nth-child(2) { width: 7%; }
+.report-plugin-used-table th:nth-child(3) { width: 20%; }
+.report-plugin-used-table th:nth-child(4) { width: 17%; }
+.report-plugin-used-table th:nth-child(5) { width: 18%; }
+.report-plugin-used-table th:nth-child(6) { width: 19%; }
+.report-plugin-used-table th:nth-child(7) { width: 6%; }
+.report-plugin-errors-table th:nth-child(1) { width: 20%; }
+.report-plugin-errors-table th:nth-child(2) { width: 30%; }
+.report-plugin-errors-table th:nth-child(3) { width: 9%; }
+.report-plugin-errors-table th:nth-child(4) { width: 25%; }
+.report-plugin-errors-table th:nth-child(5) { width: 16%; }
+.report-plugin-unused-table { min-width: 750px; }
+.report-plugin-unused-table th:first-child { width: 28%; }
+.report-plugin-unused-table th:nth-child(2) { width: 18%; }
+.report-plugin-unused-table th:last-child { width: 54%; }
+.report-plugin-unused-table button { width: auto; white-space: nowrap; }
 .report-plugin-table details { margin: 0 0 10px; }
+.report-plugin-table .report-plugin-provenance-details { margin: 8px 0; }
 .report-plugin-table pre { max-height: 220px; overflow: auto; margin: 8px 0; padding: 10px; }
 .report-plugin-inventory > button { margin: 4px 8px 0 0; }

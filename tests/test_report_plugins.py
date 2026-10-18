@@ -100,6 +100,12 @@ class InventoryTests(unittest.TestCase):
         self.assertFalse(result['entries'][-1]['execution_recorded'])
         denied = next(e for e in result['entries'] if e['kind'] == 'request_failure')
         self.assertIsNone(denied['run_id']); self.assertFalse(denied['execution_recorded'])
+        self.persist(result)
+        page = inventory.read(self.root, 'case', 'revision', 0, 1)
+        self.assertEqual(page['executed_plugin_names'], ['windows.pslist.PsList'])
+        self.assertEqual(len(page['errored_entries']), 2, 'Error list covers the full saved snapshot, not only the visible page')
+        self.assertEqual({e['kind'] for e in page['errored_entries']}, {'plugin_run', 'request_failure'})
+        self.assertNotIn('arguments', page['errored_entries'][0], 'Error summary does not duplicate exact command data')
 
     def test_explicit_simulations_never_become_physical_executions(self):
         self.add_run('run0', synthetic=True)

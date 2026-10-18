@@ -343,7 +343,25 @@ Workbench to load the new tool inventory, case guidance and view.
 table is derived from that report's saved bundle, rather than the current installed
 catalog or later case activity. Exact plugin names, arguments, recorded outcomes,
 image identities and run/call IDs remain inspectable, with links to the local
-supporting execution metadata. Pages keep large inventories manageable.
+supporting execution metadata. The new Quick Description column comes from the
+currently installed plugin catalog. Run provenance shows elapsed execution time
+computed from saved start/finish timestamps; Call, Started, and Finished stay
+under Details. Missing or invalid timestamps are labelled rather than estimated.
+Pages keep large inventories manageable.
+
+Below the used records, **Plugins that errored** lists saved failed runs and failed
+or denied requests, distinguishing requests that never executed a plugin. **Plugins
+not used** compares the current installed catalog with the full snapshot's recorded
+physical executions and shows each remaining plugin with an **Add to prompt** button
+and quick description. The button appends a request for that plugin to the current
+case's investigation focus without starting work. Review the accumulated focus and
+choose **Update report** when ready; that action creates the new report version.
+The focus box is multiline and vertically resizable for reviewing several requested plugins. Focus
+drafts stay separate when switching cases during the app session.
+The comparison uses all bundled records even when the used table displays one page.
+Catalog changes or partial historical metadata can affect this comparison; it is
+not a statement of image compatibility or forensic coverage. Catalog discovery
+and these lists do not run any plugins.
 
 Original saved executions can predate a report revision. Reuse receipts are not
 new scans, failed requests without a run are not successful executions, and
