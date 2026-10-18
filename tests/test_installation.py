@@ -8,8 +8,11 @@ from volatility_mcp import api
 class InstallationTests(unittest.TestCase):
     def test_assets_and_installed_contract(self):
         root=files('volatility_workbench')
-        for name in ('static/app.js','static/style.css','static/index.html','static/icon.png','templates/report.md'):
+        for name in ('static/app.js','static/style.css','static/themes.js','static/themes.css','static/theme-halloween.svg','static/halloween-night.png','static/index.html','static/icon.png','templates/report.md'):
             self.assertTrue(root.joinpath(name).read_bytes())
+        scenes=[p for p in root.joinpath('static').iterdir() if p.name.startswith('theme-') and p.name.endswith('.svg')]
+        self.assertEqual(len(scenes),30)
+        self.assertTrue(all(p.read_bytes() for p in scenes))
         self.assertIn('Executive summary',api.report_spec())
         self.assertIs(require_core(), api)
 

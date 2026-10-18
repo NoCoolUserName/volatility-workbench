@@ -42,8 +42,10 @@ assert require_core().API_VERSION == 1
 assert 'site-packages' in str(files('volatility_mcp'))
 assert 'site-packages' in str(files('volatility_workbench'))
 assert 'Executive summary' in report_spec()
-for p in ['static/app.js','static/index.html','static/style.css','static/icon.png','static/settings.html','static/settings.js','resources/symbols.json','templates/report.md']:
+for p in ['static/app.js','static/index.html','static/style.css','static/themes.js','static/themes.css','static/theme-halloween.svg','static/halloween-night.png','static/icon.png','static/settings.html','static/settings.js','resources/symbols.json','templates/report.md']:
     assert files('volatility_workbench').joinpath(p).read_bytes()
+scenes=[p for p in files('volatility_workbench').joinpath('static').iterdir() if p.name.startswith('theme-') and p.name.endswith('.svg')]
+assert len(scenes)==30 and all(p.read_bytes() for p in scenes)
 root=Path.cwd(); evidence=root/'evidence';evidence.mkdir()
 config=Config(evidence, root/'outputs', Path(sys.executable),Path(sys.executable),cache_path=root/'cache',enable_xpnet=False)
 path=root/'config.json';path.write_text(json.dumps(config.to_dict()))
@@ -62,7 +64,8 @@ async def main():
     worker=threading.Thread(target=server.serve_forever,daemon=True);worker.start()
     def check():
         opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        for path in ['/','/app.js','/style.css','/icon.png','/settings.html','/settings.js','/settings.css','/api/state']:
+        paths=['/','/app.js','/style.css','/themes.js','/themes.css','/halloween-night.png','/icon.png','/settings.html','/settings.js','/settings.css','/api/state']+['/'+p.name for p in scenes]
+        for path in paths:
             request=urllib.request.Request(server.origin+path,headers={'Cookie':'volatility_ui='+server.token})
             with opener.open(request) as response: assert response.status==200
     try: await asyncio.to_thread(check)

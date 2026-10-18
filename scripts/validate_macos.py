@@ -41,8 +41,10 @@ assert sys.dont_write_bytecode
 manifest=json.loads((resources/'distribution.json').read_text())
 profile=json.loads(files('volatility_workbench').joinpath('resources/symbols.json').read_text())
 assert profile['profile']==manifest['symbols']['profile']
-for asset in ('static/settings.html','static/settings.js','static/settings.css','static/app.js','static/icon.png'):
+for asset in ('static/settings.html','static/settings.js','static/settings.css','static/app.js','static/icon.png','static/themes.js','static/themes.css','static/halloween-night.png'):
  assert files('volatility_workbench').joinpath(asset).read_bytes(),asset
+scenes=list(files('volatility_workbench').joinpath('static').glob('theme-*.svg'))
+assert len(scenes)==30 and all(scene.read_bytes() for scene in scenes)
 core=json.loads(m.distribution('volatility-mcp').read_text('direct_url.json'))
 assert core['vcs_info']['commit_id']==info['core_commit']
 python=resources/'analyzer/bin/python3'; vol=resources/'analyzer/bin/vol'

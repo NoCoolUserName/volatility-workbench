@@ -22,4 +22,4 @@ volatility-workbench-desktop = "volatility_workbench.desktop:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-volatility_workbench = ["static/*.html", "static/*.js", "static/*.css", "static/*.png", "templates/*.md", "resources/*.json"]
+volatility_workbench = ["static/*.html", "static/*.js", "static/*.css", "static/*.png", "static/theme-*.svg", "templates/*.md", "resources/*.json"]
