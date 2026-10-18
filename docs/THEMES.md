@@ -59,8 +59,10 @@ not treated as released games.
 The Fallout 2 skin uses the user's inventory-screen reference as a visual concept.
 Its metal frame, rivets, ventilation slots and bevels are CSS gradients, borders
 and shadows, so the housing scales with the interface. It does not stretch the
-reference screenshot over the application. Cases, reports, plugin tables and
-console output remain selectable text on opaque dark screen surfaces, with green
+reference screenshot over the application. Subtle edge rust, tarnished slotted
+fasteners and small brass vent collars add a restrained post-apocalyptic mechanical
+feel. Cases, reports, plugin tables and console output remain selectable text on
+opaque dark screen surfaces, with green
 labels and phosphor accents. The same treatment covers Settings and adapts to
 narrow screens. These overrides apply only to Fallout 2; Matrix and the other
 Fallout palettes retain their existing presentation.

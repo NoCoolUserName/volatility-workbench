@@ -777,3 +777,10 @@ requests. Its heading-state assertion reads text content so the skin's uppercase
 presentation does not alter the expected application state. Mobile review caught
 and resolved a theme-dropdown overflow and a Settings/eyebrow overlap before the
 final checks. No real investigation, evidence or saved report was used.
+
+A final decorative refinement added restrained edge oxidation, tarnished screw
+heads and small brass vent collars. The theme and live/saved-console checks were
+rerun successfully; the theme check made 233 local GET requests with no external,
+analysis or mutation requests. Desktop, 320px report and 390px CRT captures were
+reviewed again. Decoration remains on the housing, with clean text surfaces and
+unchanged geometry and controls.

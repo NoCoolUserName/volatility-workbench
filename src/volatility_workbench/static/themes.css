@@ -66,6 +66,11 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 :root[data-theme="fallout-2"] {
   --fo2-brass: #d7be72;
   --fo2-metal:
+    /* Thin oxidized seams and localized wear, confined to the metal shell. */
+    linear-gradient(90deg, #a25d303b, transparent 9px calc(100% - 12px), #884c302e),
+    linear-gradient(0deg, #a86d3f38, transparent 11px calc(100% - 5px), #d1b17a22),
+    radial-gradient(ellipse 38% 8% at 12% 100%, #a75b3042, transparent),
+    radial-gradient(ellipse 24% 5% at 76% 0%, #ad703c30, transparent),
     linear-gradient(117deg, #dad7b810 0 8%, transparent 8.2% 37%, #080b0740 37.2% 37.8%, transparent 38%),
     radial-gradient(ellipse at 4% 100%, #7d462c80, transparent 42%),
     radial-gradient(ellipse at 94% 10%, #737b5260, transparent 34%),
@@ -73,10 +78,14 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
     repeating-linear-gradient(91deg, transparent 0 7px, #e8d5a509 7px 8px, transparent 8px 13px),
     linear-gradient(110deg, #373c2c, #52513b 32%, #383d2c 62%, #504331);
   --fo2-bolts:
-    radial-gradient(circle at 13px 13px, #a9ac91 0 1px, #626956 2px 4px, #191d15 5px 7px, transparent 8px),
-    radial-gradient(circle at calc(100% - 13px) 13px, #a9ac91 0 1px, #626956 2px 4px, #191d15 5px 7px, transparent 8px),
-    radial-gradient(circle at 13px calc(100% - 13px), #a9ac91 0 1px, #626956 2px 4px, #191d15 5px 7px, transparent 8px),
-    radial-gradient(circle at calc(100% - 13px) calc(100% - 13px), #a9ac91 0 1px, #626956 2px 4px, #191d15 5px 7px, transparent 8px);
+    linear-gradient(135deg, transparent 40%, #24281b 43% 56%, transparent 59%) 9px 9px / 8px 8px no-repeat,
+    linear-gradient(45deg, transparent 40%, #24281b 43% 56%, transparent 59%) calc(100% - 9px) 9px / 8px 8px no-repeat,
+    linear-gradient(45deg, transparent 40%, #24281b 43% 56%, transparent 59%) 9px calc(100% - 9px) / 8px 8px no-repeat,
+    linear-gradient(135deg, transparent 40%, #24281b 43% 56%, transparent 59%) calc(100% - 9px) calc(100% - 9px) / 8px 8px no-repeat,
+    radial-gradient(circle at 13px 13px, #b6aa7e 0 1px, #777151 2px 4px, #191d15 5px 7px, #995c3638 8px 10px, transparent 13px),
+    radial-gradient(circle at calc(100% - 13px) 13px, #b6aa7e 0 1px, #777151 2px 4px, #191d15 5px 7px, #995c3638 8px 10px, transparent 13px),
+    radial-gradient(circle at 13px calc(100% - 13px), #b6aa7e 0 1px, #777151 2px 4px, #191d15 5px 7px, #995c3638 8px 10px, transparent 13px),
+    radial-gradient(circle at calc(100% - 13px) calc(100% - 13px), #b6aa7e 0 1px, #777151 2px 4px, #191d15 5px 7px, #995c3638 8px 10px, transparent 13px);
   --fo2-bezel: inset 2px 3px 5px #000, inset -1px -1px 0 #60644a, 0 0 0 1px #10120d, 2px 3px 0 #7b7652, 5px 6px 8px #0008;
 }
 :root[data-theme="fallout-2"] body {
@@ -88,7 +97,7 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 :root[data-theme="fallout-2"] .crt-monitor {
   background: var(--fo2-metal);
   border: 2px solid #181c13;
-  box-shadow: inset 2px 2px 1px #a6a482, inset -3px -4px 2px #10130d, 0 4px 12px #0008;
+  box-shadow: inset 2px 2px 1px #a6a482, inset -3px -4px 2px #10130d, inset 0 0 0 5px #80583a30, 0 4px 12px #0008;
 }
 :root[data-theme="fallout-2"] body > header {
   max-width: 1700px;
@@ -152,7 +161,10 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 }
 :root[data-theme="fallout-2"] .skin-scene::after {
   inset: 0;
-  background: linear-gradient(90deg, #342e20, transparent 25% 75%, #342e20);
+  background:
+    radial-gradient(circle at 22px 50%, #242a1b 0 2px, #a18c55 3px 4px, #282e1f 5px 6px, transparent 7px),
+    radial-gradient(circle at calc(100% - 22px) 50%, #242a1b 0 2px, #a18c55 3px 4px, #282e1f 5px 6px, transparent 7px),
+    linear-gradient(90deg, #453322, transparent 25% 75%, #3a2d1e);
 }
 :root[data-theme="fallout-2"] .privacy {
   max-width: 1700px;
