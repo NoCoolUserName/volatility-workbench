@@ -27,4 +27,4 @@ truststore==0.10.5
 typing-inspection==0.4.4
 typing_extensions==4.16.0
 uvicorn==0.54.0
-volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@5bede5123abf7286ddea0a05cf0482920d94ac2e
+volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@7f7cc1f0c4f4f6e6a17dfecca8c27db02e53c1d6
