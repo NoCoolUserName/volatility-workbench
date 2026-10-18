@@ -17,6 +17,7 @@ from volatility_mcp.api import source_identity
 from volatility_mcp.api import utc_now as now
 from .coins import populate
 from . import generation
+from . import report_plugins
 
 
 def uid():
@@ -320,6 +321,13 @@ class Bundle:
             manifest['findings'] = json.loads(existing.read_text()).get('findings', [])
         atomic_json(existing, manifest)
         (self.root / 'investigation.jsonl').write_text(''.join(json.dumps(s) + '\n' for s in steps))
+        inventory = report_plugins.derive(self.root, self.case['id'], self.version['id'])
+        atomic_json(self.root / 'plugin-inventory.json', inventory)
+        fp = file_fingerprint(self.root / 'plugin-inventory.json')
+        artifacts.append({'artifact_id':'report-plugin-inventory', 'path':'plugin-inventory.json',
+            'sha256':fp['sha256'], 'size_bytes':fp['size_bytes'], 'media_type':'application/json', 'run_id':None})
+        manifest['plugin_inventory'] = {'path':'plugin-inventory.json', 'schema':report_plugins.SCHEMA}
+        atomic_json(existing, manifest)
         return manifest
 
     def save(self, markdown, findings, iocs):
@@ -337,7 +345,8 @@ class Bundle:
         markdown='\n'.join(line for line in markdown.splitlines()
             if not ((match:=re.fullmatch(r'!\[Decorative coin for [^\]]+\]\((assets/coins/[a-f0-9]{64}\.(?:png|svg))\)',line))
                     and match[1] in coin_paths))
-        markdown=generation.markdown(self.coverage_markdown(markdown), self.version.get('generation'))
+        inventory = json.loads((self.root / 'plugin-inventory.json').read_text())
+        markdown=generation.markdown(self.coverage_markdown(report_plugins.markdown(markdown, inventory)), self.version.get('generation'))
         (self.root / 'report.md').write_text((badges+'\n\n' if badges else '')+markdown)
         fields = ['type','value','evidence_ref','confidence','relevance','status','context']
         with (self.root / 'iocs.csv').open('w', newline='') as stream:
@@ -372,7 +381,8 @@ class Bundle:
             review_status='AI-assisted draft; human forensic review required')
         atomic_json(self.root / 'case-manifest.json', manifest)
         report_path=safe_file(self.root,'report.md')
-        report_path.write_text(generation.markdown(self.coverage_markdown(report_path.read_text()), self.version.get('generation')))
+        inventory = json.loads((self.root / 'plugin-inventory.json').read_text())
+        report_path.write_text(generation.markdown(self.coverage_markdown(report_plugins.markdown(report_path.read_text(), inventory)), self.version.get('generation')))
         lines = []
         for path in sorted(self.root.rglob('*')):
             self.check_cancel()

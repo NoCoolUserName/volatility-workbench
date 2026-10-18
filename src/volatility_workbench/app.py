@@ -798,6 +798,14 @@ REPORT_SPEC follows:\n'''+spec
         result['image_id']=image_id
         return result
 
+    def report_plugins(self, case, report_id, offset=0, limit=20):
+        from . import report_plugins
+        report_plugins.identifier(report_id)
+        if not any(r['id'] == report_id and not r.get('deleted_at') for r in case['reports']):
+            raise ValueError('Unknown report revision in this case')
+        target = safe_file(self.directory(case), 'reports/' + report_id + '/case-manifest.json')
+        return report_plugins.read(target.parent, case['id'], report_id, offset, limit)
+
     def citations(self, case, report_id, offset=0, finding=None, index=0):
         from volatility_mcp.api import check_citation
         if not any(r['id'] == report_id and not r.get('deleted_at') for r in case['reports']):
