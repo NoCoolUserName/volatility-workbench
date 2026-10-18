@@ -995,7 +995,37 @@ REPORT_SPEC follows:\n'''+spec
         if not any(r['id'] == report_id and not r.get('deleted_at') for r in case['reports']):
             raise ValueError('Unknown report revision in this case')
         target = safe_file(self.directory(case), 'reports/' + report_id + '/case-manifest.json')
-        return report_plugins.read(target.parent, case['id'], report_id, offset, limit)
+        result = report_plugins.read(target.parent, case['id'], report_id, offset, limit)
+        for index, entry in enumerate(result['errored_entries']):
+            # Run/call identities survive report packaging; plugin names alone do not
+            # identify an error. Ambiguous legacy rows stay local to their revision.
+            identity = {k:entry.get(k) for k in ('kind', 'plugin', 'image_id', 'run_id', 'call_id')}
+            if not (entry.get('run_id') or entry.get('call_id')):
+                identity.update(report_id=report_id, row=index, legacy=entry)
+            entry['error_id'] = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
+        return result
+
+    async def set_plugin_error_acknowledgment(self, case_id, report_id, error_id, acknowledged):
+        if type(acknowledged) is not bool:
+            raise ValueError('Acknowledged must be true or false')
+        if not isinstance(error_id, str) or not re.fullmatch(r'[0-9a-f]{64}', error_id):
+            raise ValueError('Invalid recorded error identifier')
+        case = self.case(case_id)
+        inventory = await asyncio.to_thread(self.report_plugins, case, report_id)
+        if not any(e['error_id'] == error_id for e in inventory['errored_entries']):
+            raise ValueError('Unknown recorded error in this report')
+        # Human review metadata belongs to the case, never the sealed report.
+        previous = copy.deepcopy(case.get('plugin_error_acknowledgments', {}))
+        values = dict(previous)
+        if acknowledged: values[error_id] = {'acknowledged_at':now()}
+        else: values.pop(error_id, None)
+        case['plugin_error_acknowledgments'] = values
+        try:self.save()
+        except Exception:
+            case['plugin_error_acknowledgments'] = previous
+            raise
+        return {'error_id':error_id, 'acknowledged':acknowledged,
+                'acknowledgments':values}
 
     def citations(self, case, report_id, offset=0, finding=None, index=0):
         from volatility_mcp.api import check_citation

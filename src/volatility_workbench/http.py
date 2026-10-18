@@ -111,6 +111,8 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/jobs':return app.enqueue(body['case_id'],body['kind'],body.get('text',''),body.get('request_id'))
         if path=='/api/reports/remove':return await app.remove_report(body['case_id'],body['report_id'],body['action'])
         if path=='/api/reports/determination':return app.set_human_determination(body['case_id'],body['report_id'],body.get('value'))
+        if path=='/api/reports/error-acknowledgment':return await app.set_plugin_error_acknowledgment(
+            body['case_id'],body['report_id'],body.get('error_id'),body.get('acknowledged'))
         if path=='/api/stop':return await app.stop()
         if path=='/api/pick':return await app.native_pick()
         if path=='/api/approval':

@@ -701,6 +701,50 @@ function inventorySearch(section, rows, record, field, id, title) {
   };
   filters.append(label, search);section.append(filters, count, empty);apply();
 }
+const pendingErrorAcknowledgments = new Map();
+function refreshErrorAcknowledgments(record) {
+  if (!record || record.key !== reportPluginKey) return;
+  const entries = record.data?.errored_entries || [];
+  const saved = state.cases.find(c => c.id === record.caseId)?.plugin_error_acknowledgments || {};
+  const count = entries.filter(entry => Object.hasOwn(saved, entry.error_id)).length;
+  const percent = entries.length && count === entries.length ? 100 : entries.length ? Math.min(99, Math.round(100 * count / entries.length)) : 0;
+  const badge = $("errorAcknowledgmentProgress");
+  if (badge) {
+    badge.textContent = ` · ${percent}% acknowledged/resolved`;
+    badge.dataset.level = count * 3 < entries.length ? "red" : count * 3 < entries.length * 2 ? "orange" : "green";
+    badge.title = `${count} of ${entries.length} recorded errors acknowledged/resolved`;
+  }
+  document.querySelectorAll("input[data-error-id]").forEach(input => {
+    const key = record.caseId + ":" + input.dataset.errorId;
+    input.checked = pendingErrorAcknowledgments.has(key) ? pendingErrorAcknowledgments.get(key) : Object.hasOwn(saved, input.dataset.errorId);
+    input.disabled = record.loading || pendingErrorAcknowledgments.has(key);
+  });
+}
+async function saveErrorAcknowledgment(record, entry, checked) {
+  const key = record.caseId + ":" + entry.error_id;
+  if (pendingErrorAcknowledgments.has(key)) return;
+  pendingErrorAcknowledgments.set(key, checked);
+  record.acknowledgmentStatus = "Saving acknowledgment…";
+  refreshErrorAcknowledgments(record);
+  if ($("errorAcknowledgmentStatus")) $("errorAcknowledgmentStatus").textContent = record.acknowledgmentStatus;
+  try {
+    const result = await api("reports/error-acknowledgment", {case_id:record.caseId, report_id:record.reportId, error_id:entry.error_id, acknowledged:checked});
+    const c = state.cases.find(c => c.id === record.caseId);
+    if (c) {
+      c.plugin_error_acknowledgments ||= {};
+      if (result.acknowledged) c.plugin_error_acknowledgments[entry.error_id] = result.acknowledgments[entry.error_id];
+      else delete c.plugin_error_acknowledgments[entry.error_id];
+    }
+    record.acknowledgmentStatus = "Saved";
+  } catch (error) {
+    record.acknowledgmentStatus = "Acknowledgment was not saved: " + (error.message || String(error));
+  } finally {
+    pendingErrorAcknowledgments.delete(key);
+    const current = reportPluginCache.get(reportPluginKey);
+    refreshErrorAcknowledgments(current);
+    if (current === record && $("errorAcknowledgmentStatus")) $("errorAcknowledgmentStatus").textContent = record.acknowledgmentStatus;
+  }
+}
 function renderReportPlugins(record) {
   if (reportPluginKey !== record.key || reportPluginCache.get(record.key) !== record) return;
   const host = $("reportPluginInventory");
@@ -803,6 +847,11 @@ function renderReportPlugins(record) {
   const errorEntries = Array.isArray(data?.errored_entries) ? data.errored_entries : null;
   const errorSummary = el("summary", "Plugins that errored" + (errorEntries ? ` · ${inventoryCount(errorEntries.length)} recorded errors` : ""));
   errorSummary.onclick = () => { record.errorsOpen = !errors.open; };
+  if (errorEntries?.length) {
+    const progress = el("span", "", "error-acknowledgment-progress");
+    progress.id = "errorAcknowledgmentProgress";
+    errorSummary.append(progress);
+  }
   errors.append(errorSummary);
   if (data?.source_status === "unavailable") errors.append(el("p", "Saved plugin metadata is unavailable; errors cannot be determined.", "inventory-warning"));
   else if (!errorEntries) errors.append(el("p", "Error records are unavailable.", "inventory-warning"));
@@ -818,6 +867,10 @@ function renderReportPlugins(record) {
     };
     const retryStatus = el("p", "", "subtle"); retryStatus.id = "failedPluginPromptStatus"; retryStatus.setAttribute("role", "status");
     errors.append(retryAll, retryStatus);
+    errors.append(el("p", "Acknowledgments carry forward for the same saved error. New errors start unchecked. Checking a row records your review; the original failure remains in the report.", "subtle"));
+    const acknowledgmentStatus = el("p", record.acknowledgmentStatus || "", "subtle");
+    acknowledgmentStatus.id = "errorAcknowledgmentStatus"; acknowledgmentStatus.setAttribute("role", "status");
+    errors.append(acknowledgmentStatus);
     const rows = errorEntries.map((entry, index) => {
       const row = el("tr"), outcome = el("td");
       const action = el("td"), retry = el("button", "Add to prompt"); retry.type = "button";
@@ -825,6 +878,13 @@ function renderReportPlugins(record) {
       retry.setAttribute("aria-label", "Add failed request " + (entry.plugin || "with unrecorded plugin") + " (" + (entry.call_id || entry.run_id || index + 1) + ") to investigation prompt");
       retry.onclick = () => appendFocus(failedPluginRequest(entry, record), record);
       action.append(retry);
+      const acknowledgment = el("td"), checkbox = el("input");
+      checkbox.type = "checkbox";
+      if (entry.error_id) checkbox.dataset.errorId = entry.error_id;
+      else checkbox.disabled = true;
+      checkbox.setAttribute("aria-label", "Acknowledged/Resolved: " + (entry.plugin || "Unrecorded plugin") + " (" + (entry.call_id || entry.run_id || index + 1) + ")");
+      checkbox.onchange = () => saveErrorAcknowledgment(record, entry, checkbox.checked);
+      acknowledgment.append(checkbox);
       outcome.append(el("strong", entry.status || "Failed request"), el("p", entry.kind === "request_failure" ? "No plugin execution recorded" : "Saved plugin run", "subtle"));
       if (entry.reason) outcome.append(el("p", entry.reason));
       if (entry.diagnosis) outcome.append(el("p", entry.diagnosis));
@@ -840,14 +900,14 @@ function renderReportPlugins(record) {
         });
         const line = el("p"); line.append(link); outcome.append(line);
       }
-      row.append(el("td", entry.plugin || "Plugin name not recorded"), action, el("td", pluginDescription(entry.plugin)),
+      row.append(el("td", entry.plugin || "Plugin name not recorded"), action, acknowledgment, el("td", pluginDescription(entry.plugin)),
         el("td", entry.image_id || "Image not recorded"), outcome,
         el("td", "Run: " + (entry.run_id || "Not recorded") + " · Call: " + (entry.call_id || "Not recorded")), reportPluginSource(entry.plugin));
       return row;
     });
     inventorySearch(errors, rows, record, "errorSearch", "erroredPluginSearch", "Search plugins that errored");
     errors.append(el("p", "Search changes the displayed rows. Add all failed requests still includes all recorded errors.", "subtle"));
-    errors.append(inventoryTable(["Plugin", "Add to prompt", "Quick Description", "Image", "Recorded error", "Run provenance", "Source provenance"], rows,
+    errors.append(inventoryTable(["Plugin", "Add to prompt", "Acknowledged/Resolved", "Quick Description", "Image", "Recorded error", "Run provenance", "Source provenance"], rows,
       "Saved plugin errors for report " + record.reportId, "report-plugin-table report-plugin-errors-table"));
   }
   const unused = el("details", undefined, "report-plugin-inventory report-plugin-secondary");
@@ -917,6 +977,7 @@ function renderReportPlugins(record) {
     else unused.append(el("p", "Every currently installed plugin has a recorded physical execution in this snapshot."));
   }
   host.replaceChildren(details, errors, unused);
+  refreshErrorAcknowledgments(record);
   updateBulkPluginAction();
   if (focusedSearch && $(focusedSearch.id)) {
     const input = $(focusedSearch.id); input.focus({preventScroll:true});input.setSelectionRange(focusedSearch.start, focusedSearch.end);
@@ -1015,6 +1076,7 @@ function renderRunningReport(version) {
 }
 async function showReport(version) {
   showReportPlugins(version);
+  refreshErrorAcknowledgments(reportPluginCache.get(reportPluginKey));
   if (!version) {
     clearReportReturn();
     shownReport = "";

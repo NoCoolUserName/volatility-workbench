@@ -579,3 +579,20 @@ report/update kind and investigation focus. It keeps any newly typed prompt and
 all previous report versions. The button disables while submitting, while other
 case work is queued/active, during report cleanup, or when readiness is blocked.
 Existing generation, update and extraction checks still apply.
+
+### Error acknowledgment
+
+Each row in **Plugins that errored** has an **Acknowledged/Resolved** checkbox.
+The summary shows the percentage checked across all recorded errors in the selected
+snapshot, including rows hidden by search. The percentage uses red for the first
+third, orange for the middle third, and green for the final third. Zero-error
+snapshots do not show an acknowledgment percentage.
+
+Acknowledgments are saved as case review metadata and survive restart and report
+updates. They follow the saved run/call identity, so a new failure from the same
+plugin starts unchecked; previous acknowledgments remain checked. Legacy errors
+without a run or call identity are scoped to their report to avoid marking an
+unrelated failure reviewed. Unchecking clears that acknowledgment across snapshots.
+This is a human review marker, not evidence that a failed plugin has been repaired.
+Original errors and sealed report files remain unchanged. Failed saves are shown
+inline and leave the checkbox at its previously saved value.
