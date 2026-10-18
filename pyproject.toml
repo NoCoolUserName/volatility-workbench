@@ -9,7 +9,7 @@ description = "Local case and report application powered by volatility-mcp"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md", "LICENSING.md"]
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md", "LICENSING.md", "licenses/DEPENDENCY_LICENSES.txt"]
 dependencies = ["volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@5ffbbdf791fd7fdc1083fdd8b99c3a0d135f6105"]
 
 [project.optional-dependencies]

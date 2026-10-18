@@ -44,3 +44,11 @@ Theme artwork is documented in docs/THEMES.md as locally authored. Franchise nam
 characters and recognizable motifs still require a separate rights assessment;
 local authorship alone is not clearance for third-party characters or trademarks.
 For broad distribution, use cleared artwork or generic original alternatives.
+
+## Dependency evidence — 2026-10-18
+
+[Dependency inventory](licenses/DEPENDENCIES.json) records exact versions, source commits, archive URLs/hashes, dependency context and review items. [Collected license texts](licenses/DEPENDENCY_LICENSES.txt) preserve upstream notices, including recovered omissions. This snapshot includes build/test and optional packages; it is not a claim that all listed components ship together or that a finished release has been cleared. Unlocked requirements are labeled audit-time resolutions, not new project pins. Refresh the inventory and verify actual release contents when dependencies change.
+
+Unresolved upstream notice/conflict items: `proxy_tools@0.1.0` (license-conflict). These entries are not represented as cleared. Obtain matching upstream terms or exclude/replace the affected dependency before redistribution that requires them.
+
+`proxy_tools==0.1.0` declares MIT in PyPI metadata but identifies BSD/Werkzeug in its source. The source attribution is preserved; the missing referenced BSD license and conflicting metadata remain an upstream clarification item. The macOS builder now copies the inventory and collected notices alongside the existing Python and plugin notices. This does not resolve the VSL integration review.

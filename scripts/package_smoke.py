@@ -3,10 +3,11 @@
 import json
 from pathlib import Path
 import subprocess
-import shutil
 import sys
 import tempfile
 import venv
+import zipfile
+from build_macos import source_snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,10 +22,14 @@ def main():
         env = temp/'venv'; venv.EnvBuilder(with_pip=True).create(env)
         python = str(env/'bin/python')
         source=temp/'source';source.mkdir()
-        for name in ('pyproject.toml','README.md','LICENSE','THIRD_PARTY_NOTICES.md','LICENSING.md'): shutil.copy2(ROOT/name,source/name)
-        shutil.copytree(ROOT/'src',source/'src',ignore=shutil.ignore_patterns('__pycache__','*.egg-info','*.pyc'))
+        source_snapshot(source)
         run(sys.executable, '-m', 'pip', 'wheel', '--no-deps', '--wheel-dir', str(temp), str(source))
         wheel = next(temp.glob('volatility_workbench-*.whl'))
+        with zipfile.ZipFile(wheel) as archive:
+            for relative in ('LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md', 'licenses/DEPENDENCY_LICENSES.txt'):
+                matches = [name for name in archive.namelist() if name.endswith('.dist-info/licenses/' + relative)]
+                assert len(matches) == 1, f'Missing wheel notice: {relative}'
+                assert archive.read(matches[0]) == (ROOT/relative).read_bytes()
         # Installing the wheel itself must bring in the pinned core dependency.
         run(python, '-m', 'pip', 'install', '-c', str(ROOT/'requirements.lock.txt'), str(wheel), cwd=temp)
         run(python, '-m', 'pip', 'check', cwd=temp)
