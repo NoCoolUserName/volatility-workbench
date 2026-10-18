@@ -106,3 +106,19 @@ submission, stapled production ticket, credentialed hardened-runtime launch or
 fresh downloaded-app Gatekeeper test has been performed. No entitlement exceptions
 were added speculatively. Those checks are required before a public notarized
 binary release; this change prepares the machinery and does not claim one exists.
+
+## Community inventory revision 4 adoption — 2026-10-18
+
+Workbench pins merged core `5bede5123abf7286ddea0a05cf0482920d94ac2e`.
+The installed-wheel smoke passed outside the checkout: all 118 application tests,
+real MCP negotiation in both protocol modes, HTTP/assets and zero analysis/model
+subprocesses during the UI smoke. The source review and optional-download manifest
+now include the six added commands; upstream implementations remain owned by core.
+Manual-only extraction is excluded from automatic investigation instructions.
+
+The public bundle retains its eligible 200-command baseline. The existing local
+configured analyzer has 214 commands, all original 208 preserved, zero import
+failures, verified adapted hashes and both SSH symbol schemas. This configured
+analyzer is independent of the bundled baseline. Native build/install verification
+is recorded with each artifact's exact source/core commits and the installation
+report; synthetic contract success is not a broad forensic-accuracy claim.

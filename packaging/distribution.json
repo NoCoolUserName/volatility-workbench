@@ -36,7 +36,10 @@
     "optional_upstream_download": [
       "f-block/volatility-plugins",
       "forensicxlab/volatility3_plugins",
-      "aynaitlamine/volatility3-browser-history"
+      "aynaitlamine/volatility3-browser-history",
+      "Immersive-Labs-Sec/volatility_plugins",
+      "kevthehermit/volatility_plugins",
+      "fox-it/OpenSSH-Session-Key-Recovery"
     ]
   },
   "pypykatz_plugin": {

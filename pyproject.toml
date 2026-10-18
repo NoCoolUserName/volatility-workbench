@@ -9,7 +9,7 @@ description = "Local case and report application powered by volatility-mcp"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-dependencies = ["volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@528541ff7b45c60ea87f09e2e7812e6340ba6acf"]
+dependencies = ["volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@5bede5123abf7286ddea0a05cf0482920d94ac2e"]
 
 [project.optional-dependencies]
 desktop = ["pywebview==6.2.1; sys_platform == 'darwin'"]

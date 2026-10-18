@@ -60,3 +60,31 @@ of its installer or plugin implementations. The profile is locally installable
 now. Selected upstream redistribution licenses/source obligations remain unresolved;
 the native public bundle includes eligible plugins and provides explicit operator
 upstream download for the remainder. Future containers must preserve that policy. See [the core profile](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COMMUNITY_PLUGINS.md).
+
+## Community3 candidate review
+
+The [18 October 2026 source review](COMMUNITY3_REVIEW.md) compares all 14
+community3 projects and their linked sources against the existing 208-command
+local analyzer. It records 14 potentially new analysis commands, an alternative
+EVTX carver, existing/overlapping support, and components outside the headless
+profile. CobaltStrike, RichHeader, ZoneID3 and PteResolve were subsequently
+adapted through core's single inventory and merged in core PR #10. Inventory
+revision 4 also makes PasswordManager and SSHKeys available as manually selected
+sensitive extraction commands. The isolated analyzer discovers 214 commands,
+preserving all original 208 names, with zero import failures. Core forces these
+six new commands offline and exposes manual-only metadata for the two extraction
+commands; Workbench instructions exclude them from routine triage and automatic
+investigation/report flows. No upstream plugin implementation is added here.
+
+A bounded check against Volatility's public Windows 10 build 19041 corpus found
+one RichHeader fingerprint, an empty selected ZoneID3 range and a synthetic raw
+PTE decode. Missing process/swap pages produced explicit failures; this does not
+establish detection accuracy. No private cases were used. Broader compatibility,
+known-positive accuracy fixtures and the remaining candidate groups stay separate
+work. Quick triage and compatibility sweep buttons remain proposals.
+
+Workbench now pins merged core `5bede5123abf7286ddea0a05cf0482920d94ac2e`
+(core PRs #10 and #11), so rebuilt installations inherit inventory revision 4,
+source attribution and forced-offline dispatch. The public bundle's eligible
+200-command baseline is unchanged; the configured local analyzer has the full
+214-command installation through explicit upstream download.
