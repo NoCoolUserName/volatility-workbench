@@ -12,7 +12,8 @@ const hostile='<img src=x onerror="window.injected=true">';
 const entries=Array.from({length:21},(_,i)=>({kind:i===1?'reuse_receipt':i===2?'request_failure':'plugin_run',execution_recorded:i===1||i===2?false:true,
   synthetic:i===3,execution_kind:i===3?'simulated':i===1||i===2?'unknown':'physical',provenance:i===1?'investigation_log':'core_manifest',run_id:'run-'+i,call_id:'call-'+i,image_id:'E001',plugin:i===0?'windows.synthetic.'+hostile:'windows.synthetic.Plugin'+i,
   status:i===0?'failed':i===1?'reused':i===2?'denied':'completed',arguments:i===1?null:['--pid','123',i===0?hostile+'x'.repeat(12000):''],argv:i===1||i===2?null:[['python','-m','vol','--pid','123']],
-  started_at:'2026-10-18T12:00:00Z',finished_at:i===1?null:'2026-10-18T12:00:01Z',reuse_count:i===0?2:0,source_path:i===0?'artifacts/C-synthetic/manifest.json':i===2?'../escape.json':null}));
+  started_at:i===4?'2026-10-06 04:22:14Z':'2026-10-18T12:00:00Z',
+  finished_at:i===1?null:i===4?'2026-10-06 04:22:15Z':'2026-10-18T12:00:01Z',reuse_count:i===0?2:0,source_path:i===0?'artifacts/C-synthetic/manifest.json':i===2?'../escape.json':null}));
 const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-inventory/1',report_id:id,scope:'bundled_saved_runs',source_status:status,
   summary:status==='unavailable'?{executions:null,plugins:null,failures:null,reuse_receipts:null,request_failures:null}:{executions:18,plugins:20,failures:1,reuse_receipts:1,request_failures:1,unknown_execution_records:1,simulated_runs:1},
   entries:rows,next_offset:next,
@@ -102,9 +103,14 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.match(await table.locator('tr').nth(1).locator('td').nth(5).innerText(),/Speed: No plugin execution recorded/);
   assert.deepEqual(await page.evaluate(()=>[
     pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'20261004T025558.800719Z',finished_at:'20261004T025559.800719Z'}),
+    pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'2026-10-06 23:59:14Z',finished_at:'2026-10-07 00:00:15Z'}),
+    pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'2026-10-06 23:59:59+0000',finished_at:'2026-10-07 00:00:01+00:00'}),
+    pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'2026-10-06 04:22:14.250Z',finished_at:'2026-10-06 04:22:14.750Z'}),
+    pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'20261006T042214.000000Z',finished_at:'2026-10-06 04:22:15Z'}),
+    pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'2026-10-06 04:22:14',finished_at:'2026-10-06 04:22:15'}),
     pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'bad',finished_at:'2026-10-18T12:00:01Z'}),
     pluginSpeed({kind:'plugin_run',execution_recorded:true,started_at:'2026-10-18T12:00:02Z',finished_at:'2026-10-18T12:00:01Z'})
-  ]),['1 second','Not recorded','Not recorded']);
+  ]),['1 second','1 minute 1 second','2 seconds','0.5 seconds','1 second','Not recorded','Not recorded','Not recorded']);
   assert.equal(await inventory.locator('img,script').count(),0);assert.equal(await page.evaluate(()=>window.injected),undefined);
   assert.equal(await inventory.getByRole('link',{name:'Open manifest'}).count(),1,'Traversal path never becomes link');
   await table.locator('tr').first().locator('td').nth(4).locator('summary').first().click();
