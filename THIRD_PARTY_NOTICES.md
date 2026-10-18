@@ -1,13 +1,15 @@
 # Third-party notices
 
-The MIT license in this repository covers original project material. It does not
+The existing MIT license applies to original project material, subject to the
+unresolved integration scope described in [LICENSING.md](LICENSING.md). It does not
 relicense separately installed dependencies, upstream Volatility material,
 symbols, acquired evidence, reference publications, or other third-party works.
 
 - **Official MCP Python SDK:** installed as a dependency, not vendored here.
   Preserve its [upstream license](https://github.com/modelcontextprotocol/python-sdk/blob/main/LICENSE)
   and those of its transitive dependencies in redistributed environments.
-- **Volatility 3:** installed in its own environment, not bundled in this repository.
+- **Volatility 3:** source is not vendored in this repository. The macOS app
+  distribution bundles Volatility in a separate analyzer runtime.
   Its [Volatility Software License](https://github.com/volatilityfoundation/volatility3/blob/develop/LICENSE.txt)
   and notices remain applicable to upstream code and symbol material.
 - **pefile:** pinned dependency for static inspection of saved PE artifacts,
@@ -30,3 +32,15 @@ they do not imply sponsorship or endorsement.
 
 Workbench was extracted from volatility-mcp commit `3ecc22e1275467879005556f5340fbc863bc3281`.
 The original MIT copyright notice is retained. Core is an installed dependency, not vendored source.
+
+## Application distribution
+
+The macOS build also redistributes CPython, pywebview/Cocoa dependencies and selected
+plugins. Preserve their exact-version licenses/notices alongside the application
+and analyzer inventories. Packaging already copies Python and selected plugin
+notices; verify the final artifact against all installed dependencies before release.
+
+Theme artwork is documented in docs/THEMES.md as locally authored. Franchise names,
+characters and recognizable motifs still require a separate rights assessment;
+local authorship alone is not clearance for third-party characters or trademarks.
+For broad distribution, use cleared artwork or generic original alternatives.

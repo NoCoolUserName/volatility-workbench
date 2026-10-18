@@ -161,7 +161,7 @@ def audit(app):
         for item in source['files']:
             if source['repository'] not in manifest['community']['bundled_sources'] and (plugins / item['target']).exists():
                 failures.append('Excluded community plugin is present: ' + item['target'])
-    for required in ('notices/workbench-LICENSE', 'notices/workbench-THIRD_PARTY_NOTICES.md',
+    for required in ('notices/workbench-LICENSE', 'notices/workbench-THIRD_PARTY_NOTICES.md', 'notices/LICENSING.md',
                      'notices/python-standalone/licenses', 'notices/pypykatz-LICENSE'):
         if not (resources / required).exists():
             failures.append('Missing notice: ' + required)

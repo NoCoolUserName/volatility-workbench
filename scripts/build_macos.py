@@ -53,7 +53,7 @@ def unpack(archive, destination):
 
 
 def source_snapshot(destination):
-    for name in ('src', 'pyproject.toml', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md'):
+    for name in ('src', 'pyproject.toml', 'README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md'):
         source = ROOT / name
         if source.is_dir():
             shutil.copytree(source, destination/name, ignore=shutil.ignore_patterns('__pycache__', '*.pyc', '*.egg-info'))
@@ -147,8 +147,8 @@ def main():
         notice_extract=temporary/'python-notices'; notice_extract.mkdir()
         run(['/usr/bin/tar','-xf',notice_archive,'-C',notice_extract,'python/licenses','python/PYTHON.json'])
         shutil.copytree(notice_extract/'python',notices/'python-standalone')
-        for name in ('LICENSE', 'THIRD_PARTY_NOTICES.md'):
-            shutil.copy2(ROOT/name, notices/('workbench-' + name))
+        for name in ('LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md'):
+            shutil.copy2(ROOT/name, notices/(name if name == 'LICENSING.md' else 'workbench-' + name))
         # Only explicitly redistributable sources from the core inventory are included.
         install = r'''
 import json,sys,hashlib,urllib.request
