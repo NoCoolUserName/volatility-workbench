@@ -8,7 +8,7 @@ const settings = {
   config:{evidence_root:'/synthetic/default',output_root:'/synthetic/outputs',vol_python:'/synthetic/python'},
   state_dir:'/synthetic/state',has_cases:true,native_folder_picker:false,managed_runtime_available:false,
   evidence_locations:[{path:'/synthetic/default',default:true,image_count:1,case_count:1}],
-  symbols:{directory:'/synthetic/symbols',cache:'/synthetic/cache',matching:'Synthetic symbols only',profile:{packs:[],macos_status:'Synthetic fixture'}},
+  symbols:{directory:'/synthetic/symbols',cache:'/synthetic/cache',matching:'Synthetic symbols only',profile:{packs:[{id:'synthetic',label:'Synthetic pack',version:'1',size:8388608,limitations:'Fixture only',url:'https://example.test/pack',sha256:'a'.repeat(64)}],macos_status:'Synthetic fixture'}},
   provider:{default_provider:{provider:'codex'},cases:[]},operation:{status:'idle'},
   readiness:{status:'Ready with limitations',reasons:['Synthetic fixture; no analysis']},
 };
@@ -40,6 +40,8 @@ const settings = {
     assert.match(await page.locator('#evidence-locations li').last().innerText(),/2 registered image\(s\), 3 case\(s\)/);
     assert.equal(await page.locator('#evidence-root').isDisabled(),true);
     assert.equal(await page.locator('#evidence-root').inputValue(),'/synthetic/default');
+    assert.match(await page.locator('#symbol-packs').innerText(),/Synthetic pack · 1 · 8\.39 MB/);
+    assert.doesNotMatch(await page.locator('#symbol-packs').innerText(),/MiB/);
     await page.reload();
     await page.waitForFunction(()=>document.querySelectorAll('#evidence-locations li').length===2);
     assert.deepEqual(errors,[]);

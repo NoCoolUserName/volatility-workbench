@@ -43,7 +43,7 @@ async function refresh(){
     const list=byId('symbol-packs');list.replaceChildren();
     for(const pack of data.symbols.profile.packs){
       const div=document.createElement('div');div.className='pack';
-      const name=document.createElement('strong');name.textContent=pack.label+' · '+pack.version+' · '+(pack.size/1024/1024).toFixed(2)+' MiB';div.append(name);
+      const name=document.createElement('strong');name.textContent=pack.label+' · '+pack.version+' · '+(pack.size/1_000_000).toFixed(2)+' MB';div.append(name);
       const detail=document.createElement('p');detail.textContent=pack.limitations;div.append(detail);
       const provenance=document.createElement('small');provenance.textContent=pack.url+'\nSHA-256: '+pack.sha256;div.append(provenance);
       const button=document.createElement('button');button.textContent='Download this pack';button.addEventListener('click',()=>act(()=>request('/api/settings/symbols/download',{pack:pack.id})));div.append(button);list.append(div);

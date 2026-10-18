@@ -31,7 +31,7 @@ def _regular(path):
     if any(p.is_symlink() for p in (path, *path.parents)):
         raise ValueError('Symbol paths must not contain symlinks')
     if not path.is_file() or path.stat().st_size > MAX_ARCHIVE:
-        raise ValueError('Choose a regular symbol file no larger than 256 MiB')
+        raise ValueError('Choose a regular symbol file no larger than 268.44 MB')
     return path
 
 

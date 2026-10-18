@@ -56,9 +56,9 @@ If the selected/requested case no longer exists, selection falls back to the
 first displayed case; an empty list shows the start screen.
 The **Add evidence** panel starts collapsed; click its heading to expand it.
 The **Theme** selector beside Plugins offers Matrix green (default),
-Soft black and white, and Light blue; Settings sits directly below it. The
-selection is stored in this browser's local storage and restored on reload.
-It changes presentation only; case state,
+Soft black and white, and Light blue; the Settings link with its silver gear
+starts below the Theme label. The selection is stored in this browser's local
+storage and restored on reload. It changes presentation only; case state,
 saved evidence, and reports are unaffected.
 
 1. Add existing `.raw`, `.mem`, `.vmem`, `.dmp`, `.lime`, or `.dd` files through
@@ -82,11 +82,12 @@ saved evidence, and reports are unaffected.
    gaps. **Blocked** records authentication, tool, file, or integrity errors that
    prevent readiness. This single control displays queued/checking status and
    live progress to its right, then the **saved result of the last check**, with
-   its check time below. Successful Ready states have green text and outline in
-   every theme; limitations retain their label and reasons. Clicking it again
-   explicitly starts a new check. It is disabled while a check is pending and
-   does not continuously monitor whether a drive is still connected. Blocked
-   checks show **Check Readiness** again with their failure reasons. None is a
+   its check time to the right of the Ready control. Successful Ready states have
+   green text and outline in every theme; limitations retain their label and
+   reasons. Clicking it again explicitly starts a new check. It is disabled
+   while a check is pending and does not continuously monitor whether a drive
+   is still connected. Blocked checks show **Check Readiness** again with their
+   failure reasons. None is a
    malware verdict or guarantee every plugin works.
 4. **Generate report** starts an adaptive investigation, optionally narrowed by
    your focus. The report must follow `the installed core report contract`. The agent records

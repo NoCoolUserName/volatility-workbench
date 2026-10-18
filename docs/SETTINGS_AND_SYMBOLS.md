@@ -109,8 +109,8 @@ required, and OS-specific data is staged before atomic directory activation.
 Mixed-OS archives must be split by OS. No unrelated symbol file is overwritten.
 An immutable private receipt records source hash/size and derived file hashes and
 identifiers. A repeated import reuses verified installed data; changed managed
-bytes are rejected. Maximum input is 256 MiB, each decoded ISF 256 MiB, total
-expanded archive 1 GiB and 2,000 entries. These are operational limits, not a
+bytes are rejected. Maximum input is 268.44 MB, each decoded ISF 268.44 MB, total
+expanded archive 1.07 GB and 2,000 entries. These are operational limits, not a
 claim that arbitrary compressed data is safe to trust.
 
 HTTPS downloads use fixed profile URLs and verify final size and SHA-256. Partial

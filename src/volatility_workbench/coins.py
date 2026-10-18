@@ -60,7 +60,7 @@ def ensure_coin(case_dir, image):
     ext=meta['extension']
     if ext not in ('svg','png'):raise ValueError('Unsupported coin format')
     source=safe_file(library,digest+'/coin.'+ext)
-    if source.stat().st_size>8*1024*1024:raise ValueError('Coin exceeds 8 MiB')
+    if source.stat().st_size>8*1024*1024:raise ValueError('Coin exceeds 8.39 MB')
     data=source.read_bytes()
     if len(data)>8*1024*1024 or hashlib.sha256(data).hexdigest()!=meta['asset_sha256']:
         raise ValueError('Coin asset integrity mismatch')
@@ -111,7 +111,7 @@ def main():
     if args.png:
         if not args.sha256 or not args.label:p.error('--png requires --sha256 and --label')
         path=Path(args.png)
-        if path.stat().st_size>8*1024*1024:raise ValueError('PNG exceeds 8 MiB')
+        if path.stat().st_size>8*1024*1024:raise ValueError('PNG exceeds 8.39 MB')
         data=path.read_bytes()
         if not data.startswith(b'\x89PNG\r\n\x1a\n'):raise ValueError('Expected PNG')
         install(root/'coin-library',args.sha256,data,'png',args.label,args.provenance)
