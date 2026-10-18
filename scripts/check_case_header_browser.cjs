@@ -53,12 +53,22 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.equal(await page.locator('.eyebrow').textContent(),'LOCAL MEMORY FORENSICS · EXPERIMENTAL');
     assert.equal(await page.locator('header h1').evaluate(e=>getComputedStyle(e).fontSize),'31px');
     assert.equal(await page.locator('#reportView h1').evaluate(e=>getComputedStyle(e).fontSize),'25px');
-    const plugins=await page.locator('#openPlugins').boundingBox(),theme=await page.locator('#theme').boundingBox();
-    const themeLabel=await page.locator('.theme-control').boundingBox();
+    const plugins=await page.locator('#openPlugins').boundingBox(),theme=await page.locator('#toggleTheme').boundingBox();
     const settings=await page.getByRole('link',{name:'Settings',exact:true}).boundingBox();
     const connection=await page.locator('#connection').boundingBox(),stop=await page.locator('#stop').boundingBox();
-    assert.ok(theme.x>=plugins.x+plugins.width && Math.abs(theme.y-plugins.y)<2,'Theme dropdown must align with the top of Plugins');
-    assert.ok(settings.y>=theme.y+theme.height && Math.abs(settings.x-themeLabel.x)<2,'Settings must start beneath the Theme label');
+    assert.ok(theme.y>=plugins.y+plugins.height && Math.abs(theme.x-plugins.x)<2,'Theme button sits directly below Plugins');
+    assert.ok(Math.abs(theme.width-plugins.width)<2,'Theme and Plugins buttons align');
+    assert.ok(Math.abs(settings.x+settings.width-1368)<2 && settings.y<plugins.y,'Settings sits at the upper right');
+    assert.equal(await page.locator('#theme').isHidden(),true);
+    await page.locator('#toggleTheme').click();
+    assert.equal(await page.locator('#toggleTheme').getAttribute('aria-expanded'),'true');
+    assert.equal(await page.locator('#theme').isVisible(),true);
+    await page.locator('#toggleTheme').click();
+    assert.equal(await page.locator('#theme').isHidden(),true);
+    await page.locator('#toggleTheme').click();
+    await page.locator('#theme').press('Escape');
+    assert.equal(await page.locator('#toggleTheme').getAttribute('aria-expanded'),'false');
+    assert.equal(await page.locator('#toggleTheme').evaluate(node=>node===document.activeElement),true);
     assert.equal(await page.locator('.settings-link svg').evaluate(e=>getComputedStyle(e).color),'rgb(192, 192, 192)','Settings gear must be silver');
     assert.ok(stop.y>=connection.y+connection.height,'Stop must sit below the connection status');
     assert.equal(await page.locator('#stop').isDisabled(),true,'Idle Stop must be disabled');
@@ -103,6 +113,7 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     const readyBox=await control.boundingBox(),checkedBox=await page.locator('#readyDetails').boundingBox();
     assert.ok(checkedBox.x>=readyBox.x+readyBox.width && Math.abs(checkedBox.y-readyBox.y)<10,'Last checked must sit to the right of Ready');
     for(const theme of ['matrix','mono','blue']){
+      if(await page.locator('#theme').isHidden())await page.locator('#toggleTheme').click();
       await page.locator('#theme').selectOption(theme);
       const color=await control.evaluate(e=>({text:getComputedStyle(e).color,border:getComputedStyle(e).borderTopColor}));
       assert.deepEqual(color,{text:'rgb(134, 230, 165)',border:'rgb(134, 230, 165)'});
@@ -135,6 +146,8 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.equal(calls.filter(x=>x==='/api/jobs').length,2);
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    const mobileSettings=await page.locator('.settings-link').boundingBox(),header=await page.locator('body > header').boundingBox();
+    assert.ok(Math.abs(mobileSettings.x+mobileSettings.width-370)<2 && Math.abs(mobileSettings.y-header.y-20)<2,'Settings remains at the upper right on mobile');
     console.log('Case header: Theme/Settings and connection/Stop alignment, idle/queued/completed Stop state, hidden legacy readiness sentence, check/progress/Ready/recheck/failure/reconnect, fixed green across themes, mobile layout; two simulated readiness requests, zero real analysis.');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

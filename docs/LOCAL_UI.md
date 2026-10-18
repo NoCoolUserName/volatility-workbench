@@ -67,9 +67,10 @@ Background refreshes preserve the selected case, including a manual selection.
 If the selected/requested case no longer exists, selection falls back to the
 first displayed case; an empty list shows the start screen.
 The **Add evidence** panel starts collapsed; click its heading to expand it.
-The **Theme** selector beside Plugins offers Matrix green (default),
-Soft black and white, and Light blue; the Settings link with its silver gear
-starts below the Theme label. The selection is stored in this browser's local
+The **Theme** button sits directly below Plugins. Click it to show the theme
+dropdown, and click it again or press Escape to hide it. Settings, with its silver
+gear, sits at the upper-right corner. The themes include Matrix green (default),
+Soft black and white, and Light blue. The selection is stored in this browser's local
 storage and restored on reload. It changes presentation only; case state,
 saved evidence, and reports are unaffected.
 

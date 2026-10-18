@@ -11,11 +11,12 @@ body {
     sans-serif;
 }
 header {
+  position: relative;
   padding: 25px 32px;
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 20px;
 }
 .header-controls {
@@ -26,17 +27,16 @@ header {
 }
 .header-tools {
   display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-direction: column;
+  align-items: stretch;
+  width: max-content;
+  gap: 8px;
   margin-top: 10px;
 }
-.header-preferences {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-}
+.theme-menu { position: relative; }
+#toggleTheme { width: 100%; }
+.theme-dropdown { position: absolute; top: calc(100% + 8px); left: 0; z-index: 20; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel); }
+.theme-dropdown select { width: min(370px, calc(100vw - 64px)); }
 .settings-link { display: inline-flex; align-items: center; gap: 5px; }
 .settings-link svg { width: 17px; height: 17px; flex: 0 0 auto; color: #c0c0c0; }
 .theme-control {
@@ -448,6 +448,8 @@ footer {
   .header-controls {
     align-items: flex-start;
   }
+  body > header > div:first-child { padding-top: 32px; }
+  .settings-link { position: absolute; top: 20px; right: 20px; }
   .tabs {
     flex-wrap: wrap;
   }

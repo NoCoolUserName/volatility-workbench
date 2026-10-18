@@ -1665,6 +1665,23 @@ async function loadPlugins(force = false) {
 $("openPlugins").onclick = () => {
   activeView = "plugins"; render(); $("pluginsTitle").focus(); loadPlugins();
 };
+function toggleThemeMenu(open) {
+  $("themeMenu").hidden = !open;
+  $("toggleTheme").setAttribute("aria-expanded", String(open));
+}
+$("toggleTheme").onclick = () => {
+  const open = $("themeMenu").hidden;
+  toggleThemeMenu(open);
+  if (open) $("theme").focus();
+};
+document.addEventListener("click", event => {
+  if (!$("themeMenu").hidden && !event.target.closest(".theme-menu")) toggleThemeMenu(false);
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && !$("themeMenu").hidden) {
+    toggleThemeMenu(false); $("toggleTheme").focus();
+  }
+});
 $("closePlugins").onclick = () => {
   activeView = "case"; render(); $("openPlugins").focus();
 };
