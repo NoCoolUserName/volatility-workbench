@@ -59,8 +59,6 @@
     root.style.setProperty('--zoom-bg', '#080d10f5');
     root.style.setProperty('--zoom-text', '#f0f4ef');
     document.querySelectorAll('[data-theme-picker]').forEach(select=>{ select.value=theme.id; });
-    document.querySelectorAll('[data-theme-description]').forEach(el=>{ el.textContent=theme.description; });
-    document.querySelectorAll('[data-theme-name]').forEach(el=>{ el.textContent=theme.label; });
     if(persist) { try {localStorage.setItem(key,theme.id);} catch {} }
     return theme.id;
   }

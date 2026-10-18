@@ -50,7 +50,8 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     for(const theme of catalog){
       await page.locator('#theme').selectOption(theme.id);
       assert.equal(await page.locator('html').getAttribute('data-theme'),theme.id);
-      assert.equal(await page.locator('[data-theme-name]').textContent(),theme.label);
+      assert.equal(await page.locator('.skin-scene').textContent(),'','No theme caption or descriptive tagline');
+      assert.equal(await page.locator('.skin-scene').isVisible(),theme.shape!=='plain');
       assert.equal(await page.locator('.report-version.selected').count(),1,'Theme must preserve selected report');
       assert.match(await page.locator('.report-version.selected > button:first-child').evaluate(e=>getComputedStyle(e).boxShadow),/inset/);
       const image=theme.id==='halloween-noir'?'halloween-night.png':`theme-${theme.id}.svg`;
@@ -82,6 +83,8 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       assert.equal(await page.locator('#theme').inputValue(),id);
       await page.goto('http://localhost/settings.html');
       assert.equal(await page.locator('#settings-theme').inputValue(),id);
+      assert.equal(await page.locator('.settings .skin-scene').textContent(),'');
+      assert.equal(await page.locator('.settings .skin-scene').isVisible(),id!=='mono'&&id!=='blue');
       await page.goto('http://localhost/');
     }
     await page.goto('http://localhost/settings.html');
