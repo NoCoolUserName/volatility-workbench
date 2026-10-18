@@ -121,6 +121,9 @@ saved evidence, and reports are unaffected.
    the case has active/queued work or another revision names it as its predecessor.
    A failed/partial deletion is recorded and can be retried; it is not rolled
    back or silently marked successful. Closing the popup performs no action.
+   The report revision currently displayed has a persistent accent outline and
+   `aria-current` marker. This selection survives background refresh; after a
+   selected revision is hidden or deleted, the remaining latest revision is shown.
 6. **Ask / investigate further** resumes the same case conversation. It may run
    more MCP queries, but does not rewrite reports. **Update report** explicitly
    creates a new revision with a link to the previous version and preserved stable

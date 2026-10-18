@@ -681,3 +681,19 @@ intentions only, not implemented buttons or forensic evaluation results.
 Final fresh-wheel validation passed all 118 installed application tests, dependency
 checks, and ten-tool MCP discovery in both SDK modes. The smoke guard observed
 zero analysis/model subprocesses; no private images were analyzed or rehashed.
+
+## Selected report revision — 2026-10-18
+
+The offline Chrome report fixture checks that the opened revision retains an accent
+outline and `aria-current` on initial load, switches with a report click, stays
+selected through state polling, and falls back to the remaining report after Hide.
+It also exercises the existing sealed/incomplete cleanup controls. The fixture
+contains only synthetic reports and issues no analysis requests.
+
+The first fixture run exposed an automatic-selection regression: recording the
+default latest report as a manual choice prevented a newly added revision from
+opening on refresh. The selection marker now follows the displayed report while
+manual choice state remains separate. The corrected Chrome fixture passes.
+The final installed-wheel smoke passed all 118 application tests, ten MCP-tool
+discovery in both SDK modes, HTTP/assets checks, and the zero analysis/model
+subprocess guard. No private image was opened.
