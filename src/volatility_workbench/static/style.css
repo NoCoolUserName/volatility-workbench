@@ -80,7 +80,7 @@ h3 {
 }
 .layout {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 270px minmax(0, 1fr);
   max-width: 1700px;
   margin: auto;
 }
@@ -88,6 +88,9 @@ aside {
   border-right: 1px solid var(--border);
   padding: 24px;
   min-height: 80vh;
+}
+#root {
+  overflow-wrap: anywhere;
 }
 main {
   padding: 26px 32px;
