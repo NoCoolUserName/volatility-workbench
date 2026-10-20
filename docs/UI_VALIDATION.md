@@ -1,5 +1,15 @@
 # Workbench validation — experimental first version
 
+## Fallout 76 terminal variants — 2026-10-20
+
+Added Camden Park and Field Terminal to the shared frontend catalog and durable
+preference allowlist. Existing catalog-count assertions were updated for 35 themes
+and 16 Fallout choices. The implementation received source review for scoped CSS,
+opaque content surfaces, responsive side decorations and preserved existing IDs.
+No local tests or browser checks were run for this theme batch. Native build and
+installation status are recorded separately when completed; no real investigation
+is used for presentation validation.
+
 ## Report request queue and Coverage — 2026-10-20
 
 Focused synthetic checks passed: 22 Python tests covering FIFO requests,

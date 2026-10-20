@@ -11,8 +11,8 @@ credential handling and tested limits.
 
 ## Appearance
 
-The header's Theme selector and Settings → Appearance offer the same 33 local
-skins, including 14 Fallout choices. New profiles start with the
+The header's Theme selector and Settings → Appearance offer the same 35 local
+skins, including 16 Fallout choices. New profiles start with the
 original Matrix green appearance; the three original preference values remain
 supported. Selection persists in application preferences across desktop launches,
 including changes to the local server port. Workbench and Settings synchronize
@@ -755,7 +755,7 @@ inline and leave the checkbox at its previously saved value.
 The Fallout: New Vegas expanded console takes its CSS housing from the weathered
 Welcome sign: neon letter discs and star, warm perimeter bulbs with several dark
 sockets, faded red lettering and aged trim. The display remains opaque and legible.
-All 33 themes give the VolShell bezel button their own treatment while retaining
+All 35 themes give the VolShell bezel button their own treatment while retaining
 a separate rectangular connection LED and visible keyboard focus.
 
 Theme selection is saved in `appearance.json` under the application preferences
