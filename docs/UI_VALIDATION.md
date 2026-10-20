@@ -6,9 +6,11 @@ Added Camden Park and Field Terminal to the shared frontend catalog and durable
 preference allowlist. Existing catalog-count assertions were updated for 35 themes
 and 16 Fallout choices. The implementation received source review for scoped CSS,
 opaque content surfaces, responsive side decorations and preserved existing IDs.
-No local tests or browser checks were run for this theme batch. Native build and
-installation status are recorded separately when completed; no real investigation
-is used for presentation validation.
+No local automated tests were run for this theme batch. At the user's request,
+desktop main-UI and expanded-console previews were rendered in Chrome with
+synthetic content. Visual review caught and corrected stretched decorative knobs.
+These previews do not establish mobile or native WebView behavior. Native build
+and installation status are recorded separately; no real investigation was used.
 
 ## Report request queue and Coverage — 2026-10-20
 
