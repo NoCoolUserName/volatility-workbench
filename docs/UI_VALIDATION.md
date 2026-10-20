@@ -1,5 +1,19 @@
 # Workbench validation — experimental first version
 
+## Report request queue and Coverage — 2026-10-20
+
+Focused synthetic checks passed: 22 Python tests covering FIFO requests,
+pending duplicates and request-ID retries, immutable Rerun prompts, continuation
+after failures, successive updates selecting the latest successful report,
+deferred deletion between jobs, and existing report cleanup safeguards.
+Browser checks passed for request submission/estimates, Coverage, running reports,
+report cleanup, and report return navigation. They covered preserved unsent text,
+double activation, unknown/overrun estimates, all saved scope and attempt pages,
+failed reads and stale case responses, and the shared back-to-top button.
+The final deletion-error wording received source review after those checks.
+These checks used synthetic state and simulated services, without real analysis.
+Native installation of this batch has not yet taken place.
+
 ## Theme selector — 2026-10-07
 
 The static Workbench UI was opened in the in-app browser against a local static

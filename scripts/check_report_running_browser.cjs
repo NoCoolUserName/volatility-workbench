@@ -143,7 +143,7 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     assert.ok(retried.request_id);assert.notEqual(retried.request_id,calls.filter(item=>item?.kind==='update').at(-2).request_id);
     assert.equal(await page.locator('#focus').inputValue(),'Keep this newer unsubmitted prompt','Accepted rerun preserves newer prompt');
     state.jobs.push({id:'other-work',case_id:'synthetic',kind:'question',status:'queued'});
-    await page.evaluate(()=>refresh());assert.equal(await rerun.isDisabled(),true,'Queued case work blocks duplicate reruns');
+    await page.evaluate(()=>refresh());assert.equal(await rerun.isDisabled(),false,'Distinct queued case work permits a report retry to join the queue');
     state.jobs.pop();state.cases[0].readiness.status='Blocked';
     await page.evaluate(()=>refresh());assert.equal(await rerun.isDisabled(),true,'Readiness must permit rerun');
     state.cases[0].readiness.status='Ready';state.report_cleanup_cases=['synthetic'];
@@ -174,6 +174,6 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     assert.equal(await page.locator('#focus').inputValue(),'','Accepted Update report clears the submitted prompt');
     assert.equal(calls.filter(item=>item?.kind==='update').length,updatesBefore+2);
     assert.deepEqual(errors,[]);
-    console.log('Running report: visible startup progress/console, draft transitions, timing, idle/failure states; Rerun preserves original kind/focus and newer prompt, blocks duplicate/busy/blocked/cleanup requests, recovers from rejection; accepted-only Update prompt clearing.');
+    console.log('Running report: visible startup progress/console, draft transitions, timing, idle/failure states; Rerun preserves original kind/focus and newer prompt, permits distinct queued work, blocks duplicate/blocked/cleanup requests, recovers from rejection; accepted-only Update prompt clearing.');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

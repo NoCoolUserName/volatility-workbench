@@ -156,9 +156,13 @@ history; undated records appear after dated entries in their saved sequence.
    not require the older bundle to remain present. Shared analysis, original images,
    case/job history, other revisions and independently saved exports are retained.
    Hidden files remain on disk until Settings → Hidden report files permanently
-   deletes them. Deletion and restoration are blocked during active or queued case
-   work. A failed/partial cleanup is recorded and can be retried; it is not silently
-   marked successful. Closing the popup performs no action.
+   deletes them. Delete during queued or active case work saves a deletion request
+   and moves the bundle between jobs, after the current job finishes. Its card
+   stays available and says **deletion queued** until then. Pending deletions survive
+   restart. Restoration and permanent cleanup require idle case work. A missing
+   bundle can still be removed from the UI with Delete; it creates no empty bin entry.
+   Failed cleanup stays visible as **deletion failed**, with its error in the removal
+   popup and Activity, and can be retried. Closing the popup performs no action.
    The report revision currently displayed has a persistent accent outline and
    `aria-current` marker. This selection survives background refresh; after a
    selected revision is hidden or deleted, the remaining latest revision is shown.
@@ -178,12 +182,27 @@ history; undated records appear after dated entries in their saved sequence.
    stored validation records; the investigator reads saved report content as needed.
    Sealed content is not edited in place; explicit Hide/Delete is
    separate from report generation and retains the case's audit metadata.
-7. Multiple cases/jobs run sequentially. Refreshing/reopening the browser reads
+7. Distinct report, update and question requests join a first-in, first-out queue,
+   including a new update submitted after Rerun. Each accepted request keeps its
+   submitted prompt; editing the input afterward does not change queued work.
+   An update uses the latest successfully sealed report when it starts, so successive
+   updates build on each other. A failed job does not discard the next request.
+   If initial generation fails without any sealed report, its queued updates fail
+   clearly before contacting the model. Identical pending requests (same case,
+   operation and prompt, ignoring outer whitespace and line-ending differences)
+   are blocked; submitting the same prompt again after completion is allowed.
+   Retrying the same request identifier acknowledges the original accepted job.
+   Multiple cases/jobs run sequentially. Refreshing/reopening the browser reads
    existing state and cannot start a scan. **Stop all work** interrupts the active
    turn/readiness operation and cancels all queued follow-on work. It sits below
    the connection status and is disabled when no work is queued or running.
    The **Current work** panel appears only while jobs are queued, running, or
    stopping; completed and failed job history remains in the case's Activity tab.
+   Queue positions, typical waiting times and overall finish estimates update as
+   work arrives or finishes. Estimates use up to ten completed requests from the
+   same case, operation, provider, model and reasoning effort, including report
+   writing. Missing history or an overrun shows an unknown estimate. Plugin progress
+   remains a separate estimate and does not promise a report completion percentage.
    During report generation/update, a **Live investigation console** shows actual
    tool starts, progress notifications and returned text as they arrive through
    the provider connection. This read-only terminal-style panel uses the theme's
@@ -392,7 +411,11 @@ locators remain readable but are not promoted to value-verified citations. See
 
 The **Coverage** tab shows each selected image's explicit plan or unspecified
 scope, effective collection states, prior attempts and saved evidence/failure links.
-Refresh reads saved data only. Orchestration jobs are separate from plugin outcomes.
+It automatically reads all saved scope and attempt pages, with no paging buttons.
+Scopes stay collapsible; the report viewer's back-to-top arrow also works here.
+Refresh reads saved data only. A read failure keeps already loaded scopes and
+offers Refresh to retry; switching cases discards stale responses.
+Orchestration jobs are separate from plugin outcomes.
 New reports include a coverage snapshot and limitations summary; old reports are
 unchanged. See [COVERAGE_EVALUATION.md](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COVERAGE_EVALUATION.md). Restart only an idle
 Workbench to load the new tool inventory, case guidance and view.
@@ -696,9 +719,10 @@ reports remain accessible. Blank exception strings retain their exception type.
 
 The notice's Rerun button submits a new job with the failed request's original
 report/update kind and investigation focus. It keeps any newly typed prompt and
-all previous report versions. The button disables while submitting, while other
-case work is queued/active, during report cleanup, or when readiness is blocked.
-Existing generation, update and extraction checks still apply.
+all previous report versions. The button disables while submitting, while that
+retry is already pending, during report cleanup, or when readiness is blocked.
+Other distinct requests can queue behind it. Existing generation, update and
+extraction checks still apply.
 
 ### Error acknowledgment
 

@@ -195,9 +195,16 @@ class Workbench:
             return {'report_id':report_id, 'action':action}
         if report.get('deleted_at'):
             return {'report_id':report_id, 'action':action, 'already_deleted':True}
-        self._require_idle_report_cleanup(case_id)
+        busy=((self.active and self.active['case_id']==case_id) or any(j['case_id']==case_id
+              and j['status'] in ('queued','running','stopping') for j in self.state['jobs']))
+        if busy:
+            if not report.get('delete_requested_at'):
+                report['delete_requested_at']=now()
+                self.event(case,'report_delete_queued',{'report_id':report_id})
+            return {'report_id':report_id,'action':action,'queued':True}
         self.report_cleanup[case_id] = asyncio.current_task()
         try:
+            report.pop('delete_requested_at',None)
             return await self._recycle_report(case, report)
         finally:
             self.report_cleanup.pop(case_id, None)
@@ -206,6 +213,26 @@ class Workbench:
         if ((self.active and self.active['case_id'] == case_id) or
                 any(j['case_id'] == case_id and j['status'] in ('queued','running','stopping') for j in self.state['jobs'])):
             raise ValueError('Finish or stop this case\'s active and queued work before deleting a report')
+
+    async def _drain_report_deletions(self, case):
+        """Run explicit deferred deletes between jobs, never during model reads."""
+        if self.volshell.busy or case['id'] in self.report_cleanup or self.active:
+            return
+        targets=[r for r in case['reports'] if r.get('delete_requested_at') and not r.get('deleted_at')]
+        if not targets: return
+        async def drain():
+            for report in targets:
+                report.pop('delete_requested_at',None)
+                try:
+                    await self._recycle_report(case,report)
+                except Exception:
+                    pass  # _recycle_report records the failure; the card remains retryable.
+        task=asyncio.create_task(drain())
+        self.report_cleanup[case['id']]=task
+        try:
+            await asyncio.shield(task)
+        finally:
+            self.report_cleanup.pop(case['id'],None)
 
     async def _delete_report(self, case, report):
         report_id = report['id']
@@ -238,15 +265,15 @@ class Workbench:
         report_id = report['id']
         try:
             self.event(case, 'report_delete_started', {'report_id':report_id, 'destination':'recycle_bin'})
-            await asyncio.to_thread(recycle_report_bundle, self.directory(case), report_id,
+            moved=await asyncio.to_thread(recycle_report_bundle, self.directory(case), report_id,
                 self.recycle_case_dir(case), [i['path'] for c in self.state['cases'] for i in c['images']],
                 allow_completed=report['status']=='sealed')
             deleted_at = now()
             report.update(hidden=True, deleted_at=deleted_at)
             report.pop('deletion_error', None)
             entry = {'case_id':case['id'], 'report_id':report_id, 'status':report['status'], 'deleted_at':deleted_at}
-            self.state['recycle_bin'].append(entry)
-            self.event(case, 'report_deleted', {'report_id':report_id, 'destination':'recycle_bin',
+            if moved: self.state['recycle_bin'].append(entry)
+            self.event(case, 'report_deleted', {'report_id':report_id, 'destination':'recycle_bin' if moved else 'missing_bundle',
                 'scope':'Only the selected revision bundle; shared analysis retained'})
             evicted = []
             while len(self.state['recycle_bin']) > RECYCLE_LIMIT:
@@ -263,7 +290,7 @@ class Workbench:
                 self.state['recycle_bin'].pop(0)
                 evicted.append(oldest['report_id'])
                 self.event(old_case, 'report_recycle_evicted', {'report_id':oldest['report_id']})
-            return {'report_id':report_id, 'action':'delete', 'recycled':True, 'evicted':evicted}
+            return {'report_id':report_id, 'action':'delete', 'recycled':bool(moved), 'evicted':evicted}
         except Exception as exc:
             report['deletion_error'] = str(exc)
             self.event(case, 'report_delete_failed', {'report_id':report_id, 'error':str(exc)})
@@ -382,6 +409,8 @@ class Workbench:
         return {'report_id': report_id, 'human_determination': report.get('human_determination')}
 
     async def start(self):
+        for case in self.state['cases']:
+            await self._drain_report_deletions(case)
         self.worker = asyncio.create_task(self._worker())
 
     def provider_status(self):
@@ -609,7 +638,20 @@ class Workbench:
         self.save()
         return cases
 
-    def enqueue(self, case_id, kind, text='', request_id=None, *, _volshell_session=None):
+    def enqueue(self, case_id, kind, text='', request_id=None, *, retry_of=None, _volshell_session=None):
+        if kind not in ('readiness','report','question','update'):
+            raise ValueError('Unknown job kind')
+        if not isinstance(text,str) or len(text)>20000:
+            raise ValueError('Question/focus must be text under 20,000 characters')
+        if request_id is not None and (not isinstance(request_id,str) or not 1<=len(request_id)<=200):
+            raise ValueError('Invalid request identifier')
+        request_id=request_id or uid()
+        previous=next((j for j in self.state['jobs'] if j.get('request_id')==request_id),None)
+        if previous:
+            if any(previous.get(key)!=value for key,value in
+                   (('case_id',case_id),('kind',kind),('text',text),('retry_of',retry_of))):
+                raise ValueError('Request identifier already belongs to a different submission')
+            return previous
         if self.volshell.busy:
             session = self.volshell.snapshot()['session']
             if (kind != 'question' or _volshell_session != session['id']
@@ -620,23 +662,37 @@ class Workbench:
         if getattr(getattr(self,'settings_manager',None),'busy',False):
             raise ValueError('Finish settings maintenance before starting analysis')
         case=self.case(case_id)
-        if kind not in ('readiness','report','question','update'):
-            raise ValueError('Unknown job kind')
-        if not isinstance(text,str) or len(text)>20000:
-            raise ValueError('Question/focus must be text under 20,000 characters')
         if kind=='question' and not text.strip():
             raise ValueError('Enter a case question')
         if kind in ('report','update') and case['readiness']['status'] not in ('Ready','Ready with limitations'):
             raise ValueError('Run readiness successfully before report generation')
-        if kind=='update' and not any(r['status']=='sealed' for r in case['reports']):
+        has_report=any(r['status']=='sealed' and not r.get('deleted_at') for r in case['reports'])
+        pending_report=any(j['case_id']==case_id and j['kind'] in ('report','update')
+                           and j['status'] in ('queued','running','stopping') for j in self.state['jobs'])
+        if kind=='update' and not (has_report or pending_report):
             raise ValueError('Generate the first report before updating it')
-        request_id=request_id or uid()
-        previous=next((j for j in self.state['jobs'] if j['request_id']==request_id),None)
-        if previous:
-            return previous
-        if any(j['case_id']==case_id and j['kind']==kind and j['status'] in ('queued','running','stopping') for j in self.state['jobs']):
+        if retry_of is not None:
+            original=next((j for j in self.state['jobs'] if j['id']==retry_of and j['case_id']==case_id),None)
+            if (not original or original['kind'] not in ('report','update')
+                    or original['status'] not in ('failed','incomplete')
+                    or original['kind']!=kind or original.get('text','')!=text):
+                raise ValueError('Rerun must repeat an unfinished report request from this case')
+            pending_retry=next((j for j in self.state['jobs'] if j.get('retry_of')==retry_of
+                                and j['status'] in ('queued','running','stopping')),None)
+            if pending_retry: return pending_retry
+        normalized=text.replace('\r\n','\n').strip()
+        if kind in ('report','update','question') and any(j['case_id']==case_id and j['kind']==kind
+                and j['status'] in ('queued','running','stopping')
+                and j.get('text','').replace('\r\n','\n').strip()==normalized for j in self.state['jobs']):
+            raise ValueError('An identical request is already queued or running for this case')
+        if (kind=='readiness' or _volshell_session) and any(j['case_id']==case_id and j['kind']==kind
+                and j['status'] in ('queued','running','stopping') for j in self.state['jobs']):
             raise ValueError('This operation is already queued or active for the case')
         job={'id':uid(),'request_id':request_id,'case_id':case_id,'kind':kind,'text':text,'status':'queued','created_at':now()}
+        if retry_of is not None: job['retry_of']=retry_of
+        if kind!='readiness':
+            provider=self.case_provider(case)
+            job['estimate_profile']={key:provider.get(key) for key in ('provider','model','reasoning_effort')}
         if _volshell_session:
             job.update(volshell_session_id=_volshell_session,
                        volshell_image_id=self.volshell.snapshot()['session']['image_id'])
@@ -644,7 +700,11 @@ class Workbench:
             job['planned_plugins'] = [name for name in re.findall(r'`([^`]+)`', text)
                                       if len(name) <= 256 and plugin_speeds.PLUGIN.fullmatch(name)][:500]
         self.state['jobs'].append(job)
-        self.save()
+        try:
+            self.save()
+        except Exception:
+            self.state['jobs'].remove(job)
+            raise
         self.queue.put_nowait(job)
         return job
 
@@ -695,6 +755,8 @@ class Workbench:
                 self.active=None
                 self.active_task=None
                 self.save()
+                for cleanup_case in self.state['cases']:
+                    await self._drain_report_deletions(cleanup_case)
 
     def progress(self, job, label):
         job['progress']=label
@@ -893,6 +955,8 @@ REPORT_SPEC follows:\n'''+spec
     async def _execute(self,case,job):
         if job['kind']=='readiness':
             return await self.readiness(case,job)
+        if job['kind']=='update' and not any(r['status']=='sealed' and not r.get('deleted_at') for r in case['reports']):
+            raise ValueError('This queued update has no successfully sealed report to update. The earlier generation may have failed; generate a report before retrying this prompt.')
         await self.ensure_thread(case)
         provider=self.case_provider(case)
         job['generation']=generation.begin(provider['provider'],
@@ -1485,6 +1549,9 @@ REPORT_SPEC follows:\n'''+spec
             elif self.active_task:
                 self.active_task.cancel()
         self.save()
+        if self.active is None:
+            for cleanup_case in self.state['cases']:
+                await self._drain_report_deletions(cleanup_case)
         return {'stopping':True}
 
     async def close(self):
