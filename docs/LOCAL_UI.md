@@ -11,8 +11,8 @@ credential handling and tested limits.
 
 ## Appearance
 
-The header's Theme selector and Settings → Appearance offer the same 31 local
-skins, including 12 separate Fallout choices. New profiles start with the
+The header's Theme selector and Settings → Appearance offer the same 33 local
+skins, including 14 Fallout choices. New profiles start with the
 original Matrix green appearance; the three original preference values remain
 supported. Selection persists in application preferences across desktop launches,
 including changes to the local server port. Workbench and Settings synchronize
@@ -22,12 +22,16 @@ has been saved.
 Artwork stays in a decorative band outside opaque evidence/report surfaces.
 Fallout 2 uses a scalable CSS metal housing, compact ventilation rail, recessed
 green screens and brass controls, guided by the supplied inventory-screen reference.
+Fallout 3 (RobCo Night) adds a black steel terminal with green phosphor, while
+Fallout 3 (Vault 112) uses olive metal, ivory phosphor and an amber power lamp.
+Both have CSS console housings based on the supplied terminal references.
 Theme changes do not submit jobs or modify cases, conversations or saved reports.
 The displayed report retains its selection border. See [the catalog and verified
 references](THEMES.md), including the Punisher #53 artist correction.
 Text size is separate from WebView/page zoom. Pinch apart or together on a trackpad,
 hold Control while scrolling a mouse wheel, or use the A−/percentage/A+ controls
-in the header, Settings, or expanded console. Workbench scales text from 75% to
+in Settings. The main screen and console omit the text-size control strip.
+Workbench scales text from 75% to
 200% in 5% steps, wraps larger text inside existing panels, and saves the selected
 size in application preferences outside the bundle. The connection status appears
 above Settings in the header.
@@ -84,6 +88,10 @@ gear, sits below the connection status at the upper-right corner. The themes inc
 Soft black and white, and Light blue. The selection is stored in application preferences
 outside the app bundle and restored on reload or restart. It changes presentation only; case state,
 saved evidence, and reports are unaffected.
+Case conversation and Activity & failures each provide an **Oldest first / Newest
+first** selector. The choices are saved separately for each case and survive
+refresh and relaunch. Sorting uses event timestamps and preserves the recorded
+history; undated records appear after dated entries in their saved sequence.
 
 1. Add existing `.raw`, `.mem`, `.vmem`, `.dmp`, `.lime`, or `.dd` files through
    path entry, evidence-folder browsing, or **Choose in Finder** on macOS. The
@@ -723,7 +731,7 @@ inline and leave the checkbox at its previously saved value.
 The Fallout: New Vegas expanded console takes its CSS housing from the weathered
 Welcome sign: neon letter discs and star, warm perimeter bulbs with several dark
 sockets, faded red lettering and aged trim. The display remains opaque and legible.
-All 31 themes give the VolShell bezel button their own treatment while retaining
+All 33 themes give the VolShell bezel button their own treatment while retaining
 a separate rectangular connection LED and visible keyboard focus.
 
 Theme selection is saved in `appearance.json` under the application preferences

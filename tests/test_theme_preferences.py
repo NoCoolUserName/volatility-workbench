@@ -77,6 +77,11 @@ class ThemePreferencesTests(unittest.TestCase):
                 self.manager.save_zoom({'percent':value})
         self.assertEqual(self.manager.zoom(), saved)
 
+    def test_fallout_3_terminal_choices_survive_reload(self):
+        for theme in ('fallout-3-robco', 'fallout-3-vault-112'):
+            saved = self.save(theme)
+            self.assertEqual(SettingsManager(self.app, self.root/'config.json', self.manager.root).appearance(), saved)
+
     def test_strict_builtin_id_and_request_validation(self):
         invalid = [None, [], 'matrix', {}, {'theme': []}, {'theme': {}}, {'theme': True},
                    {'theme': '../matrix'}, {'theme': 'Fallout-New-Vegas'}, {'theme': 'unknown'},
@@ -198,7 +203,7 @@ class ThemePreferencesTests(unittest.TestCase):
         asset = files('volatility_workbench').joinpath('static/themes.js')
         catalog = asset.read_text().split('const catalog = [', 1)[1].split('\n  ];', 1)[0]
         names = re.findall(r"^    \['([^']+)',", catalog, re.MULTILINE)
-        self.assertEqual(len(names), 31)
+        self.assertEqual(len(names), 33)
         self.assertEqual(frozenset(names), THEME_IDS)
 
 

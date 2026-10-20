@@ -169,6 +169,66 @@ function choose(id, activate = true) {
 function caseNow() {
   return state.cases.find((c) => c.id === selected);
 }
+const historyOrderChoices = new Map(), historyOrderSaving = new Set();
+function historyOrder(caseRecord, section) {
+  return historyOrderChoices.get(caseRecord.id + ':' + section) || caseRecord.history_order?.[section] ||
+    (section === 'conversation' ? 'oldest' : 'newest');
+}
+function orderedHistory(entries, order) {
+  const direction = order === 'oldest' ? 1 : -1;
+  return entries.map((entry,index) => ({entry,index,time:timestampMillis(entry.time)}))
+    .sort((a,b) => {
+      // Undated records stay at the end in their original order.
+      if (!Number.isFinite(a.time) || !Number.isFinite(b.time))
+        return Number.isFinite(a.time) ? -1 : Number.isFinite(b.time) ? 1 : a.index - b.index;
+      return direction * (a.time - b.time || a.index - b.index);
+    }).map(item => item.entry);
+}
+function renderHistory(c) {
+  for (const section of ['conversation','activity']) {
+    const control = $(section + 'Order');
+    control.value = historyOrder(c, section);
+    control.disabled = historyOrderSaving.has(c.id + ':' + section);
+  }
+  const messageOrder = historyOrder(c, 'conversation'), activityOrder = historyOrder(c, 'activity');
+  const mkey = JSON.stringify([c.id,messageOrder,c.messages]);
+  if (shownMessages !== mkey) {
+    $('messages').replaceChildren(...orderedHistory(c.messages, messageOrder).map(m =>
+      el('div', m.role.toUpperCase() + ' · ' + readableTime(m.time) + '\n' + m.text, 'message ' + m.role)));
+    shownMessages = mkey;
+  }
+  const akey = JSON.stringify([c.id,activityOrder,c.activity]);
+  if (shownActivity !== akey) {
+    $('activityList').replaceChildren(...orderedHistory(c.activity, activityOrder).map(a => {
+      const d = el('details', undefined, 'event');
+      d.append(el('summary', readableTime(a.time) + ' · ' + a.kind),
+        el('pre', readableTime(JSON.stringify(a.detail, null, 2))));
+      return d;
+    }));
+    shownActivity = akey;
+  }
+}
+document.querySelectorAll('[data-history-order]').forEach(control => {
+  control.onchange = act(async () => {
+    const c = caseNow(), section = control.dataset.historyOrder, order = control.value;
+    if (!c) return;
+    const key = c.id + ':' + section, previous = historyOrder(c, section);
+    historyOrderChoices.set(key, order);historyOrderSaving.add(key);renderHistory(c);
+    try {
+      const saved = await api('history-order', {case_id:c.id, section, order});
+      if (saved.case_id !== c.id || saved.section !== section || saved.order !== order)
+        throw Error('Sort order could not be confirmed');
+      const current = state.cases.find(item => item.id === c.id);
+      if (current) current.history_order = {...current.history_order, [section]:order};
+    } catch (failure) {
+      historyOrderChoices.set(key, previous);
+      throw failure;
+    } finally {
+      historyOrderSaving.delete(key);
+      if (selected === c.id) renderHistory(caseNow());
+    }
+  });
+});
 function imageSize(sizeBytes) {
   const gigabyte = 1_000_000_000;
   const unit = sizeBytes >= gigabyte ? "GB" : "MB";
@@ -1445,33 +1505,7 @@ function render() {
     markSelectedReport(v?.id || null);
     showReport(v);
     updateBulkPluginAction();
-    const mkey = JSON.stringify(c.messages);
-    if (shownMessages !== mkey) {
-      $("messages").replaceChildren(
-        ...c.messages.map((m) =>
-          el(
-            "div",
-            m.role.toUpperCase() + " · " + readableTime(m.time) + "\n" + m.text,
-            "message " + m.role,
-          ),
-        ),
-      );
-      shownMessages = mkey;
-    }
-    const akey = JSON.stringify(c.activity);
-    if (shownActivity !== akey) {
-      $("activityList").replaceChildren(
-        ...[...c.activity].reverse().map((a) => {
-          const d = el("details", undefined, "event");
-          d.append(
-            el("summary", readableTime(a.time) + " · " + a.kind),
-            el("pre", readableTime(JSON.stringify(a.detail, null, 2))),
-          );
-          return d;
-        }),
-      );
-      shownActivity = akey;
-    }
+    renderHistory(c);
     renderApprovals(c);
   }
   const pending = state.jobs.filter(j => ["queued", "running", "stopping"].includes(j.status));

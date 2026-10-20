@@ -79,11 +79,6 @@ h3 {
   letter-spacing: 2px;
   color: var(--muted);
 }
-.dot {
-  color: var(--accent);
-  font-size: calc(11px * var(--text-scale, 1));
-  margin-left: 12px;
-}
 .privacy {
   padding: 12px 32px;
   background: var(--privacy-bg);
@@ -516,7 +511,9 @@ pre {
 .work-heading, .report-progress-heading { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 #toggleReportConsole { display: inline-flex; align-items: center; gap: .35em; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: inherit; font: inherit; text-align: left; }
 #toggleReportConsole:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
-.report-console-arrow { width: .8em; font-size: .7em; text-align: center; }
+.report-console-arrow { width: 1em; font-size: 1em; line-height: 1; text-align: center; }
+.history-order { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.history-order select { width: auto; max-width: 100%; }
 .queue li span {
   display: block;
   color: var(--muted);

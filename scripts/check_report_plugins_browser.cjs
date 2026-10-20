@@ -437,6 +437,6 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.equal(await page.locator('#report').getAttribute('class'),'primary');
   assert.equal(await page.locator('#update').isDisabled(),true);
   assert.deepEqual(errors,[]);assert.deepEqual(policies,[]);assert.equal(await page.evaluate(()=>window.injected),undefined);
-  console.log('Report plugins browser: persistent error acknowledgments/colors/save failures, counts/scope, errors/unused, failed-request retry drafts/exact metadata/dedup/disabled state, descriptions/timing/details, OS-matched bulk prompts, primary action order, completion refresh, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, 31 themes passed; only synthetic local reads and acknowledgment saves.');
+  console.log('Report plugins browser: persistent error acknowledgments/colors/save failures, counts/scope, errors/unused, failed-request retry drafts/exact metadata/dedup/disabled state, descriptions/timing/details, OS-matched bulk prompts, primary action order, completion refresh, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, all themes passed; only synthetic local reads and acknowledgment saves.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

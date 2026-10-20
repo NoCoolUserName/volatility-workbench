@@ -67,6 +67,19 @@ labels and phosphor accents. The same treatment covers Settings and adapts to
 narrow screens. These overrides apply only to Fallout 2; Matrix and the other
 Fallout palettes retain their existing presentation.
 
+Two additional Fallout 3 themes use the terminal screenshots supplied by the user:
+
+| Selector name | Terminal treatment |
+| --- | --- |
+| Fallout 3 (RobCo Night) | Matte graphite housing, broad curved screen recess, bright green phosphor and a dark Termlink control plate. |
+| Fallout 3 (Vault 112) | Aged olive housing, ivory phosphor, lower ventilation slots and a square amber power lamp. |
+
+Both cover the main UI, Settings and the expanded Output/VolShell monitor. Their
+materials, ventilation slots, bevels and lamps are responsive CSS; the supplied
+screenshots are not packaged or stretched over the UI. Text stays selectable on
+opaque screen surfaces, without scanline or glare overlays. The original Fallout 3
+wasteland theme remains available alongside the two terminals.
+
 ## Other requested skins
 
 | Reference | Visual direction |

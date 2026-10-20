@@ -16,7 +16,8 @@ from .runtime_management import install_community_overlay
 
 THEME_IDS = frozenset({
     'matrix', 'halloween', 'halloween-noir', 'nightmare', 'fallout', 'fallout-2',
-    'fallout-tactics', 'fallout-brotherhood', 'fallout-3', 'fallout-new-vegas',
+    'fallout-tactics', 'fallout-brotherhood', 'fallout-3', 'fallout-3-robco',
+    'fallout-3-vault-112', 'fallout-new-vegas',
     'fallout-4', 'fallout-shelter', 'fallout-76', 'fallout-4-vr', 'fallout-pinball',
     'fallout-shelter-online', '8-bit', 'adventure', 'metroid', 'silpheed',
     'elevator', 'vaporwave', 'retrowave', 'hacker', 'top-gun', 'oedo',
