@@ -1,6 +1,6 @@
-/* Original, offline theme artwork. Palette tokens and the catalog are shared by
- * Workbench and Settings. All packaged illustrations are original local compositions;
- * references name the inspiration, and do not load franchise or remote assets. */
+/* Offline theme artwork. Palette tokens and the catalog are shared by Workbench
+ * and Settings. Detailed Fallout 76 bezel assets derive from user-supplied
+ * references; all theme assets are packaged locally, with no remote requests. */
 (() => {
   'use strict';
   const key = 'volatility-workbench-theme';
@@ -23,7 +23,7 @@
     ['fallout-4','Fallout 4','Fallout','#0e1b20 #1a2b30 #1d333a #588389 #e4f2ed #b2ceca #a8dfd6 #173130','Coastal blue steel and a suspension bridge.','industrial'],
     ['fallout-shelter','Fallout Shelter','Fallout','#17180f #252b1b #2d3420 #788459 #f2eed2 #c6c9a2 #e8ce88 #30270f','A warm cross-section of a busy underground vault.','rounded'],
     ['fallout-76','Fallout 76','Fallout','#0d1d21 #1a3035 #203b40 #62898a #e9f4e9 #bdd2c6 #e6ce92 #2a2814','Appalachian pines, blue steel and a golden 76.','industrial'],
-    ['fallout-76-camden-park','Fallout 76 (Camden Park)','Fallout','#0c0d09 #191c15 #10130e #89917c #f4f0c5 #c4c5a7 #f5eaa5 #282711','Chipped cream enamel, rusty seams, a faded blue rim and ivory phosphor.','terminal',null],
+    ['fallout-76-camden-park','Fallout 76 (Camden Park)','Fallout','#060806 #111510 #0a0e09 #85907b #eeecc2 #bebf9e #ede7a1 #25260e','Heavily rusted pale enamel, battered blue trim and ivory terminal text.','terminal',null],
     ['fallout-76-field-terminal','Fallout 76 (Field Terminal)','Fallout','#0d1013 #1a2027 #12171e #808d9b #f2e2b7 #c3beac #e8c877 #292312','Charcoal steel, a worn silver screen rim, amber phosphor and twin control knobs.','terminal',null],
     ['fallout-4-vr','Fallout 4 VR','Fallout','#0d1922 #1b2c39 #203544 #61859a #edf1ec #bdcdd4 #bfdde6 #1b2a33','A steel-blue headset framing twin wasteland horizons.','industrial'],
     ['fallout-pinball','Fallout Pinball','Fallout','#1a1422 #2e233a #352940 #857198 #f8ecdf #cbbdd1 #dfc599 #322414','A vault-inspired playfield, warm bumpers and paired flippers.','rounded'],

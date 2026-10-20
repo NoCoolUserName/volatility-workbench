@@ -758,6 +758,11 @@ sockets, faded red lettering and aged trim. The display remains opaque and legib
 All 35 themes give the VolShell bezel button their own treatment while retaining
 a separate rectangular connection LED and visible keyboard focus.
 
+The Camden Park and Field Terminal Fallout 76 consoles use detailed transparent
+frames derived from the user's reference pictures. The frame keeps its original
+proportions, with live HTML output behind the glass opening. Output/VolShell
+controls sit below the housing. The packaged PNGs need no network access.
+
 Theme selection is saved in `appearance.json` under the application preferences
 directory, outside cases and evidence. It survives a new desktop launch even
 when the local server port changes. Existing browser preferences migrate on the

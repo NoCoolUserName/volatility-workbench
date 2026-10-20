@@ -84,15 +84,23 @@ Two Fallout 76 terminal variants use the user's additional screenshots:
 
 | Selector name | Terminal treatment |
 | --- | --- |
-| Fallout 76 (Camden Park) | Chipped cream enamel, rusty seams, a faded blue outer rim, broad curved glass and warm ivory phosphor. |
-| Fallout 76 (Field Terminal) | Charcoal steel, a worn silver screen surround, amber phosphor, a side latch and two round control knobs. |
+| Fallout 76 (Camden Park) | Heavily flaked pale blue-gray enamel, irregular rust patches, battered blue outer lip and a broad rounded glass opening. |
+| Fallout 76 (Field Terminal) | Rough charcoal cast metal, a worn blue-silver surround, recessed left latch and two projecting cylindrical black knobs in silver sockets. |
 
 Both extend through the main application, Settings and the Output/VolShell console.
-The housings, patina and decorative controls use CSS, with no screenshot assets or
-remote downloads. The Field Terminal's latch and knobs are decorative; Output and
-VolShell retain their labeled working controls. Narrow screens omit the side
-details to leave room for the screen. Text remains selectable and wraps as its size grows.
-The original Fallout 76 theme and existing saved theme choices remain available.
+Their detailed console frames are transparent PNG assets edited from the supplied
+reference images using the built-in image editor. Source game text, quest HUD and
+environment are removed. The frames preserve their proportions and have empty
+screen openings; the live console remains selectable HTML behind them. Output and
+VolShell controls sit below the housing. Knobs and latch are decorative, and do not
+replace the labeled controls. All assets are packaged locally without remote
+downloads. The original Fallout 76 theme and saved theme choices remain available.
+
+Asset files: `bezel-fallout76-camden-park.png` and
+`bezel-fallout76-field-terminal.png`. The edit prompts required preserving the
+reference contours, wear, material, colors and control placement, with transparent
+screen holes and no added lettering or hardware. Their integration uses CSS;
+the detailed frame textures are raster artwork rather than CSS approximations.
 
 ## Other requested skins
 
