@@ -156,6 +156,8 @@ saved evidence, and reports are unaffected.
    material limitations. If the new results leave the assessment unchanged, the
    summary should say why. This is an investigative instruction; mechanical
    report validation does not independently judge the relevance of a finding.
+   The model prompt lists report version IDs and status metadata without repeating
+   stored validation records; the investigator reads saved report content as needed.
    Sealed content is not edited in place; explicit Hide/Delete is
    separate from report generation and retains the case's audit metadata.
 7. Multiple cases/jobs run sequentially. Refreshing/reopening the browser reads
