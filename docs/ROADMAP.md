@@ -16,7 +16,7 @@ implementations or inventory policy in this repository.
 
 | Priority | Remaining Workbench work | Acceptance check |
 | --- | --- | --- |
-| 1 | Complete one end-to-end acceptance run of the current distributable on a clean user account or second Mac. Existing developer-Mac and synthetic checks do not establish that environment. | From a fresh install, register an authorized harmless fixture, check readiness, generate a report, ask a follow-up, revise it, quit and reopen. Verify preserved case/session identity, saved consoles, citations and report selection, with no duplicate analysis. Record exact app/core revisions, OS and results. |
+| 1 | Complete one end-to-end acceptance run of the current distributable on a clean user account or second Mac. The [repeatable procedure](CLEAN_INSTALL_ACCEPTANCE.md) and synthetic first-run regression cover part of this gate; neither establishes a real native clean installation. | From a fresh install, register an authorized harmless fixture, check readiness, generate a report, ask a follow-up, revise it, quit and reopen. Verify preserved case/session identity, saved consoles, citations and report selection, with no duplicate analysis. Record exact app/core revisions, OS and results. |
 | 2 | Improve and measure interruption/resource behavior where forced process death, long hashing/conversion and unbounded stored output still limit reliability. Coordinate analyzer changes with core. | Bounded large fixtures for Stop latency, forced termination/restart and descendant cleanup; preserve completed evidence and mark unfinished work. Add a documented storage quota or warning/cleanup design that never silently removes evidence or sealed reports. |
 | 3 | Validate accessibility and interaction beyond the existing browser/theme fixtures. | Keyboard-only and assistive-technology review of case/report navigation, error review, Settings and VolShell; selected browser/WebView and narrow-screen checks. Preserve readable evidence surfaces, focus, reduced-motion behavior and status semantics across themes. |
 | 4 | Complete credentialed macOS release acceptance. Build, auditing and signing/notarization machinery already exist. | Authorized Developer ID signing, notarization/stapling, and downloaded-app Gatekeeper testing on a second Mac with quarantine intact; record exact artifact hashes and outcomes. Ad-hoc signing and simulated Apple responses do not close this item. |
@@ -79,3 +79,4 @@ malware names or use installed-plugin count as a coverage denominator.
 - Coordinate independent model-answer/report accuracy evaluation with core using
   authorized saved-evidence sets. Check citation values, unsupported conclusions,
   uncertainty and abstentions separately from UI/contract test pass rates.
+
