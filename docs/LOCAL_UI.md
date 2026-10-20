@@ -156,6 +156,9 @@ saved evidence, and reports are unaffected.
    material limitations. If the new results leave the assessment unchanged, the
    summary should say why. This is an investigative instruction; mechanical
    report validation does not independently judge the relevance of a finding.
+   The focus field recalls the 10 most recent nonempty report/update prompts from
+   this case's saved jobs with Up/Down; Escape restores the unsent draft. Multiline
+   editing keeps normal Up behavior except when the caret is on the first line.
    The model prompt lists report version IDs and status metadata without repeating
    stored validation records; the investigator reads saved report content as needed.
    Sealed content is not edited in place; explicit Hide/Delete is

@@ -130,9 +130,13 @@
               rows="2"
               placeholder="Optional investigation focus"
               aria-label="Investigation focus"
+              aria-describedby="focusHistoryHelp"
             ></textarea><button id="report" class="primary">Generate report</button
             ><button id="update">Update report</button>
           </div>
+          <p class="subtle" id="focusHistoryHelp">
+            Prompt history: Up recalls the last 10 prompts for this case; Down moves forward; Escape restores your draft. In multiline prompts, start on the first line.
+          </p>
           <p class="subtle">
             Generate and Update create a new report version. Asking a question
             preserves current reports.

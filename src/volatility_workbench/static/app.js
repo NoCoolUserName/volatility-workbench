@@ -112,6 +112,22 @@ function restoreReportPosition() {
   window.scrollTo({left:point.x, top:y, behavior:"instant"});
 }
 const focusDrafts = new Map();
+let focusHistoryIndex = -1, focusHistoryDraft = "", focusHistoryEntries = [];
+function focusHistory() {
+  if (!state || !selected) return [];
+  const entries = [];
+  for (let i = state.jobs.length - 1; i >= 0 && entries.length < 10; i--) {
+    const item = state.jobs[i];
+    if (item.case_id === selected && ["report", "update"].includes(item.kind) && item.text?.trim())
+      entries.push(item.text);
+  }
+  return entries;
+}
+function resetFocusHistory() {
+  focusHistoryIndex = -1;
+  focusHistoryDraft = "";
+  focusHistoryEntries = [];
+}
 function sizeFocus() {
   const focus = $("focus");
   focus.style.height = "";
@@ -126,7 +142,8 @@ function choose(id, activate = true) {
   if (activate) activeView = "case";
   const changeFocus = id !== selected;
   if (changeFocus) {
-    if (selected) focusDrafts.set(selected, $("focus").value);
+    if (selected) focusDrafts.set(selected, focusHistoryIndex < 0 ? $("focus").value : focusHistoryDraft);
+    resetFocusHistory();
     $("focus").value = focusDrafts.get(id) || "";
   }
   selected = id;
@@ -170,6 +187,7 @@ async function job(kind, text = "") {
     text,
     request_id: crypto.randomUUID(),
   });
+  resetFocusHistory();
   if (kind === "update") {
     focusDrafts.set(caseId, "");
     if (selected === caseId) { $("focus").value = ""; sizeFocus(); updateBulkPluginAction(); }
@@ -655,6 +673,7 @@ function appendFocus(instruction, record) {
   const current = focus.value.trim();
   const next = current.includes(instruction) ? current : current ? current + "\n" + instruction : instruction;
   if (next.length > 20000) { error(Error("The investigation focus is full. Shorten it before adding more plugins.")); return; }
+  resetFocusHistory();
   focus.value = next;
   focusDrafts.set(record.caseId, next);
   sizeFocus();
@@ -1963,7 +1982,40 @@ $("readiness").onclick = act(async () => {
 });
 $("report").onclick = act(() => job("report", $("focus").value));
 $("update").onclick = act(() => job("update", $("focus").value));
+$("focus").addEventListener("keydown", event => {
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+  const focus = $("focus");
+  if (event.key === "Escape" && focusHistoryIndex >= 0) {
+    event.preventDefault();
+    focus.value = focusHistoryDraft;
+    resetFocusHistory();
+  } else if (event.key === "ArrowUp") {
+    const firstLineEnd = focus.value.indexOf("\n");
+    if (focusHistoryIndex < 0 && (focus.selectionStart !== focus.selectionEnd ||
+        firstLineEnd >= 0 && focus.selectionStart > firstLineEnd)) return;
+    const entries = focusHistoryIndex < 0 ? focusHistory() : focusHistoryEntries;
+    if (!entries.length) return;
+    event.preventDefault();
+    if (focusHistoryIndex < 0) { focusHistoryDraft = focus.value; focusHistoryEntries = entries; }
+    focusHistoryIndex = Math.min(focusHistoryIndex + 1, entries.length - 1);
+    focus.value = entries[focusHistoryIndex];
+  } else if (event.key === "ArrowDown" && focusHistoryIndex >= 0) {
+    event.preventDefault();
+    focusHistoryIndex--;
+    if (focusHistoryIndex < 0) {
+      focus.value = focusHistoryDraft;
+      resetFocusHistory();
+    } else focus.value = focusHistoryEntries[focusHistoryIndex];
+  } else return;
+  focus.setSelectionRange(0, 0);
+  sizeFocus();
+  updateBulkPluginAction();
+});
+$("focus").addEventListener("pointerdown", () => {
+  if (focusHistoryIndex >= 0) resetFocusHistory();
+});
 $("focus").oninput = () => {
+  resetFocusHistory();
   if (selected) focusDrafts.set(selected, $("focus").value);
   if ($("focus").scrollHeight > $("focus").clientHeight) sizeFocus();
   updateBulkPluginAction();
