@@ -42,6 +42,7 @@ let state,
   artifact = null;
 let consoleJob = null;
 let consolePagePosition = null;
+let consoleOpener = null;
 let currentConsole = null, savedConsoleKey = "";
 const savedConsoleCache = new Map();
 const consoleNodes = new Map();
@@ -1286,6 +1287,7 @@ function operationLabel(job, now = Date.now()) {
 }
 function render() {
   if (!state) return;
+  document.querySelector(".settings-link").href = "/settings.html" + (selected ? "?case=" + encodeURIComponent(selected) : "");
   const renderedAt = Date.now();
   window.WorkbenchVolshell.update(state, selected);
   const shellActive = window.WorkbenchVolshell.hasActiveSession();
@@ -1301,15 +1303,24 @@ function render() {
   $("root").textContent = "Default evidence folder: " + state.evidence_root;
   $("pick").disabled = !state.native_picker;
   const cases = $("cases");
-  cases.replaceChildren();
+  const existingCases = new Map([...cases.children].map(button => [button.dataset.caseId, button]));
+  const caseButtons = [];
   for (const c of orderedCases()) {
-    const b = el(
-      "button",
-      c.title,
-      "case-button" + (c.id === selected && activeView === "case" ? " selected" : ""),
-    );
+    const b = existingCases.get(c.id) || el("button", c.title, "case-button");
+    b.dataset.caseId = c.id;
+    if (b.textContent !== c.title) b.textContent = c.title;
+    const current = c.id === selected && activeView === "case";
+    b.classList.toggle("selected", current);
+    if (current) b.setAttribute("aria-current", "true");
+    else b.removeAttribute("aria-current");
     b.onclick = () => choose(c.id);
-    cases.append(b);
+    caseButtons.push(b);
+  }
+  // Routine state polling must not remove a keyboard user's active case button.
+  if (caseButtons.length !== cases.children.length || caseButtons.some((button, i) => cases.children[i] !== button)) {
+    const focused = document.activeElement;
+    cases.replaceChildren(...caseButtons);
+    if (caseButtons.includes(focused)) focused.focus({preventScroll:true});
   }
   const c = caseNow();
   $("plugins").hidden = activeView !== "plugins";
@@ -1593,6 +1604,7 @@ function resizeConsoleView(expanded) {
   if (expanded) {
     if ((!currentConsole && !caseNow()) || dialog.open || button.getAttribute("aria-expanded") === "true") return;
     consolePagePosition = window.scrollY;
+    consoleOpener = document.activeElement;
     $("expandedConsoleHost").append($("liveConsoleSection"));
     document.body.classList.add("console-zoom-open");
     button.textContent = "Collapse";
@@ -1611,7 +1623,11 @@ function resizeConsoleView(expanded) {
   renderConsoleOperation(currentConsole);
   pre.scrollTop = follow ? pre.scrollHeight : top;
   $("consoleFollow").checked = follow;
-  if (currentConsole) (!expanded && $("liveConsoleDock").hidden ? $("toggleReportConsole") : button).focus({preventScroll:true});
+  if (!expanded && consoleOpener?.isConnected && !dialog.contains(consoleOpener) &&
+      consoleOpener !== document.body && consoleOpener.getClientRects().length && !consoleOpener.matches(":disabled")) {
+    consoleOpener.focus({preventScroll:true});
+    consoleOpener = null;
+  } else if (currentConsole) (!expanded && $("liveConsoleDock").hidden ? $("toggleReportConsole") : button).focus({preventScroll:true});
   else $("caseTitle").focus({preventScroll:true});
 }
 $("expandConsole").onclick = () => {

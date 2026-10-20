@@ -282,6 +282,10 @@
     $("volshellStatus").textContent = pending ? "Request in progress…" : connectionAttempt ? "Connecting…" : current?.status === "failed" && current.case_id === targetCase ? "Connection failed"
       : connected ? !same ? "Connected to another case" : investigationBusy || agentActive() ? "AI investigation active · manual input paused" : current.status === "starting" ? "Connecting…" : current.status === "stopping" ? "Disconnecting…" : current.ready ? current.continuation ? "Connected · finish the continued block" : "Connected · ready" : "Connected · command running"
         : investigationBusy || agentActive() ? "An investigation is active. Connect when it finishes." : "Disconnected";
+    // Connection options are normally closed. Keep transitions accessible without
+    // exposing raw output or announcing an unchanged polling snapshot again.
+    const announcement = "VolShell · " + caseName(targetCase) + ". " + $("volshellStatus").textContent;
+    if ($("volshellAnnouncement").textContent !== announcement) $("volshellAnnouncement").textContent = announcement;
     if (current?.case_id === targetCase && current.error && !$("volshellError").textContent) { showError(current.error); $("volshellConnection").open = true; }
     $("volshellConnect").disabled = pending || !!connectionAttempt || connected || snapshot.busy || investigationBusy || agentActive() || !targetCase || !$("volshellImage").value;
     $("volshellDisconnect").disabled = pending || !!disconnectAttempt || !connected || current.status === "stopping" || investigationBusy || agentActive();

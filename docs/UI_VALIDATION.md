@@ -1,5 +1,70 @@
 # Workbench validation — experimental first version
 
+## Focused keyboard and accessibility review — 19 October 2026
+
+Reviewed upstream `7da02db009a5a79e11ce3d16e6c0f56e0b4a7b7c` with
+synthetic cases and intercepted local browser requests. No private investigation,
+saved evidence, real interpreter or provider was used. Four reproduced defects
+received targeted corrections:
+
+- Escape/Collapse now returns focus to the visible control that opened the
+  monitor, with the existing fallback when that control is unavailable.
+- A visually hidden, atomic polite status region outside the normally closed
+  connection disclosure exposes case-bound connection transitions. Unchanged
+  polling snapshots do not rewrite the announcement; raw output is not included.
+- Case buttons retain their DOM identity and keyboard focus across polling and
+  reordering. `aria-current` identifies the selected case without changing it.
+- The Settings link and return link carry the selected case ID, so returning
+  does not silently select a newer case. This does not rebind provider settings.
+
+`scripts/check_accessibility_browser.cjs` passed ten synthetic check groups:
+
+1. Enter opens the monitor; Escape and the Collapse button restore the opener.
+2. Tab/Shift+Tab follow visible enabled controls in manual, AI suggestions and
+   AI investigation modes, and wrap inside the modal in both directions.
+3. The closed disclosure leaves connection status in Chromium's accessibility
+   tree; a changed readiness state updates it, while identical refreshes do not.
+4. Manual Tab accepts a visible completion without execution; Shift+Tab navigates;
+   Escape dismisses completion; Shift+Enter adds a line; Enter submits once with
+   the exact synthetic case/session binding.
+5. AI suggestion text does not submit on Enter. Requesting a proposal and adopting
+   its draft require separate explicit button activations; adoption does not run it.
+6. AI investigation text, Enter, Tab and mode changes do not submit work implicitly.
+   Explicit investigation/approval/pause/Stop paths remain covered by the existing
+   VolShell browser suite.
+7. Keyboard selection of another console target hides the old transcript, disables
+   mismatched manual input, leaves the main case selected, and submits nothing.
+8. Case-button focus survives identical polling and case reordering; Enter changes
+   the selected case and its semantic current marker only explicitly.
+9. A keyboard Settings round trip restores the older selected case and its own
+   console output without POST requests.
+10. Mode, Command, Collapse and connection-disclosure names are exposed; keyboard
+    focus outlines remain visible in Matrix/New Vegas; reduced motion suppresses
+    the indeterminate progress animation, which resumes with no preference.
+
+The existing VolShell, live/saved console, Settings, report-return and case-header
+browser suites passed. Report-return includes keyboard evidence opening, exact
+focus/scroll restoration, case switches and stale-request rejection. The saved
+console test now expects the actual monitor opener, and checks New Vegas text
+contrast on its deliberately recessed console surface instead of assuming it
+matches the body/header palette. Production theme CSS was unchanged.
+
+Environment limitation: the connector snapshot cannot retrieve the large
+`halloween-night.png` asset. The application suite ran all 245 tests: 244 passed,
+with one missing-asset error in `test_assets_and_installed_contract`. The standard
+package smoke built and installed the Workbench and pinned core wheels and passed
+dependency health, but stopped at that same missing asset before HTTP/protocol
+smoke completion. No assertion was skipped or weakened to turn these runs green.
+The VolShell and live-console browser runs used an external synthetic raster
+fixture for unavailable artwork reads; this does not validate the original
+Halloween illustration. No replacement artwork is part of the change.
+
+Remaining acceptance requires actual macOS VoiceOver and the packaged pywebview
+application: spoken live-region timing/verbosity, native select/disclosure behavior,
+Full Keyboard Access and macOS keyboard-navigation preferences, modal focus return
+with assistive technology, and system Reduce Motion. Chromium accessibility-tree
+and CSS checks do not establish those platform behaviors or full WCAG conformance.
+
 ## Theme selector — 2026-10-07
 
 The static Workbench UI was opened in the in-app browser against a local static

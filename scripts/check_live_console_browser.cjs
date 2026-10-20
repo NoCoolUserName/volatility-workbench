@@ -75,7 +75,7 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   assert.match(await pre.innerText(),/Actual synthetic output 39/);
   await page.locator('#expandConsole').click();await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
   assert.equal(await pre.isHidden(),true,'Closing the CRT does not reopen the inline console');
-  assert.equal(await reportToggle.evaluate(node=>document.activeElement===node),true,'Closing CRT restores focus to the visible Report console toggle');
+  assert.equal(await page.locator('#openCaseConsole').evaluate(node=>document.activeElement===node),true,'Closing CRT restores focus to its visible monitor opener');
   assert.equal(await reportToggle.getAttribute('aria-expanded'),'false');
   await reportToggle.click();
   assert.equal(await pre.isVisible(),true);assert.match(await pre.innerText(),/Actual synthetic output 39/);
@@ -141,7 +141,7 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
    await expand.click();await zoom.waitFor();
    await expectConsoleOperation('windows.pslist · 167s elapsed');
    assert.equal(await consoleOperation.evaluate(node=>getComputedStyle(node).color),await page.locator('#operation').evaluate(node=>getComputedStyle(node).color),theme+' keeps matching progress colors');
-   if(theme!=='fallout-2')assert.equal(await pre.evaluate(node=>getComputedStyle(node).backgroundColor),await page.locator('body').evaluate(node=>getComputedStyle(node).backgroundColor));
+   if(!['fallout-2','fallout-new-vegas'].includes(theme))assert.equal(await pre.evaluate(node=>getComputedStyle(node).backgroundColor),await page.locator('body').evaluate(node=>getComputedStyle(node).backgroundColor));
    else assert.ok(await pre.evaluate(node=>{
     const style=getComputedStyle(node),luminance=value=>{
      const channels=value.match(/[\d.]+/g).slice(0,3).map(Number).map(n=>n/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);
@@ -149,8 +149,8 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
     };
     const text=luminance(style.color),background=luminance(style.backgroundColor);
     return(Math.max(text,background)+.05)/(Math.min(text,background)+.05)>=4.5;
-   }),'Fallout 2 phosphor console text stays readable on its recessed screen');
-   assert.equal(await pre.evaluate(node=>getComputedStyle(node).color),await page.locator('header a').evaluate(node=>getComputedStyle(node).color));
+   }),theme+' console text stays readable on its recessed screen');
+   if(theme!=='fallout-new-vegas')assert.equal(await pre.evaluate(node=>getComputedStyle(node).color),await page.locator('header a').evaluate(node=>getComputedStyle(node).color));
    if(theme==='matrix'&&process.env.WORKBENCH_CRT_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_CRT_SCREENSHOT});
    if(theme==='fallout-2'&&process.env.WORKBENCH_FALLOUT_CRT_SCREENSHOT)await zoom.screenshot({path:process.env.WORKBENCH_FALLOUT_CRT_SCREENSHOT});
    if(theme==='fallout-new-vegas'){
