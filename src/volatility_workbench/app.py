@@ -145,6 +145,20 @@ class Workbench:
     def case(self, ident):
         return next(c for c in self.state['cases'] if c['id']==ident)
 
+    def set_history_order(self, case_id, section, order):
+        if section not in ('conversation', 'activity') or order not in ('oldest', 'newest'):
+            raise ValueError('Choose oldest first or newest first for conversation or activity')
+        case = self.case(case_id)
+        previous = case.get('history_order')
+        case['history_order'] = {**(previous or {}), section:order}
+        try:
+            self.save()
+        except Exception:
+            if previous is None: case.pop('history_order', None)
+            else: case['history_order'] = previous
+            raise
+        return {'case_id':case_id, 'section':section, 'order':order}
+
     def directory(self, case):
         return self.root / case['id']
 

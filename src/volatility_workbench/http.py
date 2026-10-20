@@ -138,6 +138,7 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/volshell/investigate':
             return app.investigate_volshell(body['case_id'],body['session_id'],body['text'],body.get('request_id'))
         if path=='/api/cases':return {'cases':app.add(body['paths'],body.get('related',False),body.get('title',''),body.get('source',''))}
+        if path=='/api/history-order':return app.set_history_order(body['case_id'],body['section'],body['order'])
         if path=='/api/jobs':return app.enqueue(body['case_id'],body['kind'],body.get('text',''),body.get('request_id'))
         if path=='/api/reports/remove':return await app.remove_report(body['case_id'],body['report_id'],body['action'])
         if path=='/api/reports/determination':return app.set_human_determination(body['case_id'],body['report_id'],body.get('value'))

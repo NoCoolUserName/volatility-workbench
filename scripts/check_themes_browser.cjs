@@ -70,9 +70,9 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       const style=getComputedStyle(element);return Object.fromEntries(['bg','panel','control-bg','text','muted','accent','privacy-bg','privacy-text','code-bg'].map(name=>[name,style.getPropertyValue('--'+name).trim()]));
     }),{'bg':'#0d1418','panel':'#141f25','control-bg':'#0c171c','text':'#e5eeee','muted':'#9fb2bb','accent':'#9cddb7','privacy-bg':'#1d2a27','privacy-text':'#bed9c9','code-bg':'#091014'},'Default restores the original green Workbench palette');
     const catalog=await page.evaluate(()=>window.WorkbenchThemes.catalog);
-    assert.equal(catalog.length,31);
-    assert.equal(catalog.filter(t=>t.group==='Fallout').length,12);
-    assert.equal(new Set(catalog.map(t=>t.id)).size,31);
+    assert.equal(catalog.length,33);
+    assert.equal(catalog.filter(t=>t.group==='Fallout').length,14);
+    assert.equal(new Set(catalog.map(t=>t.id)).size,33);
     const screenshotDir=process.env.WORKBENCH_THEME_SCREENSHOTS;
     if(screenshotDir)fs.mkdirSync(screenshotDir,{recursive:true});
     const measurements=[];
@@ -132,13 +132,21 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
         await noPageOverflow('New Vegas desktop');
         await headerNoOverlap('New Vegas desktop');
       }
-      const image=theme.id==='halloween-noir'?'halloween-night.png':`theme-${theme.id}.svg`;
-      assert.ok(fs.existsSync(path.join(assets,image)),'Every skin has a packaged scene');
+      const image=theme.scene===null?null:theme.id==='halloween-noir'?'halloween-night.png':`theme-${theme.scene}.svg`;
+      if(image){
+      assert.ok(fs.existsSync(path.join(assets,image)),'Artwork skins have a packaged scene');
       if(image.endsWith('.svg')){
         const source=fs.readFileSync(path.join(assets,image),'utf8');
         assert.match(source,/<svg/);assert.doesNotMatch(source,/<script|foreignObject|(?:href|src)=|style=/i,'Art has no script, inline styles or linked resources');
       }
       await page.evaluate(name=>new Promise((resolve,reject)=>{const image=new Image();image.onload=resolve;image.onerror=()=>reject(Error('Scene could not load '+name));image.src='/'+name;}),image);
+      }else{
+        assert.equal(await page.locator('html').evaluate(element=>element.style.getPropertyValue('--theme-scene')),'none');
+        const surfaces=await page.locator('body > header,.skin-scene,.layout,.layout > aside,.layout > main').evaluateAll(nodes=>nodes.map(node=>getComputedStyle(node).backgroundImage));
+        assert.ok(surfaces.slice(0,3).every(value=>value.includes('gradient(')&&!value.includes('url(')),'Terminal shell and rail use CSS materials');
+        assert.ok(surfaces.slice(-2).every(value=>value==='none'),'Terminal evidence screens remain opaque and untextured');
+        await noPageOverflow(theme.id+' desktop');await headerNoOverlap(theme.id+' desktop');
+      }
       const contrast=await page.evaluate(()=>{
         const css=getComputedStyle(document.documentElement);
         const luminance=hex=>{
@@ -165,6 +173,10 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       assert.deepEqual(await presentationStyles(),styles,`${id} must not retain Fallout 2 housing styles`);
       await chooseTheme('fallout-new-vegas');await chooseTheme(id);
       assert.deepEqual(await presentationStyles(),styles,`${id} must not retain New Vegas housing styles`);
+      for(const terminal of ['fallout-3-robco','fallout-3-vault-112']){
+        await chooseTheme(terminal);await chooseTheme(id);
+        assert.deepEqual(await presentationStyles(),styles,`${id} must not retain Fallout 3 terminal housing styles`);
+      }
     }
     // Every original preference remains honored on startup, including settings.
     for(const id of ['matrix','mono','blue']){
@@ -230,6 +242,23 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     assert.ok(await page.locator('.skin-scene').evaluate(element=>parseFloat(getComputedStyle(element,'::before').width)<=element.clientWidth),'Welcome discs fit the nested Settings panel');
     assert.equal(await page.locator('.skin-scene').evaluate(element=>getComputedStyle(element,'::after').content),'"NEW VEGAS"');
     if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,'new-vegas-settings-320.png')});
+    for(const id of ['fallout-3-robco','fallout-3-vault-112']){
+      await page.goto('http://localhost/');await chooseTheme(id);
+      for(const width of [1400,390,320]){
+        await page.setViewportSize({width,height:1050});
+        await noPageOverflow(id+' '+width+'px report');await headerNoOverlap(id+' '+width+'px');
+        if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,id+'-report-'+width+'.png')});
+      }
+      await page.goto('http://localhost/settings.html');
+      assert.equal(await page.locator('#settings-theme').inputValue(),id,'Terminal choice survives navigation to Settings');
+      for(const width of [1400,390,320]){
+        await page.setViewportSize({width,height:1050});await noPageOverflow(id+' '+width+'px Settings');
+        if(screenshotDir)await page.screenshot({path:path.join(screenshotDir,id+'-settings-'+width+'.png')});
+      }
+      await page.goto('http://localhost/');
+      await page.evaluate(()=>{document.documentElement.style.setProperty('--text-scale','2');document.documentElement.dataset.textScaled='true';});
+      await noPageOverflow(id+' 200% text');
+    }
     await page.goto('http://localhost/');
     await chooseTheme('matrix');
     // Storage unavailable and unknown future/removed IDs both keep a usable default.
@@ -241,7 +270,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     assert.equal(await page.locator('html').getAttribute('data-theme'),'8-bit');
     assert.deepEqual(errors,[]);
     assert.deepEqual(policyErrors,[],'Production CSP must allow all packaged artwork');
-    console.log(`Theme browser: ${catalog.length} skins, 12 Fallout choices, text/control contrast, selected report, focus, 3 legacy prefs, shared Settings, Fallout 2 CSS housing/isolation, New Vegas CSS main/Settings marquee, 320px/390px mobile reports/plugins/Settings, increased contrast and unavailable storage passed. ${network.length} local GET requests; zero analysis/mutation/external requests.`);
+    console.log(`Theme browser: ${catalog.length} skins, 14 Fallout choices, text/control contrast, selected report, focus, legacy prefs, shared Settings, CSS Fallout housings/isolation, both Fallout 3 terminals at desktop/mobile sizes and 200% text, increased contrast and unavailable storage passed. ${network.length} local GET requests; zero analysis/mutation/external requests.`);
     if(screenshotDir)fs.writeFileSync(path.join(screenshotDir,'contrast.json'),JSON.stringify(measurements,null,2)+'\n');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

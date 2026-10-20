@@ -159,17 +159,19 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.ok(Math.abs(mobileSettings.x+mobileSettings.width-370)<2 && mobileSettings.y>=connection.y+connection.height,
       'Settings sits below the connection text at the upper right on mobile');
     const originalFont=Number.parseFloat(await page.locator('#reportView h1').evaluate(e=>getComputedStyle(e).fontSize));
+    assert.equal(await page.locator('.ui-zoom-controls').count(),0,'Text-size control strips are absent from the main UI and console');
+    assert.equal(await page.locator('h1 .dot').count(),0,'Title has no decorative status dot');
     const savedZoom=page.waitForResponse(response=>response.url().endsWith('/api/settings/zoom') && response.request().method()==='POST');
-    await page.getByRole('button',{name:'Increase text size'}).first().click();await savedZoom;
+    await page.evaluate(()=>window.dispatchEvent(new WheelEvent('wheel',{ctrlKey:true,deltaY:-64,cancelable:true})));await savedZoom;
     assert.equal(zoomPercent,110);
     assert.ok(Number.parseFloat(await page.locator('#reportView h1').evaluate(e=>getComputedStyle(e).fontSize))>originalFont);
     await page.reload();
-    await page.waitForFunction(()=>document.querySelector('[data-ui-zoom-value]')?.textContent==='110%');
+    await page.waitForFunction(()=>document.documentElement.style.getPropertyValue('--text-scale')==='1.1');
     assert.equal(await page.locator('#liveConsole').evaluate(e=>getComputedStyle(e).whiteSpace),'pre-wrap');
     assert.equal(await page.locator('#volshellOutput').evaluate(e=>getComputedStyle(e).overflowWrap),'anywhere');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     await page.evaluate(()=>window.dispatchEvent(new WheelEvent('wheel',{ctrlKey:true,deltaY:-200,cancelable:true})));
-    assert.ok(Number.parseInt(await page.locator('[data-ui-zoom-value]').first().innerText())>110,
+    assert.ok(Number(await page.locator('html').evaluate(node=>node.style.getPropertyValue('--text-scale')))>1.1,
       'Control plus wheel scales text');
     await page.evaluate(()=>{
       window.dispatchEvent(new Event('gesturestart',{cancelable:true}));
@@ -178,7 +180,7 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
       window.dispatchEvent(gesture);
       window.dispatchEvent(new Event('gestureend',{cancelable:true}));
     });
-    assert.ok(Number.parseInt(await page.locator('[data-ui-zoom-value]').first().innerText())<150,
+    assert.ok(Number(await page.locator('html').evaluate(node=>node.style.getPropertyValue('--text-scale')))<1.5,
       'Trackpad spread/pinch events scale text');
     console.log('Case header: Theme/Settings and connection/Stop alignment, idle/queued/completed Stop state, hidden legacy readiness sentence, check/progress/Ready/recheck/failure/reconnect, fixed green across themes, mobile layout; two simulated readiness requests, zero real analysis.');
   }finally{await browser.close();}

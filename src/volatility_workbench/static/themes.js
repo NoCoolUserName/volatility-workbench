@@ -17,6 +17,8 @@
     ['fallout-tactics','Fallout Tactics: Brotherhood of Steel','Fallout','#0c1717 #192929 #1d3030 #568077 #e3efdf #b1c9c1 #a8d4b9 #11291d','A tactical grid with connected squad markers.','terminal'],
     ['fallout-brotherhood','Fallout: Brotherhood of Steel','Fallout','#191213 #2b1e20 #302326 #8c6e67 #f4e6d6 #ceb7aa #e3b394 #321b13','Steel heraldry and a weathered crimson field.','industrial'],
     ['fallout-3','Fallout 3','Fallout','#10170e #1b2818 #20301b #698059 #e7efd5 #bbcbab #b6d695 #203016','A green wasteland and a broken capital skyline.','terminal'],
+    ['fallout-3-robco','Fallout 3 (RobCo Night)','Fallout','#080d09 #101a12 #0b150d #6f8d6c #b7e2a8 #a0b998 #84ed58 #10210b','Blackened steel, a deep curved screen and green Termlink phosphor.','terminal',null],
+    ['fallout-3-vault-112','Fallout 3 (Vault 112)','Fallout','#10120d #1b1e13 #11150d #8b8e68 #f2efcd #c6c5a5 #efedbd #272b17','A worn olive monitor, warm ivory phosphor and a square amber power lamp.','terminal',null],
     ['fallout-new-vegas','Fallout: New Vegas','Fallout','#1b1117 #2d2028 #35242a #966c64 #ffebd2 #d9b9ae #ffc28c #341e13','Weathered cream and rust, neon marquee bulbs and desert dusk.','industrial'],
     ['fallout-4','Fallout 4','Fallout','#0e1b20 #1a2b30 #1d333a #588389 #e4f2ed #b2ceca #a8dfd6 #173130','Coastal blue steel and a suspension bridge.','industrial'],
     ['fallout-shelter','Fallout Shelter','Fallout','#17180f #252b1b #2d3420 #788459 #f2eed2 #c6c9a2 #e8ce88 #30270f','A warm cross-section of a busy underground vault.','rounded'],
@@ -41,7 +43,8 @@
     ['blue','Light blue','Classic','#0b1620 #142431 #0d1d28 #567a91 #e2f0f5 #afc9d6 #9bdcf3 #0d2532','Soft blue waveforms on a cool dark work surface.','plain'],
   ];
   const tokens = ['bg','panel','control-bg','border','text','muted','accent','accent-text'];
-  const themes = new Map(catalog.map(([id,label,group,palette,description,shape]) => [id,{id,label,group,palette,description,shape}]));
+  // A null scene is an entirely CSS-built housing; other themes use local art.
+  const themes = new Map(catalog.map(([id,label,group,palette,description,shape,scene=id]) => [id,{id,label,group,palette,description,shape,scene}]));
   let connected=false, revision=-1, selection=0, pending=null, saves=Promise.resolve();
   function cache(id) { try {localStorage.setItem(key,id);} catch {} }
   function saveMessage(text, retry=false) {
@@ -95,7 +98,7 @@
     root.dataset.theme = theme.id;
     root.dataset.themeShape = theme.shape;
     theme.palette.split(' ').forEach((color,i)=>root.style.setProperty('--'+tokens[i],color));
-    root.style.setProperty('--theme-scene',theme.id==='halloween-noir' ? 'url("/halloween-night.png")' : `url("/theme-${theme.id}.svg")`);
+    root.style.setProperty('--theme-scene',theme.scene===null ? 'none' : theme.id==='halloween-noir' ? 'url("/halloween-night.png")' : `url("/theme-${theme.scene}.svg")`);
     const classic = theme.id==='matrix';
     root.style.setProperty('--privacy-bg', classic ? '#1d2a27' : 'var(--panel)');
     root.style.setProperty('--privacy-text', classic ? '#bed9c9' : 'var(--text)');

@@ -890,3 +890,25 @@ Commands and disconnecting retain the green connection light; only a confirmed
 terminal state turns it off. Input stays disabled during shutdown, and stale
 poll/stream updates cannot resurrect a confirmed closed session. AI investigation
 guards remain in place. No live interpreter or evidence was used by this check.
+
+## Fallout 3 terminal variants and history order — 2026-10-20
+
+Added Fallout 3 (RobCo Night) and Fallout 3 (Vault 112) using the supplied terminal
+references. Both use CSS chassis, screen recesses, vents and control plates across
+Workbench, Settings and Output/VolShell. The catalog has 33 themes and 14 Fallout
+choices. Original Fallout 3, Fallout 2, New Vegas and classic styles passed isolation
+checks. Screenshot review covered both terminals at desktop and 320px widths;
+the theme fixture also passed 390px, 200% text and contrast checks.
+
+The title dot and main/console text-size control strips were removed. Gesture
+scaling remains functional and Settings retains its text-size controls. The Report
+console disclosure arrow now uses the heading's font size. Conversation and activity
+have independent per-case oldest/newest preferences saved in case metadata; sorting
+never rewrites their recorded entries.
+
+Thirteen focused Python tests passed, including durable theme and history choices
+and save-failure rollback. Nine browser scripts passed: themes, VolShell, case
+header, history order, live console, running reports, report plugins, theme
+persistence, and Settings. These checks use intercepted synthetic requests and no
+private evidence, live interpreter or real investigation. Native installation and
+physical trackpad gestures were not exercised for this batch.
