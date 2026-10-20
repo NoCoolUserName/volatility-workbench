@@ -112,6 +112,22 @@ function restoreReportPosition() {
   window.scrollTo({left:point.x, top:y, behavior:"instant"});
 }
 const focusDrafts = new Map();
+let focusHistoryIndex = -1, focusHistoryDraft = "", focusHistoryEntries = [];
+function focusHistory() {
+  if (!state || !selected) return [];
+  const entries = [];
+  for (let i = state.jobs.length - 1; i >= 0 && entries.length < 10; i--) {
+    const item = state.jobs[i];
+    if (item.case_id === selected && ["report", "update"].includes(item.kind) && item.text?.trim())
+      entries.push(item.text);
+  }
+  return entries;
+}
+function resetFocusHistory() {
+  focusHistoryIndex = -1;
+  focusHistoryDraft = "";
+  focusHistoryEntries = [];
+}
 function sizeFocus() {
   const focus = $("focus");
   focus.style.height = "";
@@ -119,6 +135,7 @@ function sizeFocus() {
   const borderHeight = focus.offsetHeight - focus.clientHeight;
   focus.style.height = Math.min(Math.max(focus.scrollHeight + borderHeight, focus.offsetHeight), 320) + "px";
 }
+document.addEventListener("workbench-text-scale", sizeFocus);
 let submittingReadiness = false;
 let selectedPluginSources = new Set(), allPluginSourcesSelected = true, availablePluginSources = [];
 function choose(id, activate = true) {
@@ -126,7 +143,8 @@ function choose(id, activate = true) {
   if (activate) activeView = "case";
   const changeFocus = id !== selected;
   if (changeFocus) {
-    if (selected) focusDrafts.set(selected, $("focus").value);
+    if (selected) focusDrafts.set(selected, focusHistoryIndex < 0 ? $("focus").value : focusHistoryDraft);
+    resetFocusHistory();
     $("focus").value = focusDrafts.get(id) || "";
   }
   selected = id;
@@ -170,6 +188,7 @@ async function job(kind, text = "") {
     text,
     request_id: crypto.randomUUID(),
   });
+  resetFocusHistory();
   if (kind === "update") {
     focusDrafts.set(caseId, "");
     if (selected === caseId) { $("focus").value = ""; sizeFocus(); updateBulkPluginAction(); }
@@ -347,8 +366,13 @@ function aiDetermination(text) {
 function syncHumanDetermination(version) {
   const select = $("humanDetermination");
   if (!select || select.dataset.reportId !== version.id || select.disabled) return;
+  const previous = select.dataset.savedDetermination;
   select.value = version.human_determination || "";
   select.dataset.determination = select.value || "unset";
+  select.dataset.savedDetermination = select.value;
+  const status = select.nextElementSibling;
+  if (status && (previous !== select.value || !status.textContent))
+    status.textContent = select.value ? "Saved" : "";
 }
 function renderDeterminations(text, version, caseId) {
   if (version.status !== "sealed") return;
@@ -375,25 +399,38 @@ function renderDeterminations(text, version, caseId) {
   humanRow.append(el("strong", "Human Determination:"), select, status);
   select.value = version.human_determination || "";
   select.dataset.determination = select.value || "unset";
-  select.onchange = async () => {
-    const prior = version.human_determination || "";
+  select.dataset.savedDetermination = select.value;
+  status.textContent = select.value ? "Saved" : "";
+  const saveDetermination = async () => {
+    if (select.disabled) return;
     const requested = select.value;
+    const prior = select.dataset.savedDetermination || "";
+    if (requested === prior) return;
     select.dataset.determination = requested || "unset";
     select.disabled = true;
     status.textContent = "Saving…";
     try {
       const saved = await api("reports/determination", {case_id:caseId, report_id:version.id,
         value:requested || null});
-      version.human_determination = saved.human_determination;
+      const authoritative = saved.human_determination || "";
+      select.value = authoritative;
+      select.dataset.determination = authoritative || "unset";
+      select.dataset.savedDetermination = authoritative;
       status.textContent = "Saved";
-      await refresh();
     } catch (e) {
       select.value = prior;
       select.dataset.determination = prior || "unset";
       status.textContent = "Save failed";
       error(e);
-    } finally { select.disabled = false; }
+    } finally {
+      select.disabled = false;
+      await refresh().catch(error);
+    }
   };
+  // macOS pickers may update on input before committing a change. Handle both
+  // events and deduplicate against the last value confirmed by the server.
+  select.addEventListener("input", saveDetermination);
+  select.addEventListener("change", saveDetermination);
   panel.append(aiRow, humanRow);
   heading.insertAdjacentElement("afterend", panel);
 }
@@ -655,6 +692,7 @@ function appendFocus(instruction, record) {
   const current = focus.value.trim();
   const next = current.includes(instruction) ? current : current ? current + "\n" + instruction : instruction;
   if (next.length > 20000) { error(Error("The investigation focus is full. Shorten it before adding more plugins.")); return; }
+  resetFocusHistory();
   focus.value = next;
   focusDrafts.set(record.caseId, next);
   sizeFocus();
@@ -1226,15 +1264,13 @@ function removeReportDialog(c, report) {
   const failure = el("p");
   failure.setAttribute("role", "alert");
   const buttons = el("div", undefined, "buttons");
-  const del = el("button", "Delete", "danger");
+  const del = el("button", "Delete to Recycle Bin", "danger");
   const hide = el("button", "Hide from UI");
   const busy = (state.report_cleanup_cases || []).includes(c.id) || state.jobs.some(
     (j) => j.case_id === c.id && ["queued", "running", "stopping"].includes(j.status),
   );
-  const referenced = c.reports.some(r => r.previous === report.id && !r.deleted_at);
-  del.disabled = busy || referenced;
+  del.disabled = busy;
   if (busy) failure.textContent = "Finish this case's active work or cleanup before deleting. You can still hide this report.";
-  else if (referenced) failure.textContent = "A later report references this revision. Hide from UI keeps that history intact; delete the dependent revision first to delete this one.";
   for (const [button, action] of [[del, "delete"], [hide, "hide"]]) {
     button.onclick = async () => {
       del.disabled = hide.disabled = true;
@@ -1257,13 +1293,13 @@ function removeReportDialog(c, report) {
         if (dialog.open && dialog.dataset.target === key) failure.textContent = e.message;
         else error(e);
         hide.disabled = false;
-        del.disabled = busy || referenced;
+        del.disabled = busy;
       }
     };
   }
   buttons.append(del, hide);
   dialog.replaceChildren(dismiss, title, el("p", readableTime(report.created_at) + " · " + report.status),
-    el("p", "Hide from UI keeps all files. Delete permanently removes this revision's report bundle and its copied artifacts, including a sealed report if selected. Original images, shared analysis, case history and other report versions are retained."),
+    el("p", "Hide from UI keeps all files. Delete moves this complete revision bundle into the seven-report Recycle Bin in Settings, where it can be restored. When the bin is full, deleting another report permanently removes its oldest bundle. Original images, shared analysis, case history and other report versions are retained."),
     failure, buttons);
   dialog.showModal();
   hide.focus();
@@ -1909,9 +1945,14 @@ async function browse(path = "", location = "") {
   }
   $("files").replaceChildren(...nodes);
 }
+let latestRefresh = 0, appliedRefresh = 0;
 async function refresh() {
+  const request = ++latestRefresh;
+  const snapshot = await api("state");
+  if (request < appliedRefresh) return;
+  appliedRefresh = request;
   const previous = state;
-  state = await api("state");
+  state = snapshot;
   window.WorkbenchThemes.sync(state.appearance);
   if (previous) {
     const active = status => ["queued", "running", "stopping"].includes(status);
@@ -1963,7 +2004,40 @@ $("readiness").onclick = act(async () => {
 });
 $("report").onclick = act(() => job("report", $("focus").value));
 $("update").onclick = act(() => job("update", $("focus").value));
+$("focus").addEventListener("keydown", event => {
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+  const focus = $("focus");
+  if (event.key === "Escape" && focusHistoryIndex >= 0) {
+    event.preventDefault();
+    focus.value = focusHistoryDraft;
+    resetFocusHistory();
+  } else if (event.key === "ArrowUp") {
+    const firstLineEnd = focus.value.indexOf("\n");
+    if (focusHistoryIndex < 0 && (focus.selectionStart !== focus.selectionEnd ||
+        firstLineEnd >= 0 && focus.selectionStart > firstLineEnd)) return;
+    const entries = focusHistoryIndex < 0 ? focusHistory() : focusHistoryEntries;
+    if (!entries.length) return;
+    event.preventDefault();
+    if (focusHistoryIndex < 0) { focusHistoryDraft = focus.value; focusHistoryEntries = entries; }
+    focusHistoryIndex = Math.min(focusHistoryIndex + 1, entries.length - 1);
+    focus.value = entries[focusHistoryIndex];
+  } else if (event.key === "ArrowDown" && focusHistoryIndex >= 0) {
+    event.preventDefault();
+    focusHistoryIndex--;
+    if (focusHistoryIndex < 0) {
+      focus.value = focusHistoryDraft;
+      resetFocusHistory();
+    } else focus.value = focusHistoryEntries[focusHistoryIndex];
+  } else return;
+  focus.setSelectionRange(0, 0);
+  sizeFocus();
+  updateBulkPluginAction();
+});
+$("focus").addEventListener("pointerdown", () => {
+  if (focusHistoryIndex >= 0) resetFocusHistory();
+});
 $("focus").oninput = () => {
+  resetFocusHistory();
   if (selected) focusDrafts.set(selected, $("focus").value);
   if ($("focus").scrollHeight > $("focus").clientHeight) sizeFocus();
   updateBulkPluginAction();
@@ -2002,6 +2076,7 @@ document
       history.replaceState(null, "", location.pathname + location.search);
       await api("unlock", { token });
     }
+    await window.WorkbenchZoom.load();
     await refresh();
     setInterval(() => refresh().catch(error), 1500);
   } catch (e) {

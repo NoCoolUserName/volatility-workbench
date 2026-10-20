@@ -17,8 +17,10 @@ const narratives={
   const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
   try{
     const page=await browser.newPage({viewport:{width:1100,height:900}}),posts=[],errors=[];
+    let holdNextState=false, heldStateResolve=null, releaseHeldState=null;
     page.on('pageerror',error=>errors.push(error.message));
-    await page.route('http://localhost/**',route=>{
+    await page.route('http://localhost/**',async route=>{
+      if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
       const u=new URL(route.request().url());
       if(u.pathname==='/api/reports/determination'){
         assert.equal(route.request().method(),'POST');
@@ -33,7 +35,14 @@ const narratives={
         return route.fulfill({json:{report_id:report.id,human_determination:data.value}});
       }
       assert.equal(route.request().method(),'GET','Viewing a report must not submit work');
-      if(u.pathname==='/api/state')return route.fulfill({json:state});
+      if(u.pathname==='/api/state'){
+        const snapshot=JSON.parse(JSON.stringify(state));
+        if(holdNextState){
+          holdNextState=false;heldStateResolve();
+          return new Promise(resolve=>{releaseHeldState=()=>resolve(route.fulfill({json:snapshot}));});
+        }
+        return route.fulfill({json:snapshot});
+      }
       if(u.pathname==='/api/report-plugins')return route.fulfill({json:{schema:'report-plugin-inventory/1',
         report_id:u.searchParams.get('report'),scope:'bundled_saved_runs',source_status:'unavailable',summary:{},entries:[],next_offset:null,warnings:[]}});
       if(u.pathname==='/api/file'){
@@ -52,6 +61,7 @@ const narratives={
     await ai.waitFor();
     assert.equal(await ai.innerText(),'Undetermined');
     assert.equal(await human.inputValue(),'');
+    assert.equal(await page.locator('.determination-save-status').innerText(),'');
     const findingLinks=page.locator('#reportView > p a[aria-label^="Jump to finding"]');
     assert.deepEqual(await findingLinks.allTextContents(),['F2','F3','F11']);
     const headingForms=await page.evaluate(()=>{
@@ -109,12 +119,27 @@ const narratives={
     await page.locator('[data-report-id="legacy"] button:first-child').click();
     await page.waitForFunction(()=>document.querySelector('.determination-value')?.textContent==='Malicious');
     assert.equal(await human.inputValue(),'Benign','Human choice survives reload');
+    assert.equal(await page.locator('.determination-save-status').innerText(),'Saved',
+      'An already persisted determination is identified as saved on reopen');
     await human.selectOption('Malicious');
     await page.waitForFunction(()=>document.querySelector('.determination-save-status')?.textContent==='Saved');
     assert.equal(await human.evaluate(node=>getComputedStyle(node).color),'rgb(255, 137, 137)');
     await human.selectOption('Undetermined');
     await page.waitForFunction(()=>document.querySelector('.determination-save-status')?.textContent==='Saved');
     assert.equal(await human.evaluate(node=>getComputedStyle(node).color),'rgb(255, 255, 255)');
+
+    const held=new Promise(resolve=>{heldStateResolve=resolve;});
+    holdNextState=true;
+    const staleRefresh=page.evaluate(()=>refresh());
+    await held;
+    await human.selectOption('Benign');
+    await page.waitForFunction(()=>document.querySelector('#humanDetermination')?.value==='Benign' &&
+      document.querySelector('.determination-save-status')?.textContent==='Saved');
+    releaseHeldState();await staleRefresh;
+    assert.equal(await human.inputValue(),'Benign','Late older state must not revert a saved selection');
+    await page.reload();
+    await page.locator('[data-report-id="legacy"] button:first-child').click();
+    assert.equal(await human.inputValue(),'Benign','Saved choice survives a fresh view');
 
     await page.locator('[data-report-id="explicit"] button:first-child').click();
     await page.waitForFunction(()=>document.querySelector('.determination-value')?.textContent==='Benign');
@@ -125,7 +150,7 @@ const narratives={
     await page.locator('[data-report-id="uncertain"] button:first-child').click();
     await page.waitForFunction(()=>document.querySelector('.determination-value')?.textContent==='Undetermined');
     assert.equal(await ai.evaluate(node=>getComputedStyle(node).color),'rgb(255, 255, 255)');
-    assert.equal(posts.length,3);
+    assert.equal(posts.length,4);
     assert.deepEqual(errors,[]);
     console.log('Report determinations: explicit and conservative legacy AI values; three color states; independent human opinion; per-version save and reload; no analysis submissions.');
   }finally{await browser.close();}

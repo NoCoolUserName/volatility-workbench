@@ -94,6 +94,31 @@ class SettingsManager:
         finally:
             os.close(lock)
 
+    def zoom(self):
+        """Keep page scale outside the app bundle and changing loopback origin."""
+        default = {'schema': 'zoom/1', 'percent': 100}
+        try:
+            path = safe_file(self.root, 'zoom.json')
+            if not path.exists(): return default
+            if path.stat().st_size > 256: raise ValueError('Zoom preference exceeds its size bound')
+            saved = json.loads(path.read_text())
+            if (not isinstance(saved, dict) or saved.get('schema') != 'zoom/1'
+                    or type(saved.get('percent')) is not int
+                    or not 75 <= saved['percent'] <= 200 or saved['percent'] % 5):
+                raise ValueError('Invalid zoom preference')
+            return {'schema': 'zoom/1', 'percent': saved['percent']}
+        except (OSError, ValueError, UnicodeError):
+            return {**default, 'error': 'Saved zoom could not be loaded; using 100%.'}
+
+    def save_zoom(self, body):
+        if (not isinstance(body, dict) or set(body) != {'percent'}
+                or type(body['percent']) is not int
+                or not 75 <= body['percent'] <= 200 or body['percent'] % 5):
+            raise ValueError('Zoom must be between 75% and 200% in 5% steps')
+        saved = {'schema': 'zoom/1', 'percent': body['percent']}
+        atomic_json(safe_file(self.root, 'zoom.json'), saved)
+        return saved
+
     def snapshot(self):
         config=self.app.config
         symbol_root=config.symbols or self.root/'symbols'
@@ -114,6 +139,10 @@ class SettingsManager:
             'symbols':{'directory':str(symbol_root),'cache':str(config.cache_path),'profile':symbol_profile,'installed':installed,
                 'matching':'Windows uses the exact PDB GUID/age when collection requests symbols. Linux/macOS need matching banners. Installed files do not establish image readiness.'},
             'provider':provider, 'appearance':self.appearance(),
+            'recycle_bin':self.app.recycle_bin_snapshot() if hasattr(self.app,'recycle_bin_snapshot') else [],
+            'hidden_report_cases':[{'case_id':case['id'], 'case_title':case.get('title') or case['id'],
+                'count':sum(bool(report.get('hidden')) and not report.get('deleted_at')
+                    for report in case['reports'])} for case in self.app.state['cases']],
             'operation':dict(self.operation),'readiness':readiness}
 
     def progress(self, **values):
@@ -227,6 +256,7 @@ class SettingsManager:
 
     async def dispatch(self, path, body):
         if path=='/api/settings/appearance': return self.save_appearance(body)
+        if path=='/api/settings/zoom': return self.save_zoom(body)
         if path=='/api/settings/save': return await self.save_locations(body)
         if path=='/api/settings/pick-folder':
             if not self.folder_picker: raise ValueError('Native selection is available in the desktop application; enter a physical path here')

@@ -29,7 +29,7 @@
   content: ''; position: absolute; z-index: -1; inset: 0;
   background: linear-gradient(90deg, var(--bg) 0%, var(--bg) 24%, transparent 64%);
 }
-.theme-control select { max-width: min(370px, 66vw); font-size: 13px; }
+.theme-control select { max-width: min(370px, 66vw); font-size: calc(13px * var(--text-scale, 1)); }
 .theme-control::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; }
 .settings .theme-control { display: flex; align-items: center; gap: 8px; }
 .settings .theme-control select { margin: 0; max-width: 100%; }
@@ -56,8 +56,8 @@ input:focus-visible, textarea:focus-visible, summary:focus-visible,
 }
 input[type=checkbox] { accent-color: var(--accent); }
 button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]) { min-height: 40px; }
-/* Keep the readiness annotation aligned with the enlarged control target. */
-.readiness-row #readyDetails { min-height: 40px; display: flex; align-items: center; }
+/* Keep the readiness annotation aligned with the compact status control. */
+.readiness-row #readyDetails { min-height: 34px; display: flex; align-items: center; }
 .plugin-table tbody tr:hover { background: var(--panel); }
 .plugin-table thead { background: var(--panel); }
 .approval { background: var(--panel); color: var(--text); }
@@ -230,7 +230,7 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   :root[data-theme="fallout-new-vegas"] .layout > aside { min-height: 0; padding: 14px; }
   :root[data-theme="fallout-new-vegas"] .layout > main { padding: 14px 10px; }
   :root[data-theme="fallout-new-vegas"] body > header { padding: 20px 16px; }
-  :root[data-theme="fallout-new-vegas"] body > header h1 { font-size: 27px; }
+  :root[data-theme="fallout-new-vegas"] body > header h1 { font-size: calc(27px * var(--text-scale, 1)); }
   :root[data-theme="fallout-new-vegas"] .privacy { padding: 12px 16px; }
   :root[data-theme="fallout-new-vegas"] .tabs { padding: 7px; gap: 6px; }
   :root[data-theme="fallout-new-vegas"] .settings > header { padding: 18px; }
@@ -309,8 +309,8 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 :root[data-theme="fallout-new-vegas"] .crt-recess { padding: 9px; border-radius: 17px; background: linear-gradient(135deg,#5a3427,#9b714d 65%,#e4c793); box-shadow: inset 2px 2px 6px #301b18,0 1px 0 #ffe0a5; }
 :root[data-theme="fallout-new-vegas"] .crt-screen { background: #1b1117; border-color: #3d2925; border-radius: 11px; box-shadow: inset 0 0 0 1px #09070a,0 0 0 1px #d9b078; }
 :root[data-theme="fallout-new-vegas"] .crt-chin { min-height: 68px; color: #512b25; text-shadow: 0 1px #f0d6a3; padding-bottom: 7px; }
-:root[data-theme="fallout-new-vegas"] .crt-brand { color: #562821; font-family: Georgia,serif; letter-spacing: 1px; font-size: 11px; }
-:root[data-theme="fallout-new-vegas"] .crt-brand::before { content:"NEW VEGAS"; display:block; color:#8b332b; font:800 18px/1.2 ui-serif,Georgia,serif; letter-spacing:2px; text-shadow:1px 1px #f5d59b; }
+:root[data-theme="fallout-new-vegas"] .crt-brand { color: #562821; font-family: Georgia,serif; letter-spacing: 1px; font-size: calc(11px * var(--text-scale, 1)); }
+:root[data-theme="fallout-new-vegas"] .crt-brand::before { content:"NEW VEGAS"; display:block; color:#8b332b; font:800 calc(18px * var(--text-scale, 1))/1.2 ui-serif,Georgia,serif; letter-spacing:2px; text-shadow:1px 1px #f5d59b; }
 :root[data-theme="fallout-new-vegas"] .crt-power { color: #41261c; }
 @media (max-width: 700px) {
   :root[data-theme="fallout-new-vegas"] .crt-monitor { padding: 88px 24px 18px; border-radius: 23px 23px 30px 30px; }
@@ -322,8 +322,8 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   :root[data-theme="fallout-new-vegas"] .crt-screen { padding: 12px 9px; }
   :root[data-theme="fallout-new-vegas"] .crt-recess { padding: 5px; }
   :root[data-theme="fallout-new-vegas"] .crt-chin { padding: 10px 3px 3px; }
-  :root[data-theme="fallout-new-vegas"] .crt-brand::before { font-size: 12px; }
-  :root[data-theme="fallout-new-vegas"] .crt-brand { font-size: 8px; }
+  :root[data-theme="fallout-new-vegas"] .crt-brand::before { font-size: calc(12px * var(--text-scale, 1)); }
+  :root[data-theme="fallout-new-vegas"] .crt-brand { font-size: calc(8px * var(--text-scale, 1)); }
   :root[data-theme="fallout-new-vegas"] .crt-brand > span { display: none; }
 }
 @media (prefers-contrast: more) {
@@ -388,7 +388,7 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 :root[data-theme="fallout-2"] header h1 {
   color: var(--fo2-brass);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: clamp(25px, 2.4vw, 36px);
+  font-size: clamp(calc(25px * var(--text-scale, 1)), calc(2.4vw * var(--text-scale, 1)), calc(36px * var(--text-scale, 1)));
   font-weight: 800;
   letter-spacing: -1.2px;
   text-shadow: 0 2px 0 #181c12, 0 -1px 0 #eee2a635;
@@ -410,7 +410,7 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 }
 :root[data-theme="fallout-2"] #connection {
   color: var(--muted);
-  font: 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+  font: calc(11px * var(--text-scale, 1))/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 :root[data-theme="fallout-2"] .settings-link svg { color: currentColor; }
 :root[data-theme="fallout-2"] .skin-scene {
@@ -446,7 +446,7 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   color: #c5c7a4;
   border: 2px solid #171c12;
   border-top: 0;
-  font-size: 12px;
+  font-size: calc(12px * var(--text-scale, 1));
   box-shadow: inset 0 1px 0 #747656;
 }
 :root[data-theme="fallout-2"] .layout {
@@ -619,7 +619,7 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   .settings .theme-control { align-items: start; flex-direction: column; }
   .theme-control select { max-width: 65vw; }
   :root[data-theme="fallout-2"] body > header { padding: 24px; }
-  :root[data-theme="fallout-2"] .header-controls { position: static; align-items: flex-start; }
+  :root[data-theme="fallout-2"] .header-controls { position: static; align-items: flex-end; }
   :root[data-theme="fallout-2"] .layout { grid-template-columns: 1fr; gap: 20px; }
   :root[data-theme="fallout-2"] .layout > aside { min-height: auto; }
   :root[data-theme="fallout-2"] .privacy { padding: 12px 24px; }

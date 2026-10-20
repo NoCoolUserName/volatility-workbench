@@ -65,10 +65,45 @@ async function request(path,body){
 }
 function message(text){byId('settings-message').textContent=text;}
 async function act(operation){try{const result=await operation();message('Saved.');await refresh();return result;}catch(error){message(error.message);}}
+let recycleBusy=false;
+async function recycleAction(path,body,complete){
+  if(recycleBusy)return;
+  recycleBusy=true;
+  try{const result=await request(path,body);message(complete(result));await refresh();}
+  catch(error){message(error.message);}
+  finally{recycleBusy=false;}
+}
+function renderRecycleBin(data){
+  const list=byId('recycle-list');list.replaceChildren();
+  if(!(data.recycle_bin||[]).length){const empty=document.createElement('p');empty.textContent='Recycle Bin is empty.';list.append(empty);}
+  for(const entry of data.recycle_bin||[]){
+    const row=document.createElement('div');row.className='recycle-row';
+    const label=document.createElement('span');label.textContent=`${entry.case_title} · ${entry.report_id} · ${entry.status} · deleted ${entry.deleted_at}`;
+    const restore=document.createElement('button');restore.textContent='Restore';restore.disabled=recycleBusy;
+    restore.onclick=()=>recycleAction('/api/reports/restore',{case_id:entry.case_id,report_id:entry.report_id},()=>`Restored report ${entry.report_id}.`);
+    const purge=document.createElement('button');purge.textContent='Delete permanently';purge.className='danger';purge.disabled=recycleBusy;
+    purge.onclick=()=>{if(confirm(`Permanently delete report ${entry.report_id}? This cannot be undone.`))
+      recycleAction('/api/reports/purge-recycled',{case_id:entry.case_id,report_id:entry.report_id},()=>`Permanently deleted report ${entry.report_id}.`);};
+    row.append(label,restore,purge);list.append(row);
+  }
+  const hidden=byId('hidden-reports');hidden.replaceChildren();
+  const cases=(data.hidden_report_cases||[]).filter(item=>item.count>0);
+  if(!cases.length){const empty=document.createElement('p');empty.textContent='No hidden report bundles remain.';hidden.append(empty);}
+  for(const item of cases){
+    const row=document.createElement('div');row.className='recycle-row';
+    const label=document.createElement('span');label.textContent=`${item.case_title} · ${item.count} hidden report bundle${item.count===1?'':'s'}`;
+    const purge=document.createElement('button');purge.className='danger';purge.textContent='Permanently delete hidden bundles';purge.disabled=recycleBusy;
+    purge.onclick=()=>{if(confirm(`Permanently delete ${item.count} hidden report bundle${item.count===1?'':'s'} from ${item.case_title}? This cannot be undone.`))
+      recycleAction('/api/reports/purge-hidden',{case_id:item.case_id},result=>
+        `Permanently deleted ${result.deleted.length} hidden bundle(s). ${result.failed.length} failed; check Activity & failures.`);};
+    row.append(label,purge);hidden.append(row);
+  }
+}
 function providerFields(){byId('api-options').hidden=byId('provider').value!=='compatible';byId('codex-options').hidden=byId('provider').value!=='codex';}
 async function refresh(){
   const data=await request('/api/settings');
   window.WorkbenchThemes.sync(data.appearance);
+  renderRecycleBin(data);
   providerState=data.provider;
   byId('settings-readiness').textContent=data.readiness.status+': '+data.readiness.reasons.join(' ');
   byId('state-root').textContent=data.state_dir;
@@ -149,4 +184,4 @@ byId('install-plugins').addEventListener('click',()=>act(()=>request('/api/setti
 byId('all-symbols').addEventListener('click',()=>act(()=>request('/api/settings/symbols/download',{pack:'all'})));
 byId('choose-symbol').addEventListener('click',()=>act(async()=>{const result=await request('/api/settings/pick-folder',{kind:'symbol'});if(result.path)byId('symbol-file').value=result.path;}));
 byId('symbol-import').addEventListener('submit',event=>{event.preventDefault();act(()=>request('/api/settings/symbols/import',{path:byId('symbol-file').value}));});
-(async()=>{try{const token=location.hash.slice(1);if(token){await request('/api/unlock',{token});history.replaceState(null,'',location.pathname);}await refresh();setInterval(()=>refresh().catch(error=>message(error.message)),2000);}catch(error){message(error.message);}})();
+(async()=>{try{const token=location.hash.slice(1);if(token){await request('/api/unlock',{token});history.replaceState(null,'',location.pathname);}await window.WorkbenchZoom.load();await refresh();setInterval(()=>refresh().catch(error=>message(error.message)),2000);}catch(error){message(error.message);}})();

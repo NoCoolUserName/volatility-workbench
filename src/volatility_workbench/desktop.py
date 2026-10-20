@@ -286,7 +286,7 @@ class Desktop:
         webview.settings.update(ALLOW_FILE_URLS=False,ALLOW_DOWNLOADS=True,OPEN_EXTERNAL_LINKS_IN_BROWSER=True)
         initial_url=self.url if self.prefs.get('setup_complete') else self.origin+'/settings.html#'+urlsplit(self.url).fragment
         self.window=webview.create_window('Volatility Workbench',initial_url,**geometry,min_size=(800,600),
-            text_select=True,zoomable=True,background_color='#0b1417',frameless=False)
+            text_select=True,zoomable=False,background_color='#0b1417',frameless=False)
         self.window.events.closing+=self.close_window
         self.window.events.resized+=self.save_geometry
         self.window.events.moved+=self.save_geometry

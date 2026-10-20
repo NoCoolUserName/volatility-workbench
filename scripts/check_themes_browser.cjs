@@ -46,6 +46,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     page.on('console',message=>{if(/Content Security Policy|violates the following/.test(message.text()))policyErrors.push(message.text());});
     page.on('pageerror',e=>errors.push(e.message));
     await page.route('**/*',route=>{
+      if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
       const u=new URL(route.request().url()); network.push(u.href);
       assert.equal(u.origin,'http://localhost','No external request allowed');
       if(u.pathname.startsWith('/api/')){

@@ -32,9 +32,10 @@ from . import plugin_speeds
 from . import live_console
 from .volshell import VolshellManager
 from .volshell_agent import AgentVolshell, validate_call
-from .storage import Bundle, atomic_json, delete_report_bundle, now, private_dir, read_chunk, safe_file, uid
+from .storage import Bundle, atomic_json, checked_report_bundle, delete_report_bundle, recycle_report_bundle, now, private_dir, read_chunk, safe_file, uid
 
 MAX_JOB_PLUGIN_RUNS = 500
+RECYCLE_LIMIT = 7
 
 TOOLS = [
     {'type':'function','name':'case_set_plan','description':'Explicitly record declared investigative scope for a registered image, not completion. Never invent a historical plan. Does not submit analysis.',
@@ -75,6 +76,7 @@ class Workbench:
         self.backend = VolatilityBackend(self.config)
         self.state_path = self.root / 'state.json'
         self.state = json.loads(self.state_path.read_text()) if self.state_path.exists() else {'schema_version':1,'cases':[],'jobs':[]}
+        self.state.setdefault('recycle_bin', [])
         self.plugin_speeds_path = self.root / 'plugin-speeds.json'
         try:
             history = json.loads(self.plugin_speeds_path.read_text()) if self.plugin_speeds_path.exists() else {}
@@ -179,12 +181,20 @@ class Workbench:
             return {'report_id':report_id, 'action':action}
         if report.get('deleted_at'):
             return {'report_id':report_id, 'action':action, 'already_deleted':True}
+        self._require_idle_report_cleanup(case_id)
+        self.report_cleanup[case_id] = asyncio.current_task()
+        try:
+            return await self._recycle_report(case, report)
+        finally:
+            self.report_cleanup.pop(case_id, None)
+
+    def _require_idle_report_cleanup(self, case_id):
         if ((self.active and self.active['case_id'] == case_id) or
                 any(j['case_id'] == case_id and j['status'] in ('queued','running','stopping') for j in self.state['jobs'])):
             raise ValueError('Finish or stop this case\'s active and queued work before deleting a report')
-        if any(r.get('previous') == report_id and not r.get('deleted_at') for r in case['reports']):
-            raise ValueError('Another report references this revision; use Hide from UI instead')
-        self.report_cleanup[case_id] = asyncio.current_task()
+
+    async def _delete_report(self, case, report):
+        report_id = report['id']
         try:
             self.event(case, 'report_delete_started', {'report_id':report_id})
             removed = await asyncio.to_thread(delete_report_bundle, self.directory(case), report_id,
@@ -193,13 +203,142 @@ class Workbench:
             report.pop('deletion_error', None)
             self.event(case, 'report_deleted', {'report_id':report_id, 'bundle_path':'reports/'+report_id,
                 'bundle_existed':removed, 'scope':'Only the selected revision bundle; shared analysis retained'})
-            return {'report_id':report_id, 'action':action, 'bundle_removed':removed}
+            return {'report_id':report_id, 'action':'delete', 'bundle_removed':removed}
         except Exception as exc:
             report['deletion_error'] = str(exc)
             self.event(case, 'report_delete_failed', {'report_id':report_id, 'error':str(exc)})
             raise
+
+    def recycle_case_dir(self, case):
+        if self.directory(case).parent != self.root:
+            raise ValueError('Case directory escapes the Workbench state root')
+        check_components(self.directory(case))
+        return self.root / 'recycle-bin' / case['id']
+
+    def recycle_bin_snapshot(self):
+        titles = {case['id']:case.get('title') or case['id'] for case in self.state['cases']}
+        return [{**entry, 'case_title':titles.get(entry['case_id'], entry['case_id'])}
+            for entry in reversed(self.state['recycle_bin'])]
+
+    async def _recycle_report(self, case, report):
+        report_id = report['id']
+        try:
+            self.event(case, 'report_delete_started', {'report_id':report_id, 'destination':'recycle_bin'})
+            await asyncio.to_thread(recycle_report_bundle, self.directory(case), report_id,
+                self.recycle_case_dir(case), [i['path'] for c in self.state['cases'] for i in c['images']],
+                allow_completed=report['status']=='sealed')
+            deleted_at = now()
+            report.update(hidden=True, deleted_at=deleted_at)
+            report.pop('deletion_error', None)
+            entry = {'case_id':case['id'], 'report_id':report_id, 'status':report['status'], 'deleted_at':deleted_at}
+            self.state['recycle_bin'].append(entry)
+            self.event(case, 'report_deleted', {'report_id':report_id, 'destination':'recycle_bin',
+                'scope':'Only the selected revision bundle; shared analysis retained'})
+            evicted = []
+            while len(self.state['recycle_bin']) > RECYCLE_LIMIT:
+                oldest = self.state['recycle_bin'][0]
+                old_case = self.case(oldest['case_id'])
+                try:
+                    await asyncio.to_thread(delete_report_bundle, self.recycle_case_dir(old_case), oldest['report_id'],
+                        [i['path'] for c in self.state['cases'] for i in c['images']],
+                        allow_completed=oldest['status']=='sealed')
+                except Exception as exc:
+                    self.event(old_case, 'report_recycle_eviction_failed',
+                        {'report_id':oldest['report_id'], 'error':str(exc)})
+                    break
+                self.state['recycle_bin'].pop(0)
+                evicted.append(oldest['report_id'])
+                self.event(old_case, 'report_recycle_evicted', {'report_id':oldest['report_id']})
+            return {'report_id':report_id, 'action':'delete', 'recycled':True, 'evicted':evicted}
+        except Exception as exc:
+            report['deletion_error'] = str(exc)
+            self.event(case, 'report_delete_failed', {'report_id':report_id, 'error':str(exc)})
+            raise
+
+    async def restore_recycled_report(self, case_id, report_id):
+        case = self.case(case_id)
+        if self.volshell.busy:
+            raise ValueError('Disconnect VolShell before restoring report versions')
+        entry = next((item for item in self.state['recycle_bin']
+            if item['case_id']==case_id and item['report_id']==report_id), None)
+        report = next((item for item in case['reports'] if item['id']==report_id), None)
+        if entry is None or report is None or not report.get('deleted_at'):
+            raise ValueError('Report is not in the Recycle Bin')
+        if case_id in self.report_cleanup:
+            raise ValueError('Report cleanup is already in progress for this case')
+        self._require_idle_report_cleanup(case_id)
+        self.report_cleanup[case_id] = asyncio.current_task()
+        try:
+            recycled = checked_report_bundle(self.recycle_case_dir(case), report_id,
+                [i['path'] for c in self.state['cases'] for i in c['images']],
+                allow_completed=report['status']=='sealed')
+            target = self.directory(case) / 'reports' / report_id
+            check_components(target)
+            if recycled is None:
+                # A prior restore may have moved the bundle before saving state.
+                if checked_report_bundle(self.directory(case), report_id,
+                    [i['path'] for c in self.state['cases'] for i in c['images']],
+                    allow_completed=report['status']=='sealed') is None:
+                    raise ValueError('Cannot restore this report bundle safely')
+            else:
+                if target.exists():
+                    raise ValueError('Cannot restore over an existing report bundle')
+                await asyncio.to_thread(os.replace, recycled, target)
+            report.pop('deleted_at', None)
+            report.pop('hidden', None)
+            report.pop('hidden_at', None)
+            report['restored_at'] = now()
+            self.state['recycle_bin'].remove(entry)
+            self.event(case, 'report_restored', {'report_id':report_id, 'source':'recycle_bin'})
+            return {'report_id':report_id, 'restored':True}
         finally:
             self.report_cleanup.pop(case_id, None)
+
+    async def purge_recycled_report(self, case_id, report_id):
+        case = self.case(case_id)
+        if self.volshell.busy:
+            raise ValueError('Disconnect VolShell before removing report versions')
+        entry = next((item for item in self.state['recycle_bin']
+            if item['case_id']==case_id and item['report_id']==report_id), None)
+        if entry is None:
+            raise ValueError('Report is not in the Recycle Bin')
+        if case_id in self.report_cleanup:
+            raise ValueError('Report cleanup is already in progress for this case')
+        self._require_idle_report_cleanup(case_id)
+        self.report_cleanup[case_id] = asyncio.current_task()
+        try:
+            await asyncio.to_thread(delete_report_bundle, self.recycle_case_dir(case), report_id,
+                [i['path'] for c in self.state['cases'] for i in c['images']],
+                allow_completed=entry['status']=='sealed')
+            self.state['recycle_bin'].remove(entry)
+            self.event(case, 'report_recycle_purged', {'report_id':report_id})
+            return {'report_id':report_id, 'purged':True}
+        finally:
+            self.report_cleanup.pop(case_id, None)
+
+    async def purge_hidden_reports(self, case_id):
+        case = self.case(case_id)
+        if self.volshell.busy:
+            raise ValueError('Disconnect VolShell before removing report versions')
+        if self.directory(case).parent != self.root:
+            raise ValueError('Case directory escapes the Workbench state root')
+        check_components(self.directory(case))
+        if case_id in self.report_cleanup:
+            raise ValueError('Report cleanup is already in progress for this case')
+        self._require_idle_report_cleanup(case_id)
+        targets = [report for report in case['reports'] if report.get('hidden') and not report.get('deleted_at')
+            and report['status'] in ('incomplete', 'sealed')]
+        deleted, failed = [], []
+        self.report_cleanup[case_id] = asyncio.current_task()
+        try:
+            for report in targets:
+                try:
+                    deleted.append(await self._delete_report(case, report))
+                except Exception as exc:
+                    failed.append({'report_id':report['id'], 'error':str(exc)})
+        finally:
+            self.report_cleanup.pop(case_id, None)
+        return {'deleted':deleted, 'failed':failed}
 
     def set_human_determination(self, case_id, report_id, value):
         if value is not None and value not in ('Benign', 'Malicious', 'Undetermined'):
@@ -751,7 +890,8 @@ REPORT_SPEC follows:\n'''+spec
                 if fresh['sha256']!=image.get('sha256'):
                     raise ValueError('Image changed since readiness. Do not combine old and new evidence.')
             report={'id':timestamped_id(),'created_at':now(),'status':'draft',
-                'previous':next((r['id'] for r in reversed(case['reports']) if r['status']=='sealed'),None),
+                'previous':next((r['id'] for r in reversed(case['reports'])
+                    if r['status']=='sealed' and not r.get('deleted_at')),None),
                 'generation':job['generation']}
             if job['kind']=='update':
                 previous=next((r for r in reversed(case['reports']) if r['status']=='sealed' and not r.get('deleted_at')),None)
@@ -771,7 +911,11 @@ REPORT_SPEC follows:\n'''+spec
             prompt+='Readiness outputs already exist; reuse them rather than repeating discovery. Investigate adaptively. Focus: '+(job['text'] or 'Relevant system state and suspicious activity supported by the evidence.')
             if job['kind']=='update':
                 prompt+='\nRead the previous sealed report and reassess its Executive summary and AI Determination against the new saved results. Incorporate pertinent new findings, changed confidence, contradictions and material limitations into the Executive summary; revise earlier conclusions when warranted. Do not merely append plugin output or a technical subsection. If the new results do not materially change the assessment, state that briefly and explain why, retaining failed or unexamined scopes as limitations. Preserve stable evidence/finding references and all earlier sealed versions.'
-        prompt+='\nExisting reports: '+json.dumps([r for r in case['reports'] if not r.get('deleted_at')])
+        # Validation and generation records can be hundreds of kilobytes per
+        # version. The agent can read a sealed report when it needs its content.
+        reports=[{key:r[key] for key in ('id','status','created_at','previous') if key in r}
+                 for r in case['reports'] if not r.get('deleted_at')]
+        prompt+='\nExisting report versions (metadata only; read saved reports with case_read_file): '+json.dumps(reports)
         self.progress(job,'Investigating with '+self.case_provider(case)['provider'])
         case['messages'].append({'role':'user','text':job['text'] or job['kind'],'time':now(),'job_id':job['id']})
         self.save()

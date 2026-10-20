@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/themes.css" />
     <script src="/themes.js"></script>
+    <script src="/zoom.js"></script>
     <script src="/volshell.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
@@ -27,8 +28,10 @@
         </div>
       </div>
       <div class="header-controls">
-        <a class="settings-link" href="/settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M10.2 2h3.6l.5 2.3 1.4.6 2-1.3 2.5 2.5-1.3 2 .6 1.4 2.3.5v3.6l-2.3.5-.6 1.4 1.3 2-2.5 2.5-2-1.3-1.4.6-.5 2.3h-3.6l-.5-2.3-1.4-.6-2 1.3-2.5-2.5 1.3-2-.6-1.4-2.3-.5v-3.6l2.3-.5.6-1.4-1.3-2 2.5-2.5 2 1.3 1.4-.6.5-2.3z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a>
         <span id="connection">Connecting…</span>
+        <a class="settings-link" href="/settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M10.2 2h3.6l.5 2.3 1.4.6 2-1.3 2.5 2.5-1.3 2 .6 1.4 2.3.5v3.6l-2.3.5-.6 1.4 1.3 2-2.5 2.5-2-1.3-1.4.6-.5 2.3h-3.6l-.5-2.3-1.4-.6-2 1.3-2.5-2.5 1.3-2-.6-1.4-2.3-.5v-3.6l2.3-.5.6-1.4-1.3-2 2.5-2.5 2 1.3 1.4-.6.5-2.3z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a>
+        <div class="ui-zoom-controls" role="group" aria-label="Text size"><button type="button" data-ui-zoom-out aria-label="Decrease text size">A−</button><button type="button" data-ui-zoom-reset data-ui-zoom-value title="Reset text size to 100%">100%</button><button type="button" data-ui-zoom-in aria-label="Increase text size">A+</button></div>
+        <span data-ui-zoom-status class="subtle" role="status" hidden></span>
       </div>
     </header>
     <div class="skin-scene" aria-hidden="true"></div>
@@ -130,9 +133,13 @@
               rows="2"
               placeholder="Optional investigation focus"
               aria-label="Investigation focus"
+              aria-describedby="focusHistoryHelp"
             ></textarea><button id="report" class="primary">Generate report</button
             ><button id="update">Update report</button>
           </div>
+          <p class="subtle" id="focusHistoryHelp">
+            Prompt history: Up recalls the last 10 prompts for this case; Down moves forward; Escape restores your draft. In multiline prompts, start on the first line.
+          </p>
           <p class="subtle">
             Generate and Update create a new report version. Asking a question
             preserves current reports.
@@ -241,6 +248,7 @@
         </div></div>
         <div class="crt-chin"><span class="crt-brand" aria-hidden="true">WORKBENCH <span>MONOCHROME DISPLAY</span></span>
           <div class="crt-mode-controls"><button id="consoleOutputMode" type="button" aria-pressed="true" aria-controls="expandedConsoleHost">Output</button><button id="consoleVolshellMode" type="button" aria-pressed="false" aria-controls="volshellPanel"><span id="volshellLED" class="volshell-led" aria-hidden="true"></span>VolShell<span id="volshellLEDLabel" class="sr-only"> · disconnected</span></button></div>
+          <div class="ui-zoom-controls" role="group" aria-label="Console text size"><button type="button" data-ui-zoom-out aria-label="Decrease text size">A−</button><button type="button" data-ui-zoom-reset data-ui-zoom-value title="Reset text size to 100%">100%</button><button type="button" data-ui-zoom-in aria-label="Increase text size">A+</button></div>
           <span class="crt-power" aria-hidden="true"><i></i> <span id="consolePowerText">LIVE</span></span></div>
       </div>
     </dialog>

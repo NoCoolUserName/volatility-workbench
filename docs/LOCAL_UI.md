@@ -25,6 +25,12 @@ green screens and brass controls, guided by the supplied inventory-screen refere
 Theme changes do not submit jobs or modify cases, conversations or saved reports.
 The displayed report retains its selection border. See [the catalog and verified
 references](THEMES.md), including the Punisher #53 artist correction.
+Text size is separate from WebView/page zoom. Pinch apart or together on a trackpad,
+hold Control while scrolling a mouse wheel, or use the A−/percentage/A+ controls
+in the header, Settings, or expanded console. Workbench scales text from 75% to
+200% in 5% steps, wraps larger text inside existing panels, and saves the selected
+size in application preferences outside the bundle. The connection status appears
+above Settings in the header.
 
 ## Launch
 
@@ -74,9 +80,9 @@ first displayed case; an empty list shows the start screen.
 The **Add evidence** panel starts collapsed; click its heading to expand it.
 The **Theme** button sits directly below Plugins. Click it to show the theme
 dropdown, and click it again or press Escape to hide it. Settings, with its silver
-gear, sits at the upper-right corner. The themes include Matrix green (default),
-Soft black and white, and Light blue. The selection is stored in this browser's local
-storage and restored on reload. It changes presentation only; case state,
+gear, sits below the connection status at the upper-right corner. The themes include Matrix green (default),
+Soft black and white, and Light blue. The selection is stored in application preferences
+outside the app bundle and restored on reload or restart. It changes presentation only; case state,
 saved evidence, and reports are unaffected.
 
 1. Add existing `.raw`, `.mem`, `.vmem`, `.dmp`, `.lime`, or `.dd` files through
@@ -134,16 +140,17 @@ saved evidence, and reports are unaffected.
    distinct image coins and leaving other report images intact.
    Incomplete and sealed report cards reveal **×** on hover or keyboard focus (always visible
    on touch devices). Its popup offers **Hide from UI**, which persistently hides
-   the revision without changing files, or **Delete**, which permanently removes
-   only that revision's `reports/<revision>/` bundle, including its copied
-   artifacts and decorative assets. Shared analysis, original images, case/job
-   history, other revisions and independently saved exports are retained. Hidden
-   files remain accessible in Evidence; there is currently no unhide control.
-   Deleting a selected sealed revision also removes that revision's sealed bundle.
-   Delete is blocked while
-   the case has active/queued work or another revision names it as its predecessor.
-   A failed/partial deletion is recorded and can be retried; it is not rolled
-   back or silently marked successful. Closing the popup performs no action.
+   the revision without changing files, or **Delete to Recycle Bin**, which moves
+   that revision's complete bundle out of the Reports folder. Settings lists the
+   last seven deleted bundles with **Restore** and **Delete permanently** controls.
+   Deleting an eighth permanently removes the oldest recycled bundle. A later
+   report's predecessor ID is historical metadata; its complete sealed bundle does
+   not require the older bundle to remain present. Shared analysis, original images,
+   case/job history, other revisions and independently saved exports are retained.
+   Hidden files remain on disk until Settings → Hidden report files permanently
+   deletes them. Deletion and restoration are blocked during active or queued case
+   work. A failed/partial cleanup is recorded and can be retried; it is not silently
+   marked successful. Closing the popup performs no action.
    The report revision currently displayed has a persistent accent outline and
    `aria-current` marker. This selection survives background refresh; after a
    selected revision is hidden or deleted, the remaining latest revision is shown.
@@ -156,6 +163,11 @@ saved evidence, and reports are unaffected.
    material limitations. If the new results leave the assessment unchanged, the
    summary should say why. This is an investigative instruction; mechanical
    report validation does not independently judge the relevance of a finding.
+   The focus field recalls the 10 most recent nonempty report/update prompts from
+   this case's saved jobs with Up/Down; Escape restores the unsent draft. Multiline
+   editing keeps normal Up behavior except when the caret is on the first line.
+   The model prompt lists report version IDs and status metadata without repeating
+   stored validation records; the investigator reads saved report content as needed.
    Sealed content is not edited in place; explicit Hide/Delete is
    separate from report generation and retains the case's audit metadata.
 7. Multiple cases/jobs run sequentially. Refreshing/reopening the browser reads
@@ -525,6 +537,8 @@ explicit human change replaces or clears that choice. The AI opinion is assessed
 independently for each new report. Executive summary F-number references link to
 unambiguous matching finding headings in the same rendered report; unknown
 references remain plain text, and existing evidence links retain their behavior.
+The Human Determination picker saves each changed choice immediately, confirms the
+server response, and restores the saved value when the view refreshes or reopens.
 
 Failed-plugin rows include **Add to prompt**, and the section includes
 **Add all failed requests to prompt**. Prompts retain saved scope and require

@@ -24,6 +24,7 @@ async function checkBezelConnection(browser){
   });
   page.on('pageerror',error=>errors.push(error.message));
   await page.route('**/*',async route=>{
+    if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
    const request=route.request(),url=new URL(request.url());
    assert.equal(url.origin,'http://localhost');
    if(request.method()==='GET'){
@@ -229,6 +230,7 @@ async function checkBezelConnection(browser){
   let suggestion={command:'ps()',explanation:'List processes in the selected Windows capture.'},heldSuggestion=null,holdSuggestion=false,stateReads=0;
   page.on('pageerror',error=>errors.push(error.message));
   await page.route('**/*',async route=>{
+    if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
    const request=route.request(),url=new URL(request.url());
    assert.equal(url.origin,'http://localhost','All requests remain inside the synthetic route handler');
    if(request.method()==='GET'){

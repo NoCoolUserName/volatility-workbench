@@ -27,6 +27,7 @@ const narrative='\n\n## Executive summary\nSynthetic only.\n\n## Scope and evide
     const page=await browser.newPage({viewport:{width:1400,height:1000}}),calls=[],errors=[];
     page.on('pageerror',e=>errors.push(e.message));
     await page.route('http://localhost/**',route=>{
+      if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
       const u=new URL(route.request().url());
       if(u.pathname.startsWith('/api/')){
         calls.push(u.pathname);
