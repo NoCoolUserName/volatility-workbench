@@ -121,7 +121,7 @@ def delete_report_bundle(case_dir, report_id, evidence_paths, *, allow_completed
 def recycle_report_bundle(case_dir, report_id, recycle_case_dir, evidence_paths, *, allow_completed=False):
     """Atomically move a checked bundle into private recoverable storage."""
     target = checked_report_bundle(case_dir, report_id, evidence_paths, allow_completed=allow_completed)
-    destination_parent = private_dir(Path(recycle_case_dir) / 'reports')
+    destination_parent = Path(recycle_case_dir) / 'reports'
     destination = destination_parent / report_id
     check_components(destination)
     if not resolved_path(destination).is_relative_to(resolved_path(destination_parent)):
@@ -132,7 +132,8 @@ def recycle_report_bundle(case_dir, report_id, recycle_case_dir, evidence_paths,
             return True  # A prior move completed before its state update.
         raise ValueError('A recycled bundle already exists for this revision')
     if target is None:
-        raise ValueError('Report bundle is missing and cannot be recycled')
+        return False  # Nothing remains on disk; an explicit Delete still removes the card.
+    private_dir(destination_parent)
     os.replace(target, destination)
     return True
 

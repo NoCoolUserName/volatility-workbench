@@ -247,6 +247,17 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         await self.app.stop();await self.wait_job(job)
         self.assertEqual(queued['status'],'cancelled')
         self.assertNotEqual(job['status'],'completed')
+    async def test_two_queued_updates_use_latest_successful_report_at_execution(self):
+        await self.ready()
+        initial=self.app.enqueue(self.case['id'],'report','Synthetic baseline')
+        await self.wait_job(initial);self.assertEqual(initial['status'],'completed',initial)
+        first=self.app.enqueue(self.case['id'],'update','First distinct queued focus')
+        second=self.app.enqueue(self.case['id'],'update','Second distinct queued focus')
+        await self.wait_job(first);await self.wait_job(second)
+        self.assertEqual([first['status'],second['status']],['completed','completed'])
+        reports={r['id']:r for r in self.case['reports']}
+        self.assertEqual(reports[first['report_id']]['previous'],initial['report_id'])
+        self.assertEqual(reports[second['report_id']]['previous'],first['report_id'])
     async def test_readiness_cancel_keeps_source_and_partial_record(self):
         self.fixture.image.write_text('timeout')
         job=self.app.enqueue(self.case['id'],'readiness')

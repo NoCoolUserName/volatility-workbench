@@ -76,6 +76,7 @@
           <div id="currentWorkHeading" class="work-heading"><h2><button id="toggleReportConsole" type="button" aria-expanded="true" aria-controls="liveConsoleDock" title="Collapse report console"><span class="report-console-arrow" aria-hidden="true">▾</span><span id="workTitle">Current work</span></button></h2>
             <button id="stop" class="danger" disabled>Stop all work</button></div>
           <div id="activeReportProgress" hidden></div>
+          <p id="queueSummary" class="subtle" hidden></p>
           <ol id="queue" aria-live="polite"></ol>
           <div id="liveConsoleDock"><section id="liveConsoleSection" class="live-console-section" hidden aria-labelledby="liveConsoleTitle">
             <div class="live-console-heading"><div class="live-console-title"><h3 id="liveConsoleTitle">Live investigation console</h3><span id="consoleOperation" class="console-operation" hidden></span></div>
@@ -139,6 +140,7 @@
           <p class="subtle" id="focusHistoryHelp">
             Prompt history: Up recalls the last 10 prompts for this case; Down moves forward; Escape restores your draft. In multiline prompts, start on the first line.
           </p>
+          <p id="reportSubmissionStatus" class="subtle" role="status"></p>
           <p class="subtle">
             Generate and Update create a new report version. Asking a question
             preserves current reports.
@@ -162,7 +164,6 @@
                 <p>No report yet. Run readiness, then Generate report.</p>
               </article>
             </div>
-            <button id="backToTop" type="button" aria-label="Back to top" title="Back to top" hidden>▲</button>
           </section>
           <section id="conversation" class="tab" hidden>
             <label class="history-order">Sort conversation<select id="conversationOrder" data-history-order="conversation"><option value="oldest">Oldest first</option><option value="newest">Newest first</option></select></label>
@@ -191,6 +192,7 @@
             <label class="history-order">Sort activity<select id="activityOrder" data-history-order="activity"><option value="oldest">Oldest first</option><option value="newest">Newest first</option></select></label>
             <div id="activityList"></div>
           </section>
+          <button id="backToTop" type="button" aria-label="Back to top" title="Back to top" hidden>▲</button>
         </section>
       </main>
     </div>

@@ -132,12 +132,12 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
             await self.app.remove_report(other['id'], record['id'], 'anything')
         self.assertTrue(folder.exists()); self.assert_preserved()
 
-    async def test_active_queued_work_blocks_deletion_but_predecessors_can_be_recycled(self):
+    async def test_active_queued_work_defers_deletion_and_predecessors_can_be_recycled(self):
         record, folder = self.report()
         for status in ('queued','running','stopping'):
             self.app.state['jobs'] = [{'case_id':self.case['id'],'status':status}]
-            with self.assertRaisesRegex(ValueError, 'active and queued'):
-                await self.app.remove_report(self.case['id'], record['id'], 'delete')
+            self.assertTrue((await self.app.remove_report(self.case['id'], record['id'], 'delete'))['queued'])
+            self.assertTrue(folder.exists());self.assertIn('delete_requested_at',record)
         self.app.state['jobs'] = []
         child, _ = self.report('child', 'sealed'); child['previous'] = record['id']
         await self.app.remove_report(self.case['id'], record['id'], 'delete')
@@ -185,9 +185,8 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         record, folder = self.report('missing')
         import shutil
         shutil.rmtree(folder)
-        await self.app.remove_report(self.case['id'], record['id'], 'hide')
-        result = await self.app.purge_hidden_reports(self.case['id'])
-        self.assertEqual(result['failed'], []); self.assertTrue(record['deleted_at'])
+        result=await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertFalse(result['recycled']);self.assertTrue(record['deleted_at'])
         self.assert_preserved()
 
     async def test_io_failure_keeps_card_and_records_error_for_retry(self):
@@ -309,8 +308,7 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
     async def test_sealed_delete_keeps_active_and_source_guards(self):
         record, folder = self.report('sealed', 'sealed')
         self.app.state['jobs']=[{'case_id':self.case['id'],'status':'running'}]
-        with self.assertRaisesRegex(ValueError,'active and queued'):
-            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertTrue((await self.app.remove_report(self.case['id'], record['id'], 'delete'))['queued'])
         self.app.state['jobs']=[]
         child,_=self.report('child','sealed');child['previous']=record['id']
         with self.assertRaisesRegex(ValueError,'source evidence'):

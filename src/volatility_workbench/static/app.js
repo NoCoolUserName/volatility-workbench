@@ -47,8 +47,10 @@ const savedConsoleCache = new Map();
 const consoleNodes = new Map();
 const dismissedReportFailures = new Set();
 const rerunningReportFailures = new Set();
+const submittingJobs = new Set();
 let shownReportFailure = "";
 let shownReportProgress = "";
+let coverageNavigation = 0;
 const el = (tag, text, cls) => {
   const n = document.createElement(tag);
   if (text !== undefined) n.textContent = text;
@@ -139,10 +141,12 @@ document.addEventListener("workbench-text-scale", sizeFocus);
 let submittingReadiness = false;
 let selectedPluginSources = new Set(), allPluginSourcesSelected = true, availablePluginSources = [];
 function choose(id, activate = true) {
+  ++coverageNavigation;
   clearReportReturn();
   if (activate) activeView = "case";
   const changeFocus = id !== selected;
   if (changeFocus) {
+    $("reportSubmissionStatus").textContent = "";
     if (selected) focusDrafts.set(selected, focusHistoryIndex < 0 ? $("focus").value : focusHistoryDraft);
     resetFocusHistory();
     $("focus").value = focusDrafts.get(id) || "";
@@ -235,27 +239,36 @@ function imageSize(sizeBytes) {
   return (sizeBytes / (unit === "GB" ? gigabyte : 1_000_000)).toFixed(2) + unit;
 }
 function updateBackToTop() {
-  $("backToTop").hidden = $("case").hidden || $("reports").hidden || !shownReport ||
+  const contentVisible = (!$("reports").hidden && !!shownReport) || !$("coverage").hidden;
+  $("backToTop").hidden = $("case").hidden || !contentVisible ||
     window.scrollY < Math.max(500, window.innerHeight / 2);
 }
 async function job(kind, text = "") {
   if (!selected) throw Error("Select a case");
   if (window.WorkbenchVolshell.hasActiveSession()) throw Error("Disconnect VolShell before starting investigation work.");
   const caseId = selected;
-  await api("jobs", {
-    case_id: caseId,
-    kind,
-    text,
-    request_id: crypto.randomUUID(),
-  });
-  resetFocusHistory();
-  if (kind === "update") {
-    focusDrafts.set(caseId, "");
-    if (selected === caseId) { $("focus").value = ""; sizeFocus(); updateBulkPluginAction(); }
+  const reportRequest = ["report","update"].includes(kind);
+  const submissionKey = caseId + ':' + (reportRequest ? 'report' : kind);
+  if (submittingJobs.has(submissionKey)) return;
+  submittingJobs.add(submissionKey);render();
+  try {
+    const accepted = await api("jobs", {case_id:caseId, kind, text, request_id:crypto.randomUUID()});
+    resetFocusHistory();
+    if (reportRequest) {
+      if (focusDrafts.get(caseId) === text) focusDrafts.set(caseId, "");
+      if (selected === caseId && $("focus").value === text) {
+        $("focus").value = "";focusDrafts.set(caseId, "");sizeFocus();updateBulkPluginAction();
+      }
+      if (selected === caseId) $("reportSubmissionStatus").textContent = "Report request queued. It will run in submission order.";
+    }
+    await refresh();
+    return accepted;
+  } finally {
+    submittingJobs.delete(submissionKey);render();
   }
-  await refresh();
 }
 function setTab(name) {
+  if (name !== "coverage") ++coverageNavigation;
   if (name !== "evidence") ++evidenceNavigation;
   document.querySelectorAll(".tab").forEach((n) => (n.hidden = n.id !== name));
   document
@@ -1220,6 +1233,42 @@ function reportProgress(job) {
   root.append(heading, stage, progress, note);
   return root;
 }
+function typicalJobTime(job, now) {
+  const profile = item => item.generation || item.estimate_profile;
+  const wanted = profile(job);
+  if (job.kind !== 'readiness' && (!wanted?.provider || !wanted?.model)) return null;
+  const sameProfile = item => job.kind === 'readiness' || ['provider','model','reasoning_effort']
+    .every(key => (profile(item)?.[key] || null) === (wanted[key] || null));
+  const samples = state.jobs.filter(item => item.case_id === job.case_id && item.kind === job.kind &&
+    item.status === 'completed' && sameProfile(item)).map(item =>
+      (timestampMillis(item.finished_at) - timestampMillis(item.started_at)) / 1000)
+    .filter(seconds => Number.isFinite(seconds) && seconds > 0 && seconds <= 86400).slice(-10);
+  if (!samples.length) return null;
+  const total = samples.reduce((sum,value) => sum + value,0) / samples.length;
+  const elapsed = job.status === 'queued' ? 0 : (now - timestampMillis(job.started_at)) / 1000;
+  if (!Number.isFinite(elapsed) || elapsed >= total) return null;
+  return {remaining:Math.max(0,total - Math.max(0,elapsed)), samples:samples.length};
+}
+function durationLabel(seconds) {
+  return seconds < 60 ? Math.ceil(seconds) + 's' : seconds < 3600 ? Math.ceil(seconds / 60) + ' min' :
+    (seconds / 3600).toFixed(1) + ' hr';
+}
+function queuePresentation(pending, now) {
+  let waiting = 0, unknown = 0;
+  const items = pending.map((j,index) => {
+    const estimate = typicalJobTime(j,now);
+    const ahead = unknown ? 'Start time not yet estimable' : 'Typical wait: about ' + durationLabel(waiting);
+    const timing = j.status === 'queued' ? ahead : estimate ? 'Typical runtime remaining: about ' + durationLabel(estimate.remaining) :
+      'Runtime not yet estimable or longer than its timing history';
+    if (estimate) waiting += estimate.remaining;else unknown++;
+    return {...j,position:index+1,timing,
+      title:state.cases.find(c => c.id === j.case_id)?.title || j.case_id};
+  });
+  return {items,summary:pending.length ? `${pending.length} request(s) pending · ${pending.filter(j=>j.status==='queued').length} waiting. ` +
+    (unknown ? `Overall finish time is unknown: ${unknown} request(s) lack a usable duration estimate. ` :
+      `Typical time to finish the queue: about ${durationLabel(waiting)}. `) +
+    'Estimates use up to 10 completed similar requests and include report writing; scope and service delays can change them.' : ''};
+}
 function renderRunningReport(version) {
   const job = state.jobs.find(j => j.case_id === selected && j.report_id === version.id);
   const title = el("h2", job?.status === "stopping" ? "Stopping report…" : "Report running…");
@@ -1323,24 +1372,26 @@ function removeReportDialog(c, report) {
   dismiss.onclick = () => dialog.close();
   const failure = el("p");
   failure.setAttribute("role", "alert");
+  failure.textContent = report.deletion_error ? "Deletion failed: " + report.deletion_error + ". You can retry below." : "";
   const buttons = el("div", undefined, "buttons");
   const del = el("button", "Delete to Recycle Bin", "danger");
   const hide = el("button", "Hide from UI");
   const busy = (state.report_cleanup_cases || []).includes(c.id) || state.jobs.some(
     (j) => j.case_id === c.id && ["queued", "running", "stopping"].includes(j.status),
   );
-  del.disabled = busy;
-  if (busy) failure.textContent = "Finish this case's active work or cleanup before deleting. You can still hide this report.";
+  const cleaning=(state.report_cleanup_cases || []).includes(c.id);
+  del.disabled = cleaning || !!report.delete_requested_at;
+  del.title = busy ? "Queue deletion for after the current job finishes" : "Move this report bundle to the Recycle Bin";
   for (const [button, action] of [[del, "delete"], [hide, "hide"]]) {
     button.onclick = async () => {
       del.disabled = hide.disabled = true;
       failure.textContent = action === "delete" ? "Deleting report files…" : "Hiding report…";
       try {
-        await api("reports/remove", {case_id:c.id, report_id:report.id, action});
+        const result=await api("reports/remove", {case_id:c.id, report_id:report.id, action});
         if (dialog.dataset.target === key) dialog.close();
         if (selected === c.id) {
-          if (selectedVersion === report.id) { selectedVersion = null; shownReport = ""; }
-          if (action === "delete" && artifact?.path.startsWith("reports/" + report.id + "/")) {
+          if (!result.queued && selectedVersion === report.id) { selectedVersion = null; shownReport = ""; }
+          if (action === "delete" && !result.queued && artifact?.path.startsWith("reports/" + report.id + "/")) {
             artifact = null;
             $("artifactMeta").textContent = "";
             $("artifactView").textContent = "";
@@ -1353,13 +1404,14 @@ function removeReportDialog(c, report) {
         if (dialog.open && dialog.dataset.target === key) failure.textContent = e.message;
         else error(e);
         hide.disabled = false;
-        del.disabled = busy;
+        del.disabled = cleaning;
       }
     };
   }
   buttons.append(del, hide);
   dialog.replaceChildren(dismiss, title, el("p", readableTime(report.created_at) + " · " + report.status),
     el("p", "Hide from UI keeps all files. Delete moves this complete revision bundle into the seven-report Recycle Bin in Settings, where it can be restored. When the bin is full, deleting another report permanently removes its oldest bundle. Original images, shared analysis, case history and other report versions are retained."),
+    el("p",busy ? "Deletion will run after the current job finishes. This report stays available until its files are moved." : ""),
     failure, buttons);
   dialog.showModal();
   hide.focus();
@@ -1462,8 +1514,10 @@ function render() {
         .map((r) => el("p", r, "subtle")),
     );
     const hasSealedReport = c.reports.some(r => r.status === "sealed" && !r.deleted_at);
-    $("report").disabled = !ready || shellActive;
-    $("update").disabled = !ready || !hasSealedReport || shellActive;
+    const reportPending=state.jobs.some(j=>j.case_id===c.id && ['report','update'].includes(j.kind) && ['queued','running','stopping'].includes(j.status));
+    const submitting=submittingJobs.has(c.id+':report') || state.report_cleanup_cases?.includes(c.id);
+    $("report").disabled = !ready || shellActive || !!submitting;
+    $("update").disabled = !ready || !(hasSealedReport || reportPending) || shellActive || !!submitting;
     $("questionForm").querySelector("button").disabled = shellActive;
     $("report").classList.toggle("primary", !hasSealedReport);
     $("update").classList.toggle("primary", hasSealedReport);
@@ -1482,7 +1536,7 @@ function render() {
       const removable = ["incomplete", "sealed"].includes(r.status);
       const card = el("div", undefined, "report-version" + (removable ? " removable" : ""));
       card.dataset.reportId = r.id;
-      const b = el("button", readableTime(r.created_at) + " · " + r.status);
+      const b = el("button", readableTime(r.created_at) + " · " + r.status + (r.delete_requested_at ? " · deletion queued" : r.deletion_error ? " · deletion failed" : ""));
       b.onclick = () => {
         selectedVersion = r.id;
         shownReport = "";
@@ -1493,6 +1547,7 @@ function render() {
       if (removable) {
         const remove = el("button", "×", "report-remove");
         remove.setAttribute("aria-label", "Remove " + r.status + " report " + readableTime(r.created_at));
+        remove.disabled = !!r.delete_requested_at;
         remove.onclick = () => removeReportDialog(c, r);
         card.append(remove);
       }
@@ -1528,17 +1583,16 @@ function render() {
   const stopHost = reportJob ? activeProgress.querySelector(".report-progress-heading") : $("currentWorkHeading");
   if ($("stop").parentElement !== stopHost) stopHost.append($("stop"));
   if (stopWasFocused && pending.length) $("stop").focus({preventScroll:true});
-  const queueItems = pending.map(j => ({
-    id: j.id,
-    title: state.cases.find(c => c.id === j.case_id)?.title || j.case_id,
-    kind: j.kind, status: j.status, progress: j.progress || "",
-  }));
+  const queueView=queuePresentation(pending,renderedAt), queueItems=queueView.items;
+  $("queueSummary").textContent=queueView.summary;
+  $("queueSummary").hidden=!pending.length;
   const queueKey = JSON.stringify(queueItems);
   if (shownQueue !== queueKey) {
     $("queue").replaceChildren(...queueItems.map(j => {
       const item = el("li");
       item.append(el("strong", j.title + " · " + j.kind),
-        el("span", j.status + (j.progress && j.status !== "queued" ? " · " + j.progress : "")));
+        el("span", '#' + j.position + ' · ' + j.status + (j.progress && j.status !== "queued" ? " · " + j.progress : "") + ' · ' + j.timing));
+      if (j.text) item.append(el('span',j.text.length>180 ? j.text.slice(0,180)+'…' : j.text,'queue-prompt'));
       return item;
     }));
     shownQueue = queueKey;
@@ -1554,8 +1608,8 @@ function renderReportFailure(c) {
   host.hidden = !visible;
   if (!visible) { shownReportFailure = ""; return; }
   const ready = ["Ready", "Ready with limitations"].includes(c.readiness.status);
-  const busy = state.jobs.some(j => j.case_id === c.id && ["queued", "running", "stopping"].includes(j.status));
-  const blocked = !ready || busy || window.WorkbenchVolshell.hasActiveSession() || rerunningReportFailures.has(latest.id) || state.report_cleanup_cases?.includes(c.id);
+  const retryPending=state.jobs.some(j=>j.retry_of===latest.id && ['queued','running','stopping'].includes(j.status));
+  const blocked = !ready || retryPending || window.WorkbenchVolshell.hasActiveSession() || rerunningReportFailures.has(latest.id) || state.report_cleanup_cases?.includes(c.id);
   const key = JSON.stringify([latest.id, latest.kind, latest.status, latest.error, !!blocked]);
   if (shownReportFailure === key) return;
   shownReportFailure = key;
@@ -1569,7 +1623,7 @@ function renderReportFailure(c) {
     rerunningReportFailures.add(latest.id);
     rerun.disabled = true;
     try {
-      await api("jobs", {case_id:c.id, kind:latest.kind, text:latest.text || "", request_id:crypto.randomUUID()});
+      await api("jobs", {case_id:c.id, kind:latest.kind, text:latest.text || "", request_id:crypto.randomUUID(),retry_of:latest.id});
       await refresh();
     } finally {
       rerunningReportFailures.delete(latest.id);
@@ -1889,15 +1943,25 @@ async function viewArtifact(path, offset = 0, isCurrent = () => true) {
 async function loadCoverage() {
   const c = caseNow();
   if (!c) return;
+  const navigation=++coverageNavigation;
+  const current=()=>selected===c.id && navigation===coverageNavigation && activeView==='case';
   const panel = $("coverageView");
-  panel.replaceChildren(el("p", "Reading saved manifests and outputs; no analysis is started."));
-  const sections = [];
+  panel.replaceChildren(el("p", "Reading all saved coverage; no analysis is started."));
+  function nextOffset(value,offset) {
+    if(value===null)return null;
+    if(!Number.isSafeInteger(value) || value<=offset)throw Error('Saved coverage returned an invalid continuation');
+    return value;
+  }
   for (const image of c.images) {
+    if(!current())return;
     const section = el("section");
     section.append(el("h3", image.id));
+    const loading=el('p','Loading saved scopes and attempts…','subtle');section.append(loading);panel.append(section);
     const base = "coverage?case=" + encodeURIComponent(c.id) + "&image=" + encodeURIComponent(image.id);
-    async function page(offset = 0) {
+    let offset=0, loaded=0;
+    try { do {
       const data = await api(base + "&offset=" + offset);
+      if(!current())return;
       if (!offset) {
         section.append(el("p", "Scope: " + data.scope + ". " +
           data.summary.entries_with_successful_collection + " / " + data.summary.declared_plan_entries +
@@ -1911,12 +1975,13 @@ async function loadCoverage() {
           el("pre", readableTime(JSON.stringify({jobs:data.orchestration_jobs, request_failures:data.request_failures}, null, 2))));section.append(jobs);
       }
       for (const entry of data.entries) {
-        const detail = el("details");
+        const detail = el("details", undefined, "coverage-scope");
         detail.append(el("summary", (entry.question || entry.plugin) + " · " + entry.effective.execution +
           " · " + entry.effective.applicability + " · " + entry.effective.availability));
         detail.append(el("pre", JSON.stringify({plugin:entry.plugin, arguments:entry.arguments,
           question_answered:entry.question_answered, effective:entry.effective}, null, 2)));
-        async function attempts(batch) {
+        let batch=entry, attemptOffset=0;
+        do {
           for (const a of batch.attempts) {
             detail.append(el("pre", readableTime(JSON.stringify(a, null, 2))));
             const manifest = el("button", "Open attempt " + a.run_id);
@@ -1928,24 +1993,30 @@ async function loadCoverage() {
               detail.append(evidence);
             }
           }
-          if (batch.attempt_next_offset !== null) {
-            const more = el("button", "More attempts");
-            more.onclick = act(async () => {
-              const next = await api(base + "&entry=" + encodeURIComponent(entry.entry_id) + "&attempt_offset=" + batch.attempt_next_offset);
-              more.remove(); await attempts(next.entries[0]);
-            });detail.append(more);
+          attemptOffset=nextOffset(batch.attempt_next_offset,attemptOffset);
+          if(attemptOffset!==null){
+            const next=await api(base + "&entry=" + encodeURIComponent(entry.entry_id) + "&attempt_offset=" + attemptOffset);
+            if(!current())return;
+            batch=next.entries.find(item=>item.entry_id===entry.entry_id);
+            if(!batch)throw Error('Saved coverage attempt scope changed while loading');
           }
-        }
-        await attempts(entry);section.append(detail);
+        }while(attemptOffset!==null);
+        section.append(detail);loaded++;
+        loading.textContent=loaded+' saved scope(s) loaded…';
       }
-      if (data.delivery.next_offset !== null) {
-        const more = el("button", "More coverage scopes");
-        more.onclick = act(async () => {more.remove(); await page(data.delivery.next_offset);});section.append(more);
-      }
+      offset=nextOffset(data.delivery.next_offset,offset);
+    }while(offset!==null);
+    loading.textContent=loaded+' saved scope(s) loaded. All available saved attempts are shown inside each scope.';
+    }catch(failure){
+      if(!current())return;
+      loading.textContent='Could not finish loading saved coverage: '+failure.message+'. Use Refresh saved coverage to retry.';
+      loading.setAttribute('role','alert');
     }
-    await page();sections.push(section);
   }
-  if (selected === c.id) panel.replaceChildren(...sections);
+  if(current()){
+    panel.firstElementChild.textContent=c.images.length ? 'Saved coverage loaded below. No analysis was started.' : 'No images are registered in this case.';
+    updateBackToTop();
+  }
 }
 $("loadCoverage").onclick = act(loadCoverage);
 
