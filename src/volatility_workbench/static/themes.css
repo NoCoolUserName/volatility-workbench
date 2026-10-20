@@ -43,6 +43,7 @@
 :root[data-theme-shape=rounded] button { border-radius: 9px; }
 /* Selection is always more than a color change, including the saved report. */
 .case-button.selected, .tabs .selected, .plugin-nav.selected,
+#toggleTheme[aria-expanded="true"],
 .report-version.selected > button:first-child {
   background: var(--panel);
   border-color: var(--accent);

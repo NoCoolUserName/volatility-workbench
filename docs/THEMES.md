@@ -3,8 +3,8 @@
 Workbench themes change the presentation of the application. They do not alter
 evidence, plugin availability, analysis settings, saved output or report contents.
 Choose a theme from the Theme control in Workbench's header or Settings →
-Appearance. Both use the same catalog. The choice is saved in this browser's
-local storage and updates other open Workbench tabs. Existing Matrix, Mono and Blue preferences
+Appearance. Both use the same catalog. The choice is saved in application
+preferences and updates other open Workbench tabs. Existing Matrix, Mono and Blue preferences
 remain supported as Matrix green, Soft black and white, and Light blue. A browser
 without a saved preference starts with the original Matrix green appearance.
 
@@ -137,8 +137,9 @@ Shared theme tokens keep table surfaces, primary text, secondary text, borders,
 controls, warnings and focus indicators consistent. Decorative scenes stay
 behind the interface instead of behind dense table text. Statuses retain text
 labels as well as color. Keyboard focus remains visible, and the selected-report
-highlight retains an even border and stronger text across themes. Theme
-selection uses a labelled native control and retains normal keyboard operation.
+highlight retains an even border and stronger text across themes. The header's
+Theme button stays highlighted while its picker is open. Theme selection uses a
+labelled native control and retains normal keyboard operation.
 Artwork is static, without animation. A higher-contrast system preference
 strengthens borders and reduces decorative artwork; printed views omit the
 theme picker and artwork band.
