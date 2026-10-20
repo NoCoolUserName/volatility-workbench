@@ -21,6 +21,7 @@ let mode = 'normal', calls = [], errors = [];
     const page = await browser.newPage({viewport:{width:1400,height:1000}});
     page.on('pageerror', e => errors.push(e.message));
     await page.route('http://workbench.test/**', async route => {
+      if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
       const u = new URL(route.request().url());
       if (u.pathname.startsWith('/api/')) {
         calls.push(u.pathname + u.search);

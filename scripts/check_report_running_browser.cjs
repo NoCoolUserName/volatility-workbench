@@ -21,6 +21,7 @@ const report='# Synthetic report\n## Executive summary\nAI Determination: Undete
     let rejectUpdate=false, holdSubmission=false, releaseSubmission;
     page.on('pageerror',e=>errors.push(e.message));
     await page.route('http://localhost/**',async route=>{
+      if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
       const u=new URL(route.request().url());
       if(u.pathname==='/api/state')return route.fulfill({json:state});
       if(u.pathname==='/api/report-console')return route.fulfill({json:{job_id:job.id,case_id:job.case_id,status:job.status,entries:[],earlier_entries:0}});

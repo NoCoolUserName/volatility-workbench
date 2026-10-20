@@ -27,6 +27,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   const calls=[],errors=[],policies=[];let delayedRelease=null,failCurrent=false,failAcknowledgment=false,holdBulk=false,bulkRelease=null;
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/Content Security Policy|violates the following/.test(m.text()))policies.push(m.text());});
   await page.route('**/*',async route=>{
+    if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
    const u=new URL(route.request().url());assert.equal(u.origin,'http://localhost');calls.push(u.pathname+u.search);
    if(u.pathname==='/api/reports/acknowledge-all-errors'){
     assert.equal(route.request().method(),'POST');

@@ -120,6 +120,9 @@ class Handler(BaseHTTPRequestHandler):
 
     async def dispatch(self,path,body):
         app=self.server.app
+        if path=='/api/reports/purge-hidden':return await app.purge_hidden_reports(body['case_id'])
+        if path=='/api/reports/restore':return await app.restore_recycled_report(body['case_id'],body['report_id'])
+        if path=='/api/reports/purge-recycled':return await app.purge_recycled_report(body['case_id'],body['report_id'])
         if path.startswith('/api/settings/'):
             return await app.settings_manager.dispatch(path,body)
         if path=='/api/volshell/start':
@@ -163,6 +166,7 @@ class Handler(BaseHTTPRequestHandler):
             app.case(one('case'))
             return app.volshell_snapshot()
         if path=='/api/settings':return app.settings_manager.snapshot()
+        if path=='/api/settings/zoom':return app.settings_manager.zoom()
         if path=='/api/plugins':
             if one('refresh', '0') not in ('0', '1'):
                 raise ValueError('refresh must be 0 or 1')
@@ -245,6 +249,7 @@ class Handler(BaseHTTPRequestHandler):
                 '/settings.js':('settings.js','text/javascript; charset=utf-8'),
                 '/settings.css':('settings.css','text/css; charset=utf-8'),
                 '/themes.js':('themes.js','text/javascript; charset=utf-8'),
+                '/zoom.js':('zoom.js','text/javascript; charset=utf-8'),
                 '/volshell.js':('volshell.js','text/javascript; charset=utf-8'),
                 '/themes.css':('themes.css','text/css; charset=utf-8'),
                 '/halloween-night.png':('halloween-night.png','image/png')})

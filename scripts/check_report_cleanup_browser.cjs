@@ -6,6 +6,7 @@ const path=require('node:path');
 const assets=path.join(__dirname,'../src/volatility_workbench/static');
 const reports=[['draft-one','incomplete'],['draft-two','incomplete'],['sealed','sealed']].map(([id,status],index)=>
   ({id,status,created_at:`2026-10-1${index+1}T12:00:00Z`}));
+reports[2].previous=reports[0].id;
 const state={cases:[{id:'synthetic-case',title:'Synthetic case',created_at:'2026-10-18T00:00:00Z',images:[],coins:[],
   readiness:{status:'Unchecked',reasons:[]},reports,messages:[],activity:[]}],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'};
 (async()=>{
@@ -16,6 +17,7 @@ const state={cases:[{id:'synthetic-case',title:'Synthetic case',created_at:'2026
     let failDelete=false;
     page.on('pageerror',e=>errors.push(e.message));
     await page.route('http://localhost/**',route=>{
+      if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
       const u=new URL(route.request().url());
       if(u.pathname.startsWith('/api/')){
         calls.push(u.pathname);
@@ -58,7 +60,7 @@ const state={cases:[{id:'synthetic-case',title:'Synthetic case',created_at:'2026
     await remove.click();
     const dialog=page.locator('#reportRemoval');
     assert.equal(await dialog.isVisible(),true);
-    assert.equal(await dialog.getByRole('button',{name:'Delete',exact:true}).count(),1);
+    assert.equal(await dialog.getByRole('button',{name:'Delete to Recycle Bin',exact:true}).count(),1);
     assert.equal(await dialog.getByRole('button',{name:'Hide from UI',exact:true}).evaluate(e=>e===document.activeElement),true);
     await page.keyboard.press('Escape');
     assert.equal(actions.length,0,'Dismissing options must not remove anything');
@@ -81,12 +83,14 @@ const state={cases:[{id:'synthetic-case',title:'Synthetic case',created_at:'2026
     await page.waitForFunction(()=>document.querySelectorAll('.report-version').length===2);
     const older=page.locator('.report-version').last();
     await older.hover();await older.locator('.report-remove').click();
+    assert.equal(await dialog.getByRole('button',{name:'Delete to Recycle Bin'}).isEnabled(),true,
+      'A complete successor does not block recycling its predecessor');
     failDelete=true;
-    await dialog.getByRole('button',{name:'Delete',exact:true}).click();
+    await dialog.getByRole('button',{name:'Delete to Recycle Bin',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('#reportRemoval [role=alert]').textContent.includes('permission failure'));
     assert.equal(await dialog.isVisible(),true);assert.equal(await page.locator('.report-version').count(),2);
     failDelete=false;
-    await dialog.getByRole('button',{name:'Delete',exact:true}).click();
+    await dialog.getByRole('button',{name:'Delete to Recycle Bin',exact:true}).click();
     await page.waitForFunction(()=>document.querySelectorAll('.report-version').length===1);
     assert.ok(reports[0].deleted_at);
     assert.equal(await page.locator('.report-remove').count(),1);
@@ -102,7 +106,7 @@ const state={cases:[{id:'synthetic-case',title:'Synthetic case',created_at:'2026
     await page.reload();await page.waitForFunction(()=>document.querySelectorAll('.report-version').length===1);
     await page.locator('.report-version').first().hover();
     await page.locator('.report-version').first().locator('.report-remove').click();
-    await dialog.getByRole('button',{name:'Delete',exact:true}).click();
+    await dialog.getByRole('button',{name:'Delete to Recycle Bin',exact:true}).click();
     await page.waitForFunction(()=>document.querySelectorAll('.report-version').length===0);
     assert.ok(reports.find(r=>r.id==='sealed').deleted_at);
     assert.deepEqual(actions.map(a=>a.action),['hide','delete','delete','hide','delete']);
