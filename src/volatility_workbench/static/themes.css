@@ -517,6 +517,140 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   #consoleVolshellMode { background: var(--panel); border-color: var(--text); }
 }
 
+/* Fallout 76 terminal variants. Wear stays on the housing; content surfaces
+   stay opaque. The supplied screenshots are references, never UI backgrounds. */
+:root[data-theme="fallout-76-camden-park"] {
+  --fo76-metal: linear-gradient(108deg,#9ba8ad,#c7cdcf 32%,#acb5b8 74%,#84939b);
+  --fo76-edge: #63808b;
+  --fo76-rim: #584c38;
+  --fo76-highlight: #e2ddbc;
+  --fo76-housing-text: #242923;
+  --fo76-shadow: inset 2px 3px 2px #e5dfc0,inset -3px -4px 4px #655c47,0 5px 14px #0008;
+  --shell-plate: radial-gradient(ellipse at 4% 100%,#85533777,transparent 45%),linear-gradient(#d0cdb3,#a5ad9c);
+  --shell-radius: 12px 12px 16px 16px;
+  --shell-border: 3px solid #63808b;
+  --shell-shadow: inset 1px 1px #f0e9c9,inset -2px -2px #655a3d,0 2px #1a231e;
+}
+:root[data-theme="fallout-76-field-terminal"] {
+  --fo76-metal: radial-gradient(ellipse at 3% 97%,#71839326,transparent 40%),linear-gradient(110deg,#333d4a,#242b35 35%,#1b2029 80%,#36404b);
+  --fo76-edge: #67798c;
+  --fo76-rim: #181d25;
+  --fo76-highlight: #a9b5be;
+  --fo76-housing-text: #f2e2b7;
+  --fo76-shadow: inset 2px 2px 2px #8998a766,inset -3px -5px 5px #0a0e14,0 5px 14px #0008;
+  --shell-plate: linear-gradient(105deg,#68748244,transparent 30% 70%,#68748244),linear-gradient(#39414d,#202630);
+  --shell-radius: 3px 3px 8px 8px;
+  --shell-border: 3px double #b2bdc1;
+  --shell-shadow: inset 1px 1px #c7d0d544,inset -2px -3px #0b1019,0 2px #080c12;
+}
+:root[data-theme^="fallout-76-"] body { background: var(--fo76-rim); font-family: ui-monospace,SFMono-Regular,Consolas,monospace; }
+:root[data-theme^="fallout-76-"] :is(body > header,.layout,.settings,.crt-monitor) {
+  background: var(--fo76-metal);
+  border: 3px solid var(--fo76-edge);
+  box-shadow: var(--fo76-shadow);
+}
+:root[data-theme^="fallout-76-"] :is(body > header,.privacy,.skin-scene,.layout,.settings) { width: calc(100% - 24px); max-width: 1700px; margin: 0 auto; }
+:root[data-theme^="fallout-76-"] body > header { margin-top: 12px; padding: 26px 30px; border-radius: 28px 28px 5px 5px; color: var(--fo76-housing-text); }
+:root[data-theme^="fallout-76-"] :is(header h1,.case-heading h2,aside > h2,.settings h2) { font-family: ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing: .02em; }
+:root[data-theme^="fallout-76-"] :is(body > header,.settings > header) :is(h1,.eyebrow) { color: var(--fo76-housing-text); }
+:root[data-theme^="fallout-76-"] :is(.case-heading h2,aside > h2,.settings h2) { color: var(--accent); }
+:root[data-theme^="fallout-76-"] .header-controls { padding: 10px 12px; background: var(--bg); border: 2px solid var(--fo76-rim); border-radius: 9px; color: var(--text); box-shadow: inset 1px 2px 4px #000; }
+:root[data-theme^="fallout-76-"] .settings-link svg { color: var(--muted); }
+:root[data-theme^="fallout-76-"] .privacy { padding: 12px 30px; border: 3px solid var(--fo76-edge); border-top: 0; background: var(--bg); }
+:root[data-theme^="fallout-76-"] .skin-scene { height: 22px; min-height: 22px; border: 3px solid var(--fo76-edge); border-top: 0; background: var(--fo76-metal); }
+:root[data-theme^="fallout-76-"] .skin-scene::before { inset: 5px 20%; opacity: 1; border-radius: 3px; background: repeating-linear-gradient(90deg,#121812 0 3px,var(--fo76-highlight) 3px 4px,transparent 4px 12px); }
+:root[data-theme^="fallout-76-"] .skin-scene::after { display: none; }
+:root[data-theme^="fallout-76-"] .layout { position: relative; grid-template-columns: 250px minmax(0,1fr); gap: 22px; padding: 24px; border-top: 0; border-radius: 0 0 30px 30px; margin-bottom: 12px; }
+:root[data-theme^="fallout-76-"] :is(.layout > aside,.layout > main,.settings > section) { min-width: 0; background: var(--bg); border: 6px solid var(--fo76-rim); border-radius: 22px / 18px; box-shadow: inset 1px 2px 5px #000,0 0 0 1px var(--fo76-edge),0 2px var(--fo76-highlight); }
+:root[data-theme^="fallout-76-"] .layout > aside { padding: 16px; }
+:root[data-theme^="fallout-76-"] .layout > main { padding: 20px; }
+:root[data-theme^="fallout-76-"] :is(input:not([type=checkbox]),textarea,select) { background: var(--control-bg); border-radius: 4px; box-shadow: inset 1px 2px 3px #0008; }
+:root[data-theme^="fallout-76-"] :where(button:not(.report-remove):not(.dialog-close):not(#consoleVolshellMode)) { border-radius: 5px; font-weight: 600; }
+:root[data-theme^="fallout-76-"] :where(.tabs,.report-plugin-inventory,.live-console-section,.theme-dropdown,.plugin-source-options,dialog.approval,#reportRemoval) { background: var(--panel); border: 1px solid var(--border); border-radius: 7px; }
+:root[data-theme^="fallout-76-"] .tabs { padding: 10px; flex-wrap: wrap; }
+:root[data-theme^="fallout-76-"] .live-console-section { padding: 12px; }
+:root[data-theme^="fallout-76-"] .theme-dropdown { width: min(396px,calc(100vw - 64px)); }
+:root[data-theme^="fallout-76-"] .theme-dropdown select { width: 100%; max-width: 100%; }
+:root[data-theme^="fallout-76-"] .settings { margin: 12px auto; padding: 24px; border-radius: 26px; }
+:root[data-theme^="fallout-76-"] .settings > header { padding: 12px 6px 20px; border: 0; color: var(--fo76-housing-text); }
+:root[data-theme^="fallout-76-"] .settings > header a { color: var(--fo76-housing-text); }
+:root[data-theme^="fallout-76-"] .settings > p { color: var(--fo76-housing-text); }
+:root[data-theme^="fallout-76-"] .settings > header a:focus-visible { outline-color: var(--fo76-housing-text); }
+:root[data-theme^="fallout-76-"] .settings .skin-scene { width: 100%; border: 1px solid var(--fo76-edge); border-radius: 5px; margin-top: 16px; }
+:root[data-theme^="fallout-76-"] footer { max-width: 1700px; margin: auto; }
+/* Reference-derived transparent frames retain their native proportions. The
+   actual console is live HTML behind the empty glass opening, never baked text. */
+:root[data-theme="fallout-76-camden-park"] {
+  --fo76-frame: url("/bezel-fallout76-camden-park.png");
+  --fo76-aspect: 1.249554;
+  --fo76-inverse-aspect: .800285;
+  --fo76-screen-top: 27.5%; --fo76-screen-right: 22%;
+  --fo76-screen-bottom: 23%; --fo76-screen-left: 22%;
+  --fo76-glass: 19% 17% 18% 17%;
+}
+:root[data-theme="fallout-76-field-terminal"] {
+  --fo76-frame: url("/bezel-fallout76-field-terminal.png");
+  --fo76-aspect: 2;
+  --fo76-inverse-aspect: .5;
+  --fo76-screen-top: 15%; --fo76-screen-right: 25.5%;
+  --fo76-screen-bottom: 15%; --fo76-screen-left: 25.5%;
+  --fo76-glass: 6% 20% 6% 20%;
+}
+:root[data-theme^="fallout-76-"] .console-zoom {
+  width: min(calc(100vw - 32px),calc((100dvh - 148px) * var(--fo76-aspect)));
+  height: min(calc(100dvh - 148px),calc((100vw - 32px) * var(--fo76-inverse-aspect)));
+  margin: auto; padding: 0; background: transparent; border: 0; overflow: visible;
+}
+:root[data-theme^="fallout-76-"] .crt-monitor { position: relative; display: block; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+:root[data-theme^="fallout-76-"] .crt-monitor::before { content: ""; position: absolute; z-index: 2; inset: 0; border: 0; border-radius: 0; box-shadow: none; background: var(--fo76-frame) center / 100% 100% no-repeat; pointer-events: none; }
+:root[data-theme^="fallout-76-"] .console-zoom::backdrop { background: #020302f5; backdrop-filter: none; }
+:root[data-theme^="fallout-76-"] .crt-monitor::after { content: ""; position: absolute; display: block; z-index: 0; inset: var(--fo76-glass); background: #000; border-radius: 15%; pointer-events: none; }
+:root[data-theme^="fallout-76-"] .crt-top-vents { display: none; }
+:root[data-theme^="fallout-76-"] .crt-recess { position: absolute; z-index: 1; top: var(--fo76-screen-top); right: var(--fo76-screen-right); bottom: var(--fo76-screen-bottom); left: var(--fo76-screen-left); padding: 0; border: 0; border-radius: 0; background: #000; box-shadow: none; }
+:root[data-theme^="fallout-76-"] .crt-screen { width: 100%; height: 100%; padding: 0; border: 0; border-radius: 0; background: #000; box-shadow: none; }
+:root[data-theme^="fallout-76-"] .crt-screen .live-console-section { padding: 0; border: 0; background: #000; box-shadow: none; }
+:root[data-theme^="fallout-76-"] .crt-screen :is(#liveConsole,#volshellOutput,#volshellAgentOutput,#volshellInvestigationOutput) { padding: 8px 0; border: 0; border-radius: 0; background: #000; color: var(--accent); font-family: Menlo,"SFMono-Regular",Consolas,monospace; font-weight: 400; line-height: 1.45; text-shadow: none; }
+:root[data-theme^="fallout-76-"] .crt-screen .live-console-heading { align-items: flex-start; gap: 8px; }
+:root[data-theme^="fallout-76-"] .crt-screen .live-console-heading h3 { font-size: calc(12px * var(--text-scale,1)); line-height: 1.4; font-weight: 400; }
+:root[data-theme^="fallout-76-"] .crt-screen #consoleNote { font-size: calc(10px * var(--text-scale,1)); line-height: 1.4; margin: 5px 0 10px; }
+:root[data-theme^="fallout-76-"] .crt-screen .live-console-actions { margin-left: auto; gap: 8px; }
+:root[data-theme^="fallout-76-"] .crt-screen .live-console-actions :is(label,button) { font-size: calc(10px * var(--text-scale,1)); }
+:root[data-theme^="fallout-76-"] .crt-screen .live-console-actions button { padding: 2px 4px; min-height: 24px; border: 0; background: transparent; }
+:root[data-theme^="fallout-76-"] .crt-chin { position: absolute; top: 100%; left: 0; right: 0; min-height: 52px; padding: 10px 0 0; gap: 12px; color: var(--text); text-shadow: none; }
+:root[data-theme^="fallout-76-"] .crt-brand { display: none; }
+:root[data-theme^="fallout-76-"] .crt-mode-controls { margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+:root[data-theme^="fallout-76-"] .crt-power { position: absolute; right: 0; color: var(--muted); }
+:root[data-theme="fallout-76-camden-park"] #consoleVolshellMode { color: #242923; }
+:root[data-theme="fallout-76-camden-park"] #consoleVolshellMode[aria-pressed="true"] { border-color: #323d2e; }
+@media (max-width: 1100px) {
+  :root[data-theme^="fallout-76-"] .layout { grid-template-columns: 230px minmax(0,1fr); gap: 18px; padding: 20px; }
+  :root[data-theme^="fallout-76-"] .report-layout { grid-template-columns: 1fr; }
+  :root[data-theme^="fallout-76-"] #toc { position: static; }
+}
+@media (max-width: 850px) {
+  :root[data-theme^="fallout-76-"] .layout { grid-template-columns: 1fr; }
+  :root[data-theme^="fallout-76-"] .layout > aside { min-height: 0; }
+}
+@media (max-width: 520px) {
+  :root[data-theme^="fallout-76-"] :is(body > header,.privacy,.skin-scene,.layout,.settings) { width: calc(100% - 12px); }
+  :root[data-theme^="fallout-76-"] body > header { margin-top: 6px; padding: 20px 16px; }
+  :root[data-theme^="fallout-76-"] .header-controls { padding: 8px; }
+  :root[data-theme^="fallout-76-"] .privacy { padding: 10px 16px; }
+  :root[data-theme^="fallout-76-"] .layout { padding: 14px 10px; gap: 16px; }
+  :root[data-theme^="fallout-76-"] :is(.layout > aside,.layout > main,.settings > section) { padding: 14px 10px; border-width: 4px; border-radius: 14px; }
+  :root[data-theme^="fallout-76-"] .settings { padding: 14px 10px; }
+  :root[data-theme^="fallout-76-"] .crt-power { display: none; }
+  :root[data-theme^="fallout-76-"] .crt-screen #consoleNote { display: none; }
+  :root[data-theme^="fallout-76-"] .crt-screen .live-console-heading { gap: 4px; }
+  :root[data-theme^="fallout-76-"] .crt-screen .live-console-heading h3 { font-size: calc(10px * var(--text-scale,1)); }
+
+}
+@media (prefers-contrast: more) {
+  :root[data-theme="fallout-76-camden-park"] { --fo76-metal: #c9c9b0; }
+  :root[data-theme="fallout-76-field-terminal"] { --fo76-metal: #262d37; }
+  :root[data-theme^="fallout-76-"] #consoleVolshellMode { background: var(--panel); color: var(--text); border-color: var(--text); }
+}
+
 /* Fallout 2: a responsive instrument housing built entirely from CSS.
    Patina, fasteners and vents belong to the chassis, never to evidence text. */
 :root[data-theme="fallout-2"] {

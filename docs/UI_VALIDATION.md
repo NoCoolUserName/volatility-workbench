@@ -1,5 +1,22 @@
 # Workbench validation — experimental first version
 
+## Fallout 76 terminal variants — 2026-10-20
+
+Added Camden Park and Field Terminal to the shared frontend catalog and durable
+preference allowlist. Existing catalog-count assertions were updated for 35 themes
+and 16 Fallout choices. The initial CSS-only housings were rejected by the user;
+their preview files and native build were deleted and never installed.
+
+Replacement transparent frames were edited from the user's references using the
+built-in image editor, preserving detailed materials and control placement. Their
+alpha channels have empty screen openings. Desktop main-UI and console previews
+were rendered in Chrome with synthetic content; glass fill, text insets, control
+placement and native frame proportions received visual review. Live console text
+is HTML, and the decorative overlay does not intercept input. The new PNGs have
+explicit packaged HTTP routes. No local automated tests were run for this theme
+batch. These previews do not establish mobile or native WebView behavior. Native
+build and installation status are recorded separately; no real investigation ran.
+
 ## Report request queue and Coverage — 2026-10-20
 
 Focused synthetic checks passed: 22 Python tests covering FIFO requests,

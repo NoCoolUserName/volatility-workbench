@@ -253,6 +253,8 @@ class Handler(BaseHTTPRequestHandler):
                 '/zoom.js':('zoom.js','text/javascript; charset=utf-8'),
                 '/volshell.js':('volshell.js','text/javascript; charset=utf-8'),
                 '/themes.css':('themes.css','text/css; charset=utf-8'),
+                '/bezel-fallout76-camden-park.png':('bezel-fallout76-camden-park.png','image/png'),
+                '/bezel-fallout76-field-terminal.png':('bezel-fallout76-field-terminal.png','image/png'),
                 '/halloween-night.png':('halloween-night.png','image/png')})
             # Asset paths originate only in the package, never in request text.
             assets.update({'/'+p.name:(p.name,'image/svg+xml')

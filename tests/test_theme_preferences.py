@@ -203,7 +203,7 @@ class ThemePreferencesTests(unittest.TestCase):
         asset = files('volatility_workbench').joinpath('static/themes.js')
         catalog = asset.read_text().split('const catalog = [', 1)[1].split('\n  ];', 1)[0]
         names = re.findall(r"^    \['([^']+)',", catalog, re.MULTILINE)
-        self.assertEqual(len(names), 33)
+        self.assertEqual(len(names), 35)
         self.assertEqual(frozenset(names), THEME_IDS)
 
 

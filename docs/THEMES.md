@@ -80,6 +80,28 @@ screenshots are not packaged or stretched over the UI. Text stays selectable on
 opaque screen surfaces, without scanline or glare overlays. The original Fallout 3
 wasteland theme remains available alongside the two terminals.
 
+Two Fallout 76 terminal variants use the user's additional screenshots:
+
+| Selector name | Terminal treatment |
+| --- | --- |
+| Fallout 76 (Camden Park) | Heavily flaked pale blue-gray enamel, irregular rust patches, battered blue outer lip and a broad rounded glass opening. |
+| Fallout 76 (Field Terminal) | Rough charcoal cast metal, a worn blue-silver surround, recessed left latch and two projecting cylindrical black knobs in silver sockets. |
+
+Both extend through the main application, Settings and the Output/VolShell console.
+Their detailed console frames are transparent PNG assets edited from the supplied
+reference images using the built-in image editor. Source game text, quest HUD and
+environment are removed. The frames preserve their proportions and have empty
+screen openings; the live console remains selectable HTML behind them. Output and
+VolShell controls sit below the housing. Knobs and latch are decorative, and do not
+replace the labeled controls. All assets are packaged locally without remote
+downloads. The original Fallout 76 theme and saved theme choices remain available.
+
+Asset files: `bezel-fallout76-camden-park.png` and
+`bezel-fallout76-field-terminal.png`. The edit prompts required preserving the
+reference contours, wear, material, colors and control placement, with transparent
+screen holes and no added lettering or hardware. Their integration uses CSS;
+the detailed frame textures are raster artwork rather than CSS approximations.
+
 ## Other requested skins
 
 | Reference | Visual direction |
