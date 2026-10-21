@@ -150,10 +150,31 @@ cover or label it a Jim Lee cover.
 
 ## Local artwork provenance
 
-Theme illustrations are original local artwork, rather than downloaded game,
-film or comic assets. Theme names identify the requested inspiration and do not
-imply affiliation with their rights holders. Geometric decorations use the shared
-theme system so the same interface remains maintainable across skins.
+Except for the two Fallout 76 bezels listed below, theme illustrations are
+locally authored artwork rather than downloaded game, film or comic assets.
+Theme names identify inspiration and do not imply affiliation with rights holders.
+Geometric decorations use the shared theme system.
+
+### Fallout 76 bezel provenance and release status
+
+| Packaged file | Recorded source and edit | Public redistribution |
+| --- | --- | --- |
+| `bezel-fallout76-camden-park.png` | Edited from a user-supplied Fallout 76 terminal reference. The enamel wear, blue lip, contours and proportions were preserved; the game text, HUD and surroundings were removed, and the screen opening made transparent. | Rights unverified. Do not treat the PNG as original cleared artwork for a public release. |
+| `bezel-fallout76-field-terminal.png` | Edited from a user-supplied Fallout 76 terminal reference. The charcoal housing, silver surround, latch, knobs and proportions were preserved; the game text, HUD and surroundings were removed, and the screen opening made transparent. | Rights unverified. Do not treat the PNG as original cleared artwork for a public release. |
+
+The repository records neither the source screenshots' creators and URLs nor a grant
+covering modification and redistribution in an independently distributed app. A
+user-supplied reference does not itself establish those rights. The PNGs remain
+available for the owner's private local application. Before a public source archive,
+wheel, native app, installer or promotional download includes either file, record
+the exact source and rights holder(s), the original and final file hashes, and a
+written permission or applicable license covering edited artwork in that form of
+distribution, including any required attribution and notices. Otherwise prepare a
+separate public build with independently created, non-derivative art or omit the
+bezel files and their affected theme choices in that build. Verify the actual build
+contents; the current `static/*.png` package-data rule includes both files. A
+changed label, credit, or MIT notice alone does not grant rights. This release
+checkpoint does not alter the private theme catalog or artwork.
 
 `src/volatility_workbench/static/halloween-night.png` is an original raster
 background generated with the built-in image generation tool. Its art direction
