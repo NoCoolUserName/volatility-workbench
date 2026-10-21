@@ -109,6 +109,7 @@ opened. This does not by itself verify native UI/window lifecycle; those are
 separate installed-application checks recorded in the validation document.
 
 Primary packaging references:
+[clean-install acceptance](../docs/CLEAN_INSTALL_ACCEPTANCE.md),
 [standalone Python distributions](https://github.com/astral-sh/python-build-standalone/blob/main/docs/distributions.rst),
 [CPython embedding configuration](https://docs.python.org/3.12/c-api/init_config.html),
 [pywebview macOS backend](https://pywebview.flowrl.com/guide/renderer.html), and
