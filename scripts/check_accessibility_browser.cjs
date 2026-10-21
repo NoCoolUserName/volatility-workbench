@@ -28,7 +28,7 @@ async function fixture(browser){
   const name=url.pathname==='/'?'index.html':url.pathname.slice(1);
   return route.fulfill({body:fs.readFileSync(path.join(assets,name)),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':name.endsWith('.svg')?'image/svg+xml':'text/html'});
  });
- await page.goto('http://localhost/?case=case-a');await page.locator('#openCaseConsole').waitFor();
+ await page.goto('http://localhost/?case=case-a');await page.waitForFunction(()=>document.querySelector('#caseTitle').textContent==='Synthetic case-a');
  const focus=async id=>assert.equal(await page.evaluate(()=>document.activeElement.id),id);
  const open=async()=>{await page.locator('#openCaseConsole').focus();await page.keyboard.press('Enter');await page.locator('#consoleZoom').waitFor({state:'visible'});};
  const close=async()=>{assert.deepEqual(errors,[]);await page.close();};
@@ -40,7 +40,7 @@ async function fixture(browser){
  const check=async(name,test)=>{const f=await fixture(browser);try{await test(f);console.log('PASS '+name);}catch(e){failures.push(name+': '+e.message);console.error('FAIL '+name+': '+e.message);}finally{await f.close();}};
  try{
  await check('Escape and Collapse restore the keyboard opener',async({page,open,focus,posts})=>{
-  for(const key of ['Escape','collapse']){await open();if(key==='Escape')await page.keyboard.press('Escape');else{await page.locator('#collapseVolshell').focus();await page.keyboard.press('Enter');}await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);await focus('openCaseConsole');}assert.equal(posts.length,0);
+  for(const key of ['Escape','collapse']){await open();if(key==='Escape')await page.keyboard.press('Escape');else{await page.locator('#collapseVolshell').focus();await page.keyboard.press('Enter');}await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open&&document.querySelector('#expandConsole').getAttribute('aria-expanded')==='false');await focus('openCaseConsole');}assert.equal(posts.length,0);
  });
  await check('Tab and Shift+Tab cycle visible controls in all three modes',async({page,open,focus,posts})=>{
   await open();
@@ -93,8 +93,11 @@ async function fixture(browser){
  });
  await check('Settings keyboard round trip retains the selected case without actions',async({page,open,posts})=>{
   await open();await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
-  await page.getByRole('link',{name:'Settings',exact:true}).focus();await page.keyboard.press('Enter');await page.locator('#settings-theme').waitFor();
-  await page.getByRole('link',{name:'← Back to Workbench',exact:true}).focus();await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),'settings-theme');await page.keyboard.press('Shift+Tab');await page.keyboard.press('Enter');await page.locator('#caseTitle').waitFor();await page.waitForFunction(()=>document.querySelector('#caseTitle').textContent);
+  await page.getByRole('link',{name:'Settings',exact:true}).focus();await page.keyboard.press('Enter');await page.locator('#settings-theme').waitFor();await page.waitForFunction(()=>!document.querySelector('[data-ui-zoom-out]').disabled);
+  await page.getByRole('link',{name:'← Back to Workbench',exact:true}).focus();
+  for(const selector of ['[data-ui-zoom-out]','[data-ui-zoom-reset]','[data-ui-zoom-in]','#settings-theme']){await page.keyboard.press('Tab');assert.equal(await page.locator(selector).evaluate(n=>document.activeElement===n),true,'Settings keeps its text-size controls before Theme');}
+  for(let i=0;i<4;i++)await page.keyboard.press('Shift+Tab');
+  assert.equal(await page.getByRole('link',{name:'← Back to Workbench',exact:true}).evaluate(n=>document.activeElement===n),true);await page.keyboard.press('Enter');await page.locator('#caseTitle').waitFor();await page.waitForFunction(()=>document.querySelector('#caseTitle').textContent);
   assert.equal(await page.locator('#caseTitle').textContent(),'Synthetic case-a','Return must not select the newer case-b');await open();assert.match(await page.locator('#volshellOutput').textContent(),/ONLY CASE A OUTPUT/);assert.equal(posts.length,0);
  });
  await check('Named controls, keyboard focus indicator and reduced motion',async({page,open,posts})=>{
