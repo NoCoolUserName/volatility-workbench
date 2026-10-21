@@ -11,6 +11,7 @@ const assets=path.join(__dirname,'../src/volatility_workbench/static');
   const locations=[{path:'/synthetic',default:true},{path:'/Other disk',default:false}];
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('http://workbench.test/**',route=>{
+    if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
    const url=new URL(route.request().url());
    if(url.pathname.startsWith('/api/')){
     calls.push(url.pathname);

@@ -122,6 +122,22 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         await self.app.start()
         self.case=self.app.add([str(self.fixture.image)])[0]
     async def asyncTearDown(self):await self.app.close()
+    async def test_history_order_is_durable_case_scoped_and_does_not_reorder_saved_records(self):
+        self.case['messages'] = [{'role':'user','text':'Synthetic older message','time':'2026-10-18T12:00:00Z'},
+                                 {'role':'assistant','text':'Synthetic newer message','time':'2026-10-18T13:00:00Z'}]
+        self.app.event(self.case, 'synthetic_event', {})
+        before = json.loads(json.dumps({'messages':self.case['messages'], 'activity':self.case['activity'],
+                                        'jobs':self.app.state['jobs']}))
+        self.app.set_history_order(self.case['id'], 'conversation', 'newest')
+        self.app.set_history_order(self.case['id'], 'activity', 'oldest')
+        reopened = Workbench(self.config, self.app.root, PROJECT, codex_factory=FakeCodex)
+        self.assertEqual(reopened.case(self.case['id'])['history_order'], {'conversation':'newest','activity':'oldest'})
+        self.assertEqual(before, {'messages':self.case['messages'],'activity':self.case['activity'],'jobs':self.app.state['jobs']})
+        for section, order in (('reports','oldest'), ('activity','invalid'), (None,'oldest')):
+            with self.assertRaises(ValueError): self.app.set_history_order(self.case['id'],section,order)
+        with patch.object(self.app, 'save', side_effect=OSError('Synthetic write failure')):
+            with self.assertRaises(OSError): self.app.set_history_order(self.case['id'],'activity','newest')
+        self.assertEqual(self.case['history_order']['activity'],'oldest')
     async def test_stale_launcher_does_not_reopen_browser(self):
         root=self.fixture.root/'stale-ui';root.mkdir()
         (root/'session.json').write_text(json.dumps({'url':'http://127.0.0.1:1/#synthetic'}))
@@ -231,6 +247,17 @@ class UITests(unittest.IsolatedAsyncioTestCase):
         await self.app.stop();await self.wait_job(job)
         self.assertEqual(queued['status'],'cancelled')
         self.assertNotEqual(job['status'],'completed')
+    async def test_two_queued_updates_use_latest_successful_report_at_execution(self):
+        await self.ready()
+        initial=self.app.enqueue(self.case['id'],'report','Synthetic baseline')
+        await self.wait_job(initial);self.assertEqual(initial['status'],'completed',initial)
+        first=self.app.enqueue(self.case['id'],'update','First distinct queued focus')
+        second=self.app.enqueue(self.case['id'],'update','Second distinct queued focus')
+        await self.wait_job(first);await self.wait_job(second)
+        self.assertEqual([first['status'],second['status']],['completed','completed'])
+        reports={r['id']:r for r in self.case['reports']}
+        self.assertEqual(reports[first['report_id']]['previous'],initial['report_id'])
+        self.assertEqual(reports[second['report_id']]['previous'],first['report_id'])
     async def test_readiness_cancel_keeps_source_and_partial_record(self):
         self.fixture.image.write_text('timeout')
         job=self.app.enqueue(self.case['id'],'readiness')

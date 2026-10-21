@@ -42,13 +42,16 @@ let state,
   artifact = null;
 let consoleJob = null;
 let consolePagePosition = null;
+let consoleOpener = null;
 let currentConsole = null, savedConsoleKey = "";
 const savedConsoleCache = new Map();
 const consoleNodes = new Map();
 const dismissedReportFailures = new Set();
 const rerunningReportFailures = new Set();
+const submittingJobs = new Set();
 let shownReportFailure = "";
 let shownReportProgress = "";
+let coverageNavigation = 0;
 const el = (tag, text, cls) => {
   const n = document.createElement(tag);
   if (text !== undefined) n.textContent = text;
@@ -112,6 +115,22 @@ function restoreReportPosition() {
   window.scrollTo({left:point.x, top:y, behavior:"instant"});
 }
 const focusDrafts = new Map();
+let focusHistoryIndex = -1, focusHistoryDraft = "", focusHistoryEntries = [];
+function focusHistory() {
+  if (!state || !selected) return [];
+  const entries = [];
+  for (let i = state.jobs.length - 1; i >= 0 && entries.length < 10; i--) {
+    const item = state.jobs[i];
+    if (item.case_id === selected && ["report", "update"].includes(item.kind) && item.text?.trim())
+      entries.push(item.text);
+  }
+  return entries;
+}
+function resetFocusHistory() {
+  focusHistoryIndex = -1;
+  focusHistoryDraft = "";
+  focusHistoryEntries = [];
+}
 function sizeFocus() {
   const focus = $("focus");
   focus.style.height = "";
@@ -119,14 +138,18 @@ function sizeFocus() {
   const borderHeight = focus.offsetHeight - focus.clientHeight;
   focus.style.height = Math.min(Math.max(focus.scrollHeight + borderHeight, focus.offsetHeight), 320) + "px";
 }
+document.addEventListener("workbench-text-scale", sizeFocus);
 let submittingReadiness = false;
 let selectedPluginSources = new Set(), allPluginSourcesSelected = true, availablePluginSources = [];
 function choose(id, activate = true) {
+  ++coverageNavigation;
   clearReportReturn();
   if (activate) activeView = "case";
   const changeFocus = id !== selected;
   if (changeFocus) {
-    if (selected) focusDrafts.set(selected, $("focus").value);
+    $("reportSubmissionStatus").textContent = "";
+    if (selected) focusDrafts.set(selected, focusHistoryIndex < 0 ? $("focus").value : focusHistoryDraft);
+    resetFocusHistory();
     $("focus").value = focusDrafts.get(id) || "";
   }
   selected = id;
@@ -151,32 +174,102 @@ function choose(id, activate = true) {
 function caseNow() {
   return state.cases.find((c) => c.id === selected);
 }
+const historyOrderChoices = new Map(), historyOrderSaving = new Set();
+function historyOrder(caseRecord, section) {
+  return historyOrderChoices.get(caseRecord.id + ':' + section) || caseRecord.history_order?.[section] ||
+    (section === 'conversation' ? 'oldest' : 'newest');
+}
+function orderedHistory(entries, order) {
+  const direction = order === 'oldest' ? 1 : -1;
+  return entries.map((entry,index) => ({entry,index,time:timestampMillis(entry.time)}))
+    .sort((a,b) => {
+      // Undated records stay at the end in their original order.
+      if (!Number.isFinite(a.time) || !Number.isFinite(b.time))
+        return Number.isFinite(a.time) ? -1 : Number.isFinite(b.time) ? 1 : a.index - b.index;
+      return direction * (a.time - b.time || a.index - b.index);
+    }).map(item => item.entry);
+}
+function renderHistory(c) {
+  for (const section of ['conversation','activity']) {
+    const control = $(section + 'Order');
+    control.value = historyOrder(c, section);
+    control.disabled = historyOrderSaving.has(c.id + ':' + section);
+  }
+  const messageOrder = historyOrder(c, 'conversation'), activityOrder = historyOrder(c, 'activity');
+  const mkey = JSON.stringify([c.id,messageOrder,c.messages]);
+  if (shownMessages !== mkey) {
+    $('messages').replaceChildren(...orderedHistory(c.messages, messageOrder).map(m =>
+      el('div', m.role.toUpperCase() + ' · ' + readableTime(m.time) + '\n' + m.text, 'message ' + m.role)));
+    shownMessages = mkey;
+  }
+  const akey = JSON.stringify([c.id,activityOrder,c.activity]);
+  if (shownActivity !== akey) {
+    $('activityList').replaceChildren(...orderedHistory(c.activity, activityOrder).map(a => {
+      const d = el('details', undefined, 'event');
+      d.append(el('summary', readableTime(a.time) + ' · ' + a.kind),
+        el('pre', readableTime(JSON.stringify(a.detail, null, 2))));
+      return d;
+    }));
+    shownActivity = akey;
+  }
+}
+document.querySelectorAll('[data-history-order]').forEach(control => {
+  control.onchange = act(async () => {
+    const c = caseNow(), section = control.dataset.historyOrder, order = control.value;
+    if (!c) return;
+    const key = c.id + ':' + section, previous = historyOrder(c, section);
+    historyOrderChoices.set(key, order);historyOrderSaving.add(key);renderHistory(c);
+    try {
+      const saved = await api('history-order', {case_id:c.id, section, order});
+      if (saved.case_id !== c.id || saved.section !== section || saved.order !== order)
+        throw Error('Sort order could not be confirmed');
+      const current = state.cases.find(item => item.id === c.id);
+      if (current) current.history_order = {...current.history_order, [section]:order};
+    } catch (failure) {
+      historyOrderChoices.set(key, previous);
+      throw failure;
+    } finally {
+      historyOrderSaving.delete(key);
+      if (selected === c.id) renderHistory(caseNow());
+    }
+  });
+});
 function imageSize(sizeBytes) {
   const gigabyte = 1_000_000_000;
   const unit = sizeBytes >= gigabyte ? "GB" : "MB";
   return (sizeBytes / (unit === "GB" ? gigabyte : 1_000_000)).toFixed(2) + unit;
 }
 function updateBackToTop() {
-  $("backToTop").hidden = $("case").hidden || $("reports").hidden || !shownReport ||
+  const contentVisible = (!$("reports").hidden && !!shownReport) || !$("coverage").hidden;
+  $("backToTop").hidden = $("case").hidden || !contentVisible ||
     window.scrollY < Math.max(500, window.innerHeight / 2);
 }
 async function job(kind, text = "") {
   if (!selected) throw Error("Select a case");
   if (window.WorkbenchVolshell.hasActiveSession()) throw Error("Disconnect VolShell before starting investigation work.");
   const caseId = selected;
-  await api("jobs", {
-    case_id: caseId,
-    kind,
-    text,
-    request_id: crypto.randomUUID(),
-  });
-  if (kind === "update") {
-    focusDrafts.set(caseId, "");
-    if (selected === caseId) { $("focus").value = ""; sizeFocus(); updateBulkPluginAction(); }
+  const reportRequest = ["report","update"].includes(kind);
+  const submissionKey = caseId + ':' + (reportRequest ? 'report' : kind);
+  if (submittingJobs.has(submissionKey)) return;
+  submittingJobs.add(submissionKey);render();
+  try {
+    const accepted = await api("jobs", {case_id:caseId, kind, text, request_id:crypto.randomUUID()});
+    resetFocusHistory();
+    if (reportRequest) {
+      if (focusDrafts.get(caseId) === text) focusDrafts.set(caseId, "");
+      if (selected === caseId && $("focus").value === text) {
+        $("focus").value = "";focusDrafts.set(caseId, "");sizeFocus();updateBulkPluginAction();
+      }
+      if (selected === caseId) $("reportSubmissionStatus").textContent = "Report request queued. It will run in submission order.";
+    }
+    await refresh();
+    return accepted;
+  } finally {
+    submittingJobs.delete(submissionKey);render();
   }
-  await refresh();
 }
 function setTab(name) {
+  if (name !== "coverage") ++coverageNavigation;
   if (name !== "evidence") ++evidenceNavigation;
   document.querySelectorAll(".tab").forEach((n) => (n.hidden = n.id !== name));
   document
@@ -347,8 +440,13 @@ function aiDetermination(text) {
 function syncHumanDetermination(version) {
   const select = $("humanDetermination");
   if (!select || select.dataset.reportId !== version.id || select.disabled) return;
+  const previous = select.dataset.savedDetermination;
   select.value = version.human_determination || "";
   select.dataset.determination = select.value || "unset";
+  select.dataset.savedDetermination = select.value;
+  const status = select.nextElementSibling;
+  if (status && (previous !== select.value || !status.textContent))
+    status.textContent = select.value ? "Saved" : "";
 }
 function renderDeterminations(text, version, caseId) {
   if (version.status !== "sealed") return;
@@ -375,25 +473,38 @@ function renderDeterminations(text, version, caseId) {
   humanRow.append(el("strong", "Human Determination:"), select, status);
   select.value = version.human_determination || "";
   select.dataset.determination = select.value || "unset";
-  select.onchange = async () => {
-    const prior = version.human_determination || "";
+  select.dataset.savedDetermination = select.value;
+  status.textContent = select.value ? "Saved" : "";
+  const saveDetermination = async () => {
+    if (select.disabled) return;
     const requested = select.value;
+    const prior = select.dataset.savedDetermination || "";
+    if (requested === prior) return;
     select.dataset.determination = requested || "unset";
     select.disabled = true;
     status.textContent = "Saving…";
     try {
       const saved = await api("reports/determination", {case_id:caseId, report_id:version.id,
         value:requested || null});
-      version.human_determination = saved.human_determination;
+      const authoritative = saved.human_determination || "";
+      select.value = authoritative;
+      select.dataset.determination = authoritative || "unset";
+      select.dataset.savedDetermination = authoritative;
       status.textContent = "Saved";
-      await refresh();
     } catch (e) {
       select.value = prior;
       select.dataset.determination = prior || "unset";
       status.textContent = "Save failed";
       error(e);
-    } finally { select.disabled = false; }
+    } finally {
+      select.disabled = false;
+      await refresh().catch(error);
+    }
   };
+  // macOS pickers may update on input before committing a change. Handle both
+  // events and deduplicate against the last value confirmed by the server.
+  select.addEventListener("input", saveDetermination);
+  select.addEventListener("change", saveDetermination);
   panel.append(aiRow, humanRow);
   heading.insertAdjacentElement("afterend", panel);
 }
@@ -655,6 +766,7 @@ function appendFocus(instruction, record) {
   const current = focus.value.trim();
   const next = current.includes(instruction) ? current : current ? current + "\n" + instruction : instruction;
   if (next.length > 20000) { error(Error("The investigation focus is full. Shorten it before adding more plugins.")); return; }
+  resetFocusHistory();
   focus.value = next;
   focusDrafts.set(record.caseId, next);
   sizeFocus();
@@ -1122,6 +1234,42 @@ function reportProgress(job) {
   root.append(heading, stage, progress, note);
   return root;
 }
+function typicalJobTime(job, now) {
+  const profile = item => item.generation || item.estimate_profile;
+  const wanted = profile(job);
+  if (job.kind !== 'readiness' && (!wanted?.provider || !wanted?.model)) return null;
+  const sameProfile = item => job.kind === 'readiness' || ['provider','model','reasoning_effort']
+    .every(key => (profile(item)?.[key] || null) === (wanted[key] || null));
+  const samples = state.jobs.filter(item => item.case_id === job.case_id && item.kind === job.kind &&
+    item.status === 'completed' && sameProfile(item)).map(item =>
+      (timestampMillis(item.finished_at) - timestampMillis(item.started_at)) / 1000)
+    .filter(seconds => Number.isFinite(seconds) && seconds > 0 && seconds <= 86400).slice(-10);
+  if (!samples.length) return null;
+  const total = samples.reduce((sum,value) => sum + value,0) / samples.length;
+  const elapsed = job.status === 'queued' ? 0 : (now - timestampMillis(job.started_at)) / 1000;
+  if (!Number.isFinite(elapsed) || elapsed >= total) return null;
+  return {remaining:Math.max(0,total - Math.max(0,elapsed)), samples:samples.length};
+}
+function durationLabel(seconds) {
+  return seconds < 60 ? Math.ceil(seconds) + 's' : seconds < 3600 ? Math.ceil(seconds / 60) + ' min' :
+    (seconds / 3600).toFixed(1) + ' hr';
+}
+function queuePresentation(pending, now) {
+  let waiting = 0, unknown = 0;
+  const items = pending.map((j,index) => {
+    const estimate = typicalJobTime(j,now);
+    const ahead = unknown ? 'Start time not yet estimable' : 'Typical wait: about ' + durationLabel(waiting);
+    const timing = j.status === 'queued' ? ahead : estimate ? 'Typical runtime remaining: about ' + durationLabel(estimate.remaining) :
+      'Runtime not yet estimable or longer than its timing history';
+    if (estimate) waiting += estimate.remaining;else unknown++;
+    return {...j,position:index+1,timing,
+      title:state.cases.find(c => c.id === j.case_id)?.title || j.case_id};
+  });
+  return {items,summary:pending.length ? `${pending.length} request(s) pending · ${pending.filter(j=>j.status==='queued').length} waiting. ` +
+    (unknown ? `Overall finish time is unknown: ${unknown} request(s) lack a usable duration estimate. ` :
+      `Typical time to finish the queue: about ${durationLabel(waiting)}. `) +
+    'Estimates use up to 10 completed similar requests and include report writing; scope and service delays can change them.' : ''};
+}
 function renderRunningReport(version) {
   const job = state.jobs.find(j => j.case_id === selected && j.report_id === version.id);
   const title = el("h2", job?.status === "stopping" ? "Stopping report…" : "Report running…");
@@ -1225,26 +1373,26 @@ function removeReportDialog(c, report) {
   dismiss.onclick = () => dialog.close();
   const failure = el("p");
   failure.setAttribute("role", "alert");
+  failure.textContent = report.deletion_error ? "Deletion failed: " + report.deletion_error + ". You can retry below." : "";
   const buttons = el("div", undefined, "buttons");
-  const del = el("button", "Delete", "danger");
+  const del = el("button", "Delete to Recycle Bin", "danger");
   const hide = el("button", "Hide from UI");
   const busy = (state.report_cleanup_cases || []).includes(c.id) || state.jobs.some(
     (j) => j.case_id === c.id && ["queued", "running", "stopping"].includes(j.status),
   );
-  const referenced = c.reports.some(r => r.previous === report.id && !r.deleted_at);
-  del.disabled = busy || referenced;
-  if (busy) failure.textContent = "Finish this case's active work or cleanup before deleting. You can still hide this report.";
-  else if (referenced) failure.textContent = "A later report references this revision. Hide from UI keeps that history intact; delete the dependent revision first to delete this one.";
+  const cleaning=(state.report_cleanup_cases || []).includes(c.id);
+  del.disabled = cleaning || !!report.delete_requested_at;
+  del.title = busy ? "Queue deletion for after the current job finishes" : "Move this report bundle to the Recycle Bin";
   for (const [button, action] of [[del, "delete"], [hide, "hide"]]) {
     button.onclick = async () => {
       del.disabled = hide.disabled = true;
       failure.textContent = action === "delete" ? "Deleting report files…" : "Hiding report…";
       try {
-        await api("reports/remove", {case_id:c.id, report_id:report.id, action});
+        const result=await api("reports/remove", {case_id:c.id, report_id:report.id, action});
         if (dialog.dataset.target === key) dialog.close();
         if (selected === c.id) {
-          if (selectedVersion === report.id) { selectedVersion = null; shownReport = ""; }
-          if (action === "delete" && artifact?.path.startsWith("reports/" + report.id + "/")) {
+          if (!result.queued && selectedVersion === report.id) { selectedVersion = null; shownReport = ""; }
+          if (action === "delete" && !result.queued && artifact?.path.startsWith("reports/" + report.id + "/")) {
             artifact = null;
             $("artifactMeta").textContent = "";
             $("artifactView").textContent = "";
@@ -1257,13 +1405,14 @@ function removeReportDialog(c, report) {
         if (dialog.open && dialog.dataset.target === key) failure.textContent = e.message;
         else error(e);
         hide.disabled = false;
-        del.disabled = busy || referenced;
+        del.disabled = cleaning;
       }
     };
   }
   buttons.append(del, hide);
   dialog.replaceChildren(dismiss, title, el("p", readableTime(report.created_at) + " · " + report.status),
-    el("p", "Hide from UI keeps all files. Delete permanently removes this revision's report bundle and its copied artifacts, including a sealed report if selected. Original images, shared analysis, case history and other report versions are retained."),
+    el("p", "Hide from UI keeps all files. Delete moves this complete revision bundle into the seven-report Recycle Bin in Settings, where it can be restored. When the bin is full, deleting another report permanently removes its oldest bundle. Original images, shared analysis, case history and other report versions are retained."),
+    el("p",busy ? "Deletion will run after the current job finishes. This report stays available until its files are moved." : ""),
     failure, buttons);
   dialog.showModal();
   hide.focus();
@@ -1286,6 +1435,7 @@ function operationLabel(job, now = Date.now()) {
 }
 function render() {
   if (!state) return;
+  document.querySelector(".settings-link").href = "/settings.html" + (selected ? "?case=" + encodeURIComponent(selected) : "");
   const renderedAt = Date.now();
   window.WorkbenchVolshell.update(state, selected);
   const shellActive = window.WorkbenchVolshell.hasActiveSession();
@@ -1301,15 +1451,24 @@ function render() {
   $("root").textContent = "Default evidence folder: " + state.evidence_root;
   $("pick").disabled = !state.native_picker;
   const cases = $("cases");
-  cases.replaceChildren();
+  const existingCases = new Map([...cases.children].map(button => [button.dataset.caseId, button]));
+  const caseButtons = [];
   for (const c of orderedCases()) {
-    const b = el(
-      "button",
-      c.title,
-      "case-button" + (c.id === selected && activeView === "case" ? " selected" : ""),
-    );
+    const b = existingCases.get(c.id) || el("button", c.title, "case-button");
+    b.dataset.caseId = c.id;
+    if (b.textContent !== c.title) b.textContent = c.title;
+    const current = c.id === selected && activeView === "case";
+    b.classList.toggle("selected", current);
+    if (current) b.setAttribute("aria-current", "true");
+    else b.removeAttribute("aria-current");
     b.onclick = () => choose(c.id);
-    cases.append(b);
+    caseButtons.push(b);
+  }
+  // Routine state polling must not remove a keyboard user's active case button.
+  if (caseButtons.length !== cases.children.length || caseButtons.some((button, i) => cases.children[i] !== button)) {
+    const focused = document.activeElement;
+    cases.replaceChildren(...caseButtons);
+    if (caseButtons.includes(focused)) focused.focus({preventScroll:true});
   }
   const c = caseNow();
   $("plugins").hidden = activeView !== "plugins";
@@ -1366,8 +1525,10 @@ function render() {
         .map((r) => el("p", r, "subtle")),
     );
     const hasSealedReport = c.reports.some(r => r.status === "sealed" && !r.deleted_at);
-    $("report").disabled = !ready || shellActive;
-    $("update").disabled = !ready || !hasSealedReport || shellActive;
+    const reportPending=state.jobs.some(j=>j.case_id===c.id && ['report','update'].includes(j.kind) && ['queued','running','stopping'].includes(j.status));
+    const submitting=submittingJobs.has(c.id+':report') || state.report_cleanup_cases?.includes(c.id);
+    $("report").disabled = !ready || shellActive || !!submitting;
+    $("update").disabled = !ready || !(hasSealedReport || reportPending) || shellActive || !!submitting;
     $("questionForm").querySelector("button").disabled = shellActive;
     $("report").classList.toggle("primary", !hasSealedReport);
     $("update").classList.toggle("primary", hasSealedReport);
@@ -1386,7 +1547,7 @@ function render() {
       const removable = ["incomplete", "sealed"].includes(r.status);
       const card = el("div", undefined, "report-version" + (removable ? " removable" : ""));
       card.dataset.reportId = r.id;
-      const b = el("button", readableTime(r.created_at) + " · " + r.status);
+      const b = el("button", readableTime(r.created_at) + " · " + r.status + (r.delete_requested_at ? " · deletion queued" : r.deletion_error ? " · deletion failed" : ""));
       b.onclick = () => {
         selectedVersion = r.id;
         shownReport = "";
@@ -1397,6 +1558,7 @@ function render() {
       if (removable) {
         const remove = el("button", "×", "report-remove");
         remove.setAttribute("aria-label", "Remove " + r.status + " report " + readableTime(r.created_at));
+        remove.disabled = !!r.delete_requested_at;
         remove.onclick = () => removeReportDialog(c, r);
         card.append(remove);
       }
@@ -1409,33 +1571,7 @@ function render() {
     markSelectedReport(v?.id || null);
     showReport(v);
     updateBulkPluginAction();
-    const mkey = JSON.stringify(c.messages);
-    if (shownMessages !== mkey) {
-      $("messages").replaceChildren(
-        ...c.messages.map((m) =>
-          el(
-            "div",
-            m.role.toUpperCase() + " · " + readableTime(m.time) + "\n" + m.text,
-            "message " + m.role,
-          ),
-        ),
-      );
-      shownMessages = mkey;
-    }
-    const akey = JSON.stringify(c.activity);
-    if (shownActivity !== akey) {
-      $("activityList").replaceChildren(
-        ...[...c.activity].reverse().map((a) => {
-          const d = el("details", undefined, "event");
-          d.append(
-            el("summary", readableTime(a.time) + " · " + a.kind),
-            el("pre", readableTime(JSON.stringify(a.detail, null, 2))),
-          );
-          return d;
-        }),
-      );
-      shownActivity = akey;
-    }
+    renderHistory(c);
     renderApprovals(c);
   }
   const pending = state.jobs.filter(j => ["queued", "running", "stopping"].includes(j.status));
@@ -1458,17 +1594,16 @@ function render() {
   const stopHost = reportJob ? activeProgress.querySelector(".report-progress-heading") : $("currentWorkHeading");
   if ($("stop").parentElement !== stopHost) stopHost.append($("stop"));
   if (stopWasFocused && pending.length) $("stop").focus({preventScroll:true});
-  const queueItems = pending.map(j => ({
-    id: j.id,
-    title: state.cases.find(c => c.id === j.case_id)?.title || j.case_id,
-    kind: j.kind, status: j.status, progress: j.progress || "",
-  }));
+  const queueView=queuePresentation(pending,renderedAt), queueItems=queueView.items;
+  $("queueSummary").textContent=queueView.summary;
+  $("queueSummary").hidden=!pending.length;
   const queueKey = JSON.stringify(queueItems);
   if (shownQueue !== queueKey) {
     $("queue").replaceChildren(...queueItems.map(j => {
       const item = el("li");
       item.append(el("strong", j.title + " · " + j.kind),
-        el("span", j.status + (j.progress && j.status !== "queued" ? " · " + j.progress : "")));
+        el("span", '#' + j.position + ' · ' + j.status + (j.progress && j.status !== "queued" ? " · " + j.progress : "") + ' · ' + j.timing));
+      if (j.text) item.append(el('span',j.text.length>180 ? j.text.slice(0,180)+'…' : j.text,'queue-prompt'));
       return item;
     }));
     shownQueue = queueKey;
@@ -1484,8 +1619,8 @@ function renderReportFailure(c) {
   host.hidden = !visible;
   if (!visible) { shownReportFailure = ""; return; }
   const ready = ["Ready", "Ready with limitations"].includes(c.readiness.status);
-  const busy = state.jobs.some(j => j.case_id === c.id && ["queued", "running", "stopping"].includes(j.status));
-  const blocked = !ready || busy || window.WorkbenchVolshell.hasActiveSession() || rerunningReportFailures.has(latest.id) || state.report_cleanup_cases?.includes(c.id);
+  const retryPending=state.jobs.some(j=>j.retry_of===latest.id && ['queued','running','stopping'].includes(j.status));
+  const blocked = !ready || retryPending || window.WorkbenchVolshell.hasActiveSession() || rerunningReportFailures.has(latest.id) || state.report_cleanup_cases?.includes(c.id);
   const key = JSON.stringify([latest.id, latest.kind, latest.status, latest.error, !!blocked]);
   if (shownReportFailure === key) return;
   shownReportFailure = key;
@@ -1499,7 +1634,7 @@ function renderReportFailure(c) {
     rerunningReportFailures.add(latest.id);
     rerun.disabled = true;
     try {
-      await api("jobs", {case_id:c.id, kind:latest.kind, text:latest.text || "", request_id:crypto.randomUUID()});
+      await api("jobs", {case_id:c.id, kind:latest.kind, text:latest.text || "", request_id:crypto.randomUUID(),retry_of:latest.id});
       await refresh();
     } finally {
       rerunningReportFailures.delete(latest.id);
@@ -1593,6 +1728,7 @@ function resizeConsoleView(expanded) {
   if (expanded) {
     if ((!currentConsole && !caseNow()) || dialog.open || button.getAttribute("aria-expanded") === "true") return;
     consolePagePosition = window.scrollY;
+    consoleOpener = document.activeElement;
     $("expandedConsoleHost").append($("liveConsoleSection"));
     document.body.classList.add("console-zoom-open");
     button.textContent = "Collapse";
@@ -1611,7 +1747,11 @@ function resizeConsoleView(expanded) {
   renderConsoleOperation(currentConsole);
   pre.scrollTop = follow ? pre.scrollHeight : top;
   $("consoleFollow").checked = follow;
-  if (currentConsole) (!expanded && $("liveConsoleDock").hidden ? $("toggleReportConsole") : button).focus({preventScroll:true});
+  if (!expanded && consoleOpener?.isConnected && !dialog.contains(consoleOpener) &&
+      consoleOpener !== document.body && consoleOpener.getClientRects().length && !consoleOpener.matches(":disabled")) {
+    consoleOpener.focus({preventScroll:true});
+    consoleOpener = null;
+  } else if (currentConsole) (!expanded && $("liveConsoleDock").hidden ? $("toggleReportConsole") : button).focus({preventScroll:true});
   else $("caseTitle").focus({preventScroll:true});
 }
 $("expandConsole").onclick = () => {
@@ -1819,15 +1959,25 @@ async function viewArtifact(path, offset = 0, isCurrent = () => true) {
 async function loadCoverage() {
   const c = caseNow();
   if (!c) return;
+  const navigation=++coverageNavigation;
+  const current=()=>selected===c.id && navigation===coverageNavigation && activeView==='case';
   const panel = $("coverageView");
-  panel.replaceChildren(el("p", "Reading saved manifests and outputs; no analysis is started."));
-  const sections = [];
+  panel.replaceChildren(el("p", "Reading all saved coverage; no analysis is started."));
+  function nextOffset(value,offset) {
+    if(value===null)return null;
+    if(!Number.isSafeInteger(value) || value<=offset)throw Error('Saved coverage returned an invalid continuation');
+    return value;
+  }
   for (const image of c.images) {
+    if(!current())return;
     const section = el("section");
     section.append(el("h3", image.id));
+    const loading=el('p','Loading saved scopes and attempts…','subtle');section.append(loading);panel.append(section);
     const base = "coverage?case=" + encodeURIComponent(c.id) + "&image=" + encodeURIComponent(image.id);
-    async function page(offset = 0) {
+    let offset=0, loaded=0;
+    try { do {
       const data = await api(base + "&offset=" + offset);
+      if(!current())return;
       if (!offset) {
         section.append(el("p", "Scope: " + data.scope + ". " +
           data.summary.entries_with_successful_collection + " / " + data.summary.declared_plan_entries +
@@ -1841,12 +1991,13 @@ async function loadCoverage() {
           el("pre", readableTime(JSON.stringify({jobs:data.orchestration_jobs, request_failures:data.request_failures}, null, 2))));section.append(jobs);
       }
       for (const entry of data.entries) {
-        const detail = el("details");
+        const detail = el("details", undefined, "coverage-scope");
         detail.append(el("summary", (entry.question || entry.plugin) + " · " + entry.effective.execution +
           " · " + entry.effective.applicability + " · " + entry.effective.availability));
         detail.append(el("pre", JSON.stringify({plugin:entry.plugin, arguments:entry.arguments,
           question_answered:entry.question_answered, effective:entry.effective}, null, 2)));
-        async function attempts(batch) {
+        let batch=entry, attemptOffset=0;
+        do {
           for (const a of batch.attempts) {
             detail.append(el("pre", readableTime(JSON.stringify(a, null, 2))));
             const manifest = el("button", "Open attempt " + a.run_id);
@@ -1858,24 +2009,30 @@ async function loadCoverage() {
               detail.append(evidence);
             }
           }
-          if (batch.attempt_next_offset !== null) {
-            const more = el("button", "More attempts");
-            more.onclick = act(async () => {
-              const next = await api(base + "&entry=" + encodeURIComponent(entry.entry_id) + "&attempt_offset=" + batch.attempt_next_offset);
-              more.remove(); await attempts(next.entries[0]);
-            });detail.append(more);
+          attemptOffset=nextOffset(batch.attempt_next_offset,attemptOffset);
+          if(attemptOffset!==null){
+            const next=await api(base + "&entry=" + encodeURIComponent(entry.entry_id) + "&attempt_offset=" + attemptOffset);
+            if(!current())return;
+            batch=next.entries.find(item=>item.entry_id===entry.entry_id);
+            if(!batch)throw Error('Saved coverage attempt scope changed while loading');
           }
-        }
-        await attempts(entry);section.append(detail);
+        }while(attemptOffset!==null);
+        section.append(detail);loaded++;
+        loading.textContent=loaded+' saved scope(s) loaded…';
       }
-      if (data.delivery.next_offset !== null) {
-        const more = el("button", "More coverage scopes");
-        more.onclick = act(async () => {more.remove(); await page(data.delivery.next_offset);});section.append(more);
-      }
+      offset=nextOffset(data.delivery.next_offset,offset);
+    }while(offset!==null);
+    loading.textContent=loaded+' saved scope(s) loaded. All available saved attempts are shown inside each scope.';
+    }catch(failure){
+      if(!current())return;
+      loading.textContent='Could not finish loading saved coverage: '+failure.message+'. Use Refresh saved coverage to retry.';
+      loading.setAttribute('role','alert');
     }
-    await page();sections.push(section);
   }
-  if (selected === c.id) panel.replaceChildren(...sections);
+  if(current()){
+    panel.firstElementChild.textContent=c.images.length ? 'Saved coverage loaded below. No analysis was started.' : 'No images are registered in this case.';
+    updateBackToTop();
+  }
 }
 $("loadCoverage").onclick = act(loadCoverage);
 
@@ -1909,9 +2066,14 @@ async function browse(path = "", location = "") {
   }
   $("files").replaceChildren(...nodes);
 }
+let latestRefresh = 0, appliedRefresh = 0;
 async function refresh() {
+  const request = ++latestRefresh;
+  const snapshot = await api("state");
+  if (request < appliedRefresh) return;
+  appliedRefresh = request;
   const previous = state;
-  state = await api("state");
+  state = snapshot;
   window.WorkbenchThemes.sync(state.appearance);
   if (previous) {
     const active = status => ["queued", "running", "stopping"].includes(status);
@@ -1963,7 +2125,40 @@ $("readiness").onclick = act(async () => {
 });
 $("report").onclick = act(() => job("report", $("focus").value));
 $("update").onclick = act(() => job("update", $("focus").value));
+$("focus").addEventListener("keydown", event => {
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+  const focus = $("focus");
+  if (event.key === "Escape" && focusHistoryIndex >= 0) {
+    event.preventDefault();
+    focus.value = focusHistoryDraft;
+    resetFocusHistory();
+  } else if (event.key === "ArrowUp") {
+    const firstLineEnd = focus.value.indexOf("\n");
+    if (focusHistoryIndex < 0 && (focus.selectionStart !== focus.selectionEnd ||
+        firstLineEnd >= 0 && focus.selectionStart > firstLineEnd)) return;
+    const entries = focusHistoryIndex < 0 ? focusHistory() : focusHistoryEntries;
+    if (!entries.length) return;
+    event.preventDefault();
+    if (focusHistoryIndex < 0) { focusHistoryDraft = focus.value; focusHistoryEntries = entries; }
+    focusHistoryIndex = Math.min(focusHistoryIndex + 1, entries.length - 1);
+    focus.value = entries[focusHistoryIndex];
+  } else if (event.key === "ArrowDown" && focusHistoryIndex >= 0) {
+    event.preventDefault();
+    focusHistoryIndex--;
+    if (focusHistoryIndex < 0) {
+      focus.value = focusHistoryDraft;
+      resetFocusHistory();
+    } else focus.value = focusHistoryEntries[focusHistoryIndex];
+  } else return;
+  focus.setSelectionRange(0, 0);
+  sizeFocus();
+  updateBulkPluginAction();
+});
+$("focus").addEventListener("pointerdown", () => {
+  if (focusHistoryIndex >= 0) resetFocusHistory();
+});
 $("focus").oninput = () => {
+  resetFocusHistory();
   if (selected) focusDrafts.set(selected, $("focus").value);
   if ($("focus").scrollHeight > $("focus").clientHeight) sizeFocus();
   updateBulkPluginAction();
@@ -2002,6 +2197,7 @@ document
       history.replaceState(null, "", location.pathname + location.search);
       await api("unlock", { token });
     }
+    await window.WorkbenchZoom.load();
     await refresh();
     setInterval(() => refresh().catch(error), 1500);
   } catch (e) {

@@ -3,8 +3,8 @@
 Workbench themes change the presentation of the application. They do not alter
 evidence, plugin availability, analysis settings, saved output or report contents.
 Choose a theme from the Theme control in Workbench's header or Settings →
-Appearance. Both use the same catalog. The choice is saved in this browser's
-local storage and updates other open Workbench tabs. Existing Matrix, Mono and Blue preferences
+Appearance. Both use the same catalog. The choice is saved in application
+preferences and updates other open Workbench tabs. Existing Matrix, Mono and Blue preferences
 remain supported as Matrix green, Soft black and white, and Light blue. A browser
 without a saved preference starts with the original Matrix green appearance.
 
@@ -67,6 +67,41 @@ labels and phosphor accents. The same treatment covers Settings and adapts to
 narrow screens. These overrides apply only to Fallout 2; Matrix and the other
 Fallout palettes retain their existing presentation.
 
+Two additional Fallout 3 themes use the terminal screenshots supplied by the user:
+
+| Selector name | Terminal treatment |
+| --- | --- |
+| Fallout 3 (RobCo Night) | Matte graphite housing, broad curved screen recess, bright green phosphor and a dark Termlink control plate. |
+| Fallout 3 (Vault 112) | Aged olive housing, ivory phosphor, lower ventilation slots and a square amber power lamp. |
+
+Both cover the main UI, Settings and the expanded Output/VolShell monitor. Their
+materials, ventilation slots, bevels and lamps are responsive CSS; the supplied
+screenshots are not packaged or stretched over the UI. Text stays selectable on
+opaque screen surfaces, without scanline or glare overlays. The original Fallout 3
+wasteland theme remains available alongside the two terminals.
+
+Two Fallout 76 terminal variants use the user's additional screenshots:
+
+| Selector name | Terminal treatment |
+| --- | --- |
+| Fallout 76 (Camden Park) | Heavily flaked pale blue-gray enamel, irregular rust patches, battered blue outer lip and a broad rounded glass opening. |
+| Fallout 76 (Field Terminal) | Rough charcoal cast metal, a worn blue-silver surround, recessed left latch and two projecting cylindrical black knobs in silver sockets. |
+
+Both extend through the main application, Settings and the Output/VolShell console.
+Their detailed console frames are transparent PNG assets edited from the supplied
+reference images using the built-in image editor. Source game text, quest HUD and
+environment are removed. The frames preserve their proportions and have empty
+screen openings; the live console remains selectable HTML behind them. Output and
+VolShell controls sit below the housing. Knobs and latch are decorative, and do not
+replace the labeled controls. All assets are packaged locally without remote
+downloads. The original Fallout 76 theme and saved theme choices remain available.
+
+Asset files: `bezel-fallout76-camden-park.png` and
+`bezel-fallout76-field-terminal.png`. The edit prompts required preserving the
+reference contours, wear, material, colors and control placement, with transparent
+screen holes and no added lettering or hardware. Their integration uses CSS;
+the detailed frame textures are raster artwork rather than CSS approximations.
+
 ## Other requested skins
 
 | Reference | Visual direction |
@@ -115,10 +150,31 @@ cover or label it a Jim Lee cover.
 
 ## Local artwork provenance
 
-Theme illustrations are original local artwork, rather than downloaded game,
-film or comic assets. Theme names identify the requested inspiration and do not
-imply affiliation with their rights holders. Geometric decorations use the shared
-theme system so the same interface remains maintainable across skins.
+Except for the two Fallout 76 bezels listed below, theme illustrations are
+locally authored artwork rather than downloaded game, film or comic assets.
+Theme names identify inspiration and do not imply affiliation with rights holders.
+Geometric decorations use the shared theme system.
+
+### Fallout 76 bezel provenance and release status
+
+| Packaged file | Recorded source and edit | Public redistribution |
+| --- | --- | --- |
+| `bezel-fallout76-camden-park.png` | Edited from a user-supplied Fallout 76 terminal reference. The enamel wear, blue lip, contours and proportions were preserved; the game text, HUD and surroundings were removed, and the screen opening made transparent. | Rights unverified. Do not treat the PNG as original cleared artwork for a public release. |
+| `bezel-fallout76-field-terminal.png` | Edited from a user-supplied Fallout 76 terminal reference. The charcoal housing, silver surround, latch, knobs and proportions were preserved; the game text, HUD and surroundings were removed, and the screen opening made transparent. | Rights unverified. Do not treat the PNG as original cleared artwork for a public release. |
+
+The repository records neither the source screenshots' creators and URLs nor a grant
+covering modification and redistribution in an independently distributed app. A
+user-supplied reference does not itself establish those rights. The PNGs remain
+available for the owner's private local application. Before a public source archive,
+wheel, native app, installer or promotional download includes either file, record
+the exact source and rights holder(s), the original and final file hashes, and a
+written permission or applicable license covering edited artwork in that form of
+distribution, including any required attribution and notices. Otherwise prepare a
+separate public build with independently created, non-derivative art or omit the
+bezel files and their affected theme choices in that build. Verify the actual build
+contents; the current `static/*.png` package-data rule includes both files. A
+changed label, credit, or MIT notice alone does not grant rights. This release
+checkpoint does not alter the private theme catalog or artwork.
 
 `src/volatility_workbench/static/halloween-night.png` is an original raster
 background generated with the built-in image generation tool. Its art direction
@@ -137,8 +193,9 @@ Shared theme tokens keep table surfaces, primary text, secondary text, borders,
 controls, warnings and focus indicators consistent. Decorative scenes stay
 behind the interface instead of behind dense table text. Statuses retain text
 labels as well as color. Keyboard focus remains visible, and the selected-report
-highlight retains an even border and stronger text across themes. Theme
-selection uses a labelled native control and retains normal keyboard operation.
+highlight retains an even border and stronger text across themes. The header's
+Theme button stays highlighted while its picker is open. Theme selection uses a
+labelled native control and retains normal keyboard operation.
 Artwork is static, without animation. A higher-contrast system preference
 strengthens borders and reduces decorative artwork; printed views omit the
 theme picker and artwork band.

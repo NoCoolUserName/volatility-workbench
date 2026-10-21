@@ -11,8 +11,8 @@ credential handling and tested limits.
 
 ## Appearance
 
-The header's Theme selector and Settings → Appearance offer the same 31 local
-skins, including 12 separate Fallout choices. New profiles start with the
+The header's Theme selector and Settings → Appearance offer the same 35 local
+skins, including 16 Fallout choices. New profiles start with the
 original Matrix green appearance; the three original preference values remain
 supported. Selection persists in application preferences across desktop launches,
 including changes to the local server port. Workbench and Settings synchronize
@@ -22,9 +22,19 @@ has been saved.
 Artwork stays in a decorative band outside opaque evidence/report surfaces.
 Fallout 2 uses a scalable CSS metal housing, compact ventilation rail, recessed
 green screens and brass controls, guided by the supplied inventory-screen reference.
+Fallout 3 (RobCo Night) adds a black steel terminal with green phosphor, while
+Fallout 3 (Vault 112) uses olive metal, ivory phosphor and an amber power lamp.
+Both have CSS console housings based on the supplied terminal references.
 Theme changes do not submit jobs or modify cases, conversations or saved reports.
 The displayed report retains its selection border. See [the catalog and verified
 references](THEMES.md), including the Punisher #53 artist correction.
+Text size is separate from WebView/page zoom. Pinch apart or together on a trackpad,
+hold Control while scrolling a mouse wheel, or use the A−/percentage/A+ controls
+in Settings. The main screen and console omit the text-size control strip.
+Workbench scales text from 75% to
+200% in 5% steps, wraps larger text inside existing panels, and saves the selected
+size in application preferences outside the bundle. The connection status appears
+above Settings in the header.
 
 ## Launch
 
@@ -74,10 +84,14 @@ first displayed case; an empty list shows the start screen.
 The **Add evidence** panel starts collapsed; click its heading to expand it.
 The **Theme** button sits directly below Plugins. Click it to show the theme
 dropdown, and click it again or press Escape to hide it. Settings, with its silver
-gear, sits at the upper-right corner. The themes include Matrix green (default),
-Soft black and white, and Light blue. The selection is stored in this browser's local
-storage and restored on reload. It changes presentation only; case state,
+gear, sits below the connection status at the upper-right corner. The themes include Matrix green (default),
+Soft black and white, and Light blue. The selection is stored in application preferences
+outside the app bundle and restored on reload or restart. It changes presentation only; case state,
 saved evidence, and reports are unaffected.
+Case conversation and Activity & failures each provide an **Oldest first / Newest
+first** selector. The choices are saved separately for each case and survive
+refresh and relaunch. Sorting uses event timestamps and preserves the recorded
+history; undated records appear after dated entries in their saved sequence.
 
 1. Add existing `.raw`, `.mem`, `.vmem`, `.dmp`, `.lime`, or `.dd` files through
    path entry, evidence-folder browsing, or **Choose in Finder** on macOS. The
@@ -134,16 +148,21 @@ saved evidence, and reports are unaffected.
    distinct image coins and leaving other report images intact.
    Incomplete and sealed report cards reveal **×** on hover or keyboard focus (always visible
    on touch devices). Its popup offers **Hide from UI**, which persistently hides
-   the revision without changing files, or **Delete**, which permanently removes
-   only that revision's `reports/<revision>/` bundle, including its copied
-   artifacts and decorative assets. Shared analysis, original images, case/job
-   history, other revisions and independently saved exports are retained. Hidden
-   files remain accessible in Evidence; there is currently no unhide control.
-   Deleting a selected sealed revision also removes that revision's sealed bundle.
-   Delete is blocked while
-   the case has active/queued work or another revision names it as its predecessor.
-   A failed/partial deletion is recorded and can be retried; it is not rolled
-   back or silently marked successful. Closing the popup performs no action.
+   the revision without changing files, or **Delete to Recycle Bin**, which moves
+   that revision's complete bundle out of the Reports folder. Settings lists the
+   last seven deleted bundles with **Restore** and **Delete permanently** controls.
+   Deleting an eighth permanently removes the oldest recycled bundle. A later
+   report's predecessor ID is historical metadata; its complete sealed bundle does
+   not require the older bundle to remain present. Shared analysis, original images,
+   case/job history, other revisions and independently saved exports are retained.
+   Hidden files remain on disk until Settings → Hidden report files permanently
+   deletes them. Delete during queued or active case work saves a deletion request
+   and moves the bundle between jobs, after the current job finishes. Its card
+   stays available and says **deletion queued** until then. Pending deletions survive
+   restart. Restoration and permanent cleanup require idle case work. A missing
+   bundle can still be removed from the UI with Delete; it creates no empty bin entry.
+   Failed cleanup stays visible as **deletion failed**, with its error in the removal
+   popup and Activity, and can be retried. Closing the popup performs no action.
    The report revision currently displayed has a persistent accent outline and
    `aria-current` marker. This selection survives background refresh; after a
    selected revision is hidden or deleted, the remaining latest revision is shown.
@@ -156,14 +175,34 @@ saved evidence, and reports are unaffected.
    material limitations. If the new results leave the assessment unchanged, the
    summary should say why. This is an investigative instruction; mechanical
    report validation does not independently judge the relevance of a finding.
+   The focus field recalls the 10 most recent nonempty report/update prompts from
+   this case's saved jobs with Up/Down; Escape restores the unsent draft. Multiline
+   editing keeps normal Up behavior except when the caret is on the first line.
+   The model prompt lists report version IDs and status metadata without repeating
+   stored validation records; the investigator reads saved report content as needed.
    Sealed content is not edited in place; explicit Hide/Delete is
    separate from report generation and retains the case's audit metadata.
-7. Multiple cases/jobs run sequentially. Refreshing/reopening the browser reads
+7. Distinct report, update and question requests join a first-in, first-out queue,
+   including a new update submitted after Rerun. Each accepted request keeps its
+   submitted prompt; editing the input afterward does not change queued work.
+   An update uses the latest successfully sealed report when it starts, so successive
+   updates build on each other. A failed job does not discard the next request.
+   If initial generation fails without any sealed report, its queued updates fail
+   clearly before contacting the model. Identical pending requests (same case,
+   operation and prompt, ignoring outer whitespace and line-ending differences)
+   are blocked; submitting the same prompt again after completion is allowed.
+   Retrying the same request identifier acknowledges the original accepted job.
+   Multiple cases/jobs run sequentially. Refreshing/reopening the browser reads
    existing state and cannot start a scan. **Stop all work** interrupts the active
    turn/readiness operation and cancels all queued follow-on work. It sits below
    the connection status and is disabled when no work is queued or running.
    The **Current work** panel appears only while jobs are queued, running, or
    stopping; completed and failed job history remains in the case's Activity tab.
+   Queue positions, typical waiting times and overall finish estimates update as
+   work arrives or finishes. Estimates use up to ten completed requests from the
+   same case, operation, provider, model and reasoning effort, including report
+   writing. Missing history or an overrun shows an unknown estimate. Plugin progress
+   remains a separate estimate and does not promise a report completion percentage.
    During report generation/update, a **Live investigation console** shows actual
    tool starts, progress notifications and returned text as they arrive through
    the provider connection. This read-only terminal-style panel uses the theme's
@@ -372,7 +411,11 @@ locators remain readable but are not promoted to value-verified citations. See
 
 The **Coverage** tab shows each selected image's explicit plan or unspecified
 scope, effective collection states, prior attempts and saved evidence/failure links.
-Refresh reads saved data only. Orchestration jobs are separate from plugin outcomes.
+It automatically reads all saved scope and attempt pages, with no paging buttons.
+Scopes stay collapsible; the report viewer's back-to-top arrow also works here.
+Refresh reads saved data only. A read failure keeps already loaded scopes and
+offers Refresh to retry; switching cases discards stale responses.
+Orchestration jobs are separate from plugin outcomes.
 New reports include a coverage snapshot and limitations summary; old reports are
 unchanged. See [COVERAGE_EVALUATION.md](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COVERAGE_EVALUATION.md). Restart only an idle
 Workbench to load the new tool inventory, case guidance and view.
@@ -525,6 +568,8 @@ explicit human change replaces or clears that choice. The AI opinion is assessed
 independently for each new report. Executive summary F-number references link to
 unambiguous matching finding headings in the same rendered report; unknown
 references remain plain text, and existing evidence links retain their behavior.
+The Human Determination picker saves each changed choice immediately, confirms the
+server response, and restores the saved value when the view refreshes or reopens.
 
 Failed-plugin rows include **Add to prompt**, and the section includes
 **Add all failed requests to prompt**. Prompts retain saved scope and require
@@ -674,9 +719,10 @@ reports remain accessible. Blank exception strings retain their exception type.
 
 The notice's Rerun button submits a new job with the failed request's original
 report/update kind and investigation focus. It keeps any newly typed prompt and
-all previous report versions. The button disables while submitting, while other
-case work is queued/active, during report cleanup, or when readiness is blocked.
-Existing generation, update and extraction checks still apply.
+all previous report versions. The button disables while submitting, while that
+retry is already pending, during report cleanup, or when readiness is blocked.
+Other distinct requests can queue behind it. Existing generation, update and
+extraction checks still apply.
 
 ### Error acknowledgment
 
@@ -709,8 +755,13 @@ inline and leave the checkbox at its previously saved value.
 The Fallout: New Vegas expanded console takes its CSS housing from the weathered
 Welcome sign: neon letter discs and star, warm perimeter bulbs with several dark
 sockets, faded red lettering and aged trim. The display remains opaque and legible.
-All 31 themes give the VolShell bezel button their own treatment while retaining
+All 35 themes give the VolShell bezel button their own treatment while retaining
 a separate rectangular connection LED and visible keyboard focus.
+
+The Camden Park and Field Terminal Fallout 76 consoles use detailed transparent
+frames derived from the user's reference pictures. The frame keeps its original
+proportions, with live HTML output behind the glass opening. Output/VolShell
+controls sit below the housing. The packaged PNGs need no network access.
 
 Theme selection is saved in `appearance.json` under the application preferences
 directory, outside cases and evidence. It survives a new desktop launch even

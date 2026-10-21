@@ -26,6 +26,7 @@ function deferred(){let resolve;const promise=new Promise(r=>{resolve=r;});retur
       },{legacy,key});
       context.on('page',page=>page.on('pageerror',error=>errors.push(error.message)));
       await context.route('**/*',async route=>{
+        if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
         const request=route.request(),url=new URL(request.url());
         assert.equal(url.hostname,'127.0.0.1','No external network requests');
         if(url.pathname.startsWith('/api/')){

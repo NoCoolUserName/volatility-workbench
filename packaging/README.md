@@ -114,4 +114,3 @@ Primary packaging references:
 [CPython embedding configuration](https://docs.python.org/3.12/c-api/init_config.html),
 [pywebview macOS backend](https://pywebview.flowrl.com/guide/renderer.html), and
 [pywebview FAQ](https://pywebview.flowrl.com/guide/faq).
-

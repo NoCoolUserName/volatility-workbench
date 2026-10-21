@@ -24,6 +24,7 @@ async function checkBezelConnection(browser){
   });
   page.on('pageerror',error=>errors.push(error.message));
   await page.route('**/*',async route=>{
+    if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
    const request=route.request(),url=new URL(request.url());
    assert.equal(url.origin,'http://localhost');
    if(request.method()==='GET'){
@@ -229,6 +230,7 @@ async function checkBezelConnection(browser){
   let suggestion={command:'ps()',explanation:'List processes in the selected Windows capture.'},heldSuggestion=null,holdSuggestion=false,stateReads=0;
   page.on('pageerror',error=>errors.push(error.message));
   await page.route('**/*',async route=>{
+    if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
    const request=route.request(),url=new URL(request.url());
    assert.equal(url.origin,'http://localhost','All requests remain inside the synthetic route handler');
    if(request.method()==='GET'){
@@ -399,9 +401,22 @@ async function checkBezelConnection(browser){
    assert.equal(await page.locator('.crt-vegas-sign').isVisible(),theme.id==='fallout-new-vegas','New Vegas sign stays confined to its own skin');
    themeStyles.push({id:theme.id,...styles});
    if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)await page.locator('#consoleVolshellMode').screenshot({path:path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-'+theme.id+'.png')});
-   if(['matrix','fallout-new-vegas'].includes(theme.id))await screenshot('volshell-'+theme.id+'-desktop');
+   if(['matrix','fallout-new-vegas','fallout-3-robco','fallout-3-vault-112'].includes(theme.id))await screenshot('volshell-'+theme.id+'-desktop');
   }
-  assert.equal(new Set(themeStyles.map(theme=>theme.signature)).size,31,'All 31 themes have a distinct VolShell bezel');
+  assert.equal(new Set(themeStyles.map(theme=>theme.signature)).size,33,'All 33 themes have a distinct VolShell bezel');
+  for(const id of ['fallout-3-robco','fallout-3-vault-112']){
+   await page.evaluate(id=>window.WorkbenchThemes.apply(id),id);
+   assert.equal(await page.locator('.crt-brand').evaluate(node=>getComputedStyle(node,'::before').content),id==='fallout-3-robco'?'"ROBCO / TERMLINK"':'"VAULT 112"');
+   for(const width of [1400,390,320]){
+    await page.setViewportSize({width,height:1000});
+    assert.equal(await zoom.evaluate(node=>node.scrollWidth<=node.clientWidth+1),true,id+' console fits '+width+'px');
+    assert.equal(await page.locator('.crt-screen').evaluate(node=>getComputedStyle(node).backgroundImage),'none','Terminal glass stays free of textures');
+    await page.locator('#volshellPanel').evaluate(node=>node.scrollTop=0);await screenshot('volshell-'+id+'-'+width);
+    await page.locator('#consoleOutputMode').click();await screenshot('output-'+id+'-'+width);
+    await page.evaluate(caseId=>window.WorkbenchVolshell.open(caseId),state.volshell.session.case_id);
+   }
+  }
+  await page.setViewportSize({width:1400,height:1000});
   await page.evaluate(()=>window.WorkbenchThemes.apply('fallout-new-vegas'));
   assert.equal(await page.locator('.crt-vegas-sign').getAttribute('aria-hidden'),'true');
   assert.equal(await page.locator('.vegas-welcome i').count(),7);
@@ -579,6 +594,6 @@ async function checkBezelConnection(browser){
   assert.equal(await zoom.isVisible(),false,'Late events from a closed source cannot reopen the CRT');
   assert.equal(await page.evaluate(()=>window.injected),undefined);assert.deepEqual(errors,[]);
   if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)fs.writeFileSync(path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-contrast.json'),JSON.stringify(themeStyles,null,2)+'\n');
-  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;31 distinct bezels/New Vegas desktop/mobile; fully synthetic requests.');
+  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;33 distinct bezels, both Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

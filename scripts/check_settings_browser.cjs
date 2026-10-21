@@ -13,6 +13,8 @@ const settings = {
     {case_id:'case-a',title:'Synthetic Codex case',provider:{provider:'codex',model:'gpt-6-astra',reasoning_effort:'high'}},
     {case_id:'case-b',title:'Synthetic compatible case',provider:{provider:'compatible',endpoint:'https://synthetic.example/v1',model:'synthetic',reasoning_effort:null}}]},operation:{status:'idle'},
   readiness:{status:'Ready with limitations',reasons:['Synthetic fixture; no analysis']},
+  recycle_bin:[{case_id:'case-a',case_title:'Synthetic Codex case',report_id:'recycled-one',status:'sealed',deleted_at:'2026-10-20T00:00:00Z'}],
+  hidden_report_cases:[{case_id:'case-a',case_title:'Synthetic Codex case',count:2}],
 };
 (async()=>{
   const browser=await chromium.launch({headless:true,...(process.env.WORKBENCH_BROWSER_EXECUTABLE?{executablePath:process.env.WORKBENCH_BROWSER_EXECUTABLE}:{})});
@@ -21,6 +23,7 @@ const settings = {
     const errors=[],calls=[],saved=[];
     page.on('pageerror',e=>errors.push(e.message));
     await page.route('http://workbench.test/**',route=>{
+      if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
       const url=new URL(route.request().url());
       if(url.pathname==='/api/settings'){
         calls.push(url.pathname);
@@ -40,12 +43,27 @@ const settings = {
         else settings.provider.default_provider={...config};
         return route.fulfill({json:settings.provider});
       }
+      if(url.pathname==='/api/reports/restore'){
+        assert.deepEqual(route.request().postDataJSON(),{case_id:'case-a',report_id:'recycled-one'});
+        settings.recycle_bin=[];return route.fulfill({json:{report_id:'recycled-one',restored:true}});
+      }
+      if(url.pathname==='/api/reports/purge-hidden'){
+        assert.deepEqual(route.request().postDataJSON(),{case_id:'case-a'});
+        settings.hidden_report_cases[0].count=0;
+        return route.fulfill({json:{deleted:[{report_id:'hidden-one'},{report_id:'hidden-two'}],failed:[]}});
+      }
       assert.ok(!url.pathname.startsWith('/api/'),'Unexpected action '+url.pathname);
       const name=url.pathname.slice(1);
       return route.fulfill({body:fs.readFileSync(path.join(assets,name)),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html'});
     });
     await page.goto('http://workbench.test/settings.html');
     await page.waitForFunction(()=>document.querySelector('#evidence-locations li'));
+    assert.match(await page.locator('#recycle-list').innerText(),/recycled-one/);
+    await page.getByRole('button',{name:'Restore',exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('#recycle-list').textContent.includes('Recycle Bin is empty.'));
+    page.once('dialog',dialog=>dialog.accept());
+    await page.getByRole('button',{name:'Permanently delete hidden bundles'}).click();
+    await page.waitForFunction(()=>document.querySelector('#hidden-reports').textContent.includes('No hidden report bundles remain.'));
     assert.equal(await page.locator('#evidence-locations li').count(),1);
     assert.match(await page.locator('#evidence-locations').innerText(),/default folder; 1 registered image\(s\), 1 case\(s\)/);
     const external='/synthetic/Other disk/<img src=x onerror=alert(1)>';

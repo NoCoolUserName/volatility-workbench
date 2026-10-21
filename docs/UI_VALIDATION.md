@@ -1,5 +1,100 @@
 # Workbench validation — experimental first version
 
+## Fallout 76 terminal variants — 2026-10-20
+
+Added Camden Park and Field Terminal to the shared frontend catalog and durable
+preference allowlist. Existing catalog-count assertions were updated for 35 themes
+and 16 Fallout choices. The initial CSS-only housings were rejected by the user;
+their preview files and native build were deleted and never installed.
+
+Replacement transparent frames were edited from the user's references using the
+built-in image editor, preserving detailed materials and control placement. Their
+alpha channels have empty screen openings. Desktop main-UI and console previews
+were rendered in Chrome with synthetic content; glass fill, text insets, control
+placement and native frame proportions received visual review. Live console text
+is HTML, and the decorative overlay does not intercept input. The new PNGs have
+explicit packaged HTTP routes. No local automated tests were run for this theme
+batch. These previews do not establish mobile or native WebView behavior. Native
+build and installation status are recorded separately; no real investigation ran.
+
+## Report request queue and Coverage — 2026-10-20
+
+Focused synthetic checks passed: 22 Python tests covering FIFO requests,
+pending duplicates and request-ID retries, immutable Rerun prompts, continuation
+after failures, successive updates selecting the latest successful report,
+deferred deletion between jobs, and existing report cleanup safeguards.
+Browser checks passed for request submission/estimates, Coverage, running reports,
+report cleanup, and report return navigation. They covered preserved unsent text,
+double activation, unknown/overrun estimates, all saved scope and attempt pages,
+failed reads and stale case responses, and the shared back-to-top button.
+The final deletion-error wording received source review after those checks.
+These checks used synthetic state and simulated services, without real analysis.
+Native installation of this batch has not yet taken place.
+## Focused keyboard and accessibility review — 19 October 2026
+
+Reviewed upstream `7da02db009a5a79e11ce3d16e6c0f56e0b4a7b7c` with
+synthetic cases and intercepted local browser requests. No private investigation,
+saved evidence, real interpreter or provider was used. Four reproduced defects
+received targeted corrections:
+
+- Escape/Collapse now returns focus to the visible control that opened the
+  monitor, with the existing fallback when that control is unavailable.
+- A visually hidden, atomic polite status region outside the normally closed
+  connection disclosure exposes case-bound connection transitions. Unchanged
+  polling snapshots do not rewrite the announcement; raw output is not included.
+- Case buttons retain their DOM identity and keyboard focus across polling and
+  reordering. `aria-current` identifies the selected case without changing it.
+- The Settings link and return link carry the selected case ID, so returning
+  does not silently select a newer case. This does not rebind provider settings.
+
+`scripts/check_accessibility_browser.cjs` passed ten synthetic check groups:
+
+1. Enter opens the monitor; Escape and the Collapse button restore the opener.
+2. Tab/Shift+Tab follow visible enabled controls in manual, AI suggestions and
+   AI investigation modes, and wrap inside the modal in both directions.
+3. The closed disclosure leaves connection status in Chromium's accessibility
+   tree; a changed readiness state updates it, while identical refreshes do not.
+4. Manual Tab accepts a visible completion without execution; Shift+Tab navigates;
+   Escape dismisses completion; Shift+Enter adds a line; Enter submits once with
+   the exact synthetic case/session binding.
+5. AI suggestion text does not submit on Enter. Requesting a proposal and adopting
+   its draft require separate explicit button activations; adoption does not run it.
+6. AI investigation text, Enter, Tab and mode changes do not submit work implicitly.
+   Explicit investigation/approval/pause/Stop paths remain covered by the existing
+   VolShell browser suite.
+7. Keyboard selection of another console target hides the old transcript, disables
+   mismatched manual input, leaves the main case selected, and submits nothing.
+8. Case-button focus survives identical polling and case reordering; Enter changes
+   the selected case and its semantic current marker only explicitly.
+9. A keyboard Settings round trip restores the older selected case and its own
+   console output without POST requests.
+10. Mode, Command, Collapse and connection-disclosure names are exposed; keyboard
+    focus outlines remain visible in Matrix/New Vegas; reduced motion suppresses
+    the indeterminate progress animation, which resumes with no preference.
+
+The existing VolShell, live/saved console, Settings, report-return and case-header
+browser suites passed. Report-return includes keyboard evidence opening, exact
+focus/scroll restoration, case switches and stale-request rejection. The saved
+console test now expects the actual monitor opener, and checks New Vegas text
+contrast on its deliberately recessed console surface instead of assuming it
+matches the body/header palette. Production theme CSS was unchanged.
+
+Environment limitation: the connector snapshot cannot retrieve the large
+`halloween-night.png` asset. The application suite ran all 245 tests: 244 passed,
+with one missing-asset error in `test_assets_and_installed_contract`. The standard
+package smoke built and installed the Workbench and pinned core wheels and passed
+dependency health, but stopped at that same missing asset before HTTP/protocol
+smoke completion. No assertion was skipped or weakened to turn these runs green.
+The VolShell and live-console browser runs used an external synthetic raster
+fixture for unavailable artwork reads; this does not validate the original
+Halloween illustration. No replacement artwork is part of the change.
+
+Remaining acceptance requires actual macOS VoiceOver and the packaged pywebview
+application: spoken live-region timing/verbosity, native select/disclosure behavior,
+Full Keyboard Access and macOS keyboard-navigation preferences, modal focus return
+with assistive technology, and system Reduce Motion. Chromium accessibility-tree
+and CSS checks do not establish those platform behaviors or full WCAG conformance.
+
 ## Theme selector — 2026-10-07
 
 The static Workbench UI was opened in the in-app browser against a local static
@@ -890,3 +985,25 @@ Commands and disconnecting retain the green connection light; only a confirmed
 terminal state turns it off. Input stays disabled during shutdown, and stale
 poll/stream updates cannot resurrect a confirmed closed session. AI investigation
 guards remain in place. No live interpreter or evidence was used by this check.
+
+## Fallout 3 terminal variants and history order — 2026-10-20
+
+Added Fallout 3 (RobCo Night) and Fallout 3 (Vault 112) using the supplied terminal
+references. Both use CSS chassis, screen recesses, vents and control plates across
+Workbench, Settings and Output/VolShell. The catalog has 33 themes and 14 Fallout
+choices. Original Fallout 3, Fallout 2, New Vegas and classic styles passed isolation
+checks. Screenshot review covered both terminals at desktop and 320px widths;
+the theme fixture also passed 390px, 200% text and contrast checks.
+
+The title dot and main/console text-size control strips were removed. Gesture
+scaling remains functional and Settings retains its text-size controls. The Report
+console disclosure arrow now uses the heading's font size. Conversation and activity
+have independent per-case oldest/newest preferences saved in case metadata; sorting
+never rewrites their recorded entries.
+
+Thirteen focused Python tests passed, including durable theme and history choices
+and save-failure rollback. Nine browser scripts passed: themes, VolShell, case
+header, history order, live console, running reports, report plugins, theme
+persistence, and Settings. These checks use intercepted synthetic requests and no
+private evidence, live interpreter or real investigation. Native installation and
+physical trackpad gestures were not exercised for this batch.

@@ -18,9 +18,14 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
   try{
     const page=await browser.newPage({viewport:{width:1400,height:900}});
     const calls=[],errors=[],requests=[];
+    let zoomPercent=100;
     page.on('pageerror',e=>errors.push(e.message));
     // Loopback is a secure browser context, matching the app's crypto.randomUUID use.
     await page.route('http://localhost/**',route=>{
+      if (new URL(route.request().url()).pathname === '/api/settings/zoom') {
+        if(route.request().method()==='POST')zoomPercent=route.request().postDataJSON().percent;
+        return route.fulfill({json:{schema:'zoom/1',percent:zoomPercent}});
+      }
       const u=new URL(route.request().url());
       if(u.pathname.startsWith('/api/')){
         calls.push(u.pathname);
@@ -142,13 +147,41 @@ const state = {cases:[{id:'synthetic-case',title:'Synthetic XP case',created_at:
     assert.match(await page.locator('#reasons').innerText(),/unresolved symbols/);
     assert.equal(await page.locator('#images .challenge-coin').count(),0);
     assert.equal(await page.locator('#reportView .challenge-coin').count(),1);
+    assert.equal(await control.evaluate(e=>getComputedStyle(e).borderTopLeftRadius),'9px');
+    assert.equal(await control.evaluate(e=>getComputedStyle(e).minHeight),'34px');
     assert.deepEqual(errors,[]);
     assert.ok(!calls.some(x=>/^\/api\/(stop|plugins)$/.test(x)));
     assert.equal(calls.filter(x=>x==='/api/jobs').length,2);
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
     const mobileSettings=await page.locator('.settings-link').boundingBox(),header=await page.locator('body > header').boundingBox();
-    assert.ok(Math.abs(mobileSettings.x+mobileSettings.width-370)<2 && Math.abs(mobileSettings.y-header.y-20)<2,'Settings remains at the upper right on mobile');
+    const connection=await page.locator('#connection').boundingBox();
+    assert.ok(Math.abs(mobileSettings.x+mobileSettings.width-370)<2 && mobileSettings.y>=connection.y+connection.height,
+      'Settings sits below the connection text at the upper right on mobile');
+    const originalFont=Number.parseFloat(await page.locator('#reportView h1').evaluate(e=>getComputedStyle(e).fontSize));
+    assert.equal(await page.locator('.ui-zoom-controls').count(),0,'Text-size control strips are absent from the main UI and console');
+    assert.equal(await page.locator('h1 .dot').count(),0,'Title has no decorative status dot');
+    const savedZoom=page.waitForResponse(response=>response.url().endsWith('/api/settings/zoom') && response.request().method()==='POST');
+    await page.evaluate(()=>window.dispatchEvent(new WheelEvent('wheel',{ctrlKey:true,deltaY:-64,cancelable:true})));await savedZoom;
+    assert.equal(zoomPercent,110);
+    assert.ok(Number.parseFloat(await page.locator('#reportView h1').evaluate(e=>getComputedStyle(e).fontSize))>originalFont);
+    await page.reload();
+    await page.waitForFunction(()=>document.documentElement.style.getPropertyValue('--text-scale')==='1.1');
+    assert.equal(await page.locator('#liveConsole').evaluate(e=>getComputedStyle(e).whiteSpace),'pre-wrap');
+    assert.equal(await page.locator('#volshellOutput').evaluate(e=>getComputedStyle(e).overflowWrap),'anywhere');
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    await page.evaluate(()=>window.dispatchEvent(new WheelEvent('wheel',{ctrlKey:true,deltaY:-200,cancelable:true})));
+    assert.ok(Number(await page.locator('html').evaluate(node=>node.style.getPropertyValue('--text-scale')))>1.1,
+      'Control plus wheel scales text');
+    await page.evaluate(()=>{
+      window.dispatchEvent(new Event('gesturestart',{cancelable:true}));
+      const gesture=new Event('gesturechange',{cancelable:true});
+      Object.defineProperty(gesture,'scale',{value:0.8});
+      window.dispatchEvent(gesture);
+      window.dispatchEvent(new Event('gestureend',{cancelable:true}));
+    });
+    assert.ok(Number(await page.locator('html').evaluate(node=>node.style.getPropertyValue('--text-scale')))<1.5,
+      'Trackpad spread/pinch events scale text');
     console.log('Case header: Theme/Settings and connection/Stop alignment, idle/queued/completed Stop state, hidden legacy readiness sentence, check/progress/Ready/recheck/failure/reconnect, fixed green across themes, mobile layout; two simulated readiness requests, zero real analysis.');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

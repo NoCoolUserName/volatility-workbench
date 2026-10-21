@@ -40,10 +40,13 @@ plugins. Preserve their exact-version licenses/notices alongside the application
 and analyzer inventories. Packaging already copies Python and selected plugin
 notices; verify the final artifact against all installed dependencies before release.
 
-Theme artwork is documented in docs/THEMES.md as locally authored. Franchise names,
-characters and recognizable motifs still require a separate rights assessment;
-local authorship alone is not clearance for third-party characters or trademarks.
-For broad distribution, use cleared artwork or generic original alternatives.
+Theme artwork provenance is documented in docs/THEMES.md. The two Fallout 76
+bezel PNGs were edited from supplied game references; their redistribution rights
+are unverified and they must not be represented as cleared original art. Franchise
+names, characters and recognizable motifs require a separate rights assessment.
+For public distribution, clear the exact images for the intended use or use
+independently created, non-derivative artwork or a build excluding those assets
+and affected theme options. See LICENSING.md for the release checkpoint.
 
 ## Dependency evidence — 2026-10-18
 

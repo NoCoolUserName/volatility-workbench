@@ -1,6 +1,6 @@
-/* Original, offline theme artwork. Palette tokens and the catalog are shared by
- * Workbench and Settings. All packaged illustrations are original local compositions;
- * references name the inspiration, and do not load franchise or remote assets. */
+/* Offline theme artwork. Palette tokens and the catalog are shared by Workbench
+ * and Settings. Detailed Fallout 76 bezel assets derive from user-supplied
+ * references; all theme assets are packaged locally, with no remote requests. */
 (() => {
   'use strict';
   const key = 'volatility-workbench-theme';
@@ -17,10 +17,14 @@
     ['fallout-tactics','Fallout Tactics: Brotherhood of Steel','Fallout','#0c1717 #192929 #1d3030 #568077 #e3efdf #b1c9c1 #a8d4b9 #11291d','A tactical grid with connected squad markers.','terminal'],
     ['fallout-brotherhood','Fallout: Brotherhood of Steel','Fallout','#191213 #2b1e20 #302326 #8c6e67 #f4e6d6 #ceb7aa #e3b394 #321b13','Steel heraldry and a weathered crimson field.','industrial'],
     ['fallout-3','Fallout 3','Fallout','#10170e #1b2818 #20301b #698059 #e7efd5 #bbcbab #b6d695 #203016','A green wasteland and a broken capital skyline.','terminal'],
+    ['fallout-3-robco','Fallout 3 (RobCo Night)','Fallout','#080d09 #101a12 #0b150d #6f8d6c #b7e2a8 #a0b998 #84ed58 #10210b','Blackened steel, a deep curved screen and green Termlink phosphor.','terminal',null],
+    ['fallout-3-vault-112','Fallout 3 (Vault 112)','Fallout','#10120d #1b1e13 #11150d #8b8e68 #f2efcd #c6c5a5 #efedbd #272b17','A worn olive monitor, warm ivory phosphor and a square amber power lamp.','terminal',null],
     ['fallout-new-vegas','Fallout: New Vegas','Fallout','#1b1117 #2d2028 #35242a #966c64 #ffebd2 #d9b9ae #ffc28c #341e13','Weathered cream and rust, neon marquee bulbs and desert dusk.','industrial'],
     ['fallout-4','Fallout 4','Fallout','#0e1b20 #1a2b30 #1d333a #588389 #e4f2ed #b2ceca #a8dfd6 #173130','Coastal blue steel and a suspension bridge.','industrial'],
     ['fallout-shelter','Fallout Shelter','Fallout','#17180f #252b1b #2d3420 #788459 #f2eed2 #c6c9a2 #e8ce88 #30270f','A warm cross-section of a busy underground vault.','rounded'],
     ['fallout-76','Fallout 76','Fallout','#0d1d21 #1a3035 #203b40 #62898a #e9f4e9 #bdd2c6 #e6ce92 #2a2814','Appalachian pines, blue steel and a golden 76.','industrial'],
+    ['fallout-76-camden-park','Fallout 76 (Camden Park)','Fallout','#060806 #111510 #0a0e09 #85907b #eeecc2 #bebf9e #ede7a1 #25260e','Heavily rusted pale enamel, battered blue trim and ivory terminal text.','terminal',null],
+    ['fallout-76-field-terminal','Fallout 76 (Field Terminal)','Fallout','#0d1013 #1a2027 #12171e #808d9b #f2e2b7 #c3beac #e8c877 #292312','Charcoal steel, a worn silver screen rim, amber phosphor and twin control knobs.','terminal',null],
     ['fallout-4-vr','Fallout 4 VR','Fallout','#0d1922 #1b2c39 #203544 #61859a #edf1ec #bdcdd4 #bfdde6 #1b2a33','A steel-blue headset framing twin wasteland horizons.','industrial'],
     ['fallout-pinball','Fallout Pinball','Fallout','#1a1422 #2e233a #352940 #857198 #f8ecdf #cbbdd1 #dfc599 #322414','A vault-inspired playfield, warm bumpers and paired flippers.','rounded'],
     ['fallout-shelter-online','Fallout Shelter Online','Fallout','#0b1927 #162d41 #1b364c #6286a1 #e9f1f2 #b6cbd8 #e8ce8e #282315','Connected vault rooms in bright blue and gold.','rounded'],
@@ -41,7 +45,8 @@
     ['blue','Light blue','Classic','#0b1620 #142431 #0d1d28 #567a91 #e2f0f5 #afc9d6 #9bdcf3 #0d2532','Soft blue waveforms on a cool dark work surface.','plain'],
   ];
   const tokens = ['bg','panel','control-bg','border','text','muted','accent','accent-text'];
-  const themes = new Map(catalog.map(([id,label,group,palette,description,shape]) => [id,{id,label,group,palette,description,shape}]));
+  // A null scene is an entirely CSS-built housing; other themes use local art.
+  const themes = new Map(catalog.map(([id,label,group,palette,description,shape,scene=id]) => [id,{id,label,group,palette,description,shape,scene}]));
   let connected=false, revision=-1, selection=0, pending=null, saves=Promise.resolve();
   function cache(id) { try {localStorage.setItem(key,id);} catch {} }
   function saveMessage(text, retry=false) {
@@ -95,7 +100,7 @@
     root.dataset.theme = theme.id;
     root.dataset.themeShape = theme.shape;
     theme.palette.split(' ').forEach((color,i)=>root.style.setProperty('--'+tokens[i],color));
-    root.style.setProperty('--theme-scene',theme.id==='halloween-noir' ? 'url("/halloween-night.png")' : `url("/theme-${theme.id}.svg")`);
+    root.style.setProperty('--theme-scene',theme.scene===null ? 'none' : theme.id==='halloween-noir' ? 'url("/halloween-night.png")' : `url("/theme-${theme.scene}.svg")`);
     const classic = theme.id==='matrix';
     root.style.setProperty('--privacy-bg', classic ? '#1d2a27' : 'var(--panel)');
     root.style.setProperty('--privacy-text', classic ? '#bed9c9' : 'var(--text)');
