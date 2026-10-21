@@ -2,7 +2,7 @@
 
 Licensing scope is under review: see [LICENSING.md](LICENSING.md). The existing MIT notice does not establish MIT-only licensing for the Volatility integration.
 
-*19,158 lines of code*
+*20,620 lines of code*
 
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
@@ -49,7 +49,7 @@ and [ownership and recovery](docs/SEPARATION.md).
 
 ## Themes
 
-The header and Settings share 31 locally bundled appearance choices. A new browser
+The header and Settings share 33 locally bundled appearance choices. A new browser
 without a saved preference starts with the original Matrix green appearance.
 Existing Soft black and white and Light blue preferences remain supported.
 Theme changes affect presentation; case contents and saved reports are unchanged.
@@ -202,7 +202,7 @@ Run focused checks for changed behavior during development. Before release, run
 wheels, checks dependencies, assets, HTTP startup and both MCP protocol modes, then
 runs the full Workbench suite against installed packages outside the checkout.
 Browser scripts under `scripts/check_*_browser.cjs` use synthetic data and Playwright
-as a validation-only dependency; `check_themes_browser.cjs` checks all 31 skins under
+as a validation-only dependency; `check_themes_browser.cjs` checks all 33 skins under
 the production content-security policy. `check_theme_persistence_browser.cjs` checks
 restart/port changes, shared preferences, migration and save races;
 `check_volshell_browser.cjs` checks the VolShell connection toggle and confirmed-disconnect lifecycle.

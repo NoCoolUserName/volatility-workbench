@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-10-18",
+  "reviewed_at": "2026-10-20",
   "exceptions": [
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -27,7 +27,7 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/package_smoke.py",
       "line": 16,
-      "source_sha256": "d7fffbacb813df0b6f2eceee56ef7dad8721c6fd3c84235f706abdc3218bcb84",
+      "source_sha256": "bc652339595cb9f3c66f9e8ed74b679f7ddd53cb5c4685b890c616e0820acd15",
       "reason": "All callers supply fixed isolated wheel-install/test argv tuples; subprocess default shell=False, and no caller supplies shell=True. Developer test runner, no recovered input."
     },
     {
@@ -48,14 +48,14 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 21,
-      "source_sha256": "ff2b1829130ac761de24f854ad0bf146a0250ec6b1e01356b4508c5d261490ab",
+      "source_sha256": "cb5b3ad8260e6599f10e78f65b1b836b77ec7fa566c1db10ff3714eca9ffa675",
       "reason": "Explicit developer-selected bundle native executable receives the fixed --check-bundled-runtime argument; list argv uses default shell=False."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 76,
-      "source_sha256": "ff2b1829130ac761de24f854ad0bf146a0250ec6b1e01356b4508c5d261490ab",
+      "source_sha256": "cb5b3ad8260e6599f10e78f65b1b836b77ec7fa566c1db10ff3714eca9ffa675",
       "reason": "Explicit bundle Python runs a fixed literal synthetic validation program with -I, separate resources argument, sanitized env and default shell=False. No recovered code is executed."
     },
     {

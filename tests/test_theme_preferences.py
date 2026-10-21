@@ -1,4 +1,4 @@
-"""Harmless appearance fixtures: no evidence, browser, or analyzer is opened."""
+"""Harmless appearance and text-size fixtures; no evidence or analyzer is opened."""
 import asyncio
 from io import BytesIO
 from importlib.resources import files
@@ -64,6 +64,23 @@ class ThemePreferencesTests(unittest.TestCase):
         self.assertEqual({file: file.read_bytes() for file in sentinels}, before)
         separate = SettingsManager(self.app, self.root/'config.json', self.root/'separate-preferences')
         self.assertIsNone(separate.appearance()['theme'])
+
+    def test_text_scale_is_saved_outside_bundle_and_validated(self):
+        self.assertEqual(self.manager.zoom(), {'schema':'zoom/1', 'percent':100})
+        saved = asyncio.run(self.manager.dispatch('/api/settings/zoom', {'percent':145}))
+        self.assertEqual(saved, {'schema':'zoom/1', 'percent':145})
+        resumed = SettingsManager(self.app, self.root/'config.json', self.manager.root)
+        self.assertEqual(resumed.zoom(), saved)
+        self.assertEqual(stat.S_IMODE((self.manager.root/'zoom.json').stat().st_mode), 0o600)
+        for value in (True, 74, 201, 117, '145', None):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                self.manager.save_zoom({'percent':value})
+        self.assertEqual(self.manager.zoom(), saved)
+
+    def test_fallout_3_terminal_choices_survive_reload(self):
+        for theme in ('fallout-3-robco', 'fallout-3-vault-112'):
+            saved = self.save(theme)
+            self.assertEqual(SettingsManager(self.app, self.root/'config.json', self.manager.root).appearance(), saved)
 
     def test_strict_builtin_id_and_request_validation(self):
         invalid = [None, [], 'matrix', {}, {'theme': []}, {'theme': {}}, {'theme': True},
@@ -186,7 +203,7 @@ class ThemePreferencesTests(unittest.TestCase):
         asset = files('volatility_workbench').joinpath('static/themes.js')
         catalog = asset.read_text().split('const catalog = [', 1)[1].split('\n  ];', 1)[0]
         names = re.findall(r"^    \['([^']+)',", catalog, re.MULTILINE)
-        self.assertEqual(len(names), 31)
+        self.assertEqual(len(names), 35)
         self.assertEqual(frozenset(names), THEME_IDS)
 
 

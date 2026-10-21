@@ -55,7 +55,7 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.case['activity'][-1]['kind'], 'report_hidden')
         self.assert_preserved()
 
-    async def test_delete_removes_only_bundle_retains_history_and_is_idempotent(self):
+    async def test_delete_recycles_only_bundle_retains_history_and_is_idempotent(self):
         record, folder = self.report()
         sealed, sealed_folder = self.report('sealed', 'sealed')
         original = (sealed_folder/'report.md').read_bytes()
@@ -63,12 +63,59 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         with patch.object(self.app.backend, 'run_plugin', side_effect=AssertionError('analysis forbidden')):
             await self.app.remove_report(self.case['id'], record['id'], 'delete')
         self.assertFalse(folder.exists())
+        recycled = self.app.recycle_case_dir(self.case)/'reports'/record['id']
+        self.assertTrue(recycled.exists())
         self.assertEqual((sealed_folder/'report.md').read_bytes(), original)
         self.assertTrue(record['hidden']); self.assertTrue(record['deleted_at'])
+        self.assertEqual(len(self.app.state['recycle_bin']), 1)
         self.assertEqual(self.app.state['jobs'][0]['report_id'], record['id'])
         reopened = Workbench(self.config, self.app.root)
         self.assertTrue(reopened.case(self.case['id'])['reports'][0]['deleted_at'])
         self.assertTrue((await self.app.remove_report(self.case['id'], record['id'], 'delete'))['already_deleted'])
+        self.assert_preserved()
+
+    async def test_recycle_restore_and_permanent_purge(self):
+        record, folder = self.report('recoverable', 'sealed')
+        original = {p.relative_to(folder):p.read_bytes() for p in folder.rglob('*') if p.is_file()}
+        await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertEqual(len(self.app.recycle_bin_snapshot()), 1)
+        await self.app.restore_recycled_report(self.case['id'], record['id'])
+        self.assertEqual(original, {p.relative_to(folder):p.read_bytes() for p in folder.rglob('*') if p.is_file()})
+        self.assertNotIn('deleted_at', record)
+        self.assertFalse(record.get('hidden'))
+        self.assertEqual(self.app.recycle_bin_snapshot(), [])
+        await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        await self.app.purge_recycled_report(self.case['id'], record['id'])
+        self.assertFalse(folder.exists())
+        self.assertFalse((self.app.recycle_case_dir(self.case)/'reports'/record['id']).exists())
+        self.assertEqual(self.app.recycle_bin_snapshot(), [])
+        self.assertTrue(record['deleted_at'])
+        self.assert_preserved()
+
+    async def test_recycle_keeps_only_last_seven_bundles(self):
+        records = [self.report(f'revision-{index}', 'sealed')[0] for index in range(8)]
+        for record in records:
+            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        recycled = self.app.recycle_case_dir(self.case)/'reports'
+        self.assertFalse((recycled/records[0]['id']).exists())
+        self.assertEqual([entry['report_id'] for entry in self.app.state['recycle_bin']],
+            [record['id'] for record in records[1:]])
+        self.assertTrue(all((recycled/record['id']).exists() for record in records[1:]))
+        self.assert_preserved()
+
+    async def test_hidden_bundle_purge_is_permanent_and_preserves_visible_successor(self):
+        old, folder = self.report('old-hidden', 'sealed')
+        child, child_folder = self.report('visible-successor', 'sealed')
+        child['previous'] = old['id']
+        original = (child_folder/'report.md').read_bytes()
+        await self.app.remove_report(self.case['id'], old['id'], 'hide')
+        result = await self.app.purge_hidden_reports(self.case['id'])
+        self.assertEqual([item['report_id'] for item in result['deleted']], [old['id']])
+        self.assertEqual(result['failed'], [])
+        self.assertFalse(folder.exists())
+        self.assertEqual((child_folder/'report.md').read_bytes(), original)
+        self.assertTrue(old['deleted_at'])
+        self.assertEqual(self.app.recycle_bin_snapshot(), [])
         self.assert_preserved()
 
     async def test_draft_wrong_case_and_unknown_actions_are_rejected(self):
@@ -85,18 +132,19 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
             await self.app.remove_report(other['id'], record['id'], 'anything')
         self.assertTrue(folder.exists()); self.assert_preserved()
 
-    async def test_active_queued_and_referenced_reports_cannot_be_deleted(self):
+    async def test_active_queued_work_defers_deletion_and_predecessors_can_be_recycled(self):
         record, folder = self.report()
         for status in ('queued','running','stopping'):
             self.app.state['jobs'] = [{'case_id':self.case['id'],'status':status}]
-            with self.assertRaisesRegex(ValueError, 'active and queued'):
-                await self.app.remove_report(self.case['id'], record['id'], 'delete')
+            self.assertTrue((await self.app.remove_report(self.case['id'], record['id'], 'delete'))['queued'])
+            self.assertTrue(folder.exists());self.assertIn('delete_requested_at',record)
         self.app.state['jobs'] = []
         child, _ = self.report('child', 'sealed'); child['previous'] = record['id']
-        with self.assertRaisesRegex(ValueError, 'Another report references'):
-            await self.app.remove_report(self.case['id'], record['id'], 'delete')
-        await self.app.remove_report(self.case['id'], record['id'], 'hide')
-        self.assertTrue(folder.exists()); self.assert_preserved()
+        await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertFalse(folder.exists())
+        self.assertEqual(child['previous'], record['id'])
+        self.assertTrue((self.app.directory(self.case)/'reports'/child['id']).exists())
+        self.assert_preserved()
 
     async def test_paths_symlinks_source_overlap_and_completed_manifest_rejected(self):
         record, folder = self.report()
@@ -137,8 +185,8 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         record, folder = self.report('missing')
         import shutil
         shutil.rmtree(folder)
-        result = await self.app.remove_report(self.case['id'], record['id'], 'delete')
-        self.assertFalse(result['bundle_removed']); self.assertTrue(record['deleted_at'])
+        result=await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertFalse(result['recycled']);self.assertTrue(record['deleted_at'])
         self.assert_preserved()
 
     async def test_io_failure_keeps_card_and_records_error_for_retry(self):
@@ -146,7 +194,7 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         def partial(*args, **kwargs):
             (folder/'report.md').unlink()
             raise OSError('Synthetic permission failure after partial cleanup')
-        with patch('volatility_workbench.app.delete_report_bundle', side_effect=partial):
+        with patch('volatility_workbench.app.recycle_report_bundle', side_effect=partial):
             with self.assertRaises(OSError):
                 await self.app.remove_report(self.case['id'], record['id'], 'delete')
         self.assertNotIn('deleted_at', record); self.assertFalse(record.get('hidden'))
@@ -162,10 +210,11 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         def slow(*args, **kwargs):
             entered.set()
             if not release.wait(5): raise RuntimeError('Fixture cleanup release timed out')
-            return delete_report_bundle(*args, **kwargs)
+            from volatility_workbench.storage import recycle_report_bundle
+            return recycle_report_bundle(*args, **kwargs)
         await self.app.start()
         closing = None
-        with patch('volatility_workbench.app.delete_report_bundle', side_effect=slow):
+        with patch('volatility_workbench.app.recycle_report_bundle', side_effect=slow):
             task = asyncio.create_task(self.app.remove_report(self.case['id'], record['id'], 'delete'))
             try:
                 self.assertTrue(await asyncio.to_thread(entered.wait, 2))
@@ -184,7 +233,7 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
                 else: await self.app.close()
         self.assertFalse(folder.exists()); self.assert_preserved()
 
-    async def test_sealed_hide_persists_and_explicit_delete_removes_only_its_bundle(self):
+    async def test_sealed_hide_persists_and_explicit_delete_recycles_its_bundle(self):
         record, folder = self.report('sealed', 'sealed')
         original = {p.relative_to(folder):p.read_bytes() for p in folder.rglob('*') if p.is_file()}
         await self.app.remove_report(self.case['id'], record['id'], 'hide')
@@ -193,6 +242,7 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
         with patch('subprocess.Popen', side_effect=AssertionError('No analysis or model allowed')):
             await self.app.remove_report(self.case['id'], record['id'], 'delete')
         self.assertFalse(folder.exists())
+        self.assertTrue((self.app.recycle_case_dir(self.case)/'reports'/record['id']).exists())
         self.assertTrue(record['deleted_at']);self.assertEqual(record['status'],'sealed')
         self.assertTrue((await self.app.remove_report(self.case['id'], record['id'], 'delete'))['already_deleted'])
         self.assert_preserved()
@@ -255,18 +305,17 @@ class ReportCleanupTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(parent['human_determination'],value)
         self.assert_preserved()
 
-    async def test_sealed_delete_keeps_active_reference_and_source_guards(self):
+    async def test_sealed_delete_keeps_active_and_source_guards(self):
         record, folder = self.report('sealed', 'sealed')
         self.app.state['jobs']=[{'case_id':self.case['id'],'status':'running'}]
-        with self.assertRaisesRegex(ValueError,'active and queued'):
-            await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertTrue((await self.app.remove_report(self.case['id'], record['id'], 'delete'))['queued'])
         self.app.state['jobs']=[]
         child,_=self.report('child','sealed');child['previous']=record['id']
-        with self.assertRaisesRegex(ValueError,'Another report references'):
-            await self.app.remove_report(self.case['id'], record['id'], 'delete')
         with self.assertRaisesRegex(ValueError,'source evidence'):
             delete_report_bundle(self.app.directory(self.case),record['id'],[folder/'artifacts/copy.txt'],allow_completed=True)
-        self.assertTrue(folder.exists());self.assert_preserved()
+        await self.app.remove_report(self.case['id'], record['id'], 'delete')
+        self.assertTrue((self.app.directory(self.case)/'reports'/child['id']).exists())
+        self.assertFalse(folder.exists());self.assert_preserved()
 
     async def test_actual_http_requires_origin_and_auth_then_hides_and_deletes(self):
         record, folder = self.report()

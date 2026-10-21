@@ -22,7 +22,11 @@ are made merely to display or calculate these counters.
 
 Explicit incomplete/sealed-report hide/delete actions use the same authenticated,
 Origin-checked HTTP transport. Hidden/deleted timestamps and history remain in
-the existing case state. Only a registered incomplete or sealed revision can be targeted;
+the existing case state. Delete atomically moves a checked bundle into the private
+Recycle Bin; Settings can restore it or permanently remove it. The bin retains the
+last seven deleted bundles and evicts the oldest on the next deletion. Explicit
+hidden-report cleanup permanently removes hidden bundles without placing them in
+the bin. Only a registered incomplete or sealed revision can be targeted;
 file cleanup is confined to its bundle with symlink, source-overlap and completed
 manifest checks. A completed manifest is removable only for an explicitly selected
 sealed case record; incomplete metadata cannot authorize deleting a completed bundle.

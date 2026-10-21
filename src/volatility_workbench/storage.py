@@ -62,8 +62,8 @@ def read_chunk(root, path, offset=0, limit=32768):
             'next_offset': offset + len(data), 'truncated': offset + len(data) < size}
 
 
-def delete_report_bundle(case_dir, report_id, evidence_paths, *, allow_completed=False):
-    """Delete one registered revision's private copies, never shared analysis."""
+def checked_report_bundle(case_dir, report_id, evidence_paths, *, allow_completed=False):
+    """Inspect one revision before moving or removing any of its files."""
     if (not isinstance(report_id, str) or not report_id or report_id in ('.', '..')
             or Path(report_id).name != report_id or '\\' in report_id
             or any(ord(c) < 32 for c in report_id)):
@@ -76,7 +76,7 @@ def delete_report_bundle(case_dir, report_id, evidence_paths, *, allow_completed
     if any(Path(p).expanduser().resolve().is_relative_to(target.resolve()) for p in evidence_paths):
         raise ValueError('Report directory overlaps registered source evidence')
     if not target.exists():
-        return False  # A retry after interrupted cleanup may find no bundle.
+        return None  # A retry after interrupted cleanup may find no bundle.
     if not target.is_dir():
         raise ValueError('Report revision must be a directory')
     # Refuse any redirect/special entry before removing even one file. rmtree's
@@ -106,7 +106,35 @@ def delete_report_bundle(case_dir, report_id, evidence_paths, *, allow_completed
                 raise ValueError('Report manifest belongs to another case')
             if not allow_completed and (data.get('completed_at') or data.get('status') in ('complete', 'complete_with_limitations')):
                 raise ValueError('Completed report bundles cannot be deleted')
+    return target
+
+
+def delete_report_bundle(case_dir, report_id, evidence_paths, *, allow_completed=False):
+    """Delete one registered revision's private copies, never shared analysis."""
+    target = checked_report_bundle(case_dir, report_id, evidence_paths, allow_completed=allow_completed)
+    if target is None:
+        return False
     shutil.rmtree(target)
+    return True
+
+
+def recycle_report_bundle(case_dir, report_id, recycle_case_dir, evidence_paths, *, allow_completed=False):
+    """Atomically move a checked bundle into private recoverable storage."""
+    target = checked_report_bundle(case_dir, report_id, evidence_paths, allow_completed=allow_completed)
+    destination_parent = Path(recycle_case_dir) / 'reports'
+    destination = destination_parent / report_id
+    check_components(destination)
+    if not resolved_path(destination).is_relative_to(resolved_path(destination_parent)):
+        raise ValueError('Recycle destination escapes its case')
+    if destination.exists():
+        if target is None:
+            checked_report_bundle(recycle_case_dir, report_id, evidence_paths, allow_completed=allow_completed)
+            return True  # A prior move completed before its state update.
+        raise ValueError('A recycled bundle already exists for this revision')
+    if target is None:
+        return False  # Nothing remains on disk; an explicit Delete still removes the card.
+    private_dir(destination_parent)
+    os.replace(target, destination)
     return True
 
 

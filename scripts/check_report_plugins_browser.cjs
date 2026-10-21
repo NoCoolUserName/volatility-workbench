@@ -27,6 +27,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   const calls=[],errors=[],policies=[];let delayedRelease=null,failCurrent=false,failAcknowledgment=false,holdBulk=false,bulkRelease=null;
   page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/Content Security Policy|violates the following/.test(m.text()))policies.push(m.text());});
   await page.route('**/*',async route=>{
+    if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
    const u=new URL(route.request().url());assert.equal(u.origin,'http://localhost');calls.push(u.pathname+u.search);
    if(u.pathname==='/api/reports/acknowledge-all-errors'){
     assert.equal(route.request().method(),'POST');
@@ -436,6 +437,6 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
   assert.equal(await page.locator('#report').getAttribute('class'),'primary');
   assert.equal(await page.locator('#update').isDisabled(),true);
   assert.deepEqual(errors,[]);assert.deepEqual(policies,[]);assert.equal(await page.evaluate(()=>window.injected),undefined);
-  console.log('Report plugins browser: persistent error acknowledgments/colors/save failures, counts/scope, errors/unused, failed-request retry drafts/exact metadata/dedup/disabled state, descriptions/timing/details, OS-matched bulk prompts, primary action order, completion refresh, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, 31 themes passed; only synthetic local reads and acknowledgment saves.');
+  console.log('Report plugins browser: persistent error acknowledgments/colors/save failures, counts/scope, errors/unused, failed-request retry drafts/exact metadata/dedup/disabled state, descriptions/timing/details, OS-matched bulk prompts, primary action order, completion refresh, add-to-prompt without submission, case drafts, paging, races, local manifest, keyboard/mobile, all themes passed; only synthetic local reads and acknowledgment saves.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

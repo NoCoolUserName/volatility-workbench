@@ -1,5 +1,35 @@
 # Workbench validation — experimental first version
 
+## Fallout 76 terminal variants — 2026-10-20
+
+Added Camden Park and Field Terminal to the shared frontend catalog and durable
+preference allowlist. Existing catalog-count assertions were updated for 35 themes
+and 16 Fallout choices. The initial CSS-only housings were rejected by the user;
+their preview files and native build were deleted and never installed.
+
+Replacement transparent frames were edited from the user's references using the
+built-in image editor, preserving detailed materials and control placement. Their
+alpha channels have empty screen openings. Desktop main-UI and console previews
+were rendered in Chrome with synthetic content; glass fill, text insets, control
+placement and native frame proportions received visual review. Live console text
+is HTML, and the decorative overlay does not intercept input. The new PNGs have
+explicit packaged HTTP routes. No local automated tests were run for this theme
+batch. These previews do not establish mobile or native WebView behavior. Native
+build and installation status are recorded separately; no real investigation ran.
+
+## Report request queue and Coverage — 2026-10-20
+
+Focused synthetic checks passed: 22 Python tests covering FIFO requests,
+pending duplicates and request-ID retries, immutable Rerun prompts, continuation
+after failures, successive updates selecting the latest successful report,
+deferred deletion between jobs, and existing report cleanup safeguards.
+Browser checks passed for request submission/estimates, Coverage, running reports,
+report cleanup, and report return navigation. They covered preserved unsent text,
+double activation, unknown/overrun estimates, all saved scope and attempt pages,
+failed reads and stale case responses, and the shared back-to-top button.
+The final deletion-error wording received source review after those checks.
+These checks used synthetic state and simulated services, without real analysis.
+Native installation of this batch has not yet taken place.
 ## Focused keyboard and accessibility review — 19 October 2026
 
 Reviewed upstream `7da02db009a5a79e11ce3d16e6c0f56e0b4a7b7c` with
@@ -955,3 +985,25 @@ Commands and disconnecting retain the green connection light; only a confirmed
 terminal state turns it off. Input stays disabled during shutdown, and stale
 poll/stream updates cannot resurrect a confirmed closed session. AI investigation
 guards remain in place. No live interpreter or evidence was used by this check.
+
+## Fallout 3 terminal variants and history order — 2026-10-20
+
+Added Fallout 3 (RobCo Night) and Fallout 3 (Vault 112) using the supplied terminal
+references. Both use CSS chassis, screen recesses, vents and control plates across
+Workbench, Settings and Output/VolShell. The catalog has 33 themes and 14 Fallout
+choices. Original Fallout 3, Fallout 2, New Vegas and classic styles passed isolation
+checks. Screenshot review covered both terminals at desktop and 320px widths;
+the theme fixture also passed 390px, 200% text and contrast checks.
+
+The title dot and main/console text-size control strips were removed. Gesture
+scaling remains functional and Settings retains its text-size controls. The Report
+console disclosure arrow now uses the heading's font size. Conversation and activity
+have independent per-case oldest/newest preferences saved in case metadata; sorting
+never rewrites their recorded entries.
+
+Thirteen focused Python tests passed, including durable theme and history choices
+and save-failure rollback. Nine browser scripts passed: themes, VolShell, case
+header, history order, live console, running reports, report plugins, theme
+persistence, and Settings. These checks use intercepted synthetic requests and no
+private evidence, live interpreter or real investigation. Native installation and
+physical trackpad gestures were not exercised for this batch.

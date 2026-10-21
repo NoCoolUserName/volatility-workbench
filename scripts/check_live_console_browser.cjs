@@ -24,6 +24,7 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   let retained=null,rejectSaved=false;
   page.on('pageerror',error=>errors.push(error.message));
   await page.route('**/*',route=>{
+    if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
    const url=new URL(route.request().url());calls.push(url.pathname);
    assert.equal(url.origin,'http://localhost','Synthetic console check makes no external requests');
    assert.equal(route.request().method(),'GET');

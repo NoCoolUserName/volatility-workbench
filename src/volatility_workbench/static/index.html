@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/style.css" />
     <link rel="stylesheet" href="/themes.css" />
     <script src="/themes.js"></script>
+    <script src="/zoom.js"></script>
     <script src="/volshell.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
@@ -15,7 +16,7 @@
     <header>
       <div>
         <span class="eyebrow">LOCAL MEMORY FORENSICS · EXPERIMENTAL</span>
-        <h1>Volatility Workbench<span class="dot">●</span></h1>
+        <h1>Volatility Workbench</h1>
         <div class="header-tools">
           <button id="openPlugins" class="plugin-nav" aria-controls="plugins" aria-pressed="false">Plugins</button>
           <div class="theme-menu">
@@ -27,8 +28,9 @@
         </div>
       </div>
       <div class="header-controls">
-        <a class="settings-link" href="/settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M10.2 2h3.6l.5 2.3 1.4.6 2-1.3 2.5 2.5-1.3 2 .6 1.4 2.3.5v3.6l-2.3.5-.6 1.4 1.3 2-2.5 2.5-2-1.3-1.4.6-.5 2.3h-3.6l-.5-2.3-1.4-.6-2 1.3-2.5-2.5 1.3-2-.6-1.4-2.3-.5v-3.6l2.3-.5.6-1.4-1.3-2 2.5-2.5 2 1.3 1.4-.6.5-2.3z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a>
         <span id="connection">Connecting…</span>
+        <a class="settings-link" href="/settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M10.2 2h3.6l.5 2.3 1.4.6 2-1.3 2.5 2.5-1.3 2 .6 1.4 2.3.5v3.6l-2.3.5-.6 1.4 1.3 2-2.5 2.5-2-1.3-1.4.6-.5 2.3h-3.6l-.5-2.3-1.4-.6-2 1.3-2.5-2.5 1.3-2-.6-1.4-2.3-.5v-3.6l2.3-.5.6-1.4-1.3-2 2.5-2.5 2 1.3 1.4-.6.5-2.3z"/><circle cx="12" cy="12" r="3"/></svg>Settings</a>
+        <span data-ui-zoom-status class="subtle" role="status" hidden></span>
       </div>
     </header>
     <div class="skin-scene" aria-hidden="true"></div>
@@ -74,6 +76,7 @@
           <div id="currentWorkHeading" class="work-heading"><h2><button id="toggleReportConsole" type="button" aria-expanded="true" aria-controls="liveConsoleDock" title="Collapse report console"><span class="report-console-arrow" aria-hidden="true">▾</span><span id="workTitle">Current work</span></button></h2>
             <button id="stop" class="danger" disabled>Stop all work</button></div>
           <div id="activeReportProgress" hidden></div>
+          <p id="queueSummary" class="subtle" hidden></p>
           <ol id="queue" aria-live="polite"></ol>
           <div id="liveConsoleDock"><section id="liveConsoleSection" class="live-console-section" hidden aria-labelledby="liveConsoleTitle">
             <div class="live-console-heading"><div class="live-console-title"><h3 id="liveConsoleTitle">Live investigation console</h3><span id="consoleOperation" class="console-operation" hidden></span></div>
@@ -130,9 +133,14 @@
               rows="2"
               placeholder="Optional investigation focus"
               aria-label="Investigation focus"
+              aria-describedby="focusHistoryHelp"
             ></textarea><button id="report" class="primary">Generate report</button
             ><button id="update">Update report</button>
           </div>
+          <p class="subtle" id="focusHistoryHelp">
+            Prompt history: Up recalls the last 10 prompts for this case; Down moves forward; Escape restores your draft. In multiline prompts, start on the first line.
+          </p>
+          <p id="reportSubmissionStatus" class="subtle" role="status"></p>
           <p class="subtle">
             Generate and Update create a new report version. Asking a question
             preserves current reports.
@@ -156,9 +164,9 @@
                 <p>No report yet. Run readiness, then Generate report.</p>
               </article>
             </div>
-            <button id="backToTop" type="button" aria-label="Back to top" title="Back to top" hidden>▲</button>
           </section>
           <section id="conversation" class="tab" hidden>
+            <label class="history-order">Sort conversation<select id="conversationOrder" data-history-order="conversation"><option value="oldest">Oldest first</option><option value="newest">Newest first</option></select></label>
             <div id="messages"></div>
             <form id="questionForm">
               <label
@@ -181,8 +189,10 @@
             <button id="more" hidden>Read next chunk</button>
           </section>
           <section id="activity" class="tab" hidden>
+            <label class="history-order">Sort activity<select id="activityOrder" data-history-order="activity"><option value="oldest">Oldest first</option><option value="newest">Newest first</option></select></label>
             <div id="activityList"></div>
           </section>
+          <button id="backToTop" type="button" aria-label="Back to top" title="Back to top" hidden>▲</button>
         </section>
       </main>
     </div>

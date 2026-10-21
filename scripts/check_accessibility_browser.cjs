@@ -13,6 +13,7 @@ async function fixture(browser){
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',async route=>{
   const request=route.request(),url=new URL(request.url());assert.equal(url.origin,'http://localhost');
+  if(request.method()==='GET'&&url.pathname==='/api/settings/zoom')return route.fulfill({json:{schema:'zoom/1',percent:100}});
   if(request.method()==='POST'){
    const body=request.postDataJSON();posts.push({path:url.pathname,body});
    if(url.pathname==='/api/volshell/input'){assert.equal(body.case_id,'case-a');assert.equal(body.session_id,'shell-a');return route.fulfill({json:state.volshell});}

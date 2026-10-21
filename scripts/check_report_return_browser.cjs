@@ -21,6 +21,7 @@ const narrative='# Synthetic report\n## Technical findings\n'+
     let delayCitation=false,releaseCitation;
     page.on('pageerror',e=>errors.push(e.message));
     await page.route('http://localhost/**',async route=>{
+      if (new URL(route.request().url()).pathname === '/api/settings/zoom') return route.fulfill({json:{schema:'zoom/1',percent:100}});
       const u=new URL(route.request().url());
       assert.equal(route.request().method(),'GET','Navigation must never submit work');
       calls.push(u.pathname);
