@@ -31,6 +31,23 @@ https://github.com/volatilityfoundation/volatility3/blob/v2.28.2/LICENSE.txt
 4. Record the decision and exact covered paths, then align LICENSE, package metadata,
    README, notices and release artifacts. Ship required license texts and source.
 
+## Screenshot-derived Fallout 76 bezel images
+
+The Camden Park and Field Terminal PNGs in `src/volatility_workbench/static/`
+were edited from user-supplied Fallout 76 references. Their source ownership and
+permission for edited artwork in an independently distributed application have not
+been established. Removing screen text and making the opening transparent does not
+establish independent authorship of the retained housing. The project's MIT notice
+and the Volatility licensing review do not grant rights in this artwork.
+
+Private local use can retain the current appearance. For a public source archive,
+wheel, app or installer, first document the source, ownership and written permission
+or applicable license for the intended modification and distribution, including
+attribution/notice terms. If that cannot be established, use independently created,
+non-derivative artwork or exclude these files and affected theme options from that
+public build. Verify the actual artifact because `static/*.png` is included in
+package data. Documentation alone does not enforce this release checkpoint.
+
 ## Optional plugins and historical references
 
 The community inventory identifies sources without an explicit reuse license and
