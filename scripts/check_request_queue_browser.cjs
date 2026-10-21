@@ -42,6 +42,7 @@ const state={cases:[{id:'case',title:'Synthetic queue case',created_at:'2026-10-
   assert.equal(posts[0].text,'Original failed prompt');assert.equal(posts[0].retry_of,'failed');
   assert.equal(await page.locator('#focus').inputValue(),'New follow-up');
   await page.locator('#update').click();await page.waitForFunction(()=>document.querySelector('#focus').value==='');
+  await page.waitForFunction(()=>!document.querySelector('#update').disabled);
   assert.deepEqual(state.jobs.filter(j=>j.status==='queued').map(j=>j.text),['Original failed prompt','New follow-up']);
   assert.match(await page.locator('#queueSummary').innerText(),/2 request\(s\).*4 min/);
   assert.match(await page.locator('#queue li').nth(1).innerText(),/#2.*queued.*2 min/);
