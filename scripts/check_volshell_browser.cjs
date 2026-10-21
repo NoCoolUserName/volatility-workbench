@@ -595,6 +595,6 @@ async function checkBezelConnection(browser){
   assert.equal(await zoom.isVisible(),false,'Late events from a closed source cannot reopen the CRT');
   assert.equal(await page.evaluate(()=>window.injected),undefined);assert.deepEqual(errors,[]);
   if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)fs.writeFileSync(path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-contrast.json'),JSON.stringify(themeStyles,null,2)+'\n');
-  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;33 distinct bezels, both Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
+  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;35 distinct bezels, both Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
