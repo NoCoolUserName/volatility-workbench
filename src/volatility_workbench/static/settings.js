@@ -1,5 +1,9 @@
 'use strict';
 const byId=id=>document.getElementById(id);
+// Preserve navigation context only; opening Settings never selects a provider
+// target or starts/rebinds a case conversation.
+const returnCase=new URLSearchParams(location.search).get('case');
+if(returnCase)document.querySelector('.settings > header a').href='/?case='+encodeURIComponent(returnCase);
 let initialized=false;
 let providerState={},formProvider='codex';
 const catalogs=new Map(),providerDrafts=new Map();

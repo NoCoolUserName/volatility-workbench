@@ -37,3 +37,28 @@ jobs:
       - run: node --check src/volatility_workbench/static/settings.js
       - run: node --check src/volatility_workbench/static/themes.js
       - run: python scripts/package_smoke.py
+
+  browser:
+    name: Synthetic browser regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - name: Install pinned browser test runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/workbench-browser" --no-save --ignore-scripts playwright@1.62.1
+          "$RUNNER_TEMP/workbench-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Run synthetic browser regressions with original packaged assets
+        run: |
+          export NODE_PATH="$RUNNER_TEMP/workbench-browser/node_modules"
+          status=0
+          for script in scripts/check_*_browser.cjs; do
+            echo "Running $script"
+            timeout 120s node "$script" || status=1
+          done
+          exit "$status"

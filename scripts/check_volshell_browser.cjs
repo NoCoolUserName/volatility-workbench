@@ -403,7 +403,8 @@ async function checkBezelConnection(browser){
    if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)await page.locator('#consoleVolshellMode').screenshot({path:path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-'+theme.id+'.png')});
    if(['matrix','fallout-new-vegas','fallout-3-robco','fallout-3-vault-112'].includes(theme.id))await screenshot('volshell-'+theme.id+'-desktop');
   }
-  assert.equal(new Set(themeStyles.map(theme=>theme.signature)).size,33,'All 33 themes have a distinct VolShell bezel');
+  assert.equal(themeStyles.length,35,'The current catalog contains all 35 themes');
+  assert.equal(new Set(themeStyles.map(theme=>theme.signature)).size,themeStyles.length,'Every catalog theme has a distinct VolShell bezel');
   for(const id of ['fallout-3-robco','fallout-3-vault-112']){
    await page.evaluate(id=>window.WorkbenchThemes.apply(id),id);
    assert.equal(await page.locator('.crt-brand').evaluate(node=>getComputedStyle(node,'::before').content),id==='fallout-3-robco'?'"ROBCO / TERMLINK"':'"VAULT 112"');
@@ -594,6 +595,6 @@ async function checkBezelConnection(browser){
   assert.equal(await zoom.isVisible(),false,'Late events from a closed source cannot reopen the CRT');
   assert.equal(await page.evaluate(()=>window.injected),undefined);assert.deepEqual(errors,[]);
   if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)fs.writeFileSync(path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-contrast.json'),JSON.stringify(themeStyles,null,2)+'\n');
-  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;33 distinct bezels, both Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
+  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;35 distinct bezels, both Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
