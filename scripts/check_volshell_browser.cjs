@@ -403,7 +403,8 @@ async function checkBezelConnection(browser){
    if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)await page.locator('#consoleVolshellMode').screenshot({path:path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-'+theme.id+'.png')});
    if(['matrix','fallout-new-vegas','fallout-3-robco','fallout-3-vault-112'].includes(theme.id))await screenshot('volshell-'+theme.id+'-desktop');
   }
-  assert.equal(new Set(themeStyles.map(theme=>theme.signature)).size,33,'All 33 themes have a distinct VolShell bezel');
+  assert.equal(themeStyles.length,35,'The current catalog contains all 35 themes');
+  assert.equal(new Set(themeStyles.map(theme=>theme.signature)).size,themeStyles.length,'Every catalog theme has a distinct VolShell bezel');
   for(const id of ['fallout-3-robco','fallout-3-vault-112']){
    await page.evaluate(id=>window.WorkbenchThemes.apply(id),id);
    assert.equal(await page.locator('.crt-brand').evaluate(node=>getComputedStyle(node,'::before').content),id==='fallout-3-robco'?'"ROBCO / TERMLINK"':'"VAULT 112"');
