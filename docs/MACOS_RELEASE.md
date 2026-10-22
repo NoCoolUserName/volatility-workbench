@@ -111,6 +111,16 @@ notarization; no flag in a JSON file substitutes for ticket validation.
 
 ## Final release checks and scope
 
+Publish the matching Workbench and pinned MCP source under VSL when distributing
+the application. Include the source links/revisions from `notices/SOURCE_CODE.json`
+in the release notes and verify public access without a GitHub login. If the
+development repository is private, publish a reviewed source archive or a public
+source repository for that exact revision. The bundle carries both project license
+texts and core notices; the audit checks their presence and matching revisions,
+but does not certify public source availability or third-party artwork rights.
+The project license grants are in [LICENSING.md](../LICENSING.md); no advance
+Foundation approval is required for distribution under the existing VSL.
+
 Before publishing a GitHub release, download the final archive on another Mac,
 extract it normally and verify Gatekeeper launch with quarantine retained. Test
 first-run setup, native window, plugin catalog, harmless analysis, and idle quit/

@@ -1,7 +1,7 @@
 # Third-party notices
 
-The existing MIT license applies to original project material, subject to the
-unresolved integration scope described in [LICENSING.md](LICENSING.md). It does not
+Original project software is offered under VSL 1.0 and MIT as described in
+[LICENSING.md](LICENSING.md). The integrated application follows VSL. These grants do not
 relicense separately installed dependencies, upstream Volatility material,
 symbols, acquired evidence, reference publications, or other third-party works.
 
@@ -54,4 +54,4 @@ and affected theme options. See LICENSING.md for the release checkpoint.
 
 Unresolved upstream notice/conflict items: `proxy_tools@0.1.0` (license-conflict). These entries are not represented as cleared. Obtain matching upstream terms or exclude/replace the affected dependency before redistribution that requires them.
 
-`proxy_tools==0.1.0` declares MIT in PyPI metadata but identifies BSD/Werkzeug in its source. The source attribution is preserved; the missing referenced BSD license and conflicting metadata remain an upstream clarification item. The macOS builder now copies the inventory and collected notices alongside the existing Python and plugin notices. This does not resolve the VSL integration review.
+`proxy_tools==0.1.0` declares MIT in PyPI metadata but identifies BSD/Werkzeug in its source. The source attribution is preserved; the missing referenced BSD license and conflicting metadata remain a separate upstream clarification item. The macOS builder copies the inventory and collected notices alongside the Python and plugin notices. The project's VSL/MIT licensing arrangement is documented in LICENSING.md.

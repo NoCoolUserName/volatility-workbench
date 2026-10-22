@@ -80,7 +80,24 @@ populated from the analyzer wheelhouse; an existing venv is never moved. Plugin
 updates are explicit, staged and idle-only. The configured external analyzer may
 also be reused unchanged.
 
-## Plugin distribution and provenance
+## Project licenses and matching source
+
+The original Workbench and MCP source is offered under VSL 1.0 and MIT. The
+integrated application follows VSL's source and notice requirements; no advance
+Foundation approval is required when using those terms. Both license texts and
+the component map ship in wheel metadata. Native builds also retain Workbench
+notices under `notices/dependencies`, core notices under `notices/core`, and
+`notices/SOURCE_CODE.json` with the exact Workbench/core revisions and upstream
+Volatility source location. The release audit checks these files and revisions.
+
+Before public distribution, publish the matching project source under VSL at a
+freely accessible location and verify access without signing in. A private source
+URL in the notice does not satisfy this requirement; publish a reviewed matching
+source archive or make the intended source repository public at release time.
+See [LICENSING.md](../LICENSING.md) for the license map. Third-party art and plugins
+retain their own rights and notices.
+
+## Bundled plugin scope
 
 The base public artifact includes official Volatility plugins, core's independent
 XP compatibility addon, the pinned MIT pypykatz wrapper/dependencies, and MIT EVTX

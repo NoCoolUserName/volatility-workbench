@@ -1,5 +1,9 @@
 # Contributing
 
+Original project contributions are accepted under both VSL 1.0 and MIT, as mapped
+in [LICENSING.md](LICENSING.md). Preserve upstream notices on third-party material;
+do not submit material you cannot license on the applicable terms.
+
 Follow AGENTS.md and the ownership map in docs/SEPARATION.md. The core public API
 is documented [upstream](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/PUBLIC_API.md).
 Do not copy core implementation into this repository. Original source and MIT

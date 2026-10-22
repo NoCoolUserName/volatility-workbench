@@ -162,9 +162,20 @@ def audit(app):
             if source['repository'] not in manifest['community']['bundled_sources'] and (plugins / item['target']).exists():
                 failures.append('Excluded community plugin is present: ' + item['target'])
     for required in ('notices/workbench-LICENSE', 'notices/workbench-THIRD_PARTY_NOTICES.md', 'notices/LICENSING.md',
+                     'notices/dependencies/MIT.txt', 'notices/dependencies/LicenseRef-Volatility-Software-License-1.0.txt',
+                     'notices/core/LICENSE', 'notices/core/LICENSING.md', 'notices/core/THIRD_PARTY_NOTICES.md',
+                     'notices/core/licenses/MIT.txt', 'notices/core/licenses/LicenseRef-Volatility-Software-License-1.0.txt',
+                     'notices/SOURCE_CODE.json',
                      'notices/python-standalone/licenses', 'notices/pypykatz-LICENSE'):
         if not (resources / required).exists():
             failures.append('Missing notice: ' + required)
+    source_path = resources / 'notices/SOURCE_CODE.json'
+    if source_path.is_file():
+        sources = json.loads(source_path.read_text())
+        if (sources.get('workbench', {}).get('revision') != info.get('workbench_commit')
+                or sources.get('core', {}).get('revision') != info.get('core_commit')
+                or sources.get('public_source_required_for_distribution') is not True):
+            failures.append('Source notice differs from build revisions or omits public-source requirement')
     inventory = []
     for path in sorted(app.rglob('*')):
         relative = str(path.relative_to(app))
