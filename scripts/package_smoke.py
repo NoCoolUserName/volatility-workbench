@@ -26,7 +26,8 @@ def main():
         run(sys.executable, '-m', 'pip', 'wheel', '--no-deps', '--wheel-dir', str(temp), str(source))
         wheel = next(temp.glob('volatility_workbench-*.whl'))
         with zipfile.ZipFile(wheel) as archive:
-            for relative in ('LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md', 'licenses/DEPENDENCY_LICENSES.txt'):
+            for relative in ('LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md', 'licenses/DEPENDENCY_LICENSES.txt',
+                             'licenses/MIT.txt', 'licenses/LicenseRef-Volatility-Software-License-1.0.txt'):
                 matches = [name for name in archive.namelist() if name.endswith('.dist-info/licenses/' + relative)]
                 assert len(matches) == 1, f'Missing wheel notice: {relative}'
                 assert archive.read(matches[0]) == (ROOT/relative).read_bytes()
@@ -48,6 +49,11 @@ assert require_core().API_VERSION == 1
 assert 'site-packages' in str(files('volatility_mcp'))
 assert 'site-packages' in str(files('volatility_workbench'))
 assert distribution('volatility-workbench').read_text('licenses/LICENSING.md')
+for name in ('volatility-mcp','volatility-workbench'):
+    package=distribution(name)
+    assert package.metadata['License-Expression']=='MIT OR LicenseRef-Volatility-Software-License-1.0'
+    assert 'Volatility Software License' in package.read_text('licenses/licenses/LicenseRef-Volatility-Software-License-1.0.txt')
+    assert 'MIT License' in package.read_text('licenses/licenses/MIT.txt')
 assert 'Executive summary' in report_spec()
 for p in ['static/app.js','static/volshell.js','static/zoom.js','static/index.html','static/style.css','static/themes.js','static/themes.css','static/theme-halloween.svg','static/halloween-night.png','static/icon.png','static/settings.html','static/settings.js','resources/symbols.json','templates/report.md']:
     assert files('volatility_workbench').joinpath(p).read_bytes()

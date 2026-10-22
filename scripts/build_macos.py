@@ -75,6 +75,25 @@ def write_json(path, data):
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + '\n')
 
 
+def source_notice(notices, revision, core_pin, volatility_version):
+    """Identify matching source; source publication remains a release step."""
+    write_json(notices/'SOURCE_CODE.json', {
+        'schema_version': 1,
+        'license': 'Volatility Software License 1.0',
+        'additional_original_code_license': 'MIT',
+        'public_source_required_for_distribution': True,
+        'workbench': {'revision': revision, 'url':
+            'https://github.com/NoCoolUserName/volatility-workbench/tree/' + revision},
+        'core': {'revision': core_pin['commit'], 'url':
+            f"https://github.com/{core_pin['repository']}/tree/{core_pin['commit']}"},
+        'volatility': {'version': volatility_version, 'url':
+            'https://github.com/volatilityfoundation/volatility3/tree/v' + volatility_version},
+        'publication_note': 'Publish matching VSL source before distribution. '
+            'These locations identify source; they do not certify public access. '
+            'If a repository is private, supply a freely accessible matching source archive.',
+    })
+
+
 def verify_core_sources(root, pin):
     expected = f"volatility-mcp @ git+https://github.com/{pin['repository']}.git@{pin['commit']}"
     dependencies = tomllib.loads((root/'pyproject.toml').read_text())['project']['dependencies']
@@ -150,13 +169,23 @@ def main():
         for name in ('LICENSE', 'THIRD_PARTY_NOTICES.md', 'LICENSING.md'):
             shutil.copy2(ROOT/name, notices/(name if name == 'LICENSING.md' else 'workbench-' + name))
         shutil.copytree(ROOT/'licenses', notices/'dependencies')
+        source_notice(notices, revision, pin, manifest['volatility']['version'])
         # Only explicitly redistributable sources from the core inventory are included.
         install = r'''
 import json,sys,hashlib,urllib.request
 from pathlib import Path
+from importlib.metadata import distribution
 from volatility_mcp.addons import profile,prepare,fetch
 from volatility_mcp.cli import run
 resources=Path(sys.argv[1]); manifest=json.loads((resources/'distribution.json').read_text())
+core_dist=distribution('volatility-mcp')
+core_notices=resources/'notices/core'; core_notices.mkdir()
+for name in ('LICENSE','LICENSING.md','THIRD_PARTY_NOTICES.md',
+             'licenses/MIT.txt','licenses/LicenseRef-Volatility-Software-License-1.0.txt'):
+ text=core_dist.read_text('licenses/'+name)
+ if not text: raise ValueError('Pinned core is missing license notice: '+name)
+ target=core_notices/name; target.parent.mkdir(parents=True,exist_ok=True)
+ target.write_text(text)
 python=resources/'analyzer/bin/python3'
 root=Path(run([str(python),'-I','-c','import volatility3,pathlib; print(pathlib.Path(volatility3.__file__).parent)']).stdout.strip())
 receipts=[]

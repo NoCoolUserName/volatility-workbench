@@ -12,6 +12,18 @@ spec.loader.exec_module(builder)
 
 
 class LicensePackagingTests(unittest.TestCase):
+    def test_source_notice_identifies_exact_revisions_without_claiming_public_access(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)
+            pin = {'repository': 'NoCoolUserName/volatility-mcp', 'commit': 'b'*40}
+            builder.source_notice(target, 'a'*40, pin, '2.28.2')
+            import json
+            notice = json.loads((target/'SOURCE_CODE.json').read_text())
+            self.assertEqual(notice['workbench']['revision'], 'a'*40)
+            self.assertTrue(notice['core']['url'].endswith('/'+'b'*40))
+            self.assertTrue(notice['public_source_required_for_distribution'])
+            self.assertIn('do not certify public access', notice['publication_note'])
+
     def test_build_snapshot_retains_license_texts_and_inventory(self):
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp)

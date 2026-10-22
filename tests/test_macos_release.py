@@ -44,7 +44,7 @@ class ReleaseTests(unittest.TestCase):
         self.helper = macho(self.resources / 'desktop-launcher')
         self.manifest = {'application': {'bundle_id': 'org.example.synthetic'},
                          'community': {'bundled_sources': []}, 'pypykatz_plugin': {'commit': 'synthetic'}}
-        self.info = {'source_dirty': False, 'workbench_commit': 'a'*40,
+        self.info = {'source_dirty': False, 'workbench_commit': 'a'*40, 'core_commit': 'b'*40,
                      'bundle_id': 'org.example.synthetic', 'signing': 'developer-id'}
         self.write('distribution.json', self.manifest)
         self.write('build-info.json', self.info)
@@ -53,6 +53,15 @@ class ReleaseTests(unittest.TestCase):
                    {'sources': [{'repository': 'synthetic/excluded', 'files': [{'target': 'windows/excluded.py'}]}]})
         for name in ('workbench-LICENSE', 'workbench-THIRD_PARTY_NOTICES.md', 'LICENSING.md', 'pypykatz-LICENSE'):
             (self.resources / 'notices' / name).write_text('SYNTHETIC NOTICE')
+        for name in ('dependencies/MIT.txt', 'dependencies/LicenseRef-Volatility-Software-License-1.0.txt',
+                     'core/LICENSE', 'core/LICENSING.md', 'core/THIRD_PARTY_NOTICES.md',
+                     'core/licenses/MIT.txt', 'core/licenses/LicenseRef-Volatility-Software-License-1.0.txt'):
+            path = self.resources / 'notices' / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('SYNTHETIC NOTICE')
+        self.write('notices/SOURCE_CODE.json', {
+            'workbench': {'revision': 'a'*40}, 'core': {'revision': 'b'*40},
+            'public_source_required_for_distribution': True})
         (self.resources / 'notices/python-standalone/licenses').mkdir(parents=True)
         (self.app / 'Contents/Info.plist').write_bytes(plistlib.dumps({'CFBundleIdentifier': self.info['bundle_id']}))
         (self.root / 'packaging').mkdir()
@@ -70,6 +79,18 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(result['status'], 'passed')
         self.assertTrue(all(not Path(x['path']).is_absolute() for x in result['inventory']))
         self.assertEqual(len(result['inventory'][0]['sha256']), 64)
+
+    def test_audit_requires_vsl_notices_and_matching_source_revisions(self):
+        notice = self.resources / 'notices/core/licenses/LicenseRef-Volatility-Software-License-1.0.txt'
+        notice.unlink()
+        with self.assertRaisesRegex(ValueError, 'Missing notice'):
+            release.audit(self.app)
+        notice.write_text('SYNTHETIC NOTICE')
+        self.write('notices/SOURCE_CODE.json', {
+            'workbench': {'revision': 'c'*40}, 'core': {'revision': 'b'*40},
+            'public_source_required_for_distribution': True})
+        with self.assertRaisesRegex(ValueError, 'Source notice differs'):
+            release.audit(self.app)
 
     def test_audit_rejects_private_files_dirty_source_and_unreviewed_profile(self):
         for name in ('config.json', 'example.vmem', '.env', 'signing.p12'):
