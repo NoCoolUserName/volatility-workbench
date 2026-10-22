@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-10-20",
+  "reviewed_at": "2026-10-22",
   "exceptions": [
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/build_macos.py",
       "line": 23,
-      "source_sha256": "a183e2843e53e39dff760cafd0f7e5a64ea52dea5ab4ee9b342873ada6e6eafb",
-      "reason": "Build helper receives argv from fixed build/signing commands and explicit developer-selected paths; shell=False is explicit. No recovered data enters executable selection."
+      "source_sha256": "479579be69868e623946bcda71c332dfe4aa7dc36f35a4773238839d606c7186",
+      "reason": "Build helper receives argv from fixed build/signing commands and explicit developer-selected paths; shell=False is explicit. No recovered data enters executable selection. Re-reviewed 2026-10-22: static license/source notice handling added; subprocess argv paths unchanged."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -27,22 +27,22 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/package_smoke.py",
       "line": 16,
-      "source_sha256": "bc652339595cb9f3c66f9e8ed74b679f7ddd53cb5c4685b890c616e0820acd15",
-      "reason": "All callers supply fixed isolated wheel-install/test argv tuples; subprocess default shell=False, and no caller supplies shell=True. Developer test runner, no recovered input."
+      "source_sha256": "abe494dc682d5745db029c19ec6f78435ac7cedf303d23d96a783fe20d6a6adc",
+      "reason": "All callers supply fixed isolated wheel-install/test argv tuples; subprocess default shell=False, and no caller supplies shell=True. Developer test runner, no recovered input. Re-reviewed 2026-10-22: license metadata/text assertions added; subprocess argv paths unchanged."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/release_macos.py",
       "line": 31,
-      "source_sha256": "77865c61b714cf952100c605613066449a0f7a26760f0d3d832ed9744e946ce9",
-      "reason": "Signing helper uses fixed native tools and separately passed identity/app-path arguments; shell=False is explicit. Release is an explicit developer action."
+      "source_sha256": "53b6bde8ee794b5719fa2a4082ef2cc16d9eae54d8f73cbfa4eb48d1ccdbea28",
+      "reason": "Signing helper uses fixed native tools and separately passed identity/app-path arguments; shell=False is explicit. Release is an explicit developer action. Re-reviewed 2026-10-22: license/source notice validation added; subprocess argv paths unchanged."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/release_macos.py",
-      "line": 232,
-      "source_sha256": "77865c61b714cf952100c605613066449a0f7a26760f0d3d832ed9744e946ce9",
-      "reason": "Nested release runner receives fixed ditto/xcrun/stapler/spctl argv; validated Keychain profile remains a separate argument and shell=False is explicit."
+      "line": 243,
+      "source_sha256": "53b6bde8ee794b5719fa2a4082ef2cc16d9eae54d8f73cbfa4eb48d1ccdbea28",
+      "reason": "Nested release runner receives fixed ditto/xcrun/stapler/spctl argv; validated Keychain profile remains a separate argument and shell=False is explicit. Re-reviewed 2026-10-22: license/source notice validation added; subprocess argv paths unchanged."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
