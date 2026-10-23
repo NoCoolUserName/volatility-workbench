@@ -93,6 +93,17 @@ class ThemePreferencesTests(unittest.TestCase):
                 self.manager.save_appearance(body)
         self.assertFalse((self.manager.root/'appearance.json').exists())
 
+    def test_retired_fallout_76_preference_uses_field_terminal(self):
+        saved = {'schema': 'appearance/1', 'theme': 'fallout-76', 'revision': 7}
+        path = self.manager.root/'appearance.json'
+        path.write_text(json.dumps(saved))
+        self.assertEqual(self.manager.appearance(), {**saved, 'theme': 'fallout-76-field-terminal'})
+        self.assertEqual(json.loads(path.read_text()), saved, 'Reading a retired choice does not rewrite preferences')
+        self.assertNotIn('fallout-76', THEME_IDS)
+        with self.assertRaises(ValueError):
+            self.save('fallout-76')
+        self.assertEqual(self.save('fallout-76-camden-park')['revision'], 8)
+
     def test_legacy_migration_cannot_overwrite_newer_selection(self):
         migrated = self.save('fallout', expected_revision=0)
         self.assertEqual(migrated['theme'], 'fallout')
@@ -204,7 +215,7 @@ class ThemePreferencesTests(unittest.TestCase):
         asset = files('volatility_workbench').joinpath('static/themes.js')
         catalog = asset.read_text().split('const catalog = [', 1)[1].split('\n  ];', 1)[0]
         names = re.findall(r"^    \['([^']+)',", catalog, re.MULTILINE)
-        self.assertEqual(len(names), 38)
+        self.assertEqual(len(names), 37)
         self.assertEqual(frozenset(names), THEME_IDS)
 
 

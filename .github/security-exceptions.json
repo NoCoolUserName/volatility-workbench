@@ -27,8 +27,8 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/package_smoke.py",
       "line": 16,
-      "source_sha256": "a411e6c3e5785c75f936b3b98b88f2e54dd34211c7cf5943c84094126c751271",
-      "reason": "All callers supply fixed isolated wheel-install/test argv tuples; subprocess default shell=False, and no caller supplies shell=True. Developer test runner, no recovered input. Re-reviewed 2026-10-22: license metadata/text assertions added; subprocess argv paths unchanged. Re-reviewed 2026-10-23: packaged local artwork hash/provenance/HTTP assertions added; subprocess call and argv unchanged."
+      "source_sha256": "6c42219add4016fda3871f36ca6e2f700367e2fbff775a1aa682c16372e097d2",
+      "reason": "All callers supply fixed isolated wheel-install/test argv tuples; subprocess default shell=False, and no caller supplies shell=True. Developer test runner, no recovered input. Re-reviewed 2026-10-22: license metadata/text assertions added; subprocess argv paths unchanged. Re-reviewed 2026-10-23: packaged local artwork hash/provenance/HTTP assertions added; subprocess call and argv unchanged. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -48,15 +48,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 36,
-      "source_sha256": "af5ddefc131d78a943c7da696119e53114fa355f8fbf5a6dc9f09268a870fc45",
-      "reason": "Re-reviewed 2026-10-23: explicit developer-selected bundle native executable receives only the fixed --check-bundled-runtime argument; sanitized temporary environment and shell=False. Added game binaries are manifest-checked and use fixed synthetic commands."
+      "source_sha256": "d07eecd8d8fdedc50678869ea472a7a4b6d712ef919f66f33cfd4665a9f37d3d",
+      "reason": "Re-reviewed 2026-10-23: explicit developer-selected bundle native executable receives only the fixed --check-bundled-runtime argument; sanitized temporary environment and shell=False. Added game binaries are manifest-checked and use fixed synthetic commands. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 103,
-      "source_sha256": "af5ddefc131d78a943c7da696119e53114fa355f8fbf5a6dc9f09268a870fc45",
-      "reason": "Re-reviewed 2026-10-23: explicit bundle Python runs a fixed literal synthetic validation program with -I, a separate resources argument, sanitized temporary environment, and shell=False. No recovered code is executed."
+      "source_sha256": "d07eecd8d8fdedc50678869ea472a7a4b6d712ef919f66f33cfd4665a9f37d3d",
+      "reason": "Re-reviewed 2026-10-23: explicit bundle Python runs a fixed literal synthetic validation program with -I, a separate resources argument, sanitized temporary environment, and shell=False. No recovered code is executed. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -111,15 +111,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 40,
-      "source_sha256": "af5ddefc131d78a943c7da696119e53114fa355f8fbf5a6dc9f09268a870fc45",
-      "reason": "Reviewed 2026-10-23: package validator launches the manifest-hash-checked 430-point binary with fixed options and synthetic commands, temporary save path, sanitized environment, and shell=False."
+      "source_sha256": "d07eecd8d8fdedc50678869ea472a7a4b6d712ef919f66f33cfd4665a9f37d3d",
+      "reason": "Reviewed 2026-10-23: package validator launches the manifest-hash-checked 430-point binary with fixed options and synthetic commands, temporary save path, sanitized environment, and shell=False. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 47,
-      "source_sha256": "af5ddefc131d78a943c7da696119e53114fa355f8fbf5a6dc9f09268a870fc45",
-      "reason": "Reviewed 2026-10-23: package validator launches the manifest-hash-checked 350-point binary with fixed synthetic commands, private temporary save path, sanitized environment, and shell=False."
+      "source_sha256": "d07eecd8d8fdedc50678869ea472a7a4b6d712ef919f66f33cfd4665a9f37d3d",
+      "reason": "Reviewed 2026-10-23: package validator launches the manifest-hash-checked 350-point binary with fixed synthetic commands, private temporary save path, sanitized environment, and shell=False. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-asyncio-create-exec-audit",

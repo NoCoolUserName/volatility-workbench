@@ -25,7 +25,6 @@
     ['fallout-new-vegas-2','Fallout: New Vegas 2','Fallout','#1b1117 #2d2028 #35242a #966c64 #ffebd2 #d9b9ae #ffc28c #341e13','A reference-derived New Vegas terminal housing framing warm amber phosphor.','terminal',null],
     ['fallout-4','Fallout 4','Fallout','#0e1b20 #1a2b30 #1d333a #588389 #e4f2ed #b2ceca #a8dfd6 #173130','Coastal blue steel and a suspension bridge.','industrial'],
     ['fallout-shelter','Fallout Shelter','Fallout','#17180f #252b1b #2d3420 #788459 #f2eed2 #c6c9a2 #e8ce88 #30270f','A warm cross-section of a busy underground vault.','rounded'],
-    ['fallout-76','Fallout 76','Fallout','#0d1d21 #1a3035 #203b40 #62898a #e9f4e9 #bdd2c6 #e6ce92 #2a2814','Appalachian pines, blue steel and a golden 76.','industrial'],
     ['fallout-76-camden-park','Fallout 76 (Camden Park)','Fallout','#060806 #111510 #0a0e09 #85907b #eeecc2 #bebf9e #ede7a1 #25260e','Heavily rusted pale enamel, battered blue trim and ivory terminal text.','terminal',null],
     ['fallout-76-field-terminal','Fallout 76 (Field Terminal)','Fallout','#0d1013 #1a2027 #12171e #808d9b #f2e2b7 #c3beac #e8c877 #292312','Charcoal steel, a worn silver screen rim, amber phosphor and twin control knobs.','terminal',null],
     ['fallout-4-vr','Fallout 4 VR','Fallout','#0d1922 #1b2c39 #203544 #61859a #edf1ec #bdcdd4 #bfdde6 #1b2a33','A steel-blue headset framing twin wasteland horizons.','industrial'],
@@ -50,6 +49,7 @@
   const tokens = ['bg','panel','control-bg','border','text','muted','accent','accent-text'];
   // A null scene lets the terminal housing supply its own CSS or local artwork.
   const themes = new Map(catalog.map(([id,label,group,palette,description,shape,scene=id]) => [id,{id,label,group,palette,description,shape,scene}]));
+  const canonicalTheme = id => id === 'fallout-76' ? 'fallout-76-field-terminal' : id;
   let connected=false, revision=-1, selection=0, pending=null, saves=Promise.resolve();
   function cache(id) { try {localStorage.setItem(key,id);} catch {} }
   function saveMessage(text, retry=false) {
@@ -98,7 +98,7 @@
     }
   }
   function apply(value, persist=false) {
-    const theme = themes.get(value) || themes.get(defaultTheme);
+    const theme = themes.get(canonicalTheme(value)) || themes.get(defaultTheme);
     const root = document.documentElement;
     root.dataset.theme = theme.id;
     root.dataset.themeShape = theme.shape;
@@ -121,7 +121,7 @@
     }
     return theme.id;
   }
-  function saved() { try {return localStorage.getItem(key);} catch {return null;} }
+  function saved() { try {return canonicalTheme(localStorage.getItem(key));} catch {return null;} }
   apply(saved());
   function mount() {
     document.querySelectorAll('[data-theme-picker]').forEach(select=>{

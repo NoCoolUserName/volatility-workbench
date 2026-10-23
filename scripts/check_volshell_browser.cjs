@@ -403,7 +403,7 @@ async function checkBezelConnection(browser){
   await screenshot('volshell-ai-desktop');
   state.jobs[0].status='completed';await refresh();await mode('manual');assert.equal(await input.isDisabled(),false,'Manual session resumes after the AI job completes');
   await input.fill('ps');await screenshot('volshell-manual-desktop');
-  const themeStyles=[];
+  const themeStyles=[],spacingIssues=[];
   for(const theme of await page.evaluate(()=>window.WorkbenchThemes.catalog)){
    await page.evaluate(id=>window.WorkbenchThemes.apply(id),theme.id);
    const styles=await page.locator('#consoleVolshellMode').evaluate(node=>{
@@ -416,6 +416,18 @@ async function checkBezelConnection(browser){
      animation:css.animationName};
    });
    assert.ok(Number.isFinite(styles.minimumContrast)&&styles.minimumContrast>=4.5,theme.id+' VolShell label remains readable across its plate base: '+styles.minimumContrast);
+   const clearance=await page.locator('#consoleVolshellMode').evaluate(node=>{
+    const root=document.documentElement,previous=root.style.getPropertyValue('--text-scale'),scaled=root.dataset.textScaled;
+    try{return [1,2].map(scale=>{
+     root.style.setProperty('--text-scale',String(scale));root.dataset.textScaled=String(scale!==1);
+     const range=document.createRange();range.selectNodeContents([...node.childNodes].find(child=>child.nodeType===Node.TEXT_NODE&&child.textContent.trim()));
+     const text=range.getBoundingClientRect(),led=node.querySelector('.volshell-led').getBoundingClientRect(),button=node.getBoundingClientRect();
+     return {scale,gap:text.left-led.right,inside:led.left>=button.left&&text.right<=button.right,width:button.width,textWidth:text.width};
+    });}finally{if(previous)root.style.setProperty('--text-scale',previous);else root.style.removeProperty('--text-scale');if(scaled===undefined)delete root.dataset.textScaled;else root.dataset.textScaled=scaled;}
+   });
+   for(const result of clearance){
+    if(result.gap<7.5||!result.inside)spacingIssues.push({theme:theme.id,...result});
+   }
    assert.equal(styles.animation,'none');assert.equal(await page.locator('#volshellLED').getAttribute('data-state'),'ready');
    await page.locator('#consoleOutputMode').focus();await page.keyboard.press('Tab');
    assert.equal(await page.locator('#consoleVolshellMode').evaluate(node=>document.activeElement===node&&getComputedStyle(node).outlineStyle==='solid'),true,theme.id+' bezel shows keyboard focus');
@@ -424,7 +436,8 @@ async function checkBezelConnection(browser){
    if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)await page.locator('#consoleVolshellMode').screenshot({path:path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-'+theme.id+'.png')});
    if(['matrix','fallout-new-vegas','fallout-3-robco','fallout-3-vault-112'].includes(theme.id))await screenshot('volshell-'+theme.id+'-desktop');
   }
-  assert.equal(themeStyles.length,38,'The current catalog contains all 38 themes');
+  assert.deepEqual(spacingIssues,[],'Every theme reserves at least 8px between the VolShell label and its LED at 100% and 200% text, inside the button');
+  assert.equal(themeStyles.length,37,'The current catalog contains all 37 themes');
   assert.equal(new Set(themeStyles.map(theme=>theme.signature)).size,themeStyles.length,'Every catalog theme has a distinct VolShell bezel');
   for(const id of ['fallout-3-robco','fallout-3-vault-112']){
    await page.evaluate(id=>window.WorkbenchThemes.apply(id),id);
@@ -622,6 +635,6 @@ async function checkBezelConnection(browser){
   assert.equal(await zoom.isVisible(),false,'Late events from a closed source cannot reopen the CRT');
   assert.equal(await page.evaluate(()=>window.injected),undefined);assert.deepEqual(errors,[]);
   if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)fs.writeFileSync(path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-contrast.json'),JSON.stringify(themeStyles,null,2)+'\n');
-  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;38 distinct bezels, original Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
+  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;37 distinct bezels, original Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

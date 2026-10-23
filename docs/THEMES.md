@@ -3,7 +3,7 @@
 Workbench themes change the presentation of the application. They do not alter
 evidence, plugin availability, analysis settings, saved output or report contents.
 Choose a theme from the Theme control in Workbench's header or Settings →
-Appearance. Both use the same catalog of 38 themes, including 19 Fallout choices.
+Appearance. Both use the same catalog of 37 themes, including 18 Fallout choices.
 The choice is saved in application preferences and updates other open Workbench tabs. Existing Matrix, Mono and Blue preferences
 remain supported as Matrix green, Soft black and white, and Light blue. A browser
 without a saved preference starts with the original Matrix green appearance.
@@ -88,8 +88,8 @@ supplies the housing rather than containing console text.
 
 | Selector name | Reference-derived console housing and controls |
 | --- | --- |
-| Fallout 3 (RobCo Night) 2 | Dark RobCo housing and green phosphor, with Output, VolShell and Collapse stacked on the right bezel. |
-| Fallout 3 (Vault 112) 2 | Worn olive housing and ivory phosphor. Output and VolShell overlay part of the lower vent while leaving grille exposed; the glowing amber physical button activates Collapse. |
+| Fallout 3 (RobCo Night) 2 | Dark RobCo housing and green phosphor, with Collapse, Output and VolShell in a compact stack on the lower-right bezel and Saved directly below. |
+| Fallout 3 (Vault 112) 2 | Worn olive housing and ivory phosphor. Output sits just after the left vent screw and VolShell just before the right screw, leaving grille only between them; the glowing amber physical button activates Collapse. |
 | Fallout: New Vegas 2 | The supplied rusty Welcome sign, with yellow perimeter bulbs, diamond frame, WELCOME discs and colorful star, adapted around a transparent central CRT. |
 
 The corresponding version 1 choices retain their original presentation and IDs,
@@ -105,6 +105,9 @@ worn olive metal, and New Vegas controls use cream enamel, rust-red lettering
 and sign-bulb accents.
 
 Two Fallout 76 terminal variants use the user's additional screenshots:
+
+The original plain Fallout 76 theme has been retired. Saved selections of its
+`fallout-76` ID resolve to Field Terminal; Camden Park remains selectable.
 
 | Selector name | Terminal treatment |
 | --- | --- |

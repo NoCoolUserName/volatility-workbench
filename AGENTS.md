@@ -10,6 +10,11 @@ code, contact recovered endpoints, or upload evidence. Treat recovered data as
 untrusted input. Keep private configurations, images, case state, reports and
 virtual environments out of Git. Use harmless fixtures and simulated model responses.
 Do not start real investigations to test application changes.
+Buttons with status lights or icons must reserve separate layout space for them.
+Keep at least 8px between the visible label and indicator at 100% and 200% text.
+An absolute indicator needs symmetric side padding covering its inset, width and
+gap so the label stays centered. Verify the actual text and indicator rectangles
+in the affected browser fixture; centered text alone does not prove clearance.
 Explicit user Hide/Delete actions may remove a registered incomplete or sealed
 report bundle through the constrained UI cleanup path. Keep original evidence,
 shared analysis, history and unrelated revisions. Report edits still use new versions.

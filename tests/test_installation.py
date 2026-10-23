@@ -15,7 +15,7 @@ class InstallationTests(unittest.TestCase):
                      'static/index.html','static/icon.png','templates/report.md'):
             self.assertTrue(root.joinpath(name).read_bytes())
         scenes=[p for p in root.joinpath('static').iterdir() if p.name.startswith('theme-') and p.name.endswith('.svg')]
-        self.assertEqual(len(scenes),30)
+        self.assertEqual(len(scenes),29)
         self.assertTrue(all(p.read_bytes() for p in scenes))
         self.assertIn('Executive summary',api.report_spec())
         self.assertIs(require_core(), api)

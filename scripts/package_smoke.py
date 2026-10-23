@@ -58,7 +58,7 @@ assert 'Executive summary' in report_spec()
 for p in ['static/app.js','static/volshell.js','static/zoom.js','static/index.html','static/style.css','static/themes.js','static/themes.css','static/theme-halloween.svg','static/halloween-night.png','static/icon.png','static/settings.html','static/settings.js','resources/symbols.json','templates/report.md']:
     assert files('volatility_workbench').joinpath(p).read_bytes()
 scenes=[p for p in files('volatility_workbench').joinpath('static').iterdir() if p.name.startswith('theme-') and p.name.endswith('.svg')]
-assert len(scenes)==30 and all(p.read_bytes() for p in scenes)
+assert len(scenes)==29 and all(p.read_bytes() for p in scenes)
 bezel_manifest=json.loads(files('volatility_workbench').joinpath('resources/reference-terminal-assets.json').read_text())
 assert len(bezel_manifest['assets'])==3
 assert json.loads(files('volatility_workbench').joinpath('resources/reference-terminal-prompts.json').read_text())['mode']=='built-in image_gen'

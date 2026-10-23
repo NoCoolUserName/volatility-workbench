@@ -11,8 +11,8 @@ credential handling and tested limits.
 
 ## Appearance
 
-The header's Theme selector and Settings → Appearance offer the same 38 local
-skins, including 19 Fallout choices. New profiles start with the
+The header's Theme selector and Settings → Appearance offer the same 37 local
+skins, including 18 Fallout choices. New profiles start with the
 original Matrix green appearance; the three original preference values remain
 supported. Selection persists in application preferences across desktop launches,
 including changes to the local server port. Workbench and Settings synchronize
@@ -759,10 +759,13 @@ inline and leave the checkbox at its previously saved value.
 The Fallout: New Vegas 1 expanded console takes its CSS housing from the weathered
 Welcome sign: neon letter discs and star, warm perimeter bulbs with several dark
 sockets, faded red lettering and aged trim. The display remains opaque and legible.
-All 38 themes give the VolShell bezel button their own treatment while retaining
+All 37 themes give the VolShell bezel button their own treatment while retaining
 a separate rectangular connection LED and visible keyboard focus.
+Button labels reserve at least 8px of clearance from that LED, including at
+200% text size; Camden Park uses symmetric side padding to keep its label centered.
 
-The RobCo Night 2 console stacks Output, VolShell and Collapse on the right bezel.
+The RobCo Night 2 console stacks Collapse, Output and VolShell on the lower-right
+bezel, with Saved directly below.
 Vault 112 2 places Output and VolShell over part of the lower vent, leaving grille
 exposed; its glowing amber physical button activates Collapse. New Vegas 2 uses
 the supplied rusty diamond Welcome sign with yellow bulbs, WELCOME discs and
