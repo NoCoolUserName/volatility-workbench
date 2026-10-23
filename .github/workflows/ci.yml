@@ -34,6 +34,7 @@ jobs:
       - run: python -m unittest discover -s tests -q
       - run: node --check src/volatility_workbench/static/app.js
       - run: node --check src/volatility_workbench/static/volshell.js
+      - run: node --check src/volatility_workbench/static/adventure.js
       - run: node --check src/volatility_workbench/static/settings.js
       - run: node --check src/volatility_workbench/static/themes.js
       - run: python scripts/package_smoke.py
@@ -62,3 +63,35 @@ jobs:
             timeout 120s node "$script" || status=1
           done
           exit "$status"
+
+  native-adventure:
+    name: ARM64 Adventure build and gameplay
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Build pinned game source and data
+        run: python scripts/build_adventure.py --output "$RUNNER_TEMP" --python "$(command -v python)"
+      - name: Check native architecture, gameplay, saves, and ad hoc signature
+        run: |
+          test "$(lipo -archs "$RUNNER_TEMP/adventure/advent-430")" = arm64
+          printf 'no\nquit\nyes\n' | "$RUNNER_TEMP/adventure/advent-430" -o -a "$RUNNER_TEMP/adventure.save" - > "$RUNNER_TEMP/gameplay.txt"
+          grep -qi road "$RUNNER_TEMP/gameplay.txt"
+          test -s "$RUNNER_TEMP/adventure.save"
+          codesign --force --sign - "$RUNNER_TEMP/adventure/advent-430"
+          codesign --verify --strict "$RUNNER_TEMP/adventure/advent-430"
+          test "$(lipo -archs "$RUNNER_TEMP/adventure/adventure-350")" = arm64
+          export VOLATILITY_ADVENTURE_SAVE="$RUNNER_TEMP/classic.save"
+          printf 'no\nsuspend\nyes\n' | "$RUNNER_TEMP/adventure/adventure-350" > "$RUNNER_TEMP/classic.txt"
+          grep -qi road "$RUNNER_TEMP/classic.txt"
+          test -s "$RUNNER_TEMP/classic.save"
+          codesign --force --sign - "$RUNNER_TEMP/adventure/adventure-350"
+          codesign --verify --strict "$RUNNER_TEMP/adventure/adventure-350"
+          test -s "$RUNNER_TEMP/adventure/glorkz-350"
+          test -s "$RUNNER_TEMP/adventure/COPYING-350"
+          test -s "$RUNNER_TEMP/adventure/COPYING-430"

@@ -14,6 +14,21 @@ def main():
     args=parser.parse_args(); app=args.app.resolve(); resources=app/'Contents/Resources'
     if not (resources/'build-info.json').is_file(): raise SystemExit('Not a Workbench build')
     info=json.loads((resources/'build-info.json').read_text())
+    adventure = resources/'adventure'
+    game = json.loads((adventure/'manifest.json').read_text())
+    assert set(game['editions']) == {'1977', '1995'}
+    assert info['adventure'] == game
+    for edition in ('350', '430'):
+        assert (adventure/('COPYING-'+edition)).read_bytes() == (resources/('notices/adventure-'+edition+'-COPYING')).read_bytes()
+    executable = adventure/game['editions']['1995']['executable']
+    import hashlib
+    assert hashlib.sha256(executable.read_bytes()).hexdigest() == game['editions']['1995']['sha256']
+    classic = adventure/game['editions']['1977']['executable']
+    assert hashlib.sha256(classic.read_bytes()).hexdigest() == game['editions']['1977']['sha256']
+    assert hashlib.sha256((adventure/'glorkz-350').read_bytes()).hexdigest() == game['editions']['1977']['game_data_sha256']
+    for binary in (executable, classic):
+        architecture = subprocess.run(['/usr/bin/lipo','-archs',str(binary)],capture_output=True,text=True,check=True).stdout.split()
+        assert architecture == ['arm64'],architecture
     assert (resources/'desktop-launcher').is_file()
     assert os.access(resources/'desktop-launcher',os.X_OK)
     with tempfile.TemporaryDirectory(prefix='workbench-package-check-') as temporary:
@@ -22,6 +37,18 @@ def main():
             cwd=temp,env={k:v for k,v in env.items() if k!='LANG'},capture_output=True,text=True,timeout=30,check=True)
         assert json.loads(native.stdout)['subprocess_unicode'] is True
         print(native.stdout.strip())
+        gameplay=subprocess.run([str(executable),'-o','-a',str(temp/'adventure.save'),'-'],
+            input='no\nquit\nyes\n',cwd=temp,env=env,capture_output=True,text=True,timeout=20)
+        if gameplay.returncode or 'road' not in gameplay.stdout.lower():
+            raise SystemExit('Packaged 430-point Adventure gameplay smoke failed: '+gameplay.stdout[-500:]+gameplay.stderr[-500:])
+        assert (temp/'adventure.save').is_file()
+        print(json.dumps({'adventure_430':'gameplay-and-save-passed','architecture':architecture}))
+        classic_env = {**env, 'VOLATILITY_ADVENTURE_SAVE':str(temp/'classic.save')}
+        classic_run=subprocess.run([str(classic)],input='no\nsuspend\nyes\n',cwd=temp,
+            env=classic_env,capture_output=True,text=True,timeout=20)
+        if classic_run.returncode or 'road' not in classic_run.stdout.lower() or not (temp/'classic.save').is_file():
+            raise SystemExit('Packaged 350-point Adventure gameplay or save failed: '+classic_run.stdout[-500:]+classic_run.stderr[-500:])
+        print(json.dumps({'adventure_350':'gameplay-and-save-passed','architecture':architecture}))
         script=r'''
 import asyncio,importlib.metadata as m,json,os,platform,subprocess,sys
 from pathlib import Path
@@ -41,7 +68,7 @@ assert sys.dont_write_bytecode
 manifest=json.loads((resources/'distribution.json').read_text())
 profile=json.loads(files('volatility_workbench').joinpath('resources/symbols.json').read_text())
 assert profile['profile']==manifest['symbols']['profile']
-for asset in ('static/settings.html','static/settings.js','static/settings.css','static/app.js','static/zoom.js','static/icon.png','static/themes.js','static/themes.css','static/halloween-night.png'):
+for asset in ('static/settings.html','static/settings.js','static/settings.css','static/app.js','static/zoom.js','static/icon.png','static/themes.js','static/themes.css','static/adventure.js','static/halloween-night.png'):
  assert files('volatility_workbench').joinpath(asset).read_bytes(),asset
 scenes=list(files('volatility_workbench').joinpath('static').glob('theme-*.svg'))
 assert len(scenes)==30 and all(scene.read_bytes() for scene in scenes)

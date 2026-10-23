@@ -1,5 +1,6 @@
 """Release safety contracts, offline synthetic bundles and simulated Apple tools."""
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 import plistlib
@@ -33,7 +34,7 @@ class ReleaseTests(unittest.TestCase):
         self.resources.mkdir(parents=True)
         for name in release.RESOURCE_NAMES:
             path = self.resources / name
-            if name in ('runtime', 'analyzer', 'wheelhouse', 'notices'):
+            if name in ('runtime', 'analyzer', 'wheelhouse', 'notices', 'adventure'):
                 path.mkdir()
             else:
                 path.write_text('{}')
@@ -46,6 +47,22 @@ class ReleaseTests(unittest.TestCase):
                          'community': {'bundled_sources': []}, 'pypykatz_plugin': {'commit': 'synthetic'}}
         self.info = {'source_dirty': False, 'workbench_commit': 'a'*40, 'core_commit': 'b'*40,
                      'bundle_id': 'org.example.synthetic', 'signing': 'developer-id'}
+        game = macho(self.resources / 'adventure/advent-430')
+        game.chmod(0o700)
+        classic = macho(self.resources / 'adventure/adventure-350')
+        classic.chmod(0o700)
+        (self.resources / 'adventure/glorkz-350').write_bytes(b'SYNTHETIC GAME DATA')
+        for suffix in ('430', '350'):
+            (self.resources / ('adventure/COPYING-' + suffix)).write_text('SYNTHETIC NOTICE')
+            (self.resources / ('notices/adventure-' + suffix + '-COPYING')).write_text('SYNTHETIC NOTICE')
+        self.info['adventure'] = {'editions': {
+            '1995': {'executable': 'advent-430',
+                     'sha256': hashlib.sha256(game.read_bytes()).hexdigest()},
+            '1977': {'executable': 'adventure-350',
+                     'sha256': hashlib.sha256(classic.read_bytes()).hexdigest(),
+                     'game_data': 'glorkz-350',
+                     'game_data_sha256': hashlib.sha256((self.resources / 'adventure/glorkz-350').read_bytes()).hexdigest()}}}
+        self.write('adventure/manifest.json', self.info['adventure'])
         self.write('distribution.json', self.manifest)
         self.write('build-info.json', self.info)
         self.write('bundled-addons.json', {'sources': [], 'pypykatz': self.manifest['pypykatz_plugin']})
@@ -79,6 +96,16 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(result['status'], 'passed')
         self.assertTrue(all(not Path(x['path']).is_absolute() for x in result['inventory']))
         self.assertEqual(len(result['inventory'][0]['sha256']), 64)
+
+    def test_audit_rejects_tampered_adventure_and_missing_license(self):
+        executable = self.resources / 'adventure/advent-430'
+        executable.write_bytes(b'TAMPERED GAME')
+        with self.assertRaisesRegex(ValueError, 'Adventure executable hash'):
+            release.audit(self.app)
+        macho(executable)
+        (self.resources / 'notices/adventure-430-COPYING').unlink()
+        with self.assertRaisesRegex(ValueError, 'Adventure manifest|Missing notice'):
+            release.audit(self.app)
 
     def test_audit_requires_vsl_notices_and_matching_source_revisions(self):
         notice = self.resources / 'notices/core/licenses/LicenseRef-Volatility-Software-License-1.0.txt'
@@ -143,7 +170,7 @@ class ReleaseTests(unittest.TestCase):
         with patch.object(release, 'identity', return_value='A'*40), patch.object(release, 'run') as run:
             release.sign(self.app, 'synthetic', nested=True)
             nested = [x.args[0] for x in run.call_args_list]
-            self.assertEqual(len(nested), 4)  # real files once; never re-sign interpreter symlinks
+            self.assertEqual(len(nested), 6)  # real files once; never re-sign interpreter symlinks
             for argv in nested:
                 self.assertNotIn('--deep', argv)
                 self.assertIn('--timestamp', argv)

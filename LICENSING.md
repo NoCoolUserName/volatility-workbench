@@ -29,6 +29,7 @@ distributor wants different terms, such as withholding source for covered Additi
 | Original `packaging/**`, scripts, tests, templates, documentation and project configuration | Both VSL 1.0 and MIT, excluding separately attributed third-party material. |
 | Pinned `volatility-mcp` | Its VSL offer and retained MIT grant; preserve the core's licenses and publish the corresponding pinned source. |
 | Bundled Volatility 3 and official plugins | Their upstream VSL and notices; not relicensed by this project. |
+| Open Adventure 1.22 source and embedded game data | BSD-2-Clause under its own `COPYING` and `adventure.yaml` SPDX notice; included only in the macOS app, with provenance in `docs/ADVENTURE.md`. The 1977 NetBSD BSD Games port, including its `glorkz` data file, is distributed under the port's three-clause BSD notice; the data file has no standalone header. |
 | Dependencies, downloaded plugins and third-party artwork | Their respective rights and notices; excluded from the project-wide grant. |
 
 ## Distributing a build

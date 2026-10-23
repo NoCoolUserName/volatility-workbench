@@ -26,6 +26,7 @@ from .storage import atomic_json, private_dir, safe_file
 from volatility_mcp.api import load_config
 import volatility_mcp
 from .compatibility import require_core
+from .adventure import AdventureManager
 
 
 def open_browser(url):
@@ -69,6 +70,8 @@ class Server(ThreadingHTTPServer):
         self.bridge_lock = threading.Lock()
         self.bridge_requests = {}
         self.bridge_cancelled = {}
+        from .desktop import preferences_directory
+        self.adventure = AdventureManager(preferences_directory() / 'adventure')
         super().__init__(('127.0.0.1', port), Handler)
         self.authority = '127.0.0.1:' + str(self.server_port)
         self.origin = 'http://' + self.authority
@@ -125,6 +128,12 @@ class Handler(BaseHTTPRequestHandler):
         if path=='/api/reports/purge-recycled':return await app.purge_recycled_report(body['case_id'],body['report_id'])
         if path.startswith('/api/settings/'):
             return await app.settings_manager.dispatch(path,body)
+        if path=='/api/adventure/start':
+            return await self.server.adventure.start(body.get('edition'), new=body.get('new') is True)
+        if path=='/api/adventure/input':
+            return await self.server.adventure.input(body.get('session_id'), body.get('command'))
+        if path=='/api/adventure/close':
+            return await self.server.adventure.close(body.get('session_id'))
         if path=='/api/volshell/start':
             return await app.start_volshell(body['case_id'],body['image_id'],body.get('mode','generic'))
         if path=='/api/volshell/input':
@@ -163,6 +172,8 @@ class Handler(BaseHTTPRequestHandler):
             if manager is not None:
                 snapshot = {**snapshot, 'appearance': manager.appearance()}
             return snapshot
+        if path=='/api/adventure/status':
+            return self.server.adventure.snapshot()
         if path=='/api/volshell':
             app.case(one('case'))
             return app.volshell_snapshot()
@@ -252,6 +263,7 @@ class Handler(BaseHTTPRequestHandler):
                 '/themes.js':('themes.js','text/javascript; charset=utf-8'),
                 '/zoom.js':('zoom.js','text/javascript; charset=utf-8'),
                 '/volshell.js':('volshell.js','text/javascript; charset=utf-8'),
+                '/adventure.js':('adventure.js','text/javascript; charset=utf-8'),
                 '/themes.css':('themes.css','text/css; charset=utf-8'),
                 '/bezel-fallout76-camden-park.png':('bezel-fallout76-camden-park.png','image/png'),
                 '/bezel-fallout76-field-terminal.png':('bezel-fallout76-field-terminal.png','image/png'),
@@ -376,6 +388,7 @@ async def serve(args):
         if not args.no_open:await asyncio.to_thread(open_browser,url)
         await stop.wait()
     finally:
+        await server.adventure.shutdown()
         await app.close()
         await asyncio.to_thread(server.shutdown)
         server.server_close()

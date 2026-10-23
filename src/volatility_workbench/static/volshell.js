@@ -138,13 +138,14 @@
   }
   function setMode(value, focus = false) {
     monitorMode = value;
-    const shell = value !== "output", agent = value === "agent";
-    $("expandedConsoleHost").hidden = shell;
+    const shell = value === "volshell" || value === "agent", agent = value === "agent";
+    $("expandedConsoleHost").hidden = value !== "output";
     $("volshellPanel").hidden = value !== "volshell";
     $("volshellAgentPanel").hidden = !agent;
+    $("adventurePanel").hidden = value !== "adventure";
     $("consoleVolshellMode").setAttribute("aria-pressed", String(shell));
-    $("consoleOutputMode").setAttribute("aria-pressed", String(!shell));
-    $("consoleZoom").setAttribute("aria-labelledby", agent ? "volshellAgentTitle" : shell ? "volshellTitle" : adapter?.hasConsole() ? "liveConsoleTitle" : "emptyConsoleTitle");
+    $("consoleOutputMode").setAttribute("aria-pressed", String(value === "output"));
+    $("consoleZoom").setAttribute("aria-labelledby", value === "adventure" ? "adventureTitle" : agent ? "volshellAgentTitle" : shell ? "volshellTitle" : adapter?.hasConsole() ? "liveConsoleTitle" : "emptyConsoleTitle");
     if (focus && $("consoleZoom").open) {
       const input = interactionMode === "suggestions" ? $("volshellAIInput") : interactionMode === "investigation" ? $("volshellInvestigationInput") : $("volshellInput");
       (agent ? $("volshellAgentOutput") : shell ? ready() ? input : $("volshellConnection").open ? $("volshellCase") : $("collapseVolshell") : adapter.hasConsole() ? $("expandConsole") : $("collapseEmptyConsole")).focus({preventScroll:true});
@@ -498,6 +499,9 @@
   }
   window.WorkbenchVolshell = Object.freeze({mount, update,
     isShellMode: () => monitorMode !== "output",
+    currentMode: () => monitorMode,
+    enterAdventure: () => setMode("adventure"),
+    restoreMode: mode => setMode(["output", "volshell", "agent"].includes(mode) ? mode : "output"),
     hasActiveSession: () => active(session()),
     showOutput: () => { chooseCase(adapter.consoleCase()); setMode("output"); },
     opened: () => { if (monitorMode === "output") chooseCase(adapter.consoleCase()); render(); },
