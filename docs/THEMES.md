@@ -88,8 +88,8 @@ supplies the housing rather than containing console text.
 
 | Selector name | Reference-derived console housing and controls |
 | --- | --- |
-| Fallout 3 (RobCo Night) 2 | Dark RobCo housing and green phosphor, with Output, VolShell and Collapse stacked on the right bezel. |
-| Fallout 3 (Vault 112) 2 | Worn olive housing and ivory phosphor. Output and VolShell overlay part of the lower vent while leaving grille exposed; the glowing amber physical button activates Collapse. |
+| Fallout 3 (RobCo Night) 2 | Dark RobCo housing and green phosphor, with Collapse, Output and VolShell in a compact stack on the lower-right bezel and Saved directly below. |
+| Fallout 3 (Vault 112) 2 | Worn olive housing and ivory phosphor. Output sits just after the left vent screw and VolShell just before the right screw, leaving grille only between them; the glowing amber physical button activates Collapse. |
 | Fallout: New Vegas 2 | The supplied rusty Welcome sign, with yellow perimeter bulbs, diamond frame, WELCOME discs and colorful star, adapted around a transparent central CRT. |
 
 The corresponding version 1 choices retain their original presentation and IDs,

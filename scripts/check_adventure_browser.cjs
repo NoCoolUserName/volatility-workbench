@@ -127,7 +127,7 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
    for(const button of [geometry.output,geometry.shell])assert.ok(button.left>=0&&button.right<=width&&button.top>=0&&button.bottom<=height,'Mode buttons remain reachable');
    assert.ok(geometry.labelsFit,`Mode labels remain unbroken and contained at ${width}×${height}/${scale}`);
    assert.ok(geometry.labelsCentered,'Both button labels are centered independently of the VolShell light');
-   for(const button of [geometry.output,geometry.shell])assert.ok(button.width<=109*scale,'Mode buttons stay compact instead of stretching with the housing');
+   for(const button of [geometry.output,geometry.shell])assert.ok(button.width<=125*scale,'Mode buttons stay compact while reserving label-to-LED clearance');
    assert.ok(geometry.saved.bottom<=height,'Saved status stays within the viewport');
    if(geometry.savedVisible)assert.ok(Math.abs(geometry.saved.left+geometry.saved.width/2-geometry.frame.left-geometry.frame.width/2)<1,'Status light and label are centered below the screen');
    if(!geometry.fallback){

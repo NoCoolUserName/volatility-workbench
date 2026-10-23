@@ -132,6 +132,10 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
      assert.ok(modeControls.every(control=>control.left>=geometry.screen.right-1),label+' puts stacked RobCo controls on the right bezel rim');
      assert.ok(modeControls[1].top>=modeControls[0].bottom-1,label+' stacks Output above VolShell');
      assert.ok(Math.abs(modeControls[0].left+modeControls[0].width/2-modeControls[1].left-modeControls[1].width/2)<1,label+' aligns the stack');
+     assert.ok(geometry.sharedCollapse.top>=geometry.monitor.top+geometry.monitor.height*.6,label+' keeps Collapse on the lower-right bezel');
+     assert.ok(Math.abs(modeControls[0].top-geometry.sharedCollapse.bottom-6*scale)<1,label+' groups Collapse directly above Output');
+     const status=geometry.controls.find(control=>control.id==='power');
+     assert.ok(Math.abs(status.top-modeControls[1].bottom-6*scale)<1,label+' groups Saved directly below VolShell');
     }else{
      const groupLeft=Math.min(...modeControls.map(control=>control.left)),groupRight=Math.max(...modeControls.map(control=>control.right));
      const center=id==='fallout-3-vault-112-2'&&geometry.controlPosition==='absolute'?geometry.monitor.left+geometry.monitor.width*geometry.controlCenter:width/2;
@@ -141,6 +145,13 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
      const collapse=geometry.sharedCollapse;assert.ok(collapse.left>=0&&collapse.right<=width&&collapse.top>=0&&collapse.bottom<=height,label+' exposes shared Collapse');
      assert.ok(collapse.bottom<=geometry.screen.top+1||collapse.top>=geometry.screen.bottom-1||collapse.right<=geometry.screen.left+1||collapse.left>=geometry.screen.right-1,label+' places shared Collapse outside the glass');
     }else assert.ok(geometry.fallback.some(control=>control.left>=0&&control.right<=width&&control.top>=geometry.screen.top&&control.bottom<=geometry.screen.bottom),label+' provides a reachable Collapse fallback');
+    if(id==='fallout-3-vault-112-2'&&geometry.controlPosition==='absolute'){
+     const [output,shell]=modeControls;
+     assert.ok(Math.abs(output.left-geometry.monitor.left-geometry.monitor.width*.31)<1,label+' places Output immediately after the left screw');
+     assert.ok(Math.abs(shell.right-geometry.monitor.left-geometry.monitor.width*.555)<1,label+' places VolShell immediately before the right screw');
+     assert.ok(shell.left>=output.right,label+' leaves the vent only in the gap between the buttons');
+     assert.ok(output.top<=geometry.monitor.top+geometry.monitor.height*.902&&output.bottom>=geometry.monitor.top+geometry.monitor.height*.945,label+' covers vent slits above and below Output');
+    }
     if(id==='fallout-3-vault-112-2'){
      assert.ok(geometry.sharedCollapse,label+' exposes the amber power button as Collapse');
      assert.ok(geometry.sharedCollapse.width>=44&&geometry.sharedCollapse.height>=44,label+' provides a 44px power-button target');
