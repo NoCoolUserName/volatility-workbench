@@ -11,8 +11,8 @@ credential handling and tested limits.
 
 ## Appearance
 
-The header's Theme selector and Settings → Appearance offer the same 35 local
-skins, including 16 Fallout choices. New profiles start with the
+The header's Theme selector and Settings → Appearance offer the same 38 local
+skins, including 19 Fallout choices. New profiles start with the
 original Matrix green appearance; the three original preference values remain
 supported. Selection persists in application preferences across desktop launches,
 including changes to the local server port. Workbench and Settings synchronize
@@ -22,9 +22,12 @@ has been saved.
 Artwork stays in a decorative band outside opaque evidence/report surfaces.
 Fallout 2 uses a scalable CSS metal housing, compact ventilation rail, recessed
 green screens and brass controls, guided by the supplied inventory-screen reference.
-Fallout 3 (RobCo Night) adds a black steel terminal with green phosphor, while
-Fallout 3 (Vault 112) uses olive metal, ivory phosphor and an amber power lamp.
-Both have CSS console housings based on the supplied terminal references.
+Fallout 3 (RobCo Night) 1 adds a black steel terminal with green phosphor, while
+Fallout 3 (Vault 112) 1 uses olive metal, ivory phosphor and an amber power lamp.
+These version 1 choices retain their CSS console housings and saved preference IDs.
+Their version 2 choices add transparent PNG housings edited directly from the
+supplied references. Fallout: New Vegas 1 retains the original CSS marquee;
+Fallout: New Vegas 2 adapts the supplied rusty Welcome sign around a live CRT.
 Theme changes do not submit jobs or modify cases, conversations or saved reports.
 The displayed report retains its selection border. See [the catalog and verified
 references](THEMES.md), including the Punisher #53 artist correction.
@@ -595,13 +598,14 @@ Stop all work sits beside Report running (or Stopping report) during report work
 For other queued/active tasks it sits beside Current work. The same global stop
 control is retained across progress updates and hides with the work panel at idle.
 
-The small arrow beside Report console (Current work while a job is active) toggles
-the inline console. Collapsing preserves its output and follow state; polling and
-returning from the expanded CRT keep that choice for the current page. Active job
+The arrow beside Report console (Current work while a job is active) toggles
+the inline console. Its glyph is 1.2em for a clearer visual target. Collapsing
+preserves its output and follow state; polling and returning from the expanded CRT keep that choice for the current page. Active job
 progress and Stop all work remain visible.
 
 The console's upper-right Expand button opens a near-full-screen modal with a
-resolution-independent CSS CRT casing, recessed screen, vents and power indicator.
+CRT casing, recessed screen, vents and power indicator. Themes use scalable CSS
+or a locally packaged transparent image housing.
 It moves the existing read-only console rather than duplicating the feed. Output
 keeps updating with the same theme colors, follow state and scrolling controls.
 While expanded, the matching live job's current operation and elapsed time appear
@@ -750,13 +754,21 @@ This is a human review marker, not evidence that a failed plugin has been repair
 Original errors and sealed report files remain unchanged. Failed saves are shown
 inline and leave the checkbox at its previously saved value.
 
-### New Vegas console housing
+### Reference-derived console housings
 
-The Fallout: New Vegas expanded console takes its CSS housing from the weathered
+The Fallout: New Vegas 1 expanded console takes its CSS housing from the weathered
 Welcome sign: neon letter discs and star, warm perimeter bulbs with several dark
 sockets, faded red lettering and aged trim. The display remains opaque and legible.
-All 35 themes give the VolShell bezel button their own treatment while retaining
+All 38 themes give the VolShell bezel button their own treatment while retaining
 a separate rectangular connection LED and visible keyboard focus.
+
+The RobCo Night 2 console stacks Output, VolShell and Collapse on the right bezel.
+Vault 112 2 places Output and VolShell over part of the lower vent, leaving grille
+exposed; its glowing amber physical button activates Collapse. New Vegas 2 uses
+the supplied rusty diamond Welcome sign with yellow bulbs, WELCOME discs and
+colorful star, adapted around a transparent central CRT. These three housings
+are PNGs edited directly from the user's references, with selectable live output
+behind their transparent openings. Their version 1 choices stay available.
 
 The Camden Park and Field Terminal Fallout 76 consoles use detailed transparent
 frames derived from the user's reference pictures. The frame keeps its original
@@ -776,7 +788,7 @@ Theme selection is saved in `appearance.json` under the application preferences
 directory, outside cases and evidence. It survives a new desktop launch even
 when the local server port changes. Existing browser preferences migrate on the
 first authenticated connection; a theme selected while that connection is loading
-takes precedence. Settings and Workbench share the saved preference. The New Vegas
+takes precedence. Settings and Workbench share the saved preference. The New Vegas 1
 Welcome marquee appears on the main window and expanded console, with weathered
 cream/rust housing, tabs and controls shared by Settings. Evidence and report
 surfaces stay opaque and readable.

@@ -1,0 +1,29 @@
+{
+  "schema": "workbench-reference-terminal-prompts/1",
+  "date": "2026-10-23",
+  "mode": "built-in image_gen",
+  "notes": "User-supplied references; generated adaptation, not a copyright or redistribution license. Original references were not bundled. Keep exact generated files and alpha; screen contents and controls are live HTML.",
+  "prompts": [
+    {
+      "name": "robco-night-2",
+      "reference": "Fallout 3 terminal black.png",
+      "prompt": "Use case: background-extraction / precise-object-edit. Edit the supplied Fallout 3 RobCo Night terminal reference into a production CRT bezel PNG for a real application. Preserve the ACTUAL recognizable charcoal-black terminal housing from this image: broad curved upper corners, subtly tapered lower sides, layered dark-metal rim, deep rounded inner lip, original wear and very dark graphite materials. Isolate ONLY the terminal housing, remove the room, fence and all background. Remove ALL green screen writing, cursor and the [Tab] EXIT HUD. Make the entire inner glass/screen opening fully alpha-transparent, and the exterior background fully alpha-transparent; the physical housing itself remains opaque with rich realistic texture. Complete the slightly cropped outside edges conservatively and present the terminal straight-on and centered, filling most of a landscape canvas, without stretching its original proportions. The empty rounded screen opening must be broad, regular and suitable for live HTML text; maintain a usable plain lower chin for compact live controls, without adding drawn buttons or any new labels. No text anywhere, no logos, no extra hardware, no environment, no fake checkerboard. High-detail reference-faithful extraction, not a simplified CSS illustration. Aim for roughly 1536px wide.",
+      "tool": "built-in image_gen",
+      "transparent_background": true
+    },
+    {
+      "name": "vault-112-2",
+      "reference": "fallout 3 terminal.png",
+      "prompt": "Use case: background-extraction / precise-object-edit. Edit the supplied Fallout 3 Vault 112 terminal reference into a production CRT bezel PNG for a real application. Preserve the ACTUAL recognizable terminal from this image: aged dark olive outer housing, thick stepped olive screen rim, rounded rectangular glass opening, lower vent grille with its two screws, and the square amber power lamp at the lower right. Keep the original materials, irregular wear, contours, hardware and proportions; this must look like this particular terminal, not an invented generic monitor. Remove the room/background and any stand projecting beyond the front housing. Remove ALL existing white screen writing, prompt, cursor, bright screen glare and game HUD. Make the complete inner glass opening fully alpha-transparent so live HTML can show through, and make the exterior background fully alpha-transparent. Housing and lower vent/power panel remain opaque and detailed. Straight-on centered front view, conservative completion of cropped outer edges, terminal filling most of a landscape canvas without distortion. Leave plain metal on the lower bezel available for two compact live controls, without drawing new controls or labels. No added text, no additional hardware, no environment, no fake checkerboard. Roughly1536px wide, high-detail extraction faithful to reference.",
+      "tool": "built-in image_gen",
+      "transparent_background": true
+    },
+    {
+      "name": "new-vegas-2",
+      "reference": "codex-clipboard-1ad781c9-a64b-4071-ad9d-78b9dfb084c9.png",
+      "prompt": "Use case: precise-object-edit. Adapt this EXACT supplied Fallout New Vegas sign artwork very directly into a richly textured physical terminal bezel for a real application. Keep the unmistakable source design: the long rusted diamond-shaped outer steel sign frame with closely spaced glowing yellow bulbs (some dark); severely flaked dirty cream enamel with long rust drips and turquoise script traces; seven individually suspended circular W E L C O M E discs with the same irregular/hanging placement and luminous pale rims, red letters, dark M and tilted final E; the tall red-orange neon eight-point star near the upper left, and bold large red/mixed neon NEW VEGAS lettering. Do not replace it with a generic computer or a clean modern Las Vegas welcome sign. Retain these actual source colors, damaged materials and distinctive irregular lettering. Reasonably turn the sign itself into a front-facing widescreen CRT housing: keep the WELCOME discs across its top and preserve NEW VEGAS on a lower enamel marquee/chin, with one LARGE clear rounded rectangular live-screen opening between them. Expand the sign's middle vertically enough to make a genuinely usable large display rather than a narrow slot, while preserving the source diamond perimeter and its bulbs. The screen opening must be entirely alpha-transparent, not black painted glass, and the entire background outside the sign/star must also be alpha-transparent. No existing city background, fence, cables crossing the live opening, people, game HUD, software buttons, cursor or fake screen text. All physical enamel, steel, lamps and lettering remain opaque. No new hardware, no tidy redesigned vector illustration, no monochrome palette, no fake checkerboard. Leave modest blank metal on the lower chin for compact live Output/VolShell/status controls, and a blank upper/right trim area for Collapse; do not draw those controls into the artwork. This is one complete isolated image asset, roughly 1536px wide, centered with no clipped outside star or bulbs. Text retained exactly: WELCOME and NEW VEGAS.",
+      "tool": "built-in image_gen",
+      "transparent_background": true
+    }
+  ]
+}

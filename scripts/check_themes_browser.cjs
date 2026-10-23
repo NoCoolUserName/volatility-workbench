@@ -70,9 +70,9 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       const style=getComputedStyle(element);return Object.fromEntries(['bg','panel','control-bg','text','muted','accent','privacy-bg','privacy-text','code-bg'].map(name=>[name,style.getPropertyValue('--'+name).trim()]));
     }),{'bg':'#0d1418','panel':'#141f25','control-bg':'#0c171c','text':'#e5eeee','muted':'#9fb2bb','accent':'#9cddb7','privacy-bg':'#1d2a27','privacy-text':'#bed9c9','code-bg':'#091014'},'Default restores the original green Workbench palette');
     const catalog=await page.evaluate(()=>window.WorkbenchThemes.catalog);
-    assert.equal(catalog.length,35);
-    assert.equal(catalog.filter(t=>t.group==='Fallout').length,16);
-    assert.equal(new Set(catalog.map(t=>t.id)).size,35);
+    assert.equal(catalog.length,38);
+    assert.equal(catalog.filter(t=>t.group==='Fallout').length,19);
+    assert.equal(new Set(catalog.map(t=>t.id)).size,38);
     const screenshotDir=process.env.WORKBENCH_THEME_SCREENSHOTS;
     if(screenshotDir)fs.mkdirSync(screenshotDir,{recursive:true});
     const measurements=[];
@@ -173,9 +173,9 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       assert.deepEqual(await presentationStyles(),styles,`${id} must not retain Fallout 2 housing styles`);
       await chooseTheme('fallout-new-vegas');await chooseTheme(id);
       assert.deepEqual(await presentationStyles(),styles,`${id} must not retain New Vegas housing styles`);
-      for(const terminal of ['fallout-3-robco','fallout-3-vault-112']){
+      for(const terminal of ['fallout-3-robco','fallout-3-vault-112','fallout-3-robco-2','fallout-3-vault-112-2','fallout-new-vegas-2']){
         await chooseTheme(terminal);await chooseTheme(id);
-        assert.deepEqual(await presentationStyles(),styles,`${id} must not retain Fallout 3 terminal housing styles`);
+        assert.deepEqual(await presentationStyles(),styles,`${id} must not retain terminal housing styles from ${terminal}`);
       }
     }
     // Every original preference remains honored on startup, including settings.
@@ -270,7 +270,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     assert.equal(await page.locator('html').getAttribute('data-theme'),'8-bit');
     assert.deepEqual(errors,[]);
     assert.deepEqual(policyErrors,[],'Production CSP must allow all packaged artwork');
-    console.log(`Theme browser: ${catalog.length} skins, 16 Fallout choices, text/control contrast, selected report, focus, legacy prefs, shared Settings, CSS Fallout housings/isolation, both Fallout 3 terminals at desktop/mobile sizes and 200% text, increased contrast and unavailable storage passed. ${network.length} local GET requests; zero analysis/mutation/external requests.`);
+    console.log(`Theme browser: ${catalog.length} skins, 19 Fallout choices, text/control contrast, selected report, focus, legacy prefs, shared Settings, CSS Fallout housings/isolation, original Fallout 3 terminals at desktop/mobile sizes and 200% text, increased contrast and unavailable storage passed. ${network.length} local GET requests; zero analysis/mutation/external requests.`);
     if(screenshotDir)fs.writeFileSync(path.join(screenshotDir,'contrast.json'),JSON.stringify(measurements,null,2)+'\n');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

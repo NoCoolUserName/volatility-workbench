@@ -1,0 +1,51 @@
+{
+  "schema": "workbench-reference-terminal-assets/1",
+  "generated": "2026-10-23",
+  "assets": [
+    {
+      "asset": "bezel-fallout3-robco-2.png",
+      "bytes": 1736357,
+      "sha256": "ddc924e9ceb8bc3757a34fa61a4667f75c1a34835cf174cd5ddf714149ad3618",
+      "reference_filename": "Fallout 3 terminal black.png",
+      "reference_sha256": "4feabe54eaacd865e3563c346808248fe9d16f7ab111601cdeb4b50537e12471",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "alpha": "RGBA: transparent exterior and live-screen opening",
+      "tool": "built-in image_gen",
+      "prompts": "resources/reference-terminal-prompts.json",
+      "rights": "User-supplied game-art reference. Third-party redistribution rights unverified; see LICENSING.md. No software license grant is asserted for recognizable franchise artwork."
+    },
+    {
+      "asset": "bezel-fallout3-vault112-2.png",
+      "bytes": 1634194,
+      "sha256": "9fb9ef87e1635974ed8991668bf7b6e0d4632751007c686c36434a98fe68616a",
+      "reference_filename": "fallout 3 terminal.png",
+      "reference_sha256": "2f9c0563670db4b6a4ffb891bcfed71884e71cdc75f9765c3cf133cfc09991e7",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "alpha": "RGBA: transparent exterior and live-screen opening",
+      "tool": "built-in image_gen",
+      "prompts": "resources/reference-terminal-prompts.json",
+      "rights": "User-supplied game-art reference. Third-party redistribution rights unverified; see LICENSING.md. No software license grant is asserted for recognizable franchise artwork."
+    },
+    {
+      "asset": "bezel-new-vegas-2.png",
+      "bytes": 2478925,
+      "sha256": "7c4170eecff7e3cd3eb28e4967de0d20fc8f9a8199808136e9fe0615b00b41f8",
+      "reference_filename": "codex-clipboard-1ad781c9-a64b-4071-ad9d-78b9dfb084c9.png",
+      "reference_sha256": "bcff910d6854ea8ba01d24d915a4b72783fd643a2dba51793bbb38d1b7daf420",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "alpha": "RGBA: transparent exterior and live-screen opening",
+      "tool": "built-in image_gen",
+      "prompts": "resources/reference-terminal-prompts.json",
+      "rights": "User-supplied game-art reference. Third-party redistribution rights unverified; see LICENSING.md. No software license grant is asserted for recognizable franchise artwork."
+    }
+  ]
+}

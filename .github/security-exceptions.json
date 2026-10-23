@@ -27,8 +27,8 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/package_smoke.py",
       "line": 16,
-      "source_sha256": "abe494dc682d5745db029c19ec6f78435ac7cedf303d23d96a783fe20d6a6adc",
-      "reason": "All callers supply fixed isolated wheel-install/test argv tuples; subprocess default shell=False, and no caller supplies shell=True. Developer test runner, no recovered input. Re-reviewed 2026-10-22: license metadata/text assertions added; subprocess argv paths unchanged."
+      "source_sha256": "a411e6c3e5785c75f936b3b98b88f2e54dd34211c7cf5943c84094126c751271",
+      "reason": "All callers supply fixed isolated wheel-install/test argv tuples; subprocess default shell=False, and no caller supplies shell=True. Developer test runner, no recovered input. Re-reviewed 2026-10-22: license metadata/text assertions added; subprocess argv paths unchanged. Re-reviewed 2026-10-23: packaged local artwork hash/provenance/HTTP assertions added; subprocess call and argv unchanged."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
