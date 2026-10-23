@@ -164,6 +164,36 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
    }
    await expand.click();await page.waitForFunction(()=>document.querySelector('#expandConsole').getAttribute('aria-expanded')==='false');
   }
+  // Camden Park fills the window vertically; its controls sit on the housing.
+  await page.evaluate(()=>window.WorkbenchThemes.apply('fallout-76-camden-park'));
+  for(const [width,height,scale] of [[1906,1698,1],[1400,1000,1],[900,600,1],[390,844,1],[320,844,2]]){
+   await page.setViewportSize({width,height});
+   await page.evaluate(scale=>{document.documentElement.style.setProperty('--text-scale',String(scale));document.documentElement.dataset.textScaled=String(scale!==1);},scale);
+   await expand.click();await zoom.waitFor();
+   const geometry=await page.evaluate(()=>{
+    const box=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height};};
+    return {frame:box('#consoleZoom'),screen:box('.crt-screen'),controls:[...document.querySelectorAll('#consoleOutputMode,#consoleVolshellMode,.crt-power')].filter(node=>node.getClientRects().length).map(node=>{const r=node.getBoundingClientRect();return {id:node.id||node.className,top:r.top,bottom:r.bottom,left:r.left,right:r.right};}),
+     controlsLayer:Number(getComputedStyle(document.querySelector('.crt-chin')).zIndex),frameLayer:Number(getComputedStyle(document.querySelector('.crt-monitor'),'::before').zIndex)};
+   });
+   const label=`Camden ${width}x${height} at ${scale*100}% text`;
+   assert.ok(Math.abs(geometry.frame.top)<1&&Math.abs(geometry.frame.bottom-height)<1,label+' has no reserved space above or below the frame');
+   assert.ok(Math.abs(geometry.frame.width/geometry.frame.height-1402/1122)<.001,label+' preserves the artwork aspect ratio');
+   assert.ok(geometry.screen.left>=0&&geometry.screen.right<=width,label+' keeps live text inside the window');
+   assert.ok(geometry.screen.height>=height*.49,label+' uses the enlarged glass area');
+   assert.ok(geometry.controlsLayer>geometry.frameLayer,label+' controls remain above the bezel artwork');
+   for(const control of geometry.controls){
+    assert.ok(control.top>=geometry.screen.bottom&&control.bottom<=height,label+' '+control.id+' stays on the lower bezel');
+    assert.ok(control.left>=0&&control.right<=width,label+' '+control.id+' stays reachable');
+   }
+   await page.locator('#consoleOutputMode').focus();await page.keyboard.press('Tab');
+   assert.equal(await page.locator('#consoleVolshellMode').evaluate(node=>document.activeElement===node),true,label+' preserves keyboard access');
+   if(process.env.WORKBENCH_CAMDEN_CRT_SCREENSHOT_DIR){
+    fs.mkdirSync(process.env.WORKBENCH_CAMDEN_CRT_SCREENSHOT_DIR,{recursive:true});
+    await page.screenshot({path:path.join(process.env.WORKBENCH_CAMDEN_CRT_SCREENSHOT_DIR,`camden-${width}x${height}-${scale*100}.png`)});
+   }
+   await expand.click();await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  }
+  await page.evaluate(()=>{document.documentElement.style.removeProperty('--text-scale');delete document.documentElement.dataset.textScaled;window.WorkbenchThemes.apply('fallout-2');});
   await page.setViewportSize({width:2560,height:1440});
   await expand.click();await zoom.waitFor();
   assert.equal(await zoom.evaluate(node=>node.getBoundingClientRect().width>innerWidth*.95),true,'High-resolution display stays near full-screen');
