@@ -767,7 +767,8 @@ Button labels reserve at least 8px of clearance from that LED, including at
 The RobCo Night 2 console stacks Collapse, Output and VolShell on the lower-right
 bezel, with Saved directly below.
 Its narrow controls and keyboard focus outlines fit the measured metal strip;
-the connection LED sits above the VolShell label. Desktop controls remain stacked
+the connection LED is centered below the VolShell label. Saved is a plain status
+light and caption directly on the bezel, without a button plate. Desktop controls remain stacked
 on the right at every text setting, with single-line captions sized to the strip;
 the actual console text retains the selected text scale. Narrow mobile windows
 use the wider responsive controls. The frame crops transparent canvas margins

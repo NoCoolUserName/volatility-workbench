@@ -149,6 +149,14 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
      assert.ok(Math.abs(modeControls[0].top-geometry.sharedCollapse.bottom-6)<1,label+' groups Collapse directly above Output');
      const status=geometry.controls.find(control=>control.id==='power');
      assert.ok(Math.abs(status.top-modeControls[1].bottom-6)<1,label+' groups Saved directly below VolShell');
+     const details=await page.evaluate(()=>{
+      const button=document.querySelector('#consoleVolshellMode'),led=button.querySelector('.volshell-led'),range=document.createRange();
+      range.selectNodeContents([...button.childNodes].find(node=>node.nodeType===Node.TEXT_NODE&&node.textContent.trim()));
+      const text=range.getBoundingClientRect(),light=led.getBoundingClientRect(),plate=button.getBoundingClientRect(),status=document.querySelector('.crt-power'),style=getComputedStyle(status);
+      return {gap:light.top-text.bottom,centerOffset:Math.abs((light.left+light.right-plate.left-plate.right)/2),border:parseFloat(style.borderTopWidth),background:style.backgroundColor,image:style.backgroundImage,shadow:style.boxShadow,isButton:status.matches('button,[role="button"]')};
+     });
+     assert.ok(details.gap>=7.5&&details.centerOffset<1,label+' centers the rectangular LED below VolShell with label clearance');
+     assert.ok(details.border===0&&details.background==='rgba(0, 0, 0, 0)'&&details.image==='none'&&details.shadow==='none'&&!details.isButton,label+' paints Saved directly on the bezel without a button plate');
      // Independently measured usable metal in the 1536x1024 source image.
      // Keep the full outline inside it, rather than testing only outside-glass placement.
      for(const selector of ['#fieldConsoleCollapse','#consoleOutputMode','#consoleVolshellMode','.crt-power']){
