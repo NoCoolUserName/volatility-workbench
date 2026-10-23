@@ -139,6 +139,16 @@ function deferred(){let resolve;const promise=new Promise(r=>{resolve=r;});retur
     saved=persisted(page,'fallout-new-vegas');migration.release.resolve();await saved;await theme(page,'fallout-new-vegas');
     await ctx.close();
 
+    // Retired Fallout 76 cache migrates to a remaining terminal in both menus.
+    preference=empty();ctx=await context('fallout-76');page=await ctx.newPage();
+    saved=persisted(page,'fallout-76-field-terminal');await page.goto('http://127.0.0.1:43108/');await saved;
+    await theme(page,'fallout-76-field-terminal');
+    assert.equal(await page.locator('[data-theme-picker] option[value="fallout-76"]').count(),0);
+    await page.goto('http://127.0.0.1:43108/settings.html');await theme(page,'fallout-76-field-terminal');
+    assert.equal(await page.locator('[data-theme-picker] option[value="fallout-76"]').count(),0);
+    assert.equal(await page.locator('[data-theme-picker] option[value="fallout-76-camden-park"]').count(),1);
+    await ctx.close();
+
     // Backend-invalid preference is explicit; unknown browser cache falls back.
     preference={...empty(),error:'Saved theme could not be loaded. Choose a theme to save it again.'};
     ctx=await context('unknown-theme');page=await ctx.newPage();

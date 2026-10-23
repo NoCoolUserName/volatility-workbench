@@ -71,7 +71,7 @@ assert profile['profile']==manifest['symbols']['profile']
 for asset in ('static/settings.html','static/settings.js','static/settings.css','static/app.js','static/zoom.js','static/icon.png','static/themes.js','static/themes.css','static/adventure.js','static/halloween-night.png'):
  assert files('volatility_workbench').joinpath(asset).read_bytes(),asset
 scenes=list(files('volatility_workbench').joinpath('static').glob('theme-*.svg'))
-assert len(scenes)==30 and all(scene.read_bytes() for scene in scenes)
+assert len(scenes)==29 and all(scene.read_bytes() for scene in scenes)
 core=json.loads(m.distribution('volatility-mcp').read_text('direct_url.json'))
 assert core['vcs_info']['commit_id']==info['core_commit']
 python=resources/'analyzer/bin/python3'; vol=resources/'analyzer/bin/vol'

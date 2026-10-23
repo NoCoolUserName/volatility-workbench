@@ -97,7 +97,6 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 :root:is([data-theme="fallout-new-vegas"],[data-theme="fallout-new-vegas-2"]) { --shell-plate: radial-gradient(ellipse at 0 100%,#6a292f70,transparent 70%),linear-gradient(#572c2d,#2a1720); --shell-radius: 18px 4px; --shell-border: 2px solid #ffdab0; --shell-shadow: inset 0 0 0 2px #33212a,0 0 0 1px #9ec5ca,0 0 7px #f1a65e55; --shell-font: Georgia, serif; --shell-spacing: .08em; }
 :root[data-theme="fallout-4"] { --shell-plate: linear-gradient(90deg,transparent 45%,#76999b26 46% 48%,transparent 49%),linear-gradient(#2c5156,#192e32); --shell-radius: 5px; --shell-border: 2px solid #8bb3ad; --shell-shadow: inset 2px 2px #b8d0ba44,inset -2px -3px #10262b; }
 :root[data-theme="fallout-shelter"] { --shell-plate: linear-gradient(0deg,#777037 0 5px,transparent 5px),linear-gradient(#3d4b29,#263320); --shell-radius: 16px; --shell-border: 2px solid #d3bb6d; --shell-shadow: inset 0 2px #d4ce8555,0 3px 0 #1a2614; --shell-font: system-ui,sans-serif; }
-:root[data-theme="fallout-76"] { --shell-plate: linear-gradient(90deg,#bba86230 0 7px,transparent 7px calc(100% - 7px),#bba86230 calc(100% - 7px)),linear-gradient(#285261,#123440); --shell-radius: 6px 6px 2px 2px; --shell-border: 3px double #c1b174; --shell-shadow: inset 0 2px #bdd2c633; }
 :root[data-theme="fallout-4-vr"] { --shell-plate: linear-gradient(90deg,#294655 49%,#182b34 49% 51%,#294655 51%); --shell-radius: 17px 17px 10px 10px; --shell-border: 2px solid #a3bcc5; --shell-shadow: inset 0 -4px #112332,0 1px 0 #c5d4d966; }
 :root[data-theme="fallout-pinball"] { --shell-plate: radial-gradient(ellipse at 30% 10%,#b88c5144,transparent 70%),linear-gradient(#51324b,#2b203a); --shell-radius: 22px 7px 22px 22px; --shell-border: 2px solid #d6bc88; --shell-shadow: inset 0 2px #fff0bd44,0 3px 0 #171023; --shell-font: system-ui,sans-serif; }
 :root[data-theme="fallout-shelter-online"] { --shell-plate: repeating-linear-gradient(90deg,transparent 0 19px,#adc8d018 19px 21px),linear-gradient(#28516e,#172f4c); --shell-radius: 8px 0 8px 0; --shell-border: 2px solid #d5bd7e; --shell-shadow: inset 0 -4px #081d2d; --shell-font: system-ui,sans-serif; }
@@ -862,8 +861,7 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 }
 :root[data-theme="fallout-new-vegas-2"] :is(#consoleOutputMode,#consoleVolshellMode,#fieldConsoleCollapse) {
   color: #922d22;
-  background: radial-gradient(circle at calc(100% - 8px) 50%,#ffdf70 0 2px,#855121 3px,transparent 5px),
-              linear-gradient(110deg,#fbefc7,#c5d3cb 42%,#e6d2a3 80%,#af7548);
+  background: linear-gradient(110deg,#fbefc7,#c5d3cb 42%,#e6d2a3 80%,#af7548);
   border: 2px solid #944e2b; border-radius: 18px 5px 18px 5px;
   box-shadow: inset 0 1px #fff9d8,inset 0 -3px #7a4e39,0 2px 3px #0009,0 0 6px #ffc35a55;
   font-family: Georgia,serif; font-weight: 800; text-shadow: 0 1px #fff9c7;

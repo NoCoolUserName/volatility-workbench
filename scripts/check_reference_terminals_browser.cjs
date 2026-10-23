@@ -36,7 +36,7 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
   const arrowRatio=await page.locator('.report-console-arrow').evaluate(node=>parseFloat(getComputedStyle(node).fontSize)/parseFloat(getComputedStyle(document.querySelector('#toggleReportConsole')).fontSize));
   assert.ok(arrowRatio>=1.15&&arrowRatio<=1.25,'The Report console arrow is about 20% larger than its original inherited size');
   const catalog=await page.evaluate(()=>WorkbenchThemes.catalog);
-  assert.equal(catalog.length,38);assert.equal(catalog.filter(theme=>theme.group==='Fallout').length,19);
+  assert.equal(catalog.length,37);assert.equal(catalog.filter(theme=>theme.group==='Fallout').length,18);
   for(const [original,label,reference,referenceLabel] of editions){
    for(const [id,text] of [[original,label],[reference,referenceLabel]]){
     assert.equal(catalog.find(theme=>theme.id===id)?.label,text,'Both numbered choices retain their stable preference IDs');
@@ -72,6 +72,13 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
   }
   for(const [, ,id] of editions){
    await page.evaluate(id=>WorkbenchThemes.apply(id),id);
+   if(id==='fallout-new-vegas-2'){
+    for(const selector of ['#fieldConsoleCollapse','#consoleVolshellMode']){
+     const background=await page.locator(selector).evaluate(node=>getComputedStyle(node).backgroundImage);
+     assert.ok(!background.includes('radial-gradient'),'New Vegas '+selector+' has no decorative bulb');
+    }
+    assert.equal(await page.locator('#consoleVolshellMode .volshell-led').count(),1,'VolShell retains its rectangular connection LED');
+   }
    for(const [width,height,scale] of [[1400,1000,1],[900,600,1],[390,844,1],[320,844,2]]){
     const label=`${id} ${width}x${height} ${scale*100}% text`;
     await page.setViewportSize({width,height});
