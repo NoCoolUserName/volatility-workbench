@@ -130,6 +130,11 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
     assert.ok(geometry.controlLayer>geometry.artLayer,label+' places controls above the art');
     assert.equal(geometry.controls.length,3,label+' shows Output, VolShell and status');
     const modeControls=geometry.controls.filter(control=>control.id!=='power');
+    if(['fallout-3-vault-112-2','fallout-new-vegas-2'].includes(id)){
+     const status=await page.locator('.crt-power').evaluate(node=>{const style=getComputedStyle(node);return {border:parseFloat(style.borderTopWidth),background:style.backgroundColor,image:style.backgroundImage,shadow:style.boxShadow,isButton:node.matches('button,[role="button"]'),text:node.querySelector('#consolePowerText').textContent,light:node.querySelector('i').getBoundingClientRect().width};});
+     assert.ok(status.border===0&&status.background==='rgba(0, 0, 0, 0)'&&status.image==='none'&&status.shadow==='none'&&!status.isButton,label+' paints status directly on the bezel without a button plate');
+     assert.ok(status.text.trim()&&status.light>0,label+' retains the status caption and indicator');
+    }
     if(id==='fallout-3-robco-2'&&width>700)assert.equal(geometry.direction,'column',label+' always keeps the desktop buttons stacked on the right');
     for(const control of geometry.controls){
      assert.ok(control.left>=-1&&control.right<=width+1&&control.top>=0&&control.bottom<=height+1,label+' '+control.id+' stays reachable');
