@@ -674,7 +674,7 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 }
 :root[data-theme="fallout-76-field-terminal"] .crt-mode-controls :is(#consoleOutputMode,#consoleVolshellMode) {
   position: relative; width: calc(108px * var(--text-scale,1)); min-height: 32px;
-  padding: calc(4px * var(--text-scale,1)) calc(22px * var(--text-scale,1));
+  padding: calc(4px * var(--text-scale,1)) calc(20px * var(--text-scale,1));
   justify-content: center; line-height: 1.4;
 }
 :root[data-theme="fallout-76-field-terminal"] .crt-mode-controls .volshell-led { position: absolute; left: 7px; }
