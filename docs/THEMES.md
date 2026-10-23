@@ -98,6 +98,11 @@ available in Workbench and Settings. The New Vegas 1 CSS marquee remains availab
 alongside the reference-derived New Vegas 2 frame. The three new image frames are
 packaged locally as `bezel-fallout3-robco-2.png`,
 `bezel-fallout3-vault112-2.png` and `bezel-new-vegas-2.png`.
+Their zoomed frames fill the window height at the PNG's native 3:2 aspect;
+the outer sides may crop in narrow windows while the live glass and controls
+remain visible. RobCo controls use dark machined metal, Vault controls use
+worn olive metal, and New Vegas controls use cream enamel, rust-red lettering
+and sign-bulb accents.
 
 Two Fallout 76 terminal variants use the user's additional screenshots:
 
