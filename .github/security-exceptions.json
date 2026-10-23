@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-10-22",
+  "reviewed_at": "2026-10-23",
   "exceptions": [
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/build_macos.py",
-      "line": 23,
-      "source_sha256": "479579be69868e623946bcda71c332dfe4aa7dc36f35a4773238839d606c7186",
-      "reason": "Build helper receives argv from fixed build/signing commands and explicit developer-selected paths; shell=False is explicit. No recovered data enters executable selection. Re-reviewed 2026-10-22: static license/source notice handling added; subprocess argv paths unchanged."
+      "line": 24,
+      "source_sha256": "62ec813b50f6a8b333d3385ec31571cab51d6f8aaa2a03de8bc1c9c65b69af1e",
+      "reason": "Re-reviewed 2026-10-23: the helper still receives fixed argv or explicitly selected build paths and uses shell=False. The Adventure build invokes pinned, hash-checked sources through separate build code; no case or recovered input reaches this helper."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -34,29 +34,29 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/release_macos.py",
       "line": 31,
-      "source_sha256": "53b6bde8ee794b5719fa2a4082ef2cc16d9eae54d8f73cbfa4eb48d1ccdbea28",
-      "reason": "Signing helper uses fixed native tools and separately passed identity/app-path arguments; shell=False is explicit. Release is an explicit developer action. Re-reviewed 2026-10-22: license/source notice validation added; subprocess argv paths unchanged."
+      "source_sha256": "42e800e208a5924301a2364772e33db798ed9480a7770a5d2d7425584bd41150",
+      "reason": "Re-reviewed 2026-10-23: signing helper uses fixed native tools and separately passed identity/app path; shell=False. New Adventure audit checks files and digests without executable selection from recovered input."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/release_macos.py",
-      "line": 243,
-      "source_sha256": "53b6bde8ee794b5719fa2a4082ef2cc16d9eae54d8f73cbfa4eb48d1ccdbea28",
-      "reason": "Nested release runner receives fixed ditto/xcrun/stapler/spctl argv; validated Keychain profile remains a separate argument and shell=False is explicit. Re-reviewed 2026-10-22: license/source notice validation added; subprocess argv paths unchanged."
+      "line": 266,
+      "source_sha256": "42e800e208a5924301a2364772e33db798ed9480a7770a5d2d7425584bd41150",
+      "reason": "Re-reviewed 2026-10-23: nested release runner uses fixed ditto/xcrun/stapler/spctl argv and a validated Keychain profile as a separate argument; shell=False."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
-      "line": 21,
-      "source_sha256": "cb5b3ad8260e6599f10e78f65b1b836b77ec7fa566c1db10ff3714eca9ffa675",
-      "reason": "Explicit developer-selected bundle native executable receives the fixed --check-bundled-runtime argument; list argv uses default shell=False."
+      "line": 36,
+      "source_sha256": "af5ddefc131d78a943c7da696119e53114fa355f8fbf5a6dc9f09268a870fc45",
+      "reason": "Re-reviewed 2026-10-23: explicit developer-selected bundle native executable receives only the fixed --check-bundled-runtime argument; sanitized temporary environment and shell=False. Added game binaries are manifest-checked and use fixed synthetic commands."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
-      "line": 76,
-      "source_sha256": "cb5b3ad8260e6599f10e78f65b1b836b77ec7fa566c1db10ff3714eca9ffa675",
-      "reason": "Explicit bundle Python runs a fixed literal synthetic validation program with -I, separate resources argument, sanitized env and default shell=False. No recovered code is executed."
+      "line": 103,
+      "source_sha256": "af5ddefc131d78a943c7da696119e53114fa355f8fbf5a6dc9f09268a870fc45",
+      "reason": "Re-reviewed 2026-10-23: explicit bundle Python runs a fixed literal synthetic validation program with -I, a separate resources argument, sanitized temporary environment, and shell=False. No recovered code is executed."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",

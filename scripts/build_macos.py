@@ -257,6 +257,11 @@ for name,expected in ((p['file'],p['sha256']),('LICENSE',p['license_sha256'])):
         # Retain a dependency/source inventory and exact wheel hashes for the build.
         write_json(resources/'wheel-hashes.json',{str(p.relative_to(wheelhouse)):digest(p) for p in sorted(wheelhouse.rglob('*.whl'))})
         run([sys.executable,ROOT/'scripts/release_macos.py','sign-nested',app,'--identity',args.sign_identity])
+        for entry in adventure_receipt['editions'].values():
+            entry['unsigned_sha256'] = entry['sha256']
+            entry['sha256'] = digest(resources/'adventure'/entry['executable'])
+        write_json(resources/'adventure/manifest.json',adventure_receipt)
+        write_json(resources/'build-info.json',info)
         # Signing native libraries and normalizing console entry shebangs changes
         # installed bytes. Preserve original wheel hashes; update only preexisting
         # RECORD entries (never classify added community sources as official files).

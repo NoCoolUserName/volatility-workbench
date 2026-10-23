@@ -43,6 +43,17 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
   await page.goto('http://localhost/?adventure-dev=1');
   assert.equal(await page.locator('#adventureDevButton').evaluate(x=>x.hidden),false);
   const before=await page.evaluate(()=>({theme:document.documentElement.getAttribute('data-theme'),scroll:scrollY}));
+  await page.evaluate(async()=>{
+    const original=WorkbenchVolshell;
+    window.WorkbenchVolshell=Object.freeze({...original,restoreMode: mode=>{window.adventureRestoredMode=mode;original.restoreMode(mode);}});
+    document.querySelector('#consoleZoom').showModal();
+    original.restoreMode('volshell');
+    await Adventure.launch({edition:'select'});
+  });
+  assert.equal(await page.evaluate(()=>WorkbenchVolshell.currentMode()),'adventure');
+  await page.locator('#adventureExit').click();
+  assert.equal(await page.evaluate(()=>window.adventureRestoredMode),'volshell');
+  await page.evaluate(()=>document.querySelector('#consoleZoom').close());
   await page.evaluate(()=>Adventure.launch({edition:'select'}));
   assert.equal(await page.locator('#consoleZoom').evaluate(x=>x.open),true);
   assert.equal(await page.locator('#adventure1977').isEnabled(),true);
@@ -70,12 +81,6 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
   await page.locator('#adventureOutput').getByText('RESTORED 1995 CAVE').waitFor();
   await page.locator('#adventureExit').click();
   await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
-  await page.evaluate(()=>{document.querySelector('#consoleZoom').showModal();WorkbenchVolshell.restoreMode('volshell');});
-  await page.evaluate(()=>Adventure.launch({edition:'select'}));
-  assert.equal(await page.evaluate(()=>WorkbenchVolshell.currentMode()),'adventure');
-  await page.locator('#adventureExit').click();
-  assert.equal(await page.evaluate(()=>WorkbenchVolshell.currentMode()),'volshell');
-  await page.evaluate(()=>document.querySelector('#consoleZoom').close());
   assert.ok(calls.every(x=>x==='/api/state'||x.startsWith('/api/adventure/')||x==='/api/settings/zoom'));
   assert.deepEqual(errors,[]);
   console.log('Adventure browser: both editions, input, escape safety, independent saves, relaunch, theme and console restoration passed');
