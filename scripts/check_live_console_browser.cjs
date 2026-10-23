@@ -182,7 +182,7 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
    assert.ok(geometry.screen.height>=height*.49,label+' uses the enlarged glass area');
    assert.ok(geometry.controlsLayer>geometry.frameLayer,label+' controls remain above the bezel artwork');
    for(const control of geometry.controls){
-    assert.ok(control.top>=geometry.screen.bottom&&control.bottom<=height,label+' '+control.id+' stays on the lower bezel');
+    assert.ok(control.top>=geometry.screen.bottom&&control.bottom<=height*.94,label+' '+control.id+' stays on the silver housing above the outer rim');
     assert.ok(control.left>=0&&control.right<=width,label+' '+control.id+' stays reachable');
    }
    await page.locator('#consoleOutputMode').focus();await page.keyboard.press('Tab');

@@ -761,10 +761,14 @@ a separate rectangular connection LED and visible keyboard focus.
 The Camden Park and Field Terminal Fallout 76 consoles use detailed transparent
 frames derived from the user's reference pictures. The frame keeps its original
 proportions, with live HTML output behind the glass opening. Camden Park fills
-the console window vertically, with Output/VolShell and the status light on the
-lower bezel. Narrow windows crop only the outer housing while keeping text and
-controls visible. Field Terminal keeps its controls below the housing. The
-packaged PNGs need no network access.
+the console window vertically, with gently recessed Output/VolShell controls and
+the status light on the silver lower bezel above the outer rim. Narrow windows
+crop only the outer housing while keeping text and controls visible. Field
+Terminal stacks its mode buttons below the left silver latch, with a below-frame
+fallback when the housing is too small for readable labels, including short windows
+and enlarged text. Double-click its upper knob for 1977 Adventure or
+its lower knob for the 1995 edition; keyboard users can focus either knob and
+press Enter or Space. The packaged PNGs need no network access.
 
 Theme selection is saved in `appearance.json` under the application preferences
 directory, outside cases and evidence. It survives a new desktop launch even

@@ -152,6 +152,16 @@
       if (event.key === "Escape") { event.preventDefault(); $("adventureExit").focus(); }
     });
     $("adventureDevButton").onclick = () => launch({edition:"select"});
+    for (const [id, edition] of [["fieldAdventure1977", "1977"], ["fieldAdventure1995", "1995"]]) {
+      const activate = event => {
+        if (event.type === "click" && event.detail !== 0) return;
+        if (document.documentElement.dataset.theme !== "fallout-76-field-terminal" || !$("consoleZoom").open) return;
+        event.preventDefault();
+        void launch({edition}).catch(error => status(error.message));
+      };
+      $(id).ondblclick = activate;
+      $(id).onclick = activate;
+    }
     window.addEventListener("pagehide", () => {
       if (sessionId) navigator.sendBeacon?.("/api/adventure/close", new Blob(
         [JSON.stringify({session_id:sessionId})], {type:"application/json"}));

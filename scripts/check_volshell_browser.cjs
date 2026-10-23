@@ -550,6 +550,12 @@ async function checkBezelConnection(browser){
   assert.equal(await page.locator('#expandedConsoleHost').isVisible(),true);
   source=await streamIndex();readsBefore=stateReads;
   const activity={...earlyActivity,id:'observation-1',job_id:ordinaryJob.id,command:'db(0x1000, count=32)',entries:[entry('output','00001000  41 42 43 44  ABCD\nPartial synthetic observation')],observation_path:'volshell-observations/synthetic.json'};
+  await page.evaluate(()=>Adventure.launch({edition:'select'}));
+  await deliver({case_id:'case-a',session:null,busy:false,agent_activity:activity},source);
+  assert.equal(await page.evaluate(()=>WorkbenchVolshell.currentMode()),'adventure','Incoming AI activity cannot replace Adventure');
+  assert.equal(await page.locator('#adventurePanel').isVisible(),true);
+  await page.evaluate(()=>Adventure.exit());
+  assert.equal(await page.evaluate(()=>WorkbenchVolshell.currentMode()),'output','Adventure restores the investigation console after incoming AI activity');
   await deliver({case_id:'case-a',session:null,busy:false,agent_activity:activity},source);
   assert.equal(await page.locator('#volshellAgentPanel').isVisible(),true,'Active shell tool switches an already expanded matching case CRT');
   const startsBeforeAgent=count('volshell/start');await page.locator('#consoleVolshellMode').click();

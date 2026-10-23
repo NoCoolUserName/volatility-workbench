@@ -45,7 +45,9 @@ async function fixture(browser){
  await check('Tab and Shift+Tab cycle visible controls in all three modes',async({page,open,focus,posts})=>{
   await open();
   for(const mode of ['manual','suggestions','investigation']){
-   await page.locator('#volshellInteractionMode').focus();await page.keyboard.press('Home');for(let i=0;i<['manual','suggestions','investigation'].indexOf(mode);i++)await page.keyboard.press('ArrowDown');await page.keyboard.press('Tab');
+   // Native select popup key handling differs in macOS headless Chrome. Choose
+   // the option semantically, then exercise the application's keyboard order.
+   await page.locator('#volshellInteractionMode').focus();await page.locator('#volshellInteractionMode').selectOption(mode);await page.keyboard.press('Tab');
    assert.equal(await page.locator('#volshellInteractionMode').inputValue(),mode);
    const ids=['volshellOutput',mode==='manual'?'volshellInput':mode==='suggestions'?'volshellAIInput':'volshellInvestigationInput',mode==='manual'?'volshellRun':mode==='suggestions'?'volshellAISubmit':'volshellInvestigate','consoleOutputMode','consoleVolshellMode'];
    if(mode==='investigation'){ids.shift();ids.splice(ids.indexOf('consoleOutputMode'),0,'volshellInvestigationOutput');}
@@ -84,7 +86,7 @@ async function fixture(browser){
   await page.locator('#volshellInteractionMode').selectOption('manual');await page.locator('#volshellInteractionMode').selectOption('investigation');assert.equal(posts.length,0);
  });
  await check('Case change is explicit and never reveals another case transcript',async({page,open,posts,state})=>{
-  await open();await page.locator('#volshellConnection summary').focus();await page.keyboard.press('Enter');await page.keyboard.press('Tab');await page.keyboard.press('End');await page.keyboard.press('Tab');assert.equal(await page.locator('#volshellCase').inputValue(),'case-b');assert.doesNotMatch(await page.locator('#consoleZoom').innerText(),/ONLY CASE A OUTPUT/);assert.match(await page.locator('#caseTitle').textContent(),/case-a/,'Console target does not switch main investigation context');assert.equal(await page.locator('#volshellInput').isDisabled(),true);assert.equal(state.volshell.session.case_id,'case-a');assert.equal(posts.length,0);
+  await open();await page.locator('#volshellConnection summary').focus();await page.keyboard.press('Enter');await page.keyboard.press('Tab');assert.equal(await page.locator('#volshellCase').evaluate(n=>document.activeElement===n),true);await page.locator('#volshellCase').selectOption('case-b');await page.keyboard.press('Tab');assert.equal(await page.locator('#volshellCase').inputValue(),'case-b');assert.doesNotMatch(await page.locator('#consoleZoom').innerText(),/ONLY CASE A OUTPUT/);assert.match(await page.locator('#caseTitle').textContent(),/case-a/,'Console target does not switch main investigation context');assert.equal(await page.locator('#volshellInput').isDisabled(),true);assert.equal(state.volshell.session.case_id,'case-a');assert.equal(posts.length,0);
  });
  await check('Case buttons retain focus across polling and announce the current case',async({page,posts,state})=>{
   const current=page.getByRole('button',{name:'Synthetic case-a',exact:true});await current.focus();await page.evaluate(()=>refresh());assert.equal(await current.evaluate(n=>document.activeElement===n),true,'Polling preserves keyboard focus on the case');assert.equal(await current.getAttribute('aria-current'),'true');
@@ -92,7 +94,7 @@ async function fixture(browser){
   state.cases.find(c=>c.id==='case-a').created_at='2026-10-20T12:00:00Z';await page.evaluate(()=>refresh());assert.equal(await next.evaluate(n=>document.activeElement===n),true,'Reordering retains focus without choosing another case');assert.equal(await page.locator('#caseTitle').textContent(),'Synthetic case-b');assert.equal(posts.length,0);
  });
  await check('Settings keyboard round trip retains the selected case without actions',async({page,open,posts})=>{
-  await open();await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  await open();await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open&&document.querySelector('#expandConsole').getAttribute('aria-expanded')==='false');
   await page.getByRole('link',{name:'Settings',exact:true}).focus();await page.keyboard.press('Enter');await page.locator('#settings-theme').waitFor();await page.waitForFunction(()=>!document.querySelector('[data-ui-zoom-out]').disabled);
   await page.getByRole('link',{name:'← Back to Workbench',exact:true}).focus();
   for(const selector of ['[data-ui-zoom-out]','[data-ui-zoom-reset]','[data-ui-zoom-in]','#settings-theme']){await page.keyboard.press('Tab');assert.equal(await page.locator(selector).evaluate(n=>document.activeElement===n),true,'Settings keeps its text-size controls before Theme');}
