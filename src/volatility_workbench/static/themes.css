@@ -768,9 +768,9 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   --reference-inverse-aspect: .6666666667;
 }
 :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .console-zoom {
-  width: min(calc(100vw - 24px),calc((100dvh - 148px * var(--text-scale,1)) * var(--reference-aspect)));
-  height: min(calc(100dvh - 148px * var(--text-scale,1)),calc((100vw - 24px) * var(--reference-inverse-aspect)));
-  padding: 0; margin: auto; border: 0; background: transparent; overflow: visible;
+  position: fixed; inset: 0 auto auto 50%; transform: translateX(-50%);
+  width: calc(100dvh * var(--reference-aspect)); height: 100dvh;
+  padding: 0; margin: 0; border: 0; background: transparent; overflow: visible;
 }
 :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .console-zoom::backdrop { background: #020302f5; backdrop-filter: none; }
 :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-monitor {
@@ -849,38 +849,68 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   display: block; position: absolute; z-index: 3; left: 90%; top: 52%; transform: translate(-50%,-50%);
   min-height: 32px; padding: 4px 8px; font-size: calc(11px * var(--text-scale,1));
 }
+/* Match each housing's own metalwork; the original version 1 controls are unchanged. */
+:root[data-theme="fallout-3-robco-2"] :is(#consoleOutputMode,#consoleVolshellMode,#fieldConsoleCollapse) {
+  color: #c2e0a5; background: linear-gradient(115deg,#74807b30,transparent 35% 70%,#8c979130),linear-gradient(#26302e,#101716);
+  border: 2px ridge #66746e; border-radius: 3px; box-shadow: inset 0 1px #a5aea54d,inset 0 -3px #070d0c,0 2px 3px #000b;
+  font-family: Menlo,monospace; font-weight: 700; text-shadow: 0 0 5px #8aef6a77;
+}
+:root[data-theme="fallout-3-vault-112-2"] :is(#consoleOutputMode,#consoleVolshellMode) {
+  color: #f2e8bd; background: linear-gradient(#8b8866 0 2px,transparent 2px),linear-gradient(#565944,#22291f 58%,#151b14);
+  border: 2px solid #a89e70; border-radius: 4px; box-shadow: inset 0 1px #eee3a266,inset 0 -3px #0c130e,0 1px 2px #000b;
+  font-family: Menlo,monospace; font-weight: 700; text-shadow: 0 1px 2px #000;
+}
+:root[data-theme="fallout-new-vegas-2"] :is(#consoleOutputMode,#consoleVolshellMode,#fieldConsoleCollapse) {
+  color: #922d22;
+  background: radial-gradient(circle at calc(100% - 8px) 50%,#ffdf70 0 2px,#855121 3px,transparent 5px),
+              linear-gradient(110deg,#fbefc7,#c5d3cb 42%,#e6d2a3 80%,#af7548);
+  border: 2px solid #944e2b; border-radius: 18px 5px 18px 5px;
+  box-shadow: inset 0 1px #fff9d8,inset 0 -3px #7a4e39,0 2px 3px #0009,0 0 6px #ffc35a55;
+  font-family: Georgia,serif; font-weight: 800; text-shadow: 0 1px #fff9c7;
+}
+:root[data-theme="fallout-new-vegas-2"] #consoleOutputMode {
+  background: radial-gradient(circle at 8px 50%,#ffdf70 0 2px,#855121 3px,transparent 5px),
+              radial-gradient(circle at calc(100% - 8px) 50%,#ffdf70 0 2px,#855121 3px,transparent 5px),
+              linear-gradient(110deg,#fbefc7,#c5d3cb 42%,#e6d2a3 80%,#af7548);
+}
+:root[data-theme="fallout-new-vegas-2"] :is(#consoleOutputMode,#consoleVolshellMode)[aria-pressed="true"] {
+  color: #fff2cb; background: linear-gradient(#ba4026,#631d1a); border-color: #ffe098;
+  box-shadow: inset 0 2px 5px #42130f,0 0 7px #f5a94a88; text-shadow: 0 1px #3a100f;
+}
+:root[data-theme="fallout-new-vegas-2"] .crt-power {
+  color: #ffe5a2; border-color: #a76631; border-radius: 12px 3px;
+  background: linear-gradient(#56321f,#241710); box-shadow: inset 0 1px #dba75b77,0 0 5px #f6b24d66;
+}
+:root[data-theme="fallout-new-vegas-2"] .crt-power i { background: #ffe263; border-color: #a65c22; box-shadow: 0 0 7px #ffd25c; }
+:root[data-theme="fallout-new-vegas-2"] #consoleVolshellMode .volshell-led { border-color: #925b39; }
+:root[data-theme="fallout-new-vegas-2"] :is(#consoleOutputMode,#consoleVolshellMode,#fieldConsoleCollapse):hover { filter: brightness(1.12); }
 :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .field-console-collapse:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-screen :is(#expandConsole,#collapseEmptyConsole,#collapseVolshell,#collapseVolshellAgent) { display: none; }
-@container reference-terminal (width < 64em) {
-  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-chin {
-    position: absolute; top: 100%; left: 50%; right: auto; transform: translateX(-50%);
-    width: min(calc(100vw - 24px),100%); padding: 8px 0 0; display: flex; flex-direction: column; gap: 8px;
-  }
-  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-mode-controls { position: static; transform: none; width: 100%; flex-direction: row; flex-wrap: wrap; }
-  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-mode-controls button { width: calc(96px * var(--text-scale,1)); }
-  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-power { position: relative; top: auto; left: auto; transform: none; }
-  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-new-vegas-2"]) .field-console-collapse {
-    display: block; left: 50%; top: 10%; width: auto; min-height: 32px; padding: 4px 8px;
-  }
-  :root[data-theme="fallout-new-vegas-2"] .field-console-collapse { top: 18%; }
-}
-/* On narrow displays crop only the outside housing, keeping useful glass height
-   and the native image ratio. The live screen and footer remain viewport bound. */
+/* On narrow displays, crop the outer housing and place controls on visible metal. */
 @media (max-width: 700px) {
-  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .console-zoom {
-    width: calc((100dvh - 240px * var(--text-scale,1)) * var(--reference-aspect)); height: calc(100dvh - 240px * var(--text-scale,1));
-    position: fixed; left: 50%; right: auto; transform: translateX(-50%);
-  }
   :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-recess {
     left: max(var(--reference-screen-left),calc((100% - 100vw) / 2 + 12px));
     right: max(var(--reference-screen-right),calc((100% - 100vw) / 2 + 12px));
   }
   :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-screen #consoleNote { display: none; }
-  /* Keep Vault's physical amber switch in view and aligned with its hit target. */
-  :root[data-theme="fallout-3-vault-112-2"] .console-zoom {
-    width: min(calc(100vw - 24px),calc((100dvh - 240px * var(--text-scale,1)) * var(--reference-aspect)));
-    height: min(calc(100dvh - 240px * var(--text-scale,1)),calc((100vw - 24px) * var(--reference-inverse-aspect)));
+  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-chin {
+    position: absolute; top: auto; bottom: 1%; left: 50%; right: auto; transform: translateX(-50%);
+    width: calc(100vw - 24px); display: flex; flex-direction: column; gap: 5px;
   }
+  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-mode-controls {
+    position: static; transform: none; width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: center;
+  }
+  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-mode-controls button { width: calc(96px * var(--text-scale,1)); }
+  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-power {
+    position: relative; top: auto; left: auto; transform: none; align-self: center;
+  }
+  :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .field-console-collapse {
+    display: block; left: 50%; top: 8%; width: auto; min-width: 44px; min-height: 44px;
+    height: auto; padding: 4px 12px; transform: translateX(-50%); font-size: calc(11px * var(--text-scale,1));
+    color: var(--text); background: var(--shell-plate);
+  }
+  :root[data-theme="fallout-3-vault-112-2"] .field-console-collapse { border: 2px solid #a89e70; }
+  :root[data-theme="fallout-new-vegas-2"] .field-console-collapse { color: #922d22; }
 }
 /* Raised menus retain visible state and paint over the metal page panels. */
 @media (max-height: 700px) {

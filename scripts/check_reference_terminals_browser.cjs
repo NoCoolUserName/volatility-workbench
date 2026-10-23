@@ -108,6 +108,7 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
     assert.equal(new URL(art.url).origin,'http://localhost');assert.ok(fs.existsSync(path.join(assets,new URL(art.url).pathname.slice(1))));
     assert.ok(Math.abs(geometry.aspect-art.width/art.height)<.00001,label+' derives its CSS aspect from the packaged art');
     assert.ok(Math.abs(geometry.frame.width/geometry.frame.height-art.width/art.height)<.002,label+' preserves the reference frame aspect ratio');
+    assert.ok(Math.abs(geometry.frame.top)<1&&Math.abs(geometry.frame.bottom-height)<1,label+' fills the viewport from top to bottom');
     assert.equal(art.centerAlpha,0,label+' leaves the live HTML behind the transparent glass opening');
     assert.ok(geometry.screen.left>=-1&&geometry.screen.right<=width+1&&geometry.screen.top>=-1&&geometry.screen.bottom<=height+1,label+' keeps live text reachable');
     assert.ok(Math.min(geometry.output.bottom,geometry.screen.bottom)-Math.max(geometry.output.top,geometry.screen.top)>=24,label+' keeps actual live output visible inside the glass');
