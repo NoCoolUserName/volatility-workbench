@@ -650,9 +650,8 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 :root[data-theme="fallout-76-camden-park"] .volshell-led { position: absolute; left: 12px; }
 :root[data-theme="fallout-76-camden-park"] #consoleOutputMode { transform: rotate(2deg); }
 :root[data-theme="fallout-76-camden-park"] .crt-chin .crt-power {
-  position: relative; justify-content: center; padding: 6px 16px; border: 1px solid #747568;
-  border-radius: 4px; background: #121610; color: var(--text);
-  box-shadow: inset 0 2px 4px #000b, inset 0 -1px 1px #fff3; transform: rotate(-2deg);
+  position: relative; justify-content: center; padding: 6px 16px; border: 0;
+  background: transparent; color: var(--text); box-shadow: none; transform: rotate(-2deg);
 }
 :root[data-theme="fallout-76-camden-park"] .crt-power i { position: absolute; left: 6px; }
 .field-adventure-knob, .field-console-collapse { display: none; }
@@ -688,9 +687,12 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 }
 @container field-terminal (width >= 56em) {
   :root[data-theme="fallout-76-field-terminal"] .field-console-collapse {
-    display: block; position: absolute; z-index: 3; top: 13%; left: 88%; transform: translateX(-50%);
-    width: calc(108px * var(--text-scale,1)); min-height: 32px; padding: 4px 8px;
-    font-size: calc(12px * var(--text-scale,1)); text-align: center;
+    display: block; position: absolute; z-index: 3; top: 13%; left: 87.5%; transform: translateX(-50%);
+    width: 5%; min-height: 32px; padding: 4px 3px; white-space: nowrap;
+    font-size: clamp(7px,.6cqw,calc(12px * var(--text-scale,1))); text-align: center;
+  }
+  :root[data-theme="fallout-76-field-terminal"] .field-console-collapse:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: -4px;
   }
   :root[data-theme="fallout-76-field-terminal"] .crt-screen :is(#expandConsole,#collapseEmptyConsole,#collapseVolshell,#collapseVolshellAgent) { display: none; }
 }

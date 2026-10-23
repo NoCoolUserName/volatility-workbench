@@ -26,8 +26,11 @@ bezel at every text setting. Keep captions on one line and size them to the stri
 do not silently relocate that stack to a footer. Verify this in native WebKit.
 Center its rectangular connection LED below the VolShell caption. Saved is a
 status, not a button: show its light and text directly on the bezel without a plate.
-Vault 112 2 and New Vegas 2 also present Saved directly on the bezel without a
+Vault 112 2, New Vegas 2 and Camden Park also present Saved directly on the bezel without a
 border, background or shadow; retain the caption and status light across responsive layouts.
+Field Terminal Collapse and its focus outline must fit the measured blue metal
+patch below the upper-right screw, before the curved silver edge. Size the plate
+and single-line caption to that patch; use the existing fallback on small housings.
 Explicit user Hide/Delete actions may remove a registered incomplete or sealed
 report bundle through the constrained UI cleanup path. Keep original evidence,
 shared analysis, history and unrelated revisions. Report edits still use new versions.

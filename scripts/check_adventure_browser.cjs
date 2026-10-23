@@ -136,7 +136,16 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
     assert.ok(geometry.shell.bottom<geometry.frame.bottom,'Mode buttons remain on the metal housing');
     assert.ok(geometry.saved.top>geometry.screen.bottom&&geometry.saved.bottom<geometry.frame.bottom,'Status sits on the lower bezel');
     assert.ok(geometry.collapseVisible,'Large Field Terminals use the housing Collapse button');
-    assert.ok(Math.abs(geometry.collapse.left+geometry.collapse.width/2-geometry.frame.left-geometry.frame.width*.88)<1,'Collapse is centered beneath the upper-right screw');
+    assert.ok(Math.abs(geometry.collapse.left+geometry.collapse.width/2-geometry.frame.left-geometry.frame.width*.875)<1,'Collapse is centered beneath the upper-right screw');
+    await page.locator('#fieldConsoleCollapse').focus();
+    const fit=await page.locator('#fieldConsoleCollapse').evaluate(node=>{
+     const r=node.getBoundingClientRect(),style=getComputedStyle(node),outset=node.matches(':focus-visible')?Math.max(0,parseFloat(style.outlineWidth)+parseFloat(style.outlineOffset)):0,range=document.createRange();range.selectNodeContents(node);const text=range.getBoundingClientRect();
+     return {left:r.left-outset,right:r.right+outset,top:r.top-outset,bottom:r.bottom+outset,captionFits:range.getClientRects().length===1&&text.left>=r.left&&text.right<=r.right};
+    });
+    // Usable blue metal below the screw in the 1773x887 source, before its curved silver edge.
+    const source={left:(fit.left-geometry.frame.left)/geometry.frame.width*1773,right:(fit.right-geometry.frame.left)/geometry.frame.width*1773,top:(fit.top-geometry.frame.top)/geometry.frame.height*887,bottom:(fit.bottom-geometry.frame.top)/geometry.frame.height*887};
+    assert.ok(source.left>=1485&&source.right<=1600&&source.top>=105&&source.bottom<=240,'Collapse and focus fit the measured metal patch: '+JSON.stringify(source));
+    assert.ok(fit.captionFits,'Collapse keeps its whole caption on one line inside the plate');
     assert.ok(geometry.collapse.top>geometry.frame.top+geometry.frame.height*.08&&geometry.collapse.bottom<geometry.upper.top,'Collapse stays below the screw and above the game knobs');
     assert.ok(geometry.collapse.left>geometry.screen.right,'Collapse stays outside the text screen');
     assert.equal(await page.locator('#collapseVolshell').isVisible(),false,'The in-screen duplicate is hidden');
