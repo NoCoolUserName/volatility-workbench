@@ -43,6 +43,11 @@ def build(cache: Path, temporary: Path, resources: Path, builder: Path, fetch) -
     wheel = fetch(YAML_WHEEL_URL, cache / "pyyaml-6.0.3-cp312-cp312-macosx_11_0_arm64.whl", YAML_WHEEL_SHA256)
     subprocess.run([str(builder), "-I", "-m", "pip", "install", "--no-deps", "--no-index", str(wheel)],
                    check=True, shell=False)
+    main_source = checkout / "main.c"
+    original_main = main_source.read_text()
+    if original_main.count("const FILE *rfp = NULL;") != 1:
+        raise ValueError("Open Adventure macOS restore patch no longer applies")
+    main_source.write_text(original_main.replace("const FILE *rfp = NULL;", "FILE *rfp = NULL;"))
     subprocess.run([str(builder), "-I", "make_dungeon.py"], cwd=checkout, check=True, shell=False)
     subprocess.run(["make", "advent", "CC=/usr/bin/clang", "CFLAGS=-DADVENT_AUTOSAVE -arch arm64 -mmacosx-version-min=13.0"],
                    cwd=checkout, check=True, shell=False)
@@ -65,6 +70,7 @@ def build(cache: Path, temporary: Path, resources: Path, builder: Path, fetch) -
                 "source_sha256": SOURCE_SHA256,
                 "source_commit": COMMIT,
                 "source_tag": "1.22",
+                "port_patches": ["use mutable FILE pointer for macOS autosave restore"],
                 "build_dependency": {"name": "PyYAML", "version": "6.0.3", "wheel_sha256": YAML_WHEEL_SHA256},
             }
         },
