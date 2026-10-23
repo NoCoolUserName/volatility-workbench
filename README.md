@@ -1,8 +1,10 @@
 # Volatility Workbench
 
-Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
-
 *21,994 lines of code*
+
+*Latest measured macOS ARM64 build: app 392.20 MiB (411,255,747 bytes); ZIP 176.61 MiB (185,187,441 bytes). Built from 4e830f858390, measured 2026-10-23.*
+
+Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
 
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved

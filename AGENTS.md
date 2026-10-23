@@ -17,9 +17,15 @@ shared analysis, history and unrelated revisions. Report edits still use new ver
 Read the installed `volatility_mcp.api.report_spec()` contract only when preparing
 an investigation/report workflow. Its authoritative source is in the core repository.
 Update relevant documentation; inspect staged contents before publication.
-Before every code push, run `python3 scripts/update_readme_loc.py` and stage the
-italicized README line count. CI checks that it matches nonblank tracked source
-and test lines.
+After every merge and before every push, run `python3 scripts/update_readme_loc.py`
+and stage the README count. Keep that italic line first below the title. CI checks
+that it matches nonblank tracked source and test lines. After each available build,
+put an italic measured-size line immediately after it: app logical file bytes and
+distribution ZIP bytes, with MiB, measurement date and the artifact source revision.
+Use actual artifacts; do not guess sizes or include private data, cases or caches.
+If building elsewhere makes a measurement unavailable, preserve the last labeled
+measurement and state the limitation. A docs-only size stamp identifies the build
+measured; do not recursively rebuild just to include its own updated README.
 Do not restart active work. Preserve case identities, conversations and sealed
 reports. If a physical root moves, back up and validate mutable path metadata;
 do not create filesystem aliases implicitly. See docs/SEPARATION.md and docs/LOCAL_UI.md.
