@@ -622,6 +622,29 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 :root[data-theme^="fallout-76-"] .crt-power { position: absolute; right: 0; color: var(--muted); }
 :root[data-theme="fallout-76-camden-park"] #consoleVolshellMode { color: #242923; }
 :root[data-theme="fallout-76-camden-park"] #consoleVolshellMode[aria-pressed="true"] { border-color: #323d2e; }
+/* Fill the window vertically without stretching the frame. Narrow windows may
+   crop the outside housing; live text and controls stay inside the viewport. */
+:root[data-theme="fallout-76-camden-park"] .console-zoom {
+  position: fixed; inset: 0 auto auto 50%; transform: translateX(-50%);
+  width: calc(100dvh * var(--fo76-aspect)); height: 100dvh;
+  max-width: none; max-height: none; margin: 0;
+}
+:root[data-theme="fallout-76-camden-park"] .crt-recess {
+  left: max(var(--fo76-screen-left),calc((100% - 100vw) / 2 + 12px));
+  right: max(var(--fo76-screen-right),calc((100% - 100vw) / 2 + 12px));
+}
+:root[data-theme="fallout-76-camden-park"] .crt-chin {
+  z-index: 3; top: auto; bottom: 3%; left: 50%; right: auto;
+  transform: translateX(-50%); width: max-content; max-width: calc(100vw - 24px);
+  min-height: 0; padding: 0; justify-content: center; gap: 8px;
+}
+:root[data-theme="fallout-76-camden-park"] .crt-mode-controls {
+  order: 0; flex: 0 1 auto; margin: 0;
+}
+:root[data-theme="fallout-76-camden-park"] .crt-chin .crt-power {
+  position: static; padding: 6px 8px; border: 1px solid #747568;
+  border-radius: 4px; background: #121610; color: var(--text);
+}
 @media (max-width: 1100px) {
   :root[data-theme^="fallout-76-"] .layout { grid-template-columns: 230px minmax(0,1fr); gap: 18px; padding: 20px; }
   :root[data-theme^="fallout-76-"] .report-layout { grid-template-columns: 1fr; }
