@@ -61,7 +61,8 @@ an application release or change repository visibility.
 
 ## Theme artwork
 
-The two Fallout 76 bezel PNGs were edited from supplied game references. Their
+The two Fallout 76 bezel PNGs and three version 2 Fallout 3/New Vegas bezel PNGs
+were edited from supplied game references. Their
 redistribution rights are separate from Volatility's software license; neither the
 MIT nor VSL grant authorizes third-party artwork. See [THEMES.md](docs/THEMES.md)
 for the asset-by-asset provenance and public-build options. The current private

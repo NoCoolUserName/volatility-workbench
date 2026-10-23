@@ -35,7 +35,7 @@ def main():
         run(python, '-m', 'pip', 'install', '-c', str(ROOT/'requirements.lock.txt'), str(wheel), cwd=temp)
         run(python, '-m', 'pip', 'check', cwd=temp)
         code = r'''
-import asyncio, json, os, subprocess, sys, threading, urllib.request
+import asyncio, hashlib, json, os, subprocess, sys, threading, urllib.request
 from pathlib import Path
 from importlib.resources import files
 from importlib.metadata import distribution
@@ -59,6 +59,12 @@ for p in ['static/app.js','static/volshell.js','static/zoom.js','static/index.ht
     assert files('volatility_workbench').joinpath(p).read_bytes()
 scenes=[p for p in files('volatility_workbench').joinpath('static').iterdir() if p.name.startswith('theme-') and p.name.endswith('.svg')]
 assert len(scenes)==30 and all(p.read_bytes() for p in scenes)
+bezel_manifest=json.loads(files('volatility_workbench').joinpath('resources/reference-terminal-assets.json').read_text())
+assert len(bezel_manifest['assets'])==3
+assert json.loads(files('volatility_workbench').joinpath('resources/reference-terminal-prompts.json').read_text())['mode']=='built-in image_gen'
+for asset in bezel_manifest['assets']:
+    data=files('volatility_workbench').joinpath('static',asset['asset']).read_bytes()
+    assert len(data)==asset['bytes'] and hashlib.sha256(data).hexdigest()==asset['sha256']
 root=Path.cwd(); evidence=root/'evidence';evidence.mkdir()
 config=Config(evidence, root/'outputs', Path(sys.executable),Path(sys.executable),cache_path=root/'cache',enable_xpnet=False)
 path=root/'config.json';path.write_text(json.dumps(config.to_dict()))
@@ -77,7 +83,7 @@ async def main():
     worker=threading.Thread(target=server.serve_forever,daemon=True);worker.start()
     def check():
         opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        paths=['/','/app.js','/volshell.js','/zoom.js','/style.css','/themes.js','/themes.css','/halloween-night.png','/icon.png','/settings.html','/settings.js','/settings.css','/api/state']+['/'+p.name for p in scenes]
+        paths=['/','/app.js','/volshell.js','/zoom.js','/style.css','/themes.js','/themes.css','/halloween-night.png','/icon.png','/settings.html','/settings.js','/settings.css','/api/state']+['/'+p.name for p in scenes]+['/'+item['asset'] for item in bezel_manifest['assets']]
         for path in paths:
             request=urllib.request.Request(server.origin+path,headers={'Cookie':'volatility_ui='+server.token})
             with opener.open(request) as response: assert response.status==200

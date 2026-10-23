@@ -3,8 +3,8 @@
 Workbench themes change the presentation of the application. They do not alter
 evidence, plugin availability, analysis settings, saved output or report contents.
 Choose a theme from the Theme control in Workbench's header or Settings →
-Appearance. Both use the same catalog. The choice is saved in application
-preferences and updates other open Workbench tabs. Existing Matrix, Mono and Blue preferences
+Appearance. Both use the same catalog of 38 themes, including 19 Fallout choices.
+The choice is saved in application preferences and updates other open Workbench tabs. Existing Matrix, Mono and Blue preferences
 remain supported as Matrix green, Soft black and white, and Light blue. A browser
 without a saved preference starts with the original Matrix green appearance.
 
@@ -67,18 +67,37 @@ labels and phosphor accents. The same treatment covers Settings and adapts to
 narrow screens. These overrides apply only to Fallout 2; Matrix and the other
 Fallout palettes retain their existing presentation.
 
-Two additional Fallout 3 themes use the terminal screenshots supplied by the user:
+The Fallout 3 terminal themes use the terminal screenshots supplied by the user.
+The original CSS treatments remain selectable as version 1:
 
 | Selector name | Terminal treatment |
 | --- | --- |
-| Fallout 3 (RobCo Night) | Matte graphite housing, broad curved screen recess, bright green phosphor and a dark Termlink control plate. |
-| Fallout 3 (Vault 112) | Aged olive housing, ivory phosphor, lower ventilation slots and a square amber power lamp. |
+| Fallout 3 (RobCo Night) 1 | Matte graphite housing, broad curved screen recess, bright green phosphor and a dark Termlink control plate. |
+| Fallout 3 (Vault 112) 1 | Aged olive housing, ivory phosphor, lower ventilation slots and a square amber power lamp. |
 
-Both cover the main UI, Settings and the expanded Output/VolShell monitor. Their
-materials, ventilation slots, bevels and lamps are responsive CSS; the supplied
+Both version 1 themes cover the main UI, Settings and the expanded Output/VolShell
+monitor. Their materials, ventilation slots, bevels and lamps are responsive CSS; the supplied
 screenshots are not packaged or stretched over the UI. Text stays selectable on
 opaque screen surfaces, without scanline or glare overlays. The original Fallout 3
-wasteland theme remains available alongside the two terminals.
+wasteland theme remains available alongside the terminal versions.
+
+Three version 2 choices add detailed transparent PNG housings edited directly
+from the supplied references using the built-in image editor. Live Output and
+VolShell remain selectable HTML behind each transparent CRT opening; the image
+supplies the housing rather than containing console text.
+
+| Selector name | Reference-derived console housing and controls |
+| --- | --- |
+| Fallout 3 (RobCo Night) 2 | Dark RobCo housing and green phosphor, with Output, VolShell and Collapse stacked on the right bezel. |
+| Fallout 3 (Vault 112) 2 | Worn olive housing and ivory phosphor. Output and VolShell overlay part of the lower vent while leaving grille exposed; the glowing amber physical button activates Collapse. |
+| Fallout: New Vegas 2 | The supplied rusty Welcome sign, with yellow perimeter bulbs, diamond frame, WELCOME discs and colorful star, adapted around a transparent central CRT. |
+
+The corresponding version 1 choices retain their original presentation and IDs,
+so saved preferences continue to select the same appearance. Both versions are
+available in Workbench and Settings. The New Vegas 1 CSS marquee remains available
+alongside the reference-derived New Vegas 2 frame. The three new image frames are
+packaged locally as `bezel-fallout3-robco-2.png`,
+`bezel-fallout3-vault112-2.png` and `bezel-new-vegas-2.png`.
 
 Two Fallout 76 terminal variants use the user's additional screenshots:
 
@@ -92,8 +111,11 @@ Their detailed console frames are transparent PNG assets edited from the supplie
 reference images using the built-in image editor. Source game text, quest HUD and
 environment are removed. The frames preserve their proportions and have empty
 screen openings; the live console remains selectable HTML behind them. Output and
-VolShell controls sit below the housing. Knobs and latch are decorative, and do not
-replace the labeled controls. All assets are packaged locally without remote
+VolShell controls remain labeled. Camden Park places them on the lower bezel;
+Field Terminal stacks them beneath the left latch, with a below-frame fallback
+when space is limited. The latch is decorative. Field Terminal's upper and lower
+knobs open the 1977 and 1995 Adventure editions on double-click; focused knobs
+also activate with Enter or Space. All assets are packaged locally without remote
 downloads. The original Fallout 76 theme and saved theme choices remain available.
 
 Asset files: `bezel-fallout76-camden-park.png` and
@@ -150,15 +172,18 @@ cover or label it a Jim Lee cover.
 
 ## Local artwork provenance
 
-Except for the two Fallout 76 bezels listed below, theme illustrations are
+Except for the five reference-derived bezels listed below, theme illustrations are
 locally authored artwork rather than downloaded game, film or comic assets.
 Theme names identify inspiration and do not imply affiliation with rights holders.
 Geometric decorations use the shared theme system.
 
-### Fallout 76 bezel provenance and release status
+### Reference-derived bezel provenance and release status
 
 | Packaged file | Recorded source and edit | Public redistribution |
 | --- | --- | --- |
+| `bezel-fallout3-robco-2.png` | Edited directly from a user-supplied Fallout 3 RobCo terminal reference using the built-in image editor. The housing and material cues were retained, with transparent exterior and screen opening for live HTML output. | Rights unverified. Do not treat the PNG as original cleared artwork for a public release. |
+| `bezel-fallout3-vault112-2.png` | Edited directly from a user-supplied Fallout 3 Vault 112 terminal reference using the built-in image editor. The olive housing, lower grille and amber button were retained, with transparent exterior and screen opening. | Rights unverified. Do not treat the PNG as original cleared artwork for a public release. |
+| `bezel-new-vegas-2.png` | Edited directly from the user's New Vegas Welcome-sign reference using the built-in image editor. The rusty diamond, yellow bulbs, WELCOME discs and colorful star were adapted around a transparent central CRT opening. | Rights unverified. Do not treat the PNG as original cleared artwork for a public release. |
 | `bezel-fallout76-camden-park.png` | Edited from a user-supplied Fallout 76 terminal reference. The enamel wear, blue lip, contours and proportions were preserved; the game text, HUD and surroundings were removed, and the screen opening made transparent. | Rights unverified. Do not treat the PNG as original cleared artwork for a public release. |
 | `bezel-fallout76-field-terminal.png` | Edited from a user-supplied Fallout 76 terminal reference. The charcoal housing, silver surround, latch, knobs and proportions were preserved; the game text, HUD and surroundings were removed, and the screen opening made transparent. | Rights unverified. Do not treat the PNG as original cleared artwork for a public release. |
 
@@ -166,13 +191,13 @@ The repository records neither the source screenshots' creators and URLs nor a g
 covering modification and redistribution in an independently distributed app. A
 user-supplied reference does not itself establish those rights. The PNGs remain
 available for the owner's private local application. Before a public source archive,
-wheel, native app, installer or promotional download includes either file, record
-the exact source and rights holder(s), the original and final file hashes, and a
+wheel, native app, installer or promotional download includes any of these files,
+record the exact source and rights holder(s), the original and final file hashes, and a
 written permission or applicable license covering edited artwork in that form of
 distribution, including any required attribution and notices. Otherwise prepare a
 separate public build with independently created, non-derivative art or omit the
 bezel files and their affected theme choices in that build. Verify the actual build
-contents; the current `static/*.png` package-data rule includes both files. A
+contents; the current `static/*.png` package-data rule includes all five files. A
 changed label, credit, or MIT notice alone does not grant rights. This release
 checkpoint does not alter the private theme catalog or artwork.
 
@@ -210,3 +235,8 @@ is disabled or the desktop's loopback port changes. The browser cache supplies t
 initial appearance until an authenticated state response arrives. Failed saves
 show an inline message and a **Retry save** button. The current page keeps the
 choice; retrying saves that selection without requiring a change to another theme.
+
+Exact version 2 [asset hashes and reference provenance](../src/volatility_workbench/resources/reference-terminal-assets.json)
+and the [built-in image editor prompt set](../src/volatility_workbench/resources/reference-terminal-prompts.json) are recorded
+separately. Exterior and screen openings preserve generated alpha; live controls
+and text are HTML. Original supplied reference images are not bundled.

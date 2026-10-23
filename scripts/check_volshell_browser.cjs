@@ -82,6 +82,27 @@ async function checkBezelConnection(browser){
 
  f=await fixture({session:existing()});
  assert.equal(f.requests.length,0,'Opening an existing same-case connection does not toggle it');assert.equal(await f.page.locator('#volshellInput').isDisabled(),false);await f.close();
+ // The Vault 112 amber switch collapses the monitor while a synthetic session
+ // remains connected. It must never act as the VolShell disconnect control.
+ f=await fixture({session:existing()});
+ await f.page.evaluate(()=>WorkbenchThemes.apply('fallout-3-vault-112-2'));
+ const vaultPower=f.page.locator('#fieldConsoleCollapse');
+ for(const interaction of ['keyboard','mouse']){
+  assert.equal(await f.page.locator('#volshellPanel').isVisible(),true,'Vault 112 power is tested with active VolShell controls');
+  assert.equal(await f.page.locator('#volshellLED').getAttribute('data-state'),'ready');
+  assert.equal(await f.page.locator('#volshellInput').isEnabled(),true);
+  if(interaction==='keyboard'){
+   await f.page.keyboard.press('Tab');await vaultPower.focus();
+   assert.equal(await vaultPower.evaluate(node=>getComputedStyle(node).outlineStyle),'solid','Vault 112 power shows keyboard focus during VolShell');
+   await f.page.keyboard.press('Enter');
+  }else await vaultPower.click();
+  await f.page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  assert.equal(f.requests.length,0,'Collapsing active VolShell never starts a session');
+  assert.equal(f.closes.length,0,'The amber power control collapses without disconnecting VolShell');
+  assert.equal(f.value.volshell.session.id,'existing-shell');
+  if(interaction==='keyboard')await f.page.locator('#openCaseConsole').click();
+ }
+ await f.close();
  f=await fixture({session:existing('case-a')});await f.click();
  assert.equal(f.requests.length,0,'Another case is never disconnected or rebound implicitly');
  assert.equal(await f.page.locator('#volshellConnection').evaluate(node=>node.open),true);
@@ -403,7 +424,7 @@ async function checkBezelConnection(browser){
    if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)await page.locator('#consoleVolshellMode').screenshot({path:path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-'+theme.id+'.png')});
    if(['matrix','fallout-new-vegas','fallout-3-robco','fallout-3-vault-112'].includes(theme.id))await screenshot('volshell-'+theme.id+'-desktop');
   }
-  assert.equal(themeStyles.length,35,'The current catalog contains all 35 themes');
+  assert.equal(themeStyles.length,38,'The current catalog contains all 38 themes');
   assert.equal(new Set(themeStyles.map(theme=>theme.signature)).size,themeStyles.length,'Every catalog theme has a distinct VolShell bezel');
   for(const id of ['fallout-3-robco','fallout-3-vault-112']){
    await page.evaluate(id=>window.WorkbenchThemes.apply(id),id);
@@ -601,6 +622,6 @@ async function checkBezelConnection(browser){
   assert.equal(await zoom.isVisible(),false,'Late events from a closed source cannot reopen the CRT');
   assert.equal(await page.evaluate(()=>window.injected),undefined);assert.deepEqual(errors,[]);
   if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)fs.writeFileSync(path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-contrast.json'),JSON.stringify(themeStyles,null,2)+'\n');
-  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;35 distinct bezels, both Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
+  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;38 distinct bezels, original Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -41,7 +41,10 @@ and analyzer inventories. Packaging already copies Python and selected plugin
 notices; verify the final artifact against all installed dependencies before release.
 
 Theme artwork provenance is documented in docs/THEMES.md. The two Fallout 76
-bezel PNGs were edited from supplied game references; their redistribution rights
+bezel PNGs and three version 2 Fallout 3/New Vegas bezel PNGs were edited directly
+from user-supplied game references using the built-in image editor. The version 2
+files are `bezel-fallout3-robco-2.png`, `bezel-fallout3-vault112-2.png` and
+`bezel-new-vegas-2.png`. Their redistribution rights
 are unverified and they must not be represented as cleared original art. Franchise
 names, characters and recognizable motifs require a separate rights assessment.
 For public distribution, clear the exact images for the intended use or use
