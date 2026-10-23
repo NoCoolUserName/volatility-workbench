@@ -38,7 +38,7 @@ def build(cache: Path, temporary: Path, resources: Path, builder: Path, fetch) -
     checkout = source / "open-adventure-1.22"
     copying = (checkout / "COPYING").read_text()
     yaml = checkout / "adventure.yaml"
-    if "BSD 2-Clause LICENSE" not in copying or "SPDX-License-Identifier: BSD-2-Clause" not in yaml.read_text().splitlines()[:3]:
+    if "BSD 2-Clause LICENSE" not in copying or not any("SPDX-License-Identifier: BSD-2-Clause" in line for line in yaml.read_text().splitlines()[:3]):
         raise ValueError("Open Adventure source or game-data license changed")
     wheel = fetch(YAML_WHEEL_URL, cache / "pyyaml-6.0.3-cp312-cp312-macosx_11_0_arm64.whl", YAML_WHEEL_SHA256)
     subprocess.run([str(builder), "-I", "-m", "pip", "install", "--no-deps", "--no-index", str(wheel)],

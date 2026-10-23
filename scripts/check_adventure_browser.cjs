@@ -41,7 +41,7 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
    return route.fulfill({body:fs.readFileSync(path.join(assets,name)),contentType:name.endsWith('.js')?'text/javascript':name.endsWith('.css')?'text/css':'text/html'});
   });
   await page.goto('http://localhost/?adventure-dev=1');
-  await page.locator('#adventureDevButton').waitFor({state:'visible'});
+  assert.equal(await page.locator('#adventureDevButton').evaluate(x=>x.hidden),false);
   const before=await page.evaluate(()=>({theme:document.documentElement.getAttribute('data-theme'),scroll:scrollY}));
   await page.evaluate(()=>Adventure.launch({edition:'select'}));
   assert.equal(await page.locator('#consoleZoom').evaluate(x=>x.open),true);
