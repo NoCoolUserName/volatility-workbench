@@ -98,7 +98,7 @@
       else $("adventurePanel").focus({preventScroll:true});
       return;
     }
-    previousMode = window.WorkbenchVolshell.currentMode();
+    previousMode = $("consoleZoom").open ? window.WorkbenchVolshell.currentMode() : "output";
     previousFocus = document.activeElement;
     previousScroll = window.scrollY;
     outputScroll = $("liveConsole").scrollTop;
