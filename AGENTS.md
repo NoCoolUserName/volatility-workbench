@@ -26,6 +26,8 @@ bezel at every text setting. Keep captions on one line and size them to the stri
 do not silently relocate that stack to a footer. Verify this in native WebKit.
 Center its rectangular connection LED below the VolShell caption. Saved is a
 status, not a button: show its light and text directly on the bezel without a plate.
+Vault 112 2 and New Vegas 2 also present Saved directly on the bezel without a
+border, background or shadow; retain the caption and status light across responsive layouts.
 Explicit user Hide/Delete actions may remove a registered incomplete or sealed
 report bundle through the constrained UI cleanup path. Keep original evidence,
 shared analysis, history and unrelated revisions. Report edits still use new versions.

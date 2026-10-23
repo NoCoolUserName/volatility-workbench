@@ -883,7 +883,9 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   /* The plates cover the end slits; only the grille between them stays visible. */
   :root[data-theme="fallout-3-vault-112-2"] .crt-mode-controls button { height: max(calc(32px * var(--text-scale,1)),5dvh); }
 }
-:root[data-theme="fallout-3-vault-112-2"] .crt-power { top: 85.4%; }
+:root[data-theme="fallout-3-vault-112-2"] .crt-power {
+  top: 85.4%; border: 0; background: transparent; box-shadow: none;
+}
 /* The original illuminated amber switch is the control. Its native button text
    supplies an accessible name without painting a second button over the art. */
 :root[data-theme="fallout-3-vault-112-2"] .field-console-collapse {
@@ -927,8 +929,7 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   box-shadow: inset 0 2px 5px #42130f,0 0 7px #f5a94a88; text-shadow: 0 1px #3a100f;
 }
 :root[data-theme="fallout-new-vegas-2"] .crt-power {
-  color: #ffe5a2; border-color: #a76631; border-radius: 12px 3px;
-  background: linear-gradient(#56321f,#241710); box-shadow: inset 0 1px #dba75b77,0 0 5px #f6b24d66;
+  color: #ffe5a2; border: 0; background: transparent; box-shadow: none;
 }
 :root[data-theme="fallout-new-vegas-2"] .crt-power i { background: #ffe263; border-color: #a65c22; box-shadow: 0 0 7px #ffd25c; }
 :root[data-theme="fallout-new-vegas-2"] #consoleVolshellMode .volshell-led { border-color: #925b39; }
