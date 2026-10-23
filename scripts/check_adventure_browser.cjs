@@ -70,6 +70,12 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
   await page.locator('#adventureOutput').getByText('RESTORED 1995 CAVE').waitFor();
   await page.locator('#adventureExit').click();
   await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  await page.evaluate(()=>{document.querySelector('#consoleZoom').showModal();WorkbenchVolshell.restoreMode('volshell');});
+  await page.evaluate(()=>Adventure.launch({edition:'select'}));
+  assert.equal(await page.evaluate(()=>WorkbenchVolshell.currentMode()),'adventure');
+  await page.locator('#adventureExit').click();
+  assert.equal(await page.evaluate(()=>WorkbenchVolshell.currentMode()),'volshell');
+  await page.evaluate(()=>document.querySelector('#consoleZoom').close());
   assert.ok(calls.every(x=>x==='/api/state'||x.startsWith('/api/adventure/')||x==='/api/settings/zoom'));
   assert.deepEqual(errors,[]);
   console.log('Adventure browser: both editions, input, escape safety, independent saves, relaunch, theme and console restoration passed');

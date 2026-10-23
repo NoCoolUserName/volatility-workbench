@@ -38,13 +38,13 @@ def main():
         assert json.loads(native.stdout)['subprocess_unicode'] is True
         print(native.stdout.strip())
         gameplay=subprocess.run([str(executable),'-o','-a',str(temp/'adventure.save'),'-'],
-            input='no\\nquit\\nyes\\n',cwd=temp,env=env,capture_output=True,text=True,timeout=20)
+            input='no\nquit\nyes\n',cwd=temp,env=env,capture_output=True,text=True,timeout=20)
         if gameplay.returncode or 'road' not in gameplay.stdout.lower():
             raise SystemExit('Packaged 430-point Adventure gameplay smoke failed: '+gameplay.stdout[-500:]+gameplay.stderr[-500:])
         assert (temp/'adventure.save').is_file()
         print(json.dumps({'adventure_430':'gameplay-and-save-passed','architecture':architecture}))
         classic_env = {**env, 'VOLATILITY_ADVENTURE_SAVE':str(temp/'classic.save')}
-        classic_run=subprocess.run([str(classic)],input='no\\nsuspend\\nyes\\n',cwd=temp,
+        classic_run=subprocess.run([str(classic)],input='no\nsuspend\nyes\n',cwd=temp,
             env=classic_env,capture_output=True,text=True,timeout=20)
         if classic_run.returncode or 'road' not in classic_run.stdout.lower() or not (temp/'classic.save').is_file():
             raise SystemExit('Packaged 350-point Adventure gameplay or save failed: '+classic_run.stdout[-500:]+classic_run.stderr[-500:])

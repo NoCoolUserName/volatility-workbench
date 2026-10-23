@@ -80,14 +80,14 @@ jobs:
       - name: Check native architecture, gameplay, saves, and ad hoc signature
         run: |
           test "$(lipo -archs "$RUNNER_TEMP/adventure/advent-430")" = arm64
-          printf 'no\\nquit\\nyes\\n' | "$RUNNER_TEMP/adventure/advent-430" -o -a "$RUNNER_TEMP/adventure.save" - > "$RUNNER_TEMP/gameplay.txt"
+          printf 'no\nquit\nyes\n' | "$RUNNER_TEMP/adventure/advent-430" -o -a "$RUNNER_TEMP/adventure.save" - > "$RUNNER_TEMP/gameplay.txt"
           grep -qi road "$RUNNER_TEMP/gameplay.txt"
           test -s "$RUNNER_TEMP/adventure.save"
           codesign --force --sign - "$RUNNER_TEMP/adventure/advent-430"
           codesign --verify --strict "$RUNNER_TEMP/adventure/advent-430"
           test "$(lipo -archs "$RUNNER_TEMP/adventure/adventure-350")" = arm64
           export VOLATILITY_ADVENTURE_SAVE="$RUNNER_TEMP/classic.save"
-          printf 'no\\nsuspend\\nyes\\n' | "$RUNNER_TEMP/adventure/adventure-350" > "$RUNNER_TEMP/classic.txt"
+          printf 'no\nsuspend\nyes\n' | "$RUNNER_TEMP/adventure/adventure-350" > "$RUNNER_TEMP/classic.txt"
           grep -qi road "$RUNNER_TEMP/classic.txt"
           test -s "$RUNNER_TEMP/classic.save"
           codesign --force --sign - "$RUNNER_TEMP/adventure/adventure-350"

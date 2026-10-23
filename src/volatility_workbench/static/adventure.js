@@ -4,7 +4,7 @@
   const $ = id => document.getElementById(id);
   let adapter = null, active = false, openedDialog = false, previousMode = "output";
   let previousFocus = null, previousScroll = 0, outputScroll = 0, shellScroll = 0;
-  let sessionId = null, poll = null, sequence = 0, busy = false;
+  let sessionId = null, poll = null, sequence = 0, busy = false, closing = null;
   let outputButtonDisabled = false, shellButtonDisabled = false;
 
   function status(message) {
@@ -84,12 +84,15 @@
     else if (previousFocus?.isConnected) previousFocus.focus({preventScroll:true});
     window.scrollTo({top:previousScroll, behavior:"instant"});
     if (leaving) {
-      try { await adapter.api("adventure/close", {session_id:leaving}); }
-      catch (e) { console.error("Adventure cleanup failed", e); }
+      closing = adapter.api("adventure/close", {session_id:leaving})
+        .catch(e => console.error("Adventure cleanup failed", e));
+      await closing;
+      closing = null;
     }
   }
   async function launch({edition = "select"} = {}) {
     if (!adapter) throw Error("Adventure is not ready");
+    if (closing) await closing;
     if (active) {
       if (edition !== "select" && !sessionId) await start(edition);
       else $("adventurePanel").focus({preventScroll:true});
