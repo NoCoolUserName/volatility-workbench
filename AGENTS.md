@@ -22,7 +22,8 @@ and stage the README count. Keep that italic line first below the title. CI chec
 that it matches nonblank tracked source and test lines. After each available build,
 put an italic measured-size line immediately after it: app logical file bytes and
 distribution ZIP bytes, with MiB, measurement date and the artifact source revision.
-Use actual artifacts; do not guess sizes or include private data, cases or caches.
+Use actual artifacts; count regular app files once, excluding symlink aliases.
+Do not guess sizes or include private data, cases or caches.
 If building elsewhere makes a measurement unavailable, preserve the last labeled
 measurement and state the limitation. A docs-only size stamp identifies the build
 measured; do not recursively rebuild just to include its own updated README.
