@@ -1751,13 +1751,14 @@ function resizeConsoleView(expanded) {
       consoleOpener !== document.body && consoleOpener.getClientRects().length && !consoleOpener.matches(":disabled")) {
     consoleOpener.focus({preventScroll:true});
     consoleOpener = null;
-  } else if (currentConsole) (!expanded && $("liveConsoleDock").hidden ? $("toggleReportConsole") : button).focus({preventScroll:true});
+  } else if (currentConsole) (!expanded && $("liveConsoleDock").hidden ? $("toggleReportConsole") : expanded && $("fieldConsoleCollapse").getClientRects().length ? $("fieldConsoleCollapse") : button).focus({preventScroll:true});
   else $("caseTitle").focus({preventScroll:true});
 }
 $("expandConsole").onclick = () => {
   if ($("consoleZoom").open) $("consoleZoom").close();
   else { window.WorkbenchVolshell.showOutput(); resizeConsoleView(true); }
 };
+$("fieldConsoleCollapse").onclick = () => $("consoleZoom").close();
 $("openCaseConsole").onclick = () => window.WorkbenchVolshell.open(selected);
 $("consoleZoom").addEventListener("close", () => { if (!$("consoleZoom").open) { window.Adventure.closed(); resizeConsoleView(false); } });
 $("consoleZoom").addEventListener("keydown", (event) => {

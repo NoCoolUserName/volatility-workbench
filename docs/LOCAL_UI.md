@@ -764,7 +764,9 @@ proportions, with live HTML output behind the glass opening. Camden Park fills
 the console window vertically, with gently recessed Output/VolShell controls and
 the status light on the silver lower bezel above the outer rim. Narrow windows
 crop only the outer housing while keeping text and controls visible. Field
-Terminal stacks its mode buttons below the left silver latch, with a below-frame
+Terminal stacks compact mode buttons with centered labels below the left silver
+latch and centers the green status light on the lower bezel. Collapse sits below
+the upper-right screw; small housings retain the in-screen Collapse control. It uses a below-frame
 fallback when the housing is too small for readable labels, including short windows
 and enlarged text. Double-click its upper knob for 1977 Adventure or
 its lower knob for the 1995 edition; keyboard users can focus either knob and
