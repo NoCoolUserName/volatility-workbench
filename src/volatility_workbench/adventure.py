@@ -125,6 +125,8 @@ class AdventureManager:
         async with self.lock:
             if self.process and self.process.returncode is None:
                 raise ValueError("Close the current Adventure session first")
+            if self.waiter is not None:
+                await self.waiter
             executable = self._executable(edition)
             directory = self._save_dir()
             save = directory / EDITIONS[edition]
@@ -204,29 +206,42 @@ class AdventureManager:
             if session_id is not None and session_id != self.session_id:
                 raise ValueError("Adventure session has changed")
             process = self.process
-            if not process or process.returncode is not None:
+            if not process:
+                return self.snapshot()
+            if process.returncode is not None:
+                if self.waiter is not None:
+                    await self.waiter
                 return self.snapshot()
             self.status = "stopping"
-            if self.edition == "1977" and self.master is not None:
+            try:
+                if self.edition == "1977" and self.master is not None:
+                    try:
+                        os.write(self.master, b"suspend\nyes\n")
+                        await asyncio.wait_for(asyncio.shield(self.waiter), 2)
+                        return self.snapshot()
+                    except (OSError, asyncio.TimeoutError):
+                        pass
                 try:
-                    os.write(self.master, b"suspend\nyes\n")
-                    await asyncio.wait_for(asyncio.shield(self.waiter), 2)
-                    return self.snapshot()
-                except (OSError, asyncio.TimeoutError):
+                    os.killpg(process.pid, signal.SIGTERM)
+                except ProcessLookupError:
                     pass
-            try:
-                os.killpg(process.pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            try:
-                await asyncio.wait_for(asyncio.shield(self.waiter), 3)
-            except asyncio.TimeoutError:
+                try:
+                    await asyncio.wait_for(asyncio.shield(self.waiter), 3)
+                except asyncio.TimeoutError:
+                    if process.returncode is None:
+                        try:
+                            os.killpg(process.pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                    await self.waiter
+            except asyncio.CancelledError:
                 if process.returncode is None:
                     try:
                         os.killpg(process.pid, signal.SIGKILL)
                     except ProcessLookupError:
                         pass
-                await self.waiter
+                await asyncio.shield(self.waiter)
+                raise
             return self.snapshot()
 
     async def shutdown(self):

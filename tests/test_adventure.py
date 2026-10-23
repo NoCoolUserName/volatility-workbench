@@ -96,6 +96,27 @@ class AdventureTests(unittest.IsolatedAsyncioTestCase):
             await self.manager.input("other-session", "north")
         self.assertEqual(self.manager.snapshot()["status"], "running")
 
+    async def test_canceled_close_reaps_unresponsive_process(self):
+        self.game.write_text("#!/usr/bin/env python3\nimport signal,time\nsignal.signal(signal.SIGTERM,signal.SIG_IGN)\nprint('READY',flush=True)\nwhile True: time.sleep(1)\n")
+        manifest_path = self.game.parent / "manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["editions"]["1995"]["sha256"] = hashlib.sha256(self.game.read_bytes()).hexdigest()
+        manifest_path.write_text(json.dumps(manifest))
+        session = await self.manager.start("1995")
+        await self.until("READY")
+        process = self.manager.process
+        closing = asyncio.create_task(self.manager.close(session["session_id"]))
+        for _ in range(100):
+            if self.manager.status == "stopping":
+                break
+            await asyncio.sleep(.01)
+        self.assertEqual(self.manager.status, "stopping")
+        closing.cancel()
+        with self.assertRaises(asyncio.CancelledError):
+            await closing
+        self.assertIsNotNone(process.returncode)
+        self.assertIsNone(self.manager.master)
+
     async def test_tampered_executable_and_symlink_save_dir(self):
         self.game.write_text(FAKE_GAME + "# tampered\n")
         with self.assertRaisesRegex(ValueError, "hash mismatch"):
