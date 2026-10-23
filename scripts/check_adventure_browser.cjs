@@ -108,13 +108,14 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
   assert.equal(await page.locator('#adventureDevButton').evaluate(x=>x.hidden),true);
   await page.evaluate(()=>{WorkbenchThemes.apply('fallout-76-field-terminal');document.querySelector('#consoleZoom').showModal();WorkbenchVolshell.restoreMode('volshell');});
   const upper=page.locator('#fieldAdventure1977'),lower=page.locator('#fieldAdventure1995');
-  for(const [width,height,scale] of [[1400,1000,1],[900,600,1],[800,400,1],[701,1000,2],[900,600,2],[390,844,1],[320,844,2]]){
+  for(const [width,height,scale] of [[1920,1080,1],[1400,1000,1],[900,600,1],[800,400,1],[701,1000,2],[900,600,2],[390,844,1],[320,844,2]]){
    await page.setViewportSize({width,height});
    await page.evaluate(scale=>{document.documentElement.style.setProperty('--text-scale',String(scale));document.documentElement.dataset.textScaled=String(scale!==1);},scale);
    const geometry=await page.evaluate(()=>{
     const box=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
     const frame=box('#consoleZoom'),upper=box('#fieldAdventure1977'),lower=box('#fieldAdventure1995');
-    return {frame,upper,lower,screen:box('.crt-screen'),output:box('#consoleOutputMode'),shell:box('#consoleVolshellMode'),saved:box('.crt-power'),savedVisible:getComputedStyle(document.querySelector('.crt-power')).display!=='none',
+    return {frame,upper,lower,screen:box('.crt-screen'),output:box('#consoleOutputMode'),shell:box('#consoleVolshellMode'),saved:box('.crt-power'),savedVisible:getComputedStyle(document.querySelector('.crt-power')).display!=='none',collapse:box('#fieldConsoleCollapse'),collapseVisible:getComputedStyle(document.querySelector('#fieldConsoleCollapse')).display!=='none',
+     labelsCentered:['#consoleOutputMode','#consoleVolshellMode'].every(selector=>{const node=document.querySelector(selector),text=[...node.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.trim()),range=document.createRange();range.selectNodeContents(text);const label=range.getBoundingClientRect(),button=node.getBoundingClientRect();return Math.abs(label.left+label.width/2-button.left-button.width/2)<1;}),
      fallback:getComputedStyle(document.querySelector('.crt-mode-controls')).position==='static',
      labelsFit:['#consoleOutputMode','#consoleVolshellMode'].every(selector=>{const node=document.querySelector(selector),texts=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);let text;while((text=texts.nextNode())){if(!text.textContent.trim())continue;const range=document.createRange();range.selectNodeContents(text);if(range.getClientRects().length>1)return false;}return node.scrollWidth<=node.clientWidth+1;}),
      upperHit:document.elementFromPoint(frame.left+frame.width*.915,frame.top+frame.height*.63)?.id,
@@ -125,12 +126,23 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
    assert.ok(geometry.upper.bottom<geometry.lower.top,'The two knob targets must not overlap');
    for(const button of [geometry.output,geometry.shell])assert.ok(button.left>=0&&button.right<=width&&button.top>=0&&button.bottom<=height,'Mode buttons remain reachable');
    assert.ok(geometry.labelsFit,`Mode labels remain unbroken and contained at ${width}×${height}/${scale}`);
+   assert.ok(geometry.labelsCentered,'Both button labels are centered independently of the VolShell light');
+   for(const button of [geometry.output,geometry.shell])assert.ok(button.width<=109*scale,'Mode buttons stay compact instead of stretching with the housing');
    assert.ok(geometry.saved.bottom<=height,'Saved status stays within the viewport');
+   if(geometry.savedVisible)assert.ok(Math.abs(geometry.saved.left+geometry.saved.width/2-geometry.frame.left-geometry.frame.width/2)<1,'Status light and label are centered below the screen');
    if(!geometry.fallback){
     assert.ok(geometry.output.top>=geometry.frame.top+geometry.frame.height*.46,'Output sits below the silver latch');
     assert.ok(geometry.output.bottom<=geometry.shell.top&&geometry.shell.right<geometry.screen.left,'Mode buttons stack on the left housing');
     assert.ok(geometry.shell.bottom<geometry.frame.bottom,'Mode buttons remain on the metal housing');
+    assert.ok(geometry.saved.top>geometry.screen.bottom&&geometry.saved.bottom<geometry.frame.bottom,'Status sits on the lower bezel');
+    assert.ok(geometry.collapseVisible,'Large Field Terminals use the housing Collapse button');
+    assert.ok(Math.abs(geometry.collapse.left+geometry.collapse.width/2-geometry.frame.left-geometry.frame.width*.88)<1,'Collapse is centered beneath the upper-right screw');
+    assert.ok(geometry.collapse.top>geometry.frame.top+geometry.frame.height*.08&&geometry.collapse.bottom<geometry.upper.top,'Collapse stays below the screw and above the game knobs');
+    assert.ok(geometry.collapse.left>geometry.screen.right,'Collapse stays outside the text screen');
+    assert.equal(await page.locator('#collapseVolshell').isVisible(),false,'The in-screen duplicate is hidden');
    }else{
+    assert.equal(geometry.collapseVisible,false,'Small housings retain the in-screen Collapse control');
+    assert.equal(await page.locator('#collapseVolshell').isVisible(),true);
     assert.ok(geometry.output.top>=geometry.frame.bottom,'Small housings use the below-frame controls');
     if(geometry.savedVisible)assert.ok(Math.max(geometry.output.bottom,geometry.shell.bottom)<=geometry.saved.top,'Saved status cannot overlap the mode controls');
    }
@@ -162,10 +174,23 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
   await lower.focus();await lower.press('Space');await page.locator('#adventureOutput').getByText('RESTORED 1995 CAVE').waitFor();
   await page.locator('#adventureExit').click();
   assert.equal(await page.locator('html').getAttribute('data-theme'),'fallout-76-field-terminal','Knob access must preserve the theme');
+  await lower.dblclick();await page.locator('#adventureOutput').getByText('RESTORED 1995 CAVE').waitFor();
+  await page.locator('#fieldConsoleCollapse').click();
+  await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open&&!Adventure.isActive());
+  await page.evaluate(()=>Adventure.exit());
+  assert.equal(session,null,'Housing Collapse uses the existing Adventure save/cleanup path');
+  for(const mode of ['output','volshell','agent']){
+   await page.evaluate(mode=>{document.querySelector('#consoleZoom').showModal();WorkbenchVolshell.restoreMode(mode);},mode);
+   assert.equal(await page.getByRole('button',{name:'Collapse',exact:true}).count(),1,'Each mode exposes one Collapse button');
+   await page.locator('#fieldConsoleCollapse').focus();await page.keyboard.press('Enter');
+   await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  }
+  await page.evaluate(()=>document.querySelector('#consoleZoom').showModal());
   startsBefore=serial;
   for(const theme of ['matrix','fallout-76-camden-park','fallout-3-robco']){
    await page.evaluate(theme=>WorkbenchThemes.apply(theme),theme);
    assert.equal(await upper.isVisible(),false);assert.equal(await lower.isVisible(),false);
+   assert.equal(await page.locator('#fieldConsoleCollapse').isVisible(),false);
    await upper.dispatchEvent('dblclick');
   }
   await page.evaluate(()=>{WorkbenchThemes.apply('fallout-76-field-terminal');document.querySelector('#consoleZoom').close();});

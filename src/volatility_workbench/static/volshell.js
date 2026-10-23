@@ -100,6 +100,10 @@
       }
     };
   }
+  function collapseButton(id = "collapseVolshell") {
+    const field = $("fieldConsoleCollapse");
+    return field.getClientRects().length ? field : $(id);
+  }
   function showAgentActivity() {
     if (monitorMode === "adventure") return;
     const activity = agentActivity();
@@ -149,7 +153,7 @@
     $("consoleZoom").setAttribute("aria-labelledby", value === "adventure" ? "adventureTitle" : agent ? "volshellAgentTitle" : shell ? "volshellTitle" : adapter?.hasConsole() ? "liveConsoleTitle" : "emptyConsoleTitle");
     if (focus && $("consoleZoom").open) {
       const input = interactionMode === "suggestions" ? $("volshellAIInput") : interactionMode === "investigation" ? $("volshellInvestigationInput") : $("volshellInput");
-      (agent ? $("volshellAgentOutput") : shell ? ready() ? input : $("volshellConnection").open ? $("volshellCase") : $("collapseVolshell") : adapter.hasConsole() ? $("expandConsole") : $("collapseEmptyConsole")).focus({preventScroll:true});
+      (agent ? $("volshellAgentOutput") : shell ? ready() ? input : $("volshellConnection").open ? $("volshellCase") : collapseButton() : collapseButton(adapter.hasConsole() ? "expandConsole" : "collapseEmptyConsole")).focus({preventScroll:true});
     }
   }
   function populateTargets() {
@@ -310,7 +314,7 @@
     syncGhost();
     setMode(monitorMode);
     if (connectionFocus && current?.case_id === connectionFocus.caseId && current.id !== connectionFocus.previousId && (current.ready && !pending || !active(current))) {
-      if (ready() && monitorMode === "volshell" && $("consoleZoom").open && document.activeElement === $("collapseVolshell")) setMode("volshell", true);
+      if (ready() && monitorMode === "volshell" && $("consoleZoom").open && document.activeElement === collapseButton()) setMode("volshell", true);
       connectionFocus = null;
     }
   }
@@ -341,7 +345,7 @@
     connectionAttempt = attempt;
     connectionFocus = attempt;
     $("volshellConnection").open = false;
-    if ($("consoleZoom").open && monitorMode === "volshell") $("collapseVolshell").focus({preventScroll:true});
+    if ($("consoleZoom").open && monitorMode === "volshell") collapseButton().focus({preventScroll:true});
     const started = await perform("start", {case_id:targetCase, image_id:$("volshellImage").value, mode:$("volshellMode").value});
     if (!started) {
       if (connectionAttempt === attempt) connectionAttempt = null;

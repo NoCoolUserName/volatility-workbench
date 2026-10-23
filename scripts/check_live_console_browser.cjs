@@ -172,7 +172,7 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
    await expand.click();await zoom.waitFor();
    const geometry=await page.evaluate(()=>{
     const box=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height};};
-    return {frame:box('#consoleZoom'),screen:box('.crt-screen'),controls:[...document.querySelectorAll('#consoleOutputMode,#consoleVolshellMode,.crt-power')].filter(node=>node.getClientRects().length).map(node=>{const r=node.getBoundingClientRect();return {id:node.id||node.className,top:r.top,bottom:r.bottom,left:r.left,right:r.right};}),
+    return {frame:box('#consoleZoom'),screen:box('.crt-screen'),group:box('.crt-chin'),labelsCentered:['#consoleOutputMode','#consoleVolshellMode','#consolePowerText'].every(selector=>{const node=document.querySelector(selector);if(!node.getClientRects().length)return true;const range=document.createRange();if(selector==='#consolePowerText')range.selectNodeContents(node);else range.selectNodeContents([...node.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.trim()));const label=range.getBoundingClientRect(),button=(selector==='#consolePowerText'?node.parentElement:node).getBoundingClientRect();return Math.abs(label.left+label.width/2-button.left-button.width/2)<1;}),controls:[...document.querySelectorAll('#consoleOutputMode,#consoleVolshellMode,.crt-power')].filter(node=>node.getClientRects().length).map(node=>{const r=node.getBoundingClientRect();return {id:node.id||node.className,top:r.top,bottom:r.bottom,left:r.left,right:r.right};}),
      controlsLayer:Number(getComputedStyle(document.querySelector('.crt-chin')).zIndex),frameLayer:Number(getComputedStyle(document.querySelector('.crt-monitor'),'::before').zIndex)};
    });
    const label=`Camden ${width}x${height} at ${scale*100}% text`;
@@ -181,6 +181,8 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
    assert.ok(geometry.screen.left>=0&&geometry.screen.right<=width,label+' keeps live text inside the window');
    assert.ok(geometry.screen.height>=height*.49,label+' uses the enlarged glass area');
    assert.ok(geometry.controlsLayer>geometry.frameLayer,label+' controls remain above the bezel artwork');
+   assert.ok(Math.abs(geometry.group.left+geometry.group.width/2-width/2)<1,label+' centers the complete control group');
+   assert.ok(geometry.labelsCentered,label+' centers every label independently of its LED');
    for(const control of geometry.controls){
     assert.ok(control.top>=geometry.screen.bottom&&control.bottom<=height*.94,label+' '+control.id+' stays on the silver housing above the outer rim');
     assert.ok(control.left>=0&&control.right<=width,label+' '+control.id+' stays reachable');
