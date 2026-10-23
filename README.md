@@ -1,6 +1,6 @@
 # Volatility Workbench
 
-*22,509 lines of code*
+*22,519 lines of code*
 
 *Latest measured macOS ARM64 build: app 403.36 MiB (422,957,504 bytes); ZIP 187.71 MiB (196,833,241 bytes). Built from 7582828cc7d4, measured 2026-10-23.*
 

@@ -21,6 +21,9 @@ inside the viewport is insufficient. Use a responsive layout when that physical
 area cannot contain the labels at the chosen text size. Full-height artwork must
 fit its visible opaque bounds, excluding transparent canvas margins, while
 preserving aspect ratio. Check both painted edges and control bounds in fixtures.
+RobCo Night 2 desktop controls must stay vertically stacked on the lower-right
+bezel at every text setting. Keep captions on one line and size them to the strip;
+do not silently relocate that stack to a footer. Verify this in native WebKit.
 Explicit user Hide/Delete actions may remove a registered incomplete or sealed
 report bundle through the constrained UI cleanup path. Keep original evidence,
 shared analysis, history and unrelated revisions. Report edits still use new versions.

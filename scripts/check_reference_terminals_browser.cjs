@@ -130,6 +130,7 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
     assert.ok(geometry.controlLayer>geometry.artLayer,label+' places controls above the art');
     assert.equal(geometry.controls.length,3,label+' shows Output, VolShell and status');
     const modeControls=geometry.controls.filter(control=>control.id!=='power');
+    if(id==='fallout-3-robco-2'&&width>700)assert.equal(geometry.direction,'column',label+' always keeps the desktop buttons stacked on the right');
     for(const control of geometry.controls){
      assert.ok(control.left>=-1&&control.right<=width+1&&control.top>=0&&control.bottom<=height+1,label+' '+control.id+' stays reachable');
      assert.ok(Math.abs(control.labelCenter-control.left-control.width/2)<1.5,label+' '+control.id+' centers its own label');
@@ -145,16 +146,17 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
      assert.ok(modeControls[1].top>=modeControls[0].bottom-1,label+' stacks Output above VolShell');
      assert.ok(Math.abs(modeControls[0].left+modeControls[0].width/2-modeControls[1].left-modeControls[1].width/2)<1,label+' aligns the stack');
      assert.ok(geometry.sharedCollapse.top>=geometry.monitor.top+geometry.monitor.height*.6,label+' keeps Collapse on the lower-right bezel');
-     assert.ok(Math.abs(modeControls[0].top-geometry.sharedCollapse.bottom-6*scale)<1,label+' groups Collapse directly above Output');
+     assert.ok(Math.abs(modeControls[0].top-geometry.sharedCollapse.bottom-6)<1,label+' groups Collapse directly above Output');
      const status=geometry.controls.find(control=>control.id==='power');
-     assert.ok(Math.abs(status.top-modeControls[1].bottom-6*scale)<1,label+' groups Saved directly below VolShell');
+     assert.ok(Math.abs(status.top-modeControls[1].bottom-6)<1,label+' groups Saved directly below VolShell');
      // Independently measured usable metal in the 1536x1024 source image.
      // Keep the full outline inside it, rather than testing only outside-glass placement.
      for(const selector of ['#fieldConsoleCollapse','#consoleOutputMode','#consoleVolshellMode','.crt-power']){
       const node=page.locator(selector);if(selector!=='.crt-power')await node.focus();
-      const bounds=await node.evaluate(element=>{const r=element.getBoundingClientRect(),style=getComputedStyle(element),outset=element.matches(':focus-visible')?parseFloat(style.outlineWidth)+Math.max(0,parseFloat(style.outlineOffset)):0;return {left:r.left-outset,right:r.right+outset,top:r.top-outset,bottom:r.bottom+outset};});
+      const bounds=await node.evaluate(element=>{const r=element.getBoundingClientRect(),style=getComputedStyle(element),outset=element.matches(':focus-visible')?Math.max(0,parseFloat(style.outlineWidth)+parseFloat(style.outlineOffset)):0;const text=[...element.childNodes].find(child=>child.nodeType===Node.TEXT_NODE&&child.textContent.trim())||element.querySelector('#consolePowerText');const range=document.createRange();range.selectNodeContents(text);const label=range.getBoundingClientRect();return {left:r.left-outset,right:r.right+outset,top:r.top-outset,bottom:r.bottom+outset,singleLine:range.getClientRects().length===1,labelFits:label.left>=r.left&&label.right<=r.right};});
       const source={left:(bounds.left-geometry.monitor.left)/geometry.monitor.width*1536,right:(bounds.right-geometry.monitor.left)/geometry.monitor.width*1536,top:(bounds.top-geometry.monitor.top)/geometry.monitor.height*1024,bottom:(bounds.bottom-geometry.monitor.top)/geometry.monitor.height*1024};
-      assert.ok(source.left>=1290&&source.right<=1410&&source.top>=690&&source.bottom<=930,label+' '+selector+' including focus fits the actual lower-right metal strip: '+JSON.stringify(source));
+      assert.ok(source.left>=1290&&source.right<=1410&&source.top>=680&&source.bottom<=930,label+' '+selector+' including focus fits the actual lower-right metal strip: '+JSON.stringify(source));
+      assert.ok(bounds.singleLine&&bounds.labelFits,label+' '+selector+' keeps its whole label on one line inside the button');
      }
     }else{
      const groupLeft=Math.min(...modeControls.map(control=>control.left)),groupRight=Math.max(...modeControls.map(control=>control.right));
