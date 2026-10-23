@@ -101,6 +101,7 @@
     };
   }
   function showAgentActivity() {
+    if (monitorMode === "adventure") return;
     const activity = agentActivity();
     if (!activity) return;
     const key = JSON.stringify([activity.case_id, activity.job_id, activity.id]);

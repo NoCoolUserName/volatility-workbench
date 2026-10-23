@@ -1,6 +1,8 @@
 # Adventure Easter egg
 
-The game shares the existing CRT dialog and authenticated loopback transport. It has no case identifier, forensic API access, VolShell subprocess, job, report, AI, or volatility-mcp connection. It is launched through `Adventure.launch({edition:'select'})` in the page console. A visible development button appears only at `http://localhost/?adventure-dev=1`; no production click sequence is implemented.
+The game shares the existing CRT dialog and authenticated loopback transport. It has no case identifier, forensic API access, VolShell subprocess, job, report, AI, or volatility-mcp connection. In the Fallout 76 Field Terminal console, double-click the upper knob for the 1977 edition or the lower knob for the 1995 edition. Single mouse clicks do nothing. Each knob is also a keyboard-focusable button: Enter or Space launches its edition. The targets follow the scaled artwork and exist only in this console theme. Activating a knob during a game preserves the running session; returning restores the console mode and focus.
+
+The trigger-independent `Adventure.launch({edition:'select'})` API remains available. A visible development button appears only at `http://localhost/?adventure-dev=1`.
 
 ## Included editions
 
