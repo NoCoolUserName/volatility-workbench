@@ -422,7 +422,7 @@ async function checkBezelConnection(browser){
      root.style.setProperty('--text-scale',String(scale));root.dataset.textScaled=String(scale!==1);
      const range=document.createRange();range.selectNodeContents([...node.childNodes].find(child=>child.nodeType===Node.TEXT_NODE&&child.textContent.trim()));
      const text=range.getBoundingClientRect(),led=node.querySelector('.volshell-led').getBoundingClientRect(),button=node.getBoundingClientRect();
-     return {scale,gap:text.left-led.right,inside:led.left>=button.left&&text.right<=button.right,width:button.width,textWidth:text.width};
+     return {scale,gap:Math.max(text.left-led.right,led.left-text.right,text.top-led.bottom,led.top-text.bottom),inside:led.left>=button.left&&led.right<=button.right&&text.left>=button.left&&text.right<=button.right&&led.top>=button.top&&led.bottom<=button.bottom&&text.top>=button.top&&text.bottom<=button.bottom,width:button.width,textWidth:text.width};
     });}finally{if(previous)root.style.setProperty('--text-scale',previous);else root.style.removeProperty('--text-scale');if(scaled===undefined)delete root.dataset.textScaled;else root.dataset.textScaled=scaled;}
    });
    for(const result of clearance){

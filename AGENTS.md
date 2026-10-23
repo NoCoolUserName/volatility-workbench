@@ -12,9 +12,15 @@ virtual environments out of Git. Use harmless fixtures and simulated model respo
 Do not start real investigations to test application changes.
 Buttons with status lights or icons must reserve separate layout space for them.
 Keep at least 8px between the visible label and indicator at 100% and 200% text.
-An absolute indicator needs symmetric side padding covering its inset, width and
-gap so the label stays centered. Verify the actual text and indicator rectangles
+An absolute indicator needs a reserved row or symmetric side padding covering its
+inset, width and gap so the label stays centered. Verify the actual text and indicator rectangles
 in the affected browser fixture; centered text alone does not prove clearance.
+Artwork controls, including their full keyboard focus outline, must fit inside a
+measured usable metal area of the source artwork. Being outside the glass or
+inside the viewport is insufficient. Use a responsive layout when that physical
+area cannot contain the labels at the chosen text size. Full-height artwork must
+fit its visible opaque bounds, excluding transparent canvas margins, while
+preserving aspect ratio. Check both painted edges and control bounds in fixtures.
 Explicit user Hide/Delete actions may remove a registered incomplete or sealed
 report bundle through the constrained UI cleanup path. Keep original evidence,
 shared analysis, history and unrelated revisions. Report edits still use new versions.
