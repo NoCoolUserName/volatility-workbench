@@ -761,7 +761,7 @@ a separate rectangular connection LED and visible keyboard focus.
 The Camden Park and Field Terminal Fallout 76 consoles use detailed transparent
 frames derived from the user's reference pictures. The frame keeps its original
 proportions, with live HTML output behind the glass opening. Camden Park fills
-the console window vertically, with gently recessed Output/VolShell controls and
+the console window vertically, with centered labels in gently recessed Output/VolShell controls and
 the status light on the silver lower bezel above the outer rim. Narrow windows
 crop only the outer housing while keeping text and controls visible. Field
 Terminal stacks compact mode buttons with centered labels below the left silver

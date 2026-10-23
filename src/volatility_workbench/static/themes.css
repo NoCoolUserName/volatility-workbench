@@ -642,15 +642,19 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   order: 0; flex: 0 1 auto; margin: 0;
 }
 :root[data-theme="fallout-76-camden-park"] :is(#consoleOutputMode,#consoleVolshellMode) {
+  position: relative; justify-content: center;
   border-radius: 12px 12px 15px 15px / 9px 9px 13px 13px;
   box-shadow: inset 0 3px 5px #0009, inset 0 -2px 3px #fff3, 0 1px 2px #0008;
 }
+:root[data-theme="fallout-76-camden-park"] #consoleVolshellMode { padding: 9px 24px; }
+:root[data-theme="fallout-76-camden-park"] .volshell-led { position: absolute; left: 12px; }
 :root[data-theme="fallout-76-camden-park"] #consoleOutputMode { transform: rotate(2deg); }
 :root[data-theme="fallout-76-camden-park"] .crt-chin .crt-power {
-  position: static; padding: 6px 8px; border: 1px solid #747568;
+  position: relative; justify-content: center; padding: 6px 16px; border: 1px solid #747568;
   border-radius: 4px; background: #121610; color: var(--text);
   box-shadow: inset 0 2px 4px #000b, inset 0 -1px 1px #fff3; transform: rotate(-2deg);
 }
+:root[data-theme="fallout-76-camden-park"] .crt-power i { position: absolute; left: 6px; }
 .field-adventure-knob, .field-console-collapse { display: none; }
 :root[data-theme="fallout-76-field-terminal"] .console-zoom {
   width: min(calc(100vw - 32px),calc((100dvh - 148px * var(--text-scale,1)) * var(--fo76-aspect)));
