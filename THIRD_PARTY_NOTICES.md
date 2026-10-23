@@ -55,3 +55,10 @@ and affected theme options. See LICENSING.md for the release checkpoint.
 Unresolved upstream notice/conflict items: `proxy_tools@0.1.0` (license-conflict). These entries are not represented as cleared. Obtain matching upstream terms or exclude/replace the affected dependency before redistribution that requires them.
 
 `proxy_tools==0.1.0` declares MIT in PyPI metadata but identifies BSD/Werkzeug in its source. The source attribution is preserved; the missing referenced BSD license and conflicting metadata remain a separate upstream clarification item. The macOS builder copies the inventory and collected notices alongside the Python and plugin notices. The project's VSL/MIT licensing arrangement is documented in LICENSING.md.
+
+- **Open Adventure 1.22 (430-point Adventure 2.5):** BSD-2-Clause source and
+  game data from [Eric S. Raymond's release](https://gitlab.com/esr/open-adventure/-/tree/1.22).
+  The macOS bundle includes its verbatim `COPYING` and a hash/provenance manifest.
+  The 1977 edition uses the pinned NetBSD BSD Games port under its three-clause
+  BSD notice, including its `glorkz` game-text database. That file has no
+  standalone header; see [Adventure provenance](docs/ADVENTURE.md).

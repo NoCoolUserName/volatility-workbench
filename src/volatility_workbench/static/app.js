@@ -1726,7 +1726,7 @@ function resizeConsoleView(expanded) {
   const pre = $("liveConsole"), top = pre.scrollTop, follow = $("consoleFollow").checked;
   const button = $("expandConsole"), dialog = $("consoleZoom");
   if (expanded) {
-    if ((!currentConsole && !caseNow()) || dialog.open || button.getAttribute("aria-expanded") === "true") return;
+    if ((!currentConsole && !caseNow() && !window.Adventure.isActive()) || dialog.open || button.getAttribute("aria-expanded") === "true") return;
     consolePagePosition = window.scrollY;
     consoleOpener = document.activeElement;
     $("expandedConsoleHost").append($("liveConsoleSection"));
@@ -1759,7 +1759,7 @@ $("expandConsole").onclick = () => {
   else { window.WorkbenchVolshell.showOutput(); resizeConsoleView(true); }
 };
 $("openCaseConsole").onclick = () => window.WorkbenchVolshell.open(selected);
-$("consoleZoom").addEventListener("close", () => resizeConsoleView(false));
+$("consoleZoom").addEventListener("close", () => { window.Adventure.closed(); resizeConsoleView(false); });
 $("consoleZoom").addEventListener("keydown", (event) => {
   if (event.key !== "Tab" || event.defaultPrevented) return;
   const controls = [...$("consoleZoom").querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), details > summary, [tabindex="0"]')]
@@ -2187,6 +2187,7 @@ window.WorkbenchVolshell.mount({api, refresh, formatOperation: operationLabel, f
     $("approvals").scrollIntoView({block:"center"});
   },
 });
+window.Adventure.mount({api, openMonitor: () => resizeConsoleView(true)});
 document
   .querySelectorAll("[data-tab]")
   .forEach((b) => (b.onclick = () => setTab(b.dataset.tab)));

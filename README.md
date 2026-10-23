@@ -2,13 +2,15 @@
 
 Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
 
-*20,802 lines of code*
+*21,671 lines of code*
 
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
 cases, sequential analysis jobs, resumable case conversations, versioned reports,
 saved evidence and citations, coverage views, and a searchable plugin catalog.
-Use the native macOS application or the same interface in a browser.
+Use the native macOS application or the same interface in a browser. The optional
+[Adventure Easter egg](docs/ADVENTURE.md) has a separate license and game-data
+provenance review for both the 1977 and 1995 editions.
 
 Workbench owns the application and presentation. The separately maintained core
 owns forensic execution, integrity checks, saved-result reuse, artifact inspection,

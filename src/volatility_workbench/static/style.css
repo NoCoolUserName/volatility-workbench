@@ -676,3 +676,18 @@ dialog.approval pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .report-plugin-errors-table input[type="checkbox"] { width: 1.2em; height: 1.2em; accent-color: var(--accent); }
 .plugin-filters > .error-acknowledgment-filter { display: flex; align-items: center; gap: 8px; flex-basis: 100%; }
 .error-acknowledgment-filter input { width: 1.2em; height: 1.2em; accent-color: var(--accent); }
+
+/* The game shares the CRT surface and inherits the active theme. */
+.adventure-panel { overflow: auto; gap: 10px; }
+.adventure-heading, .adventure-command { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.adventure-heading { justify-content: space-between; }
+.adventure-heading h3 { margin: 0; }
+#adventureStatus { margin: 0; color: var(--status); }
+.adventure-menu { display: grid; grid-template-columns: max-content 1fr; align-items: center; gap: 10px; }
+.adventure-menu p { grid-column: 1 / -1; margin: 0; }
+#adventure1977, #adventureNew1977, #adventure1995, #adventureNew1995 { grid-column: 1 / -1; justify-self: start; }
+#adventureOutput { flex: 1; min-height: 180px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--accent); font: calc(14px * var(--text-scale, 1))/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+#adventureForm { flex: 0 0 auto; }
+#adventureForm label { display: block; margin: 0 0 4px; }
+#adventureInput { flex: 1; min-width: min(240px, 100%); font: calc(14px * var(--text-scale, 1))/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+@media (max-width: 650px) { .adventure-menu { grid-template-columns: 1fr; } }

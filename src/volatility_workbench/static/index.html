@@ -10,6 +10,7 @@
     <script src="/themes.js"></script>
     <script src="/zoom.js"></script>
     <script src="/volshell.js" defer></script>
+    <script src="/adventure.js" defer></script>
     <script src="/app.js" defer></script>
   </head>
   <body>
@@ -249,9 +250,21 @@
               <pre id="volshellInvestigationOutput" tabindex="0" role="log" aria-label="AI investigation tool output" aria-live="off"></pre><div id="volshellInvestigationMessages" aria-label="AI investigation response"></div>
             </section>
           </section>
+          <section id="adventurePanel" class="crt-console-pane adventure-panel" aria-labelledby="adventureTitle" tabindex="-1" hidden>
+            <div class="adventure-heading"><h3 id="adventureTitle">Colossal Cave Adventure</h3><button id="adventureExit" type="button">Return to console</button></div>
+            <p id="adventureStatus" role="status" aria-live="polite">Choose an edition.</p>
+            <div id="adventureMenu" class="adventure-menu"><p>Choose the cave you want to explore.</p>
+              <button id="adventure1977" type="button">1977 · 350 points</button>
+              <button id="adventureNew1977" type="button">Start a new 1977 game</button>
+              <button id="adventure1995" type="button">1995 · 430 points</button>
+              <button id="adventureNew1995" type="button">Start a new 1995 game</button>
+            </div>
+            <pre id="adventureOutput" tabindex="0" role="log" aria-label="Adventure game text" aria-live="off" hidden></pre>
+            <form id="adventureForm" hidden><label for="adventureInput">Command</label><div class="adventure-command"><input id="adventureInput" type="text" maxlength="256" spellcheck="false" autocomplete="off" autocapitalize="off"><button id="adventureSend" type="submit">Enter</button></div></form>
+          </section>
         </div></div>
         <div class="crt-chin"><span class="crt-brand" aria-hidden="true">WORKBENCH <span>MONOCHROME DISPLAY</span></span>
-          <div class="crt-mode-controls"><button id="consoleOutputMode" type="button" aria-pressed="true" aria-controls="expandedConsoleHost">Output</button><button id="consoleVolshellMode" type="button" aria-pressed="false" aria-controls="volshellPanel"><span id="volshellLED" class="volshell-led" aria-hidden="true"></span>VolShell<span id="volshellLEDLabel" class="sr-only"> · disconnected</span></button></div>
+          <div class="crt-mode-controls"><button id="adventureDevButton" type="button" aria-pressed="false" aria-controls="adventurePanel" hidden>Adventure</button><button id="consoleOutputMode" type="button" aria-pressed="true" aria-controls="expandedConsoleHost">Output</button><button id="consoleVolshellMode" type="button" aria-pressed="false" aria-controls="volshellPanel"><span id="volshellLED" class="volshell-led" aria-hidden="true"></span>VolShell<span id="volshellLEDLabel" class="sr-only"> · disconnected</span></button></div>
           <span class="crt-power" aria-hidden="true"><i></i> <span id="consolePowerText">LIVE</span></span></div>
       </div>
     </dialog>

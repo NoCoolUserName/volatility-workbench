@@ -21,7 +21,7 @@ FAT_MAGICS = {b'\xca\xfe\xba\xbe': ('>', False), b'\xbe\xba\xfe\xca': ('<', Fals
 RESOURCE_NAMES = {'runtime', 'analyzer', 'wheelhouse', 'notices', 'distribution.json',
                   'analyzer.lock.txt', 'desktop.lock.txt', 'core-dependency.json',
                   'bundled-addons.json', 'Workbench.icns', 'desktop-launcher',
-                  'build-info.json', 'wheel-hashes.json'}
+                  'build-info.json', 'wheel-hashes.json', 'adventure'}
 PRIVATE_NAMES = {'.git', '.aws', '.codex', '.venv', 'config.local.json',
                  'config.json', 'case-manifest.json', 'investigation.jsonl', 'iocs.csv'}
 PRIVATE_SUFFIXES = {'.raw', '.mem', '.vmem', '.dmp', '.lime', '.dd', '.p12', '.pfx'}
@@ -165,7 +165,7 @@ def audit(app):
                      'notices/dependencies/MIT.txt', 'notices/dependencies/LicenseRef-Volatility-Software-License-1.0.txt',
                      'notices/core/LICENSE', 'notices/core/LICENSING.md', 'notices/core/THIRD_PARTY_NOTICES.md',
                      'notices/core/licenses/MIT.txt', 'notices/core/licenses/LicenseRef-Volatility-Software-License-1.0.txt',
-                     'notices/SOURCE_CODE.json',
+                     'notices/SOURCE_CODE.json', 'notices/adventure-430-COPYING', 'notices/adventure-350-COPYING',
                      'notices/python-standalone/licenses', 'notices/pypykatz-LICENSE'):
         if not (resources / required).exists():
             failures.append('Missing notice: ' + required)
@@ -176,6 +176,29 @@ def audit(app):
                 or sources.get('core', {}).get('revision') != info.get('core_commit')
                 or sources.get('public_source_required_for_distribution') is not True):
             failures.append('Source notice differs from build revisions or omits public-source requirement')
+    adventure = resources / 'adventure'
+    if not adventure.is_dir() or {p.name for p in adventure.iterdir()} != {'advent-430', 'adventure-350', 'glorkz-350', 'COPYING-430', 'COPYING-350', 'manifest.json'}:
+        failures.append('Adventure resource layout differs from the reviewed edition')
+    else:
+        try:
+            game = json.loads((adventure / 'manifest.json').read_text())
+            entries = game['editions']
+            if set(entries) != {'1977', '1995'} or info.get('adventure') != game:
+                failures.append('Adventure edition receipt differs from build info')
+            for edition, name in (('1977', 'adventure-350'), ('1995', 'advent-430')):
+                entry = entries[edition]
+                executable = adventure / entry['executable']
+                if entry['executable'] != name or sha256(executable) != entry['sha256'] or not executable.stat().st_mode & 0o100:
+                    failures.append('Adventure executable hash or mode differs: ' + edition)
+            classic = entries['1977']
+            if (classic['game_data'] != 'glorkz-350'
+                    or sha256(adventure / 'glorkz-350') != classic['game_data_sha256']):
+                failures.append('350-point game data hash differs')
+            for suffix, license_name in (('350', 'COPYING-350'), ('430', 'COPYING-430')):
+                if (adventure / license_name).read_bytes() != (resources / ('notices/adventure-' + suffix + '-COPYING')).read_bytes():
+                    failures.append('Adventure license notice differs: ' + suffix)
+        except (OSError, ValueError, KeyError, TypeError):
+            failures.append('Adventure manifest is incomplete')
     inventory = []
     for path in sorted(app.rglob('*')):
         relative = str(path.relative_to(app))

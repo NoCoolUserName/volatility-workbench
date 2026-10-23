@@ -15,8 +15,9 @@ import tarfile
 import tempfile
 import tomllib
 import urllib.request
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'scripts'))
+from build_adventure import build as build_adventure
 
 
 def run(argv, **kw):
@@ -170,6 +171,9 @@ def main():
             shutil.copy2(ROOT/name, notices/(name if name == 'LICENSING.md' else 'workbench-' + name))
         shutil.copytree(ROOT/'licenses', notices/'dependencies')
         source_notice(notices, revision, pin, manifest['volatility']['version'])
+        adventure_receipt = build_adventure(cache, temporary, resources, builder, fetch)
+        shutil.copy2(resources/'adventure/COPYING-430', notices/'adventure-430-COPYING')
+        shutil.copy2(resources/'adventure/COPYING-350', notices/'adventure-350-COPYING')
         # Only explicitly redistributable sources from the core inventory are included.
         install = r'''
 import json,sys,hashlib,urllib.request
@@ -239,7 +243,7 @@ for name,expected in ((p['file'],p['sha256']),('LICENSE',p['license_sha256'])):
         packages={name:package_inventory(resources/name/'bin/python3') for name in ('runtime','analyzer')}
         info={'schema_version':1,'profile':manifest['profile'],'workbench_version':manifest['application']['version'],
               'workbench_commit':revision,'source_dirty':dirty,'source_sha256':source_hash,'core_commit':pin['commit'],
-              'python':manifest['python'],'packages':packages,'signing':'ad-hoc' if args.sign_identity=='-' else 'developer-id',
+              'python':manifest['python'],'packages':packages,'adventure':adventure_receipt,'signing':'ad-hoc' if args.sign_identity=='-' else 'developer-id',
               'notarized':False,'bundle_id':manifest['application']['bundle_id']}
         write_json(resources/'build-info.json',info)
         # -I ignores PYTHONDONTWRITEBYTECODE. The installed site hook prevents all
