@@ -10,6 +10,7 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
  try {
   const page=await browser.newPage({viewport:{width:1200,height:800}}), errors=[],calls=[];
   let serial=0,session=null,edition=null,output='',saves={'1977':false,'1995':false};
+  let slowNextStart=false,releaseStart=null;
   page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(()=>{window.EventSource=class extends EventTarget {close(){}};});
   await page.route('http://localhost/**',async route=>{
@@ -22,6 +23,7 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
     assert.equal(method,'POST');
     const body=route.request().postDataJSON();
     if(url.pathname==='/api/adventure/start') {
+     if(slowNextStart){slowNextStart=false;await new Promise(resolve=>{releaseStart=resolve;});}
      assert.ok(['1977','1995'].includes(body.edition));edition=body.edition;
      if(body.new)saves[edition]=false;
      session='synthetic-'+(++serial);output=(saves[edition]?'RESTORED ':'NEW ')+edition+' CAVE\n';
@@ -81,6 +83,25 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
   await page.locator('#adventureOutput').getByText('RESTORED 1995 CAVE').waitFor();
   await page.locator('#adventureExit').click();
   await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  slowNextStart=true;
+  await page.evaluate(()=>{window.firstRapidLaunch=Adventure.launch({edition:'1977'});});
+  for(let attempt=0;attempt<100&&!releaseStart;attempt++)await new Promise(resolve=>setTimeout(resolve,10));
+  assert.ok(releaseStart,'Delayed start did not reach the synthetic route');
+  await page.locator('#adventureExit').click();
+  await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  await page.evaluate(()=>{window.secondRapidLaunch=Adventure.launch({edition:'select'});});
+  releaseStart();
+  await page.evaluate(()=>window.firstRapidLaunch);
+  await page.evaluate(()=>window.secondRapidLaunch);
+  assert.equal(await page.locator('#adventureMenu').evaluate(x=>x.hidden),false);
+  assert.equal(await page.locator('#adventureOutput').evaluate(x=>x.hidden),true);
+  await page.locator('#adventure1995').click();
+  await page.locator('#adventureOutput').getByText('RESTORED 1995 CAVE').waitFor();
+  await page.locator('#adventureExit').click();
+  await page.waitForFunction(()=>!document.querySelector('#consoleZoom').open);
+  await page.evaluate(async()=>{try{await Adventure.launch({edition:'invalid'});}catch(e){window.invalidEditionMessage=e.message;}});
+  assert.equal(await page.evaluate(()=>window.invalidEditionMessage),'Unknown Adventure edition');
+  assert.equal(await page.locator('#consoleZoom').evaluate(x=>x.open),false);
   assert.ok(calls.every(x=>x==='/api/state'||x.startsWith('/api/adventure/')||x==='/api/settings/zoom'));
   assert.deepEqual(errors,[]);
   console.log('Adventure browser: both editions, input, escape safety, independent saves, relaunch, theme and console restoration passed');

@@ -4,7 +4,7 @@
   const $ = id => document.getElementById(id);
   let adapter = null, active = false, openedDialog = false, previousMode = "output";
   let previousFocus = null, previousScroll = 0, outputScroll = 0, shellScroll = 0;
-  let sessionId = null, poll = null, sequence = 0, busy = false, closing = null;
+  let sessionId = null, poll = null, sequence = 0, busy = false, closing = null, starting = null;
   let outputButtonDisabled = false, shellButtonDisabled = false;
 
   function status(message) {
@@ -43,25 +43,32 @@
     if (!["1977", "1995"].includes(edition)) throw Error("Unknown Adventure edition");
     if (busy) return;
     busy = true;
-    status("Starting Adventure…");
-    try {
-      const snapshot = await adapter.api("adventure/start", {edition, new:fresh});
-      if (!active) {
-        await adapter.api("adventure/close", {session_id:snapshot.session_id});
-        return;
+    const launchSequence = sequence;
+    const operation = (async () => {
+      status("Starting Adventure…");
+      try {
+        const snapshot = await adapter.api("adventure/start", {edition, new:fresh});
+        if (!active || launchSequence !== sequence) {
+          await adapter.api("adventure/close", {session_id:snapshot.session_id});
+          return;
+        }
+        sessionId = snapshot.session_id;
+        $("adventureMenu").hidden = true;
+        $("adventureOutput").hidden = false;
+        $("adventureForm").hidden = false;
+        render(snapshot);
+        $("adventureInput").focus({preventScroll:true});
+        const id = ++sequence;
+        clearInterval(poll);
+        poll = setInterval(() => refresh(id), 250);
+      } catch (e) {
+        if (active && launchSequence === sequence) showMenu(e.message);
       }
-      sessionId = snapshot.session_id;
-      $("adventureMenu").hidden = true;
-      $("adventureOutput").hidden = false;
-      $("adventureForm").hidden = false;
-      render(snapshot);
-      $("adventureInput").focus({preventScroll:true});
-      const id = ++sequence;
-      clearInterval(poll);
-      poll = setInterval(() => refresh(id), 250);
-    } catch (e) {
-      showMenu(e.message);
-    } finally {
+    })();
+    starting = operation;
+    try { await operation; }
+    finally {
+      if (starting === operation) starting = null;
       busy = false;
     }
   }
@@ -91,8 +98,10 @@
     }
   }
   async function launch({edition = "select"} = {}) {
+    if (!["select", "1977", "1995"].includes(edition)) throw Error("Unknown Adventure edition");
     if (!adapter) throw Error("Adventure is not ready");
     if (closing) await closing;
+    if (starting) await starting;
     if (active) {
       if (edition !== "select" && !sessionId) await start(edition);
       else $("adventurePanel").focus({preventScroll:true});

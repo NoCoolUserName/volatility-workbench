@@ -71,6 +71,62 @@
       "line": 165,
       "source_sha256": "155cd136b309ded31a44ade71a41b46ad1168323a8b12dc3ee420e903ffa9729",
       "reason": "Security CI invokes the pinned local Semgrep executable with fixed flags, local verified rules and enumerated source paths as argv; shell=False and an environment allowlist are explicit."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/build_adventure.py",
+      "line": 44,
+      "source_sha256": "0c8d5711d5779c31a0e7ac4624613adc91ec38744e47995fb2dd82640965e1c5",
+      "reason": "Reviewed 2026-10-23: a fixed -I pip install command receives the hash-pinned PyYAML wheel and the explicitly selected build interpreter as separate argv values; shell=False, no case or game input."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/build_adventure.py",
+      "line": 51,
+      "source_sha256": "0c8d5711d5779c31a0e7ac4624613adc91ec38744e47995fb2dd82640965e1c5",
+      "reason": "Reviewed 2026-10-23: the explicitly selected build interpreter runs make_dungeon.py only inside the SHA-256 pinned Open Adventure source checkout; fixed argv, shell=False, no recovered input."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/build_bsd_adventure.py",
+      "line": 75,
+      "source_sha256": "9b385ec0b6c4f1da1331520b93a41381a56004be8c4a036453dce97740ab8baa",
+      "reason": "Reviewed 2026-10-23: fixed Apple clang argv compiles setup.c from individual SHA-256 pinned NetBSD source files in a temporary build directory; shell=False, no case input."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/build_bsd_adventure.py",
+      "line": 77,
+      "source_sha256": "9b385ec0b6c4f1da1331520b93a41381a56004be8c4a036453dce97740ab8baa",
+      "reason": "Reviewed 2026-10-23: mkdata is compiled from pinned source and receives the pinned glorkz file as a separate path argument; generated output is confined to the temporary build directory; shell=False."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/build_bsd_adventure.py",
+      "line": 82,
+      "source_sha256": "9b385ec0b6c4f1da1331520b93a41381a56004be8c4a036453dce97740ab8baa",
+      "reason": "Reviewed 2026-10-23: fixed Apple clang argv compiles only pinned and locally generated C files into the selected app resource path; shell=False, no recovered input."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/validate_macos.py",
+      "line": 40,
+      "source_sha256": "af5ddefc131d78a943c7da696119e53114fa355f8fbf5a6dc9f09268a870fc45",
+      "reason": "Reviewed 2026-10-23: package validator launches the manifest-hash-checked 430-point binary with fixed options and synthetic commands, temporary save path, sanitized environment, and shell=False."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
+      "path": "scripts/validate_macos.py",
+      "line": 47,
+      "source_sha256": "af5ddefc131d78a943c7da696119e53114fa355f8fbf5a6dc9f09268a870fc45",
+      "reason": "Reviewed 2026-10-23: package validator launches the manifest-hash-checked 350-point binary with fixed synthetic commands, private temporary save path, sanitized environment, and shell=False."
+    },
+    {
+      "rule_id": "python.lang.security.audit.dangerous-asyncio-create-exec-audit",
+      "path": "src/volatility_workbench/adventure.py",
+      "line": 155,
+      "source_sha256": "8d335d2a6e60eba9ffb0e87bd8ebc7d4784a0dd0b9be5878c24c762adceff2f0",
+      "reason": "Reviewed 2026-10-23 with owner approval: edition is allowlisted, executable name and SHA-256 come from bundled manifest, symlink and mode are checked, save arguments use the private preferences directory, environment is allowlisted, and create_subprocess_exec never invokes a shell or accepts case/evidence input. Canceled sessions now kill and reap the process group."
     }
   ]
 }
