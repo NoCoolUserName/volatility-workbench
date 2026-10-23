@@ -30,7 +30,7 @@ def build(cache: Path, temporary: Path, resources: Path, builder: Path, fetch) -
         raise ValueError("Adventure bundle requires an ARM64 macOS build host")
     archive = fetch(URL, cache / "open-adventure-1.22.tar.gz", SOURCE_SHA256)
     source = temporary / "open-adventure"
-    source.mkdir()
+    source.mkdir(parents=True)
     with tarfile.open(archive, "r:gz") as bundle:
         if sum(member.size for member in bundle.getmembers()) > 32 * 1024 * 1024:
             raise ValueError("Open Adventure archive exceeds source size limit")

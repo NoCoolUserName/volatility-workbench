@@ -47,11 +47,9 @@ class ReleaseTests(unittest.TestCase):
                          'community': {'bundled_sources': []}, 'pypykatz_plugin': {'commit': 'synthetic'}}
         self.info = {'source_dirty': False, 'workbench_commit': 'a'*40, 'core_commit': 'b'*40,
                      'bundle_id': 'org.example.synthetic', 'signing': 'developer-id'}
-        game = self.resources / 'adventure/advent-430'
-        game.write_bytes(b'SYNTHETIC ADVENTURE 430')
+        game = macho(self.resources / 'adventure/advent-430')
         game.chmod(0o700)
-        classic = self.resources / 'adventure/adventure-350'
-        classic.write_bytes(b'SYNTHETIC ADVENTURE 350')
+        classic = macho(self.resources / 'adventure/adventure-350')
         classic.chmod(0o700)
         (self.resources / 'adventure/glorkz-350').write_bytes(b'SYNTHETIC GAME DATA')
         for suffix in ('430', '350'):
@@ -104,7 +102,7 @@ class ReleaseTests(unittest.TestCase):
         executable.write_bytes(b'TAMPERED GAME')
         with self.assertRaisesRegex(ValueError, 'Adventure executable hash'):
             release.audit(self.app)
-        executable.write_bytes(b'SYNTHETIC ADVENTURE 430')
+        macho(executable)
         (self.resources / 'notices/adventure-430-COPYING').unlink()
         with self.assertRaisesRegex(ValueError, 'Adventure manifest|Missing notice'):
             release.audit(self.app)
