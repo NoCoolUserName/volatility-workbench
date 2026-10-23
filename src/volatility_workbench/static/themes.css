@@ -825,25 +825,45 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
   color: var(--text); background: #10170e; text-shadow: none; font-size: calc(9px * var(--text-scale,1));
 }
 :root:is([data-theme="fallout-3-robco-2"],[data-theme="fallout-3-vault-112-2"],[data-theme="fallout-new-vegas-2"]) .crt-power i { position: absolute; left: 5px; width: 7px; height: 7px; }
-:root[data-theme="fallout-3-robco-2"] .crt-mode-controls { top: 47%; left: 87%; width: 9%; flex-direction: column; }
-:root[data-theme="fallout-3-robco-2"] .crt-mode-controls button { width: 100%; }
-:root[data-theme="fallout-3-robco-2"] .crt-power { top: 60%; left: 87%; }
+:root[data-theme="fallout-3-robco-2"] .console-zoom {
+  /* Opaque artwork spans source rows 6..1013 of 1024. Fill those visible edges. */
+  top: calc(-100dvh * 6 / 1007);
+  width: calc(100dvh * 1536 / 1007); height: calc(100dvh * 1024 / 1007);
+}
+:root[data-theme="fallout-3-robco-2"] .crt-chin {
+  position: absolute; top: auto; bottom: 1%; left: 50%; transform: translateX(-50%);
+  width: min(calc(100vw - 24px),100%); display: flex; flex-direction: column; gap: 5px;
+}
+:root[data-theme="fallout-3-robco-2"] .crt-mode-controls {
+  position: static; width: 100%; transform: none; flex-direction: row; flex-wrap: wrap; justify-content: center;
+}
+:root[data-theme="fallout-3-robco-2"] .crt-power { position: relative; top: auto; left: auto; transform: none; align-self: center; }
 :root[data-theme="fallout-3-robco-2"] .field-console-collapse {
-  display: block; position: absolute; z-index: 3; left: 87%; top: 34%; transform: translate(-50%,-50%);
-  width: 9%; min-height: 32px; padding: 4px; font-size: calc(11px * var(--text-scale,1));
+  display: block; position: absolute; z-index: 3; left: 50%; top: 8%; transform: translateX(-50%);
+  width: auto; min-height: 32px; padding: 4px 8px; font-size: calc(11px * var(--text-scale,1));
 }
 @media (min-width: 701px) {
-  :root[data-theme="fallout-3-robco-2"] .crt-mode-controls {
-    top: auto; bottom: calc(12% + 26px * var(--text-scale,1)); width: max-content;
-    transform: translateX(-50%); gap: calc(6px * var(--text-scale,1));
-  }
-  :root[data-theme="fallout-3-robco-2"] .crt-mode-controls button { height: calc(32px * var(--text-scale,1)); }
-  :root[data-theme="fallout-3-robco-2"] .field-console-collapse {
-    top: auto; bottom: calc(12% + 102px * var(--text-scale,1)); transform: translateX(-50%);
-    width: calc(108px * var(--text-scale,1)); height: calc(32px * var(--text-scale,1));
-  }
-  :root[data-theme="fallout-3-robco-2"] .crt-power {
-    top: auto; bottom: 12%; height: calc(20px * var(--text-scale,1)); transform: translateX(-50%);
+  @container reference-terminal (width >= 72em) {
+    /* Source-space metal strip: x1290..1410, y690..930. Include focus clearance.
+       Larger text and smaller windows use the wider responsive controls instead. */
+    :root[data-theme="fallout-3-robco-2"]:not([data-text-scaled="true"]) .crt-chin { position: static; transform: none; width: auto; }
+    :root[data-theme="fallout-3-robco-2"]:not([data-text-scaled="true"]) .crt-mode-controls {
+      position: absolute; top: auto; bottom: calc(12% + 26px); left: 88%; width: 6%;
+      transform: translateX(-50%); flex-direction: column; flex-wrap: nowrap; gap: 6px;
+    }
+    :root[data-theme="fallout-3-robco-2"]:not([data-text-scaled="true"]) .crt-mode-controls :is(#consoleOutputMode,#consoleVolshellMode) {
+      width: 100%; height: 32px; padding: 4px; line-height: 1.4;
+    }
+    :root[data-theme="fallout-3-robco-2"]:not([data-text-scaled="true"]) .crt-mode-controls #consoleVolshellMode { height: 48px; padding-top: 21px; }
+    :root[data-theme="fallout-3-robco-2"]:not([data-text-scaled="true"]) .volshell-led { left: 50%; top: 6px; transform: translateX(-50%); }
+    :root[data-theme="fallout-3-robco-2"]:not([data-text-scaled="true"]) .field-console-collapse {
+      top: auto; bottom: calc(12% + 118px); left: 88%; transform: translateX(-50%);
+      width: 6%; height: 32px; padding: 4px;
+    }
+    :root[data-theme="fallout-3-robco-2"]:not([data-text-scaled="true"]) .crt-power {
+      position: absolute; top: auto; bottom: 12%; left: 88%; width: 6%; height: 20px; transform: translateX(-50%);
+    }
+    :root[data-theme="fallout-3-robco-2"]:not([data-text-scaled="true"]) .crt-power i { left: 3px; width: 6px; height: 6px; }
   }
 }
 :root[data-theme="fallout-3-vault-112-2"] .crt-mode-controls { top: 92.3%; left: var(--reference-control-center); }

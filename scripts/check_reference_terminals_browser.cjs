@@ -79,7 +79,9 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
     }
     assert.equal(await page.locator('#consoleVolshellMode .volshell-led').count(),1,'VolShell retains its rectangular connection LED');
    }
-   for(const [width,height,scale] of [[1400,1000,1],[900,600,1],[390,844,1],[320,844,2]]){
+   const viewports=[[1400,1000,1],[900,600,1],[390,844,1],[320,844,2]];
+   if(id==='fallout-3-robco-2')viewports.push([1200,800,1],[1400,1000,2]);
+   for(const [width,height,scale] of viewports){
     const label=`${id} ${width}x${height} ${scale*100}% text`;
     await page.setViewportSize({width,height});
     await page.evaluate(scale=>{document.documentElement.style.setProperty('--text-scale',String(scale));document.documentElement.dataset.textScaled=String(scale!==1);},scale);
@@ -110,12 +112,18 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
      const imageNode=new Image();imageNode.src=url;await imageNode.decode();
      const canvas=document.createElement('canvas');canvas.width=imageNode.naturalWidth;canvas.height=imageNode.naturalHeight;const context=canvas.getContext('2d');context.drawImage(imageNode,0,0);
      const monitor=document.querySelector('.crt-monitor').getBoundingClientRect(),screen=document.querySelector('.crt-screen').getBoundingClientRect(),x=Math.round(((screen.left+screen.right)/2-monitor.left)/monitor.width*canvas.width),y=Math.round(((screen.top+screen.bottom)/2-monitor.top)/monitor.height*canvas.height);
-     return {url,width:canvas.width,height:canvas.height,centerAlpha:context.getImageData(x,y,1,1).data[3]};
+     const centerAlpha=context.getImageData(x,y,1,1).data[3],pixels=context.getImageData(0,0,canvas.width,canvas.height).data;
+     let top=canvas.height,bottom=0;
+     for(let index=3;index<pixels.length;index+=4)if(pixels[index]>128){const row=Math.floor((index-3)/4/canvas.width);top=Math.min(top,row);bottom=Math.max(bottom,row+1);}
+     return {url,width:canvas.width,height:canvas.height,centerAlpha,visibleTop:top,visibleBottom:bottom};
     },geometry.image);
     assert.equal(new URL(art.url).origin,'http://localhost');assert.ok(fs.existsSync(path.join(assets,new URL(art.url).pathname.slice(1))));
     assert.ok(Math.abs(geometry.aspect-art.width/art.height)<.00001,label+' derives its CSS aspect from the packaged art');
     assert.ok(Math.abs(geometry.frame.width/geometry.frame.height-art.width/art.height)<.002,label+' preserves the reference frame aspect ratio');
-    assert.ok(Math.abs(geometry.frame.top)<1&&Math.abs(geometry.frame.bottom-height)<1,label+' fills the viewport from top to bottom');
+    if(id==='fallout-3-robco-2'){
+     assert.ok(Math.abs(geometry.monitor.top+geometry.monitor.height*art.visibleTop/art.height)<1,label+' puts the visible painted top edge at the viewport top');
+     assert.ok(Math.abs(geometry.monitor.top+geometry.monitor.height*art.visibleBottom/art.height-height)<1,label+' puts the visible painted bottom edge at the viewport bottom');
+    }else assert.ok(Math.abs(geometry.frame.top)<1&&Math.abs(geometry.frame.bottom-height)<1,label+' fills the viewport from top to bottom');
     assert.equal(art.centerAlpha,0,label+' leaves the live HTML behind the transparent glass opening');
     assert.ok(geometry.screen.left>=-1&&geometry.screen.right<=width+1&&geometry.screen.top>=-1&&geometry.screen.bottom<=height+1,label+' keeps live text reachable');
     assert.ok(Math.min(geometry.output.bottom,geometry.screen.bottom)-Math.max(geometry.output.top,geometry.screen.top)>=24,label+' keeps actual live output visible inside the glass');
@@ -127,7 +135,11 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
      assert.ok(Math.abs(control.labelCenter-control.left-control.width/2)<1.5,label+' '+control.id+' centers its own label');
      assert.ok(control.bottom<=geometry.screen.top+1||control.top>=geometry.screen.bottom-1||control.right<=geometry.screen.left+1||control.left>=geometry.screen.right-1,label+' '+control.id+' stays on the bezel');
     }
-    for(const control of modeControls)assert.ok(control.paddingTop+control.paddingBottom<=control.font*1.1,label+' keeps mode button padding compact');
+    for(const control of modeControls){
+     // RobCo's narrow physical button reserves a separate row for its LED.
+     if(id==='fallout-3-robco-2'&&geometry.direction==='column'&&control.id==='consoleVolshellMode')continue;
+     assert.ok(control.paddingTop+control.paddingBottom<=control.font*1.1,label+' keeps mode button padding compact');
+    }
     if(id==='fallout-3-robco-2'&&geometry.direction==='column'){
      assert.ok(modeControls.every(control=>control.left>=geometry.screen.right-1),label+' puts stacked RobCo controls on the right bezel rim');
      assert.ok(modeControls[1].top>=modeControls[0].bottom-1,label+' stacks Output above VolShell');
@@ -136,6 +148,14 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
      assert.ok(Math.abs(modeControls[0].top-geometry.sharedCollapse.bottom-6*scale)<1,label+' groups Collapse directly above Output');
      const status=geometry.controls.find(control=>control.id==='power');
      assert.ok(Math.abs(status.top-modeControls[1].bottom-6*scale)<1,label+' groups Saved directly below VolShell');
+     // Independently measured usable metal in the 1536x1024 source image.
+     // Keep the full outline inside it, rather than testing only outside-glass placement.
+     for(const selector of ['#fieldConsoleCollapse','#consoleOutputMode','#consoleVolshellMode','.crt-power']){
+      const node=page.locator(selector);if(selector!=='.crt-power')await node.focus();
+      const bounds=await node.evaluate(element=>{const r=element.getBoundingClientRect(),style=getComputedStyle(element),outset=element.matches(':focus-visible')?parseFloat(style.outlineWidth)+Math.max(0,parseFloat(style.outlineOffset)):0;return {left:r.left-outset,right:r.right+outset,top:r.top-outset,bottom:r.bottom+outset};});
+      const source={left:(bounds.left-geometry.monitor.left)/geometry.monitor.width*1536,right:(bounds.right-geometry.monitor.left)/geometry.monitor.width*1536,top:(bounds.top-geometry.monitor.top)/geometry.monitor.height*1024,bottom:(bounds.bottom-geometry.monitor.top)/geometry.monitor.height*1024};
+      assert.ok(source.left>=1290&&source.right<=1410&&source.top>=690&&source.bottom<=930,label+' '+selector+' including focus fits the actual lower-right metal strip: '+JSON.stringify(source));
+     }
     }else{
      const groupLeft=Math.min(...modeControls.map(control=>control.left)),groupRight=Math.max(...modeControls.map(control=>control.right));
      const center=id==='fallout-3-vault-112-2'&&geometry.controlPosition==='absolute'?geometry.monitor.left+geometry.monitor.width*geometry.controlCenter:width/2;

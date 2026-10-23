@@ -766,6 +766,10 @@ Button labels reserve at least 8px of clearance from that LED, including at
 
 The RobCo Night 2 console stacks Collapse, Output and VolShell on the lower-right
 bezel, with Saved directly below.
+Its narrow controls and keyboard focus outlines fit the measured metal strip;
+the connection LED sits above the VolShell label. Smaller windows and enlarged
+text use the wider responsive controls. The frame crops transparent canvas margins
+so its visible painted top and bottom edges fill the window at the native aspect.
 Vault 112 2 places Output and VolShell over part of the lower vent, leaving grille
 exposed; its glowing amber physical button activates Collapse. New Vegas 2 uses
 the supplied rusty diamond Welcome sign with yellow bulbs, WELCOME discs and
