@@ -65,3 +65,12 @@ Unresolved upstream notice/conflict items: `proxy_tools@0.1.0` (license-conflict
   The 1977 edition uses the pinned NetBSD BSD Games port under its three-clause
   BSD notice, including its `glorkz` game-text database. That file has no
   standalone header; see [Adventure provenance](docs/ADVENTURE.md).
+
+## CryptoMem
+
+The native bundle includes [NoCoolUserName/volatility3-cryptomem](https://github.com/NoCoolUserName/volatility3-cryptomem)
+under VSL-1.0, at the source revision and hashes pinned by the shared core.
+The build retains its unchanged source, complete LICENSE and Bitcoin standards
+notices under `Contents/Resources/notices/NoCoolUserName/volatility3-cryptomem/`.
+CryptoScan research attribution and other protocol notices remain in that LICENSE
+and the independent repository. No CryptoScan implementation is bundled.
