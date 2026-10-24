@@ -1,6 +1,6 @@
 # Volatility Workbench
 
-*22,548 lines of code*
+*22,572 lines of code*
 
 *Latest measured macOS ARM64 build: app 403.36 MiB (422,958,178 bytes); ZIP 187.72 MiB (196,834,079 bytes). Built from 0da1845a4503, measured 2026-10-23.*
 
@@ -152,15 +152,15 @@ and [security](SECURITY.md).
 
 ## Pinned core and plugins
 
-The tested core pin is `88f06e2e953efc117d442f1e81175b21adca354d`, API revision 1.
+The tested core pin is `62855a071fe085112d690b207e595c664fe7b158`, API revision 1.
 `core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on the
 immutable commit. `pip install .` brings in that dependency; the pin helper checks
 installed Git provenance even when successive core commits share a package version.
 
-The validated portable public bundle baseline has **200 commands**. The existing
-configured local analyzer has **237 commands**, preserving the previous 214 names,
-with zero import failures. These are different installation profiles. Counts are
-measured from the selected runtime and do not establish image compatibility.
+The public bundle includes CryptoMem alongside the native and previously bundled
+plugins. The configured analyzer may include additional optional community
+plugins. Exact counts are measured during validation; discovery does not
+establish image compatibility.
 
 Core's single opt-in community inventory includes PteMalfind/Ptenum, ImgMalfind,
 Prefetch, AnyDesk, EVTXLog, Browser History Extractor and KeePass, plus CobaltStrike,
@@ -177,6 +177,15 @@ Python currently requires the explicitly verified pinned CPython 3.8 research
 layout; Go version gates are not an accuracy matrix; AES candidates do not establish
 BitLocker key roles or cipher modes. See the
 [core runtime-addon checks and limitations](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/RUNTIME_ADDONS.md).
+
+The bundled [CryptoMem plugin](https://github.com/NoCoolUserName/volatility3-cryptomem)
+scans one selected Windows process for Bitcoin, Ethereum-style and XRP classic
+address candidates and bounded payment requests. Find `windows.cryptomem.CryptoMem`
+in Plugins and supply a PID. It runs offline through the shared core, preserves
+process/virtual-offset provenance, and remains manual-only. Address validation
+does not establish wallet ownership; real-memory recovery is still unvalidated.
+Existing external analyzers receive it through the same explicit plugin installer.
+See [CryptoMem capabilities and limits](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/CRYPTOMEM.md).
 
 Redistribution restrictions keep selected upstream sources out of the public app;
 install them explicitly through idle Settings maintenance or core's installer:

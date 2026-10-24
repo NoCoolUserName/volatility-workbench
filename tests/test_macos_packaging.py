@@ -43,7 +43,7 @@ class MacPackagingTests(unittest.TestCase):
     def test_distribution_references_core_inventory_and_resolved_locks(self):
         manifest=json.loads((ROOT/'packaging/distribution.json').read_text())
         self.assertEqual(manifest['community']['inventory'],'volatility_mcp/resources/addons.json')
-        self.assertEqual(manifest['community']['bundled_sources'],['spitfirerxf/vol3-plugins'])
+        self.assertEqual(manifest['community']['bundled_sources'],['spitfirerxf/vol3-plugins', 'NoCoolUserName/volatility3-cryptomem'])
         self.assertEqual(len(manifest['python']['sha256']),64)
         for lock in (manifest['desktop_lock'],manifest['analyzer_lock']):
             for line in (ROOT/lock).read_text().splitlines():

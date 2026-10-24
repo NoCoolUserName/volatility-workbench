@@ -50,7 +50,7 @@ def main():
             raise SystemExit('Packaged 350-point Adventure gameplay or save failed: '+classic_run.stdout[-500:]+classic_run.stderr[-500:])
         print(json.dumps({'adventure_350':'gameplay-and-save-passed','architecture':architecture}))
         script=r'''
-import asyncio,importlib.metadata as m,json,os,platform,subprocess,sys
+import asyncio,hashlib,importlib.metadata as m,json,os,platform,subprocess,sys
 from pathlib import Path
 from mcp import Client
 from mcp.client.stdio import StdioServerParameters
@@ -82,23 +82,43 @@ path=root/'config.json'; path.write_text(json.dumps(config.to_dict()))
 catalog=VolatilityBackend(config).list_plugins(refresh=True)
 assert not catalog['import_failures'],catalog['import_failures']
 plugins={p['name']:p for p in catalog['plugins']}
-for name in ['windows.info.Info','windows.pslist.PsList','xpnet.XpNetScan','vol_pypykatz.pypykatz','windows.evtxlog.evtxlog']: assert name in plugins,name
+for name in ['windows.info.Info','windows.pslist.PsList','xpnet.XpNetScan','vol_pypykatz.pypykatz','windows.evtxlog.evtxlog','windows.cryptomem.CryptoMem']: assert name in plugins,name
 assert plugins['vol_pypykatz.pypykatz']['source']['kind']=='third_party'
 assert plugins['windows.evtxlog.evtxlog']['source']['kind']=='third_party'
 assert plugins['xpnet.XpNetScan']['source']['kind']=='local'
+crypto='windows.cryptomem.CryptoMem'
+assert plugins[crypto]['source']['kind']=='third_party' and plugins[crypto]['manual_only']
+from volatility_mcp.addons import profile as addon_profile
+inventory=addon_profile()
+assert crypto in inventory['offline_plugins']
+source=next(s for s in inventory['sources'] if crypto in s['plugins'])
+for item in source['files']:
+ original=resources/'notices'/source['repository']/item['path']
+ installed=resources/'analyzer/lib/python3.12/site-packages/volatility3/framework/plugins'/item['target']
+ assert hashlib.sha256(original.read_bytes()).hexdigest()==item['sha256']
+ assert hashlib.sha256(installed.read_bytes()).hexdigest()==item['installed_sha256']
+for item in source['notices']:
+ assert hashlib.sha256((resources/'notices'/source['repository']/item['path']).read_bytes()).hexdigest()==item['sha256']
+# Exercise the installed detector with a public format vector, without an image.
+vector="from volatility3.plugins.windows.cryptomem_formats import find_artifacts; rows=list(find_artifacts(b' 1BoatSLRHtKNngkdXEeobR76b53LETtpyT ', {'BTC'})); assert len(rows)==1 and rows[0]['offset']==1 and rows[0]['validation']=='checksum_valid'"
+subprocess.run([str(python),'-I','-c',vector],cwd=root,env=os.environ,check=True)
+
 async def check():
  async with Client(StdioServerParameters(command=sys.executable,args=['-I','-m','volatility_mcp','serve','--config',str(path)])) as client:
   tools=await client.list_tools(); assert {'list_plugins','query_output','get_coverage'} <= {x.name for x in tools.tools}
   result=decode_result(await client.call_tool('list_plugins',{'query':'evtxlog'}))
   assert not result.get('error'),result
   assert any(x['name']=='windows.evtxlog.evtxlog' for x in result['plugins'])
+  result=decode_result(await client.call_tool('list_plugins',{'query':crypto}))
+  assert not result.get('error') and len(result['plugins'])==1,result
+  assert result['plugins'][0]['name']==crypto and result['plugins'][0]['manual_only']
 asyncio.run(check())
 # A synthetic byte file exercises a real analyzer subprocess; never opens an image from the user.
 fixture=evidence/'synthetic.raw'; fixture.write_bytes(b'\x00'*4096+b'Linux version 0.0.0 (SYNTHETIC TEST ONLY)\x00'+b'\x00'*4096)
 run=subprocess.run([str(python),'-I',str(vol),'-q','-f',str(fixture),'banners.Banners'],capture_output=True,text=True,timeout=60)
 assert run.returncode==0,(run.returncode,run.stderr[-1500:])
 assert 'SYNTHETIC TEST ONLY' in run.stdout,run.stdout[-1500:]
-print(json.dumps({'status':'passed','plugin_count':catalog['total'],'import_failures':catalog['import_failures'],'core_commit':info['core_commit'],'native_dependency_imports':True,'mcp_catalog_call':True,'synthetic_analyzer_invocations':1,'real_images_opened':0}))
+print(json.dumps({'status':'passed','plugin_count':catalog['total'],'import_failures':catalog['import_failures'],'core_commit':info['core_commit'],'native_dependency_imports':True,'mcp_catalog_call':True,'cryptomem_discovery_and_vector':True,'synthetic_analyzer_invocations':1,'real_images_opened':0}))
 '''
         result=subprocess.run([str(resources/'runtime/bin/python3'),'-I','-c',script,str(resources)],cwd=temp,env=env,capture_output=True,text=True,timeout=180)
         if result.returncode:

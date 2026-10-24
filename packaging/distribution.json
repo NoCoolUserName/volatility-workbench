@@ -31,7 +31,8 @@
     "inventory": "volatility_mcp/resources/addons.json",
     "profile": "community-2026-10",
     "bundled_sources": [
-      "spitfirerxf/vol3-plugins"
+      "spitfirerxf/vol3-plugins",
+      "NoCoolUserName/volatility3-cryptomem"
     ],
     "optional_upstream_download": [
       "f-block/volatility-plugins",
