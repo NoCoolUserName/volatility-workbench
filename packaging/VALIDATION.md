@@ -168,3 +168,28 @@ The portable public bundle allowlist remains unchanged. Native build/installatio
 results are recorded with each artifact's exact commits. Synthetic checks establish
 parser/API/bounds behavior, not accuracy across real OS and runtime builds; see
 core's `docs/RUNTIME_ADDONS.md` for the explicit version/layout limitations.
+
+
+## CryptoMem adoption — 2026-10-23
+
+Workbench pins core `62855a071fe085112d690b207e595c664fe7b158` and adds
+the standalone CryptoMem source distribution to the public bundle allowlist.
+The detector remains maintained in its independent repository; Workbench uses
+core's shared profile, discovery and execution interfaces.
+
+The fresh installed-wheel smoke passed all 268 Workbench tests, dependency
+checks, ten-tool MCP negotiation in both modes, packaged assets and HTTP startup
+outside the checkout. Targeted correctness lint and the existing selected-module
+type check passed. These checks use temporary synthetic state.
+
+The native ARM64 build from clean commit
+`26abdaf23e3d4e1a000e65320fec9ad6c9479751` discovers 201 bundled commands
+with zero import failures. Validation checks CryptoMem source and license hashes,
+manual-only/offline policy, real MCP discovery and a synthetic Bitcoin checksum
+vector. Native imports, portable dependencies, synthetic banner execution, game
+validation and strict code-signature verification passed. No real memory image
+was opened; representative Windows memory validation remains outstanding.
+
+The measured app contains 423,060,401 regular-file bytes (403.46 MiB), excluding
+symlink aliases; the ZIP is 196,885,947 bytes (187.77 MiB), measured 2026-10-23.
+ZIP SHA-256: `a9d9fa04b6ed6b5b4d7d8a9ca361c2918bb216832a66422b7d907d5c2be6fb23`.
