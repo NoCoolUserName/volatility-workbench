@@ -32,7 +32,7 @@ def main():
     assert (resources/'desktop-launcher').is_file()
     assert os.access(resources/'desktop-launcher',os.X_OK)
     with tempfile.TemporaryDirectory(prefix='workbench-package-check-') as temporary:
-        temp=Path(temporary); env={'HOME':str(temp),'PATH':'/usr/bin:/bin','TMPDIR':str(temp),'LANG':'en_US.UTF-8'}
+        temp=Path(temporary).resolve(); env={'HOME':str(temp),'PATH':'/usr/bin:/bin','TMPDIR':str(temp),'LANG':'en_US.UTF-8'}
         native=subprocess.run([str(app/'Contents/MacOS/Volatility Workbench'),'--check-bundled-runtime'],
             cwd=temp,env={k:v for k,v in env.items() if k!='LANG'},capture_output=True,text=True,timeout=30,check=True)
         assert json.loads(native.stdout)['subprocess_unicode'] is True
@@ -73,7 +73,25 @@ for asset in ('static/settings.html','static/settings.js','static/settings.css',
 scenes=list(files('volatility_workbench').joinpath('static').glob('theme-*.svg'))
 assert len(scenes)==29 and all(scene.read_bytes() for scene in scenes)
 core=json.loads(m.distribution('volatility-mcp').read_text('direct_url.json'))
-assert core['vcs_info']['commit_id']==info['core_commit']
+assert core['archive_info']['hashes']['sha256']==manifest['core_bundle']['sha256']
+assert info['core_bundle']==manifest['core_bundle']
+bundle=json.loads(files('volatility_mcp').joinpath('resources/symbol-bundle.json').read_text())
+assert bundle['source_revision']==info['core_commit'] and len(bundle['packs'])==4
+assert files('volatility_mcp').joinpath('resources/SYMBOL_PACK_NOTICES.md').read_bytes()
+# Exercise actual first-run provisioning with all network access forbidden.
+from types import SimpleNamespace
+from unittest.mock import patch
+from volatility_mcp import symbol_packs
+args=SimpleNamespace(preferences_dir=str(root/'fresh-preferences'),config=None,state_dir=None,clean_setup=True)
+with patch.object(symbol_packs, '_download', side_effect=AssertionError('no symbol download')), patch('socket.create_connection', side_effect=AssertionError('no network')):
+ preferences, fresh_path, _, _=desktop.bootstrap(args, resources)
+from volatility_mcp.api import load_config
+fresh=load_config(fresh_path)
+for pack in bundle['packs']:
+ with (fresh.symbols/pack['name']).open('rb') as stream:
+  assert hashlib.file_digest(stream,'sha256').hexdigest()==pack['sha256']
+assert not list(fresh.evidence_root.iterdir()) and not list(fresh.output_root.iterdir())
+print(json.dumps({'bundled_symbol_packs':4,'first_run_symbol_downloads':0,'private_images_opened':0}))
 python=resources/'analyzer/bin/python3'; vol=resources/'analyzer/bin/vol'
 probe=subprocess.run([str(python),'-I','-c','import platform,volatility3,capstone,yara,Crypto,PIL,Evtx,pypykatz; assert platform.machine()=="arm64"; print("native imports passed")'],capture_output=True,text=True,check=True)
 evidence=root/'evidence'; evidence.mkdir(); output=root/'outputs'
@@ -124,7 +142,7 @@ assert run.returncode==0,(run.returncode,run.stderr[-1500:])
 assert 'SYNTHETIC TEST ONLY' in run.stdout,run.stdout[-1500:]
 print(json.dumps({'status':'passed','plugin_count':catalog['total'],'import_failures':catalog['import_failures'],'core_commit':info['core_commit'],'native_dependency_imports':True,'mcp_catalog_call':True,'cryptomem_discovery_and_vector':True,'synthetic_analyzer_invocations':1,'real_images_opened':0}))
 '''
-        result=subprocess.run([str(resources/'runtime/bin/python3'),'-I','-c',script,str(resources)],cwd=temp,env=env,capture_output=True,text=True,timeout=180)
+        result=subprocess.run([str(resources/'runtime/bin/python3'),'-I','-c',script,str(resources)],cwd=temp,env=env,capture_output=True,text=True,timeout=1800)
         if result.returncode:
             print(result.stdout); print(result.stderr,file=sys.stderr); raise SystemExit(result.returncode)
         print(result.stdout.strip())

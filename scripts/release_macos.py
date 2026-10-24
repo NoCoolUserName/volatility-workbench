@@ -145,6 +145,24 @@ def audit(app):
         failures.append('Unexpected main executable entries')
     if set(p.name for p in resources.iterdir()) != RESOURCE_NAMES:
         failures.append('Resource layout differs from the reviewed distribution profile')
+    core_resources = resources/'runtime/lib/python3.12/site-packages/volatility_mcp/resources'
+    bundle_path = core_resources/'symbol-bundle.json'
+    if info.get('core_bundle') != manifest.get('core_bundle') or not bundle_path.is_file():
+        failures.append('Missing or mismatched bundled core provenance')
+    else:
+        bundle = json.loads(bundle_path.read_text())
+        if bundle.get('source_revision') != info.get('core_commit') or len(bundle.get('packs', [])) != 4:
+            failures.append('Symbol bundle source or pack count differs')
+        for pack in bundle.get('packs', []):
+            name = pack['name']
+            if Path(name).name != name:
+                failures.append('Unsafe symbol bundle member')
+                continue
+            path = core_resources/'symbol-packs'/name
+            if not path.is_file() or path.stat().st_size != pack['bytes'] or sha256(path) != pack['sha256']:
+                failures.append('Bundled symbol pack differs: ' + name)
+        if not (core_resources/'SYMBOL_PACK_NOTICES.md').is_file():
+            failures.append('Missing bundled symbol license notice')
     metadata = plistlib.loads((app / 'Contents/Info.plist').read_bytes())
     if metadata.get('CFBundleIdentifier') != manifest['application']['bundle_id'] or info.get('bundle_id') != metadata.get('CFBundleIdentifier'):
         failures.append('Bundle identifiers disagree')

@@ -35,6 +35,15 @@ package versions and artifact hashes. The dependency wheelhouse and Python,
 package and plugin notices are retained. The ZIP is an installable archive, not
 a signed/notarized installer package.
 
+The native build installs the full MCP release wheel pinned by URL and SHA-256 in
+`distribution.json`, verifies its source revision against `core-dependency.json`,
+and checks every embedded symbol pack. Update both pins together. Source/CLI
+installs retain the VCS dependency; the native app includes all four packs and
+their upstream notices. The large wheel remains in the build cache rather than
+being duplicated in the app wheelhouse. Fresh setup provisions local copies through
+the shared MCP API and never falls back to downloads for a missing bundle.
+The native validator exercises that path with network access forbidden.
+
 The default signing is local ad-hoc signing. The optional `--sign-identity`
 path requires a valid Developer ID Application identity, explicitly signs native
 components with secure timestamps/hardened runtime where appropriate, updates

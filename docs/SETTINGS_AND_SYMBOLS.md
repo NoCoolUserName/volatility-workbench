@@ -172,3 +172,19 @@ verified, the bulk button also shows **Installed**. Cached ZIPs alone do not cou
 Polling rechecks file metadata and revalidates changed content, so a removed or
 altered installation becomes downloadable again. Download-all skips packs whose
 managed files already verify. No downloads occur by opening Settings.
+
+## Included symbols in the native app
+
+The repackaged native app includes all four pinned official symbol archives in
+its MCP runtime. Fresh setup installs and indexes them locally before Settings
+opens (allow several minutes). Existing configurations and symbols are preserved.
+The bounded optional download/import controls remain available for custom symbols;
+their managed-import receipts are separate from the core's bundled-pack receipt.
+For an existing installation that needs the bundled packs, while idle run:
+
+```sh
+"$HOME/Applications/Volatility Workbench.app/Contents/Resources/runtime/bin/python3" -I -m volatility_mcp symbols-install --config "$HOME/Library/Application Support/Volatility Workbench/config.json"
+```
+
+That command uses the package's local symbols and refuses to overwrite mismatched
+operator files. Included snapshots do not provide universal kernel coverage.

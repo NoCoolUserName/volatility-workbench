@@ -45,7 +45,13 @@ reports. An explicitly configured external analyzer remains selected, including
 its working local addons. Only recognized bundled runtime paths are rebased after
 application relocation, under the same case lock, with configuration backups.
 
-New installations use the bundled analyzer and show Settings with native folder
+New installations use the bundled analyzer. The app includes the full MCP wheel's
+four official symbol packs (Windows, Windows 10 19041 supplement, macOS and Linux).
+First setup verifies, copies and indexes those local packs before opening Settings;
+this can take several minutes, requires about 885 MiB of writable symbol storage,
+and does not download symbols. The app keeps its packaged copy for repairs.
+Existing configurations and custom symbol stores are preserved. An unmatched
+kernel can still require additional symbols. New installations then show Settings with native folder
 selection, AI configuration, optional community plugins and bounded symbol packs.
 Skip setup to browse saved material. Missing AI authentication does not block the
 window, settings or Plugins. Startup and catalog refresh do not analyze or hash
@@ -85,16 +91,15 @@ outside this release.
 The current public bundle contains CPython 3.12.15, pywebview 6.2.1, the pinned
 core recorded by `core-dependency.json`, and Volatility3 2.28.2 with locked analysis
 dependencies. The release builder refuses a core pin that disagrees with
-`pyproject.toml` or `requirements.lock.txt`. Its actual catalog contains 200
-plugins (197 official, XP addon, pypykatz and EVTX), with no import failures
-in packaged discovery. Discovery is
-not a claim that every plugin works against every memory image.
+`pyproject.toml` or `requirements.lock.txt`. Packaged discovery includes the official commands, XP addon, pypykatz, EVTX and
+CryptoMem, including Monero detection. The build validator checks their discovery
+and records the command count; this is not a count of independent plugin projects
+or a claim that every command works against every memory image.
 
 The remaining supported community profile is an explicit upstream download into
 an idle, validated runtime overlay outside the signed app. Unresolved licensing
 or source obligations exclude those components from public binary redistribution.
-The configured local analyzer currently has 214 commands, preserving its original
-208 names. It can continue to be used intact; the public bundle baseline stays 200.
+An explicitly configured external analyzer continues to be used intact.
 Unknown local additions are not silently discarded. See the core's
 [community plugin policy](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COMMUNITY_PLUGINS.md).
 

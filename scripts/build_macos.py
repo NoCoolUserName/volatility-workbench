@@ -15,6 +15,7 @@ import tarfile
 import tempfile
 import tomllib
 import urllib.request
+import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from build_adventure import build as build_adventure
@@ -104,6 +105,23 @@ def verify_core_sources(root, pin):
         raise ValueError('Core dependency, package metadata, and lock file disagree; refusing release build')
 
 
+def verify_core_bundle(wheel, pin):
+    """The verified release artifact must contain the exact reviewed core source."""
+    with zipfile.ZipFile(wheel) as archive:
+        manifest = json.loads(archive.read('volatility_mcp/resources/symbol-bundle.json'))
+        if manifest['source_revision'] != pin['commit'] or manifest['core_version'] != pin['version']:
+            raise ValueError('Bundled core wheel disagrees with the source pin; update its artifact pin too')
+        for pack in manifest['packs']:
+            member = 'volatility_mcp/resources/symbol-packs/' + pack['name']
+            with archive.open(member) as stream:
+                if (archive.getinfo(member).file_size != pack['bytes']
+                        or hashlib.file_digest(stream, 'sha256').hexdigest() != pack['sha256']):
+                    raise ValueError('Bundled symbol pack differs from its manifest')
+        if len(manifest['packs']) != 4 or not archive.read('volatility_mcp/resources/SYMBOL_PACK_NOTICES.md'):
+            raise ValueError('Incomplete symbol bundle or missing notices')
+    return manifest
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=ROOT/'dist'/'macos')
@@ -126,6 +144,9 @@ def main():
         raise SystemExit('Commit source before a release build, or explicitly use --allow-dirty for validation')
     output, cache = args.output.resolve(), args.cache.resolve()
     output.mkdir(parents=True, exist_ok=True); cache.mkdir(parents=True, exist_ok=True)
+    bundle = manifest['core_bundle']
+    core_wheel = fetch(bundle['url'], cache/bundle['url'].rsplit('/', 1)[1], bundle['sha256'])
+    verify_core_bundle(core_wheel, pin)
     archive = fetch(manifest['python']['url'], cache/'python.tar.gz', manifest['python']['sha256'])
     with tempfile.TemporaryDirectory(prefix='workbench-build-') as temporary:
         temporary = Path(temporary)
@@ -155,8 +176,9 @@ def main():
         run([builder, '-I', '-m', 'pip', 'wheel', '--no-deps', '--no-build-isolation', '-w', app_wheels, source])
         for python, wheels, lock in ((app_python, app_wheels, app_lock), (analyzer, analyzer_wheels, ROOT/manifest['analyzer_lock'])):
             run([python, '-I', '-m', 'pip', 'install', '--no-compile', '--no-deps', '--no-index', '--find-links', wheels, '-r', lock])
-        # Preserve and verify exact VCS provenance; ordinary version equality is insufficient.
-        run([app_python, '-I', ROOT/'scripts/install_core_pin.py'])
+        # The full release wheel carries symbols and exact source provenance.
+        # Keep the large original wheel in the build cache, not a second app copy.
+        run([app_python, '-I', '-m', 'pip', 'install', '--no-compile', '--no-deps', str(core_wheel)])
         run([app_python, '-I', '-m', 'pip', 'install', '--no-compile', '--no-deps', '--no-index', '--find-links', app_wheels, 'volatility-workbench==' + manifest['application']['version']])
         run([app_python, '-I', '-m', 'pip', 'check']); run([analyzer, '-I', '-m', 'pip', 'check'])
         for relative in ('packaging/distribution.json', manifest['analyzer_lock'], manifest['desktop_lock'], 'core-dependency.json'):
@@ -242,7 +264,7 @@ for name,expected in ((p['file'],p['sha256']),('LICENSE',p['license_sha256'])):
         (contents/'Info.plist').write_bytes(plistlib.dumps(plist))
         packages={name:package_inventory(resources/name/'bin/python3') for name in ('runtime','analyzer')}
         info={'schema_version':1,'profile':manifest['profile'],'workbench_version':manifest['application']['version'],
-              'workbench_commit':revision,'source_dirty':dirty,'source_sha256':source_hash,'core_commit':pin['commit'],
+              'workbench_commit':revision,'source_dirty':dirty,'source_sha256':source_hash,'core_commit':pin['commit'],'core_bundle':bundle,
               'python':manifest['python'],'packages':packages,'adventure':adventure_receipt,'signing':'ad-hoc' if args.sign_identity=='-' else 'developer-id',
               'notarized':False,'bundle_id':manifest['application']['bundle_id']}
         write_json(resources/'build-info.json',info)

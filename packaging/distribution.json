@@ -55,8 +55,9 @@
     "license_sha256": "dba465433e55dc74fd8a0f30a184977ed5905d4e69d1807b1ca0c476b72b8455"
   },
   "symbols": {
-    "starter": "official package generic structures only; no universal kernel coverage",
-    "profile": "starter-2026-10"
+    "starter": "All four pinned official packs included in the MCP runtime; exact kernel matching still required",
+    "profile": "starter-2026-10",
+    "bundled_packs": 4
   },
   "supported_hosts": [
     "macos-arm64"
@@ -68,5 +69,9 @@
   "limitations": [
     "Import/discovery checks do not validate forensic accuracy on a memory image.",
     "Unlicensed and GPL-derived community sources require explicit upstream download; they are not bundled in the public artifact."
-  ]
+  ],
+  "core_bundle": {
+    "url": "https://github.com/NoCoolUserName/volatility-mcp/releases/download/v0.1.1/volatility_mcp-0.1.1-py3-none-any.whl",
+    "sha256": "956c991bf165466d817558e766b40564caa29377dbf4f9631213ae8d2d2fffef"
+  }
 }
