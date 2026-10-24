@@ -16,7 +16,7 @@ import sys
 import threading
 from urllib.parse import urlsplit
 
-from volatility_mcp.api import Config, load_config
+from volatility_mcp.api import Config, load_config, install_symbol_packs
 from .storage import atomic_json, private_dir
 
 
@@ -57,6 +57,12 @@ def bootstrap(args, resources):
                 vol_python=resources/'analyzer/bin/python3',vol_executable=resources/'analyzer/bin/vol',
                 symbols=root/'symbols',cache_path=Path.home()/'Library/Caches/Volatility Workbench/symbols')
             for directory in (config.evidence_root,config.output_root,config.symbols,config.cache_path): private_dir(directory)
+            distribution=resources/'distribution.json'
+            if distribution.is_file() and json.loads(distribution.read_text()).get('core_bundle'):
+                # Explicit local source prevents a missing/corrupt bundle from downloading.
+                # First setup only; saved/operator configurations are never reprovisioned.
+                source=resources/'runtime/lib/python3.12/site-packages/volatility_mcp/resources/symbol-packs'
+                install_symbol_packs(config, source_dir=source)
             atomic_json(config_path,config.to_dict())
             prefs['bundled_analyzer']=str(resources/'analyzer')
             prefs['setup_complete']=False

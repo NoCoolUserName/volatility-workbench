@@ -62,6 +62,17 @@ class ReleaseTests(unittest.TestCase):
                      'sha256': hashlib.sha256(classic.read_bytes()).hexdigest(),
                      'game_data': 'glorkz-350',
                      'game_data_sha256': hashlib.sha256((self.resources / 'adventure/glorkz-350').read_bytes()).hexdigest()}}}
+        self.manifest['core_bundle']={'sha256':'synthetic'}
+        self.info['core_bundle']=self.manifest['core_bundle']
+        prefix='runtime/lib/python3.12/site-packages/volatility_mcp/resources/'
+        packs=[]
+        for name in ('windows.zip','supplement.zip','mac.zip','linux.zip'):
+            path=self.resources/prefix/'symbol-packs'/name
+            path.parent.mkdir(parents=True,exist_ok=True)
+            path.write_bytes(b'SYNTHETIC SYMBOL')
+            packs.append({'name':name,'bytes':path.stat().st_size,'sha256':hashlib.sha256(path.read_bytes()).hexdigest()})
+        self.write(prefix+'symbol-bundle.json',{'source_revision':'b'*40,'packs':packs})
+        (self.resources/prefix/'SYMBOL_PACK_NOTICES.md').write_text('SYNTHETIC NOTICE')
         self.write('adventure/manifest.json', self.info['adventure'])
         self.write('distribution.json', self.manifest)
         self.write('build-info.json', self.info)
@@ -96,6 +107,14 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(result['status'], 'passed')
         self.assertTrue(all(not Path(x['path']).is_absolute() for x in result['inventory']))
         self.assertEqual(len(result['inventory'][0]['sha256']), 64)
+
+    def test_audit_rejects_corrupt_symbols_and_missing_symbol_notice(self):
+        root=self.resources/'runtime/lib/python3.12/site-packages/volatility_mcp/resources'
+        (root/'symbol-packs/windows.zip').write_bytes(b'TAMPERED')
+        with self.assertRaisesRegex(ValueError,'Bundled symbol pack differs'):release.audit(self.app)
+        (root/'symbol-packs/windows.zip').write_bytes(b'SYNTHETIC SYMBOL')
+        (root/'SYMBOL_PACK_NOTICES.md').unlink()
+        with self.assertRaisesRegex(ValueError,'symbol license notice'):release.audit(self.app)
 
     def test_audit_rejects_tampered_adventure_and_missing_license(self):
         executable = self.resources / 'adventure/advent-430'

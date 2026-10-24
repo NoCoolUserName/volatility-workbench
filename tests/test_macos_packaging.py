@@ -9,6 +9,7 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import zipfile
 from unittest.mock import patch
 from types import SimpleNamespace
 
@@ -31,6 +32,30 @@ class MacPackagingTests(unittest.TestCase):
                 self.assertEqual(build.fetch('https://example.invalid/python.tar.gz',target,expected),target)
             with patch.object(build.urllib.request,'urlopen',side_effect=AssertionError('no network')):
                 build.fetch('https://example.invalid/python.tar.gz',target,expected)
+
+    def test_full_core_wheel_requires_matching_source_and_intact_symbols(self):
+        with tempfile.TemporaryDirectory() as temp:
+            wheel=Path(temp)/'core.whl'
+            pin={'commit':'a'*40,'version':'0.1.1'}
+            raw=b'SYNTHETIC SYMBOL DATA'
+            packs=[{'name':f'{i}.zip','bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()} for i in range(4)]
+            def write(packs=packs, content=raw):
+                with zipfile.ZipFile(wheel,'w') as archive:
+                    archive.writestr('volatility_mcp/resources/symbol-bundle.json',json.dumps({
+                        'source_revision':pin['commit'],'core_version':pin['version'],'packs':packs}))
+                    archive.writestr('volatility_mcp/resources/SYMBOL_PACK_NOTICES.md','SYNTHETIC NOTICE')
+                    for pack in packs:
+                        archive.writestr('volatility_mcp/resources/symbol-packs/'+pack['name'],content)
+            write()
+            self.assertEqual(len(build.verify_core_bundle(wheel,pin)['packs']),4)
+            with self.assertRaisesRegex(ValueError,'source pin'):
+                build.verify_core_bundle(wheel,pin|{'commit':'b'*40})
+            write(content=b'corrupt')
+            with self.assertRaisesRegex(ValueError,'differs'):
+                build.verify_core_bundle(wheel,pin)
+            write(packs=packs[:3])
+            with self.assertRaisesRegex(ValueError,'Incomplete'):
+                build.verify_core_bundle(wheel,pin)
 
     def test_python_archive_cannot_escape_build_directory(self):
         with tempfile.TemporaryDirectory() as temp:

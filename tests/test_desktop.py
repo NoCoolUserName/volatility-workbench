@@ -36,6 +36,33 @@ class DesktopLogicTests(unittest.TestCase):
                     'http://127.0.0.1:12345.evil.example/'):
             self.assertFalse(navigation_allowed(url,origin),url)
 
+    def test_fresh_bundled_setup_provisions_local_symbols_once(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            home=Path(temporary).resolve()
+            resources=home/'App.app/Contents/Resources';resources.mkdir(parents=True)
+            (resources/'distribution.json').write_text(json.dumps({'core_bundle':{'sha256':'synthetic'}}))
+            args=SimpleNamespace(preferences_dir=str(home/'preferences'),config=None,state_dir=None,clean_setup=True)
+            with patch('pathlib.Path.home',return_value=home), patch('volatility_workbench.desktop.install_symbol_packs') as install:
+                _, path, _, _=bootstrap(args,resources)
+                install.assert_called_once()
+                config=install.call_args.args[0]
+                self.assertEqual(install.call_args.kwargs['source_dir'], resources/'runtime/lib/python3.12/site-packages/volatility_mcp/resources/symbol-packs')
+                self.assertFalse(list(config.evidence_root.iterdir()))
+                self.assertFalse(list(config.output_root.iterdir()))
+                self.assertEqual(bootstrap(args,resources)[1],path)
+                install.assert_called_once()
+
+    def test_failed_symbol_setup_does_not_commit_configuration(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            home=Path(temporary).resolve()
+            resources=home/'App.app/Contents/Resources';resources.mkdir(parents=True)
+            (resources/'distribution.json').write_text(json.dumps({'core_bundle':{'sha256':'synthetic'}}))
+            args=SimpleNamespace(preferences_dir=str(home/'preferences'),config=None,state_dir=None,clean_setup=True)
+            with patch('pathlib.Path.home',return_value=home), patch('volatility_workbench.desktop.install_symbol_packs',side_effect=ValueError('corrupt bundle')):
+                with self.assertRaisesRegex(ValueError,'corrupt bundle'):bootstrap(args,resources)
+            self.assertFalse((home/'preferences/config.json').exists())
+            self.assertFalse((home/'preferences/desktop.json').exists())
+
     def test_bootstrap_explicit_locations_and_prefs_preserved(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary).resolve();config,path=config_fixture(root)
