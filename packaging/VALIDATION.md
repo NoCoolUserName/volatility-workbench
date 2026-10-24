@@ -223,3 +223,23 @@ was analyzed. Real-memory Monero recovery remains unvalidated.
 Measured 2026-10-23: app 423,071,727 regular-file bytes (403.47 MiB), excluding
 symlink aliases; ZIP 196,886,150 bytes (187.77 MiB).
 ZIP SHA-256: `a1e230ff8ec6314a805cc9d0882b1f2f6de04f3da9e6475984932a4ec2784151`.
+
+
+## Bundled-symbol repackaging, 2026-10-23
+
+Built clean source `87191d1a124031521325d2826bf0758766bdbce1` with MCP 0.1.1 source
+`0fb6fbce5d5e8b12814718f0538f4969e72b20ec` and its hash-pinned full wheel.
+The native ARM64 validator installed/indexed all four real official symbol packs
+in a temporary fresh profile with symbol downloads blocked, verified their hashes,
+and left its evidence/output directories empty. The bundled analyzer discovered
+201 commands with no import failures, including CryptoMem 0.2.0. BTC and Monero
+format vectors, the ten-tool MCP interface and a synthetic banner subprocess
+passed. This is software/indexing validation, not real-memory recovery validation.
+
+All 272 installed-package tests passed; configured lint/type checks and secret
+scan passed. The release audit checked 14,421 files, bundled symbol/license
+provenance and private-file exclusions. Native linkage and ad-hoc signature
+verification passed. No Developer ID signing/notarization is claimed.
+The measured app is 1,351,416,446 bytes and its ZIP is 1,125,229,445 bytes;
+README records MiB and build revision. Existing installations retain their
+configuration and symbols; fresh provisioning can take several minutes.
