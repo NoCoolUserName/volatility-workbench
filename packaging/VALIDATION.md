@@ -193,3 +193,12 @@ was opened; representative Windows memory validation remains outstanding.
 The measured app contains 423,060,401 regular-file bytes (403.46 MiB), excluding
 symlink aliases; the ZIP is 196,885,947 bytes (187.77 MiB), measured 2026-10-23.
 ZIP SHA-256: `a9d9fa04b6ed6b5b4d7d8a9ca361c2918bb216832a66422b7d907d5c2be6fb23`.
+
+The validated build was installed with a rollback copy. Its configured external
+analyzer discovers 238 commands with zero import failures, retaining all 237
+previous names and adding only `windows.cryptomem.CryptoMem`. The installed app
+was checked outside the checkout, and its live Plugins search displays CryptoMem.
+Saved case/job inventories were unchanged and no analysis jobs were started.
+The security gate required renewed exact-file review records for the changed
+validation scripts; subprocess calls retain fixed argv, no shell and synthetic
+inputs. Scan rules and blocking thresholds were not changed.
