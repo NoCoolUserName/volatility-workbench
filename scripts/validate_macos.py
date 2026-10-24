@@ -88,6 +88,7 @@ assert plugins['windows.evtxlog.evtxlog']['source']['kind']=='third_party'
 assert plugins['xpnet.XpNetScan']['source']['kind']=='local'
 crypto='windows.cryptomem.CryptoMem'
 assert plugins[crypto]['source']['kind']=='third_party' and plugins[crypto]['manual_only']
+assert plugins[crypto]['plugin_version']==[0,2,0]
 from volatility_mcp.addons import profile as addon_profile
 inventory=addon_profile()
 assert crypto in inventory['offline_plugins']
@@ -102,6 +103,9 @@ for item in source['notices']:
 # Exercise the installed detector with a public format vector, without an image.
 vector="from volatility3.plugins.windows.cryptomem_formats import find_artifacts; rows=list(find_artifacts(b' 1BoatSLRHtKNngkdXEeobR76b53LETtpyT ', {'BTC'})); assert len(rows)==1 and rows[0]['offset']==1 and rows[0]['validation']=='checksum_valid'"
 subprocess.run([str(python),'-I','-c',vector],cwd=root,env=os.environ,check=True)
+# Generated arbitrary payload, not a real wallet; checks the installed Monero path.
+monero="from volatility3.plugins.windows.cryptomem_formats import find_artifacts; rows=list(find_artifacts(b' 41d7ke5VQnR2BDNSgrTE9j3X8QQ5Bnbbs4s3SMTX7y416CxUJqrTLW97YsWGEBnhxH8tnYDcX85QRAEhaAzrTSrZ89rbBUS ', {'XMR'})); assert len(rows)==1 and rows[0]['offset']==1 and rows[0]['validation']=='checksum_valid' and rows[0]['format']=='Monero-standard'"
+subprocess.run([str(python),'-I','-c',monero],cwd=root,env=os.environ,check=True)
 
 async def check():
  async with Client(StdioServerParameters(command=sys.executable,args=['-I','-m','volatility_mcp','serve','--config',str(path)])) as client:

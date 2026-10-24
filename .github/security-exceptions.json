@@ -48,15 +48,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 36,
-      "source_sha256": "83e0ac02a0c30fe314b0c2eb7fd8c456c0a98fa5751c7c2bdd99839957eebe4a",
-      "reason": "Re-reviewed 2026-10-23: explicit developer-selected bundle native executable receives only the fixed --check-bundled-runtime argument; sanitized temporary environment and shell=False. Added game binaries are manifest-checked and use fixed synthetic commands. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged. Re-reviewed 2026-10-23 for CryptoMem: developer-selected bundle execution remains explicit, without a shell. The literal validation program adds pinned-source/license hashes, a fixed public address vector passed as a separate -c argument, and MCP discovery; no recovered input enters commands."
+      "source_sha256": "dd47afea8097301d85e881d7351989b45c1b7910e2223b6de360a63ed5fa04eb",
+      "reason": "Re-reviewed 2026-10-23: explicit developer-selected bundle native executable receives only the fixed --check-bundled-runtime argument; sanitized temporary environment and shell=False. Added game binaries are manifest-checked and use fixed synthetic commands. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged. Re-reviewed 2026-10-23 for CryptoMem: developer-selected bundle execution remains explicit, without a shell. The literal validation program adds pinned-source/license hashes, a fixed public address vector passed as a separate -c argument, and MCP discovery; no recovered input enters commands. Re-reviewed 2026-10-23 for Monero: the fixed literal validation program now also checks version 0.2.0 and a generated public-format XMR vector using the selected bundle interpreter with -I; no evidence input or shell interpolation."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
-      "line": 123,
-      "source_sha256": "83e0ac02a0c30fe314b0c2eb7fd8c456c0a98fa5751c7c2bdd99839957eebe4a",
-      "reason": "Re-reviewed 2026-10-23: explicit bundle Python runs a fixed literal synthetic validation program with -I, a separate resources argument, sanitized temporary environment, and shell=False. No recovered code is executed. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged. Re-reviewed 2026-10-23 for CryptoMem: developer-selected bundle execution remains explicit, without a shell. The literal validation program adds pinned-source/license hashes, a fixed public address vector passed as a separate -c argument, and MCP discovery; no recovered input enters commands."
+      "line": 127,
+      "source_sha256": "dd47afea8097301d85e881d7351989b45c1b7910e2223b6de360a63ed5fa04eb",
+      "reason": "Re-reviewed 2026-10-23: explicit bundle Python runs a fixed literal synthetic validation program with -I, a separate resources argument, sanitized temporary environment, and shell=False. No recovered code is executed. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged. Re-reviewed 2026-10-23 for CryptoMem: developer-selected bundle execution remains explicit, without a shell. The literal validation program adds pinned-source/license hashes, a fixed public address vector passed as a separate -c argument, and MCP discovery; no recovered input enters commands. Re-reviewed 2026-10-23 for Monero: the fixed literal validation program now also checks version 0.2.0 and a generated public-format XMR vector using the selected bundle interpreter with -I; no evidence input or shell interpolation."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -111,15 +111,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 40,
-      "source_sha256": "83e0ac02a0c30fe314b0c2eb7fd8c456c0a98fa5751c7c2bdd99839957eebe4a",
-      "reason": "Reviewed 2026-10-23: package validator launches the manifest-hash-checked 430-point binary with fixed options and synthetic commands, temporary save path, sanitized environment, and shell=False. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged. Re-reviewed 2026-10-23 for CryptoMem: developer-selected bundle execution remains explicit, without a shell. The literal validation program adds pinned-source/license hashes, a fixed public address vector passed as a separate -c argument, and MCP discovery; no recovered input enters commands."
+      "source_sha256": "dd47afea8097301d85e881d7351989b45c1b7910e2223b6de360a63ed5fa04eb",
+      "reason": "Reviewed 2026-10-23: package validator launches the manifest-hash-checked 430-point binary with fixed options and synthetic commands, temporary save path, sanitized environment, and shell=False. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged. Re-reviewed 2026-10-23 for CryptoMem: developer-selected bundle execution remains explicit, without a shell. The literal validation program adds pinned-source/license hashes, a fixed public address vector passed as a separate -c argument, and MCP discovery; no recovered input enters commands. Re-reviewed 2026-10-23 for Monero: the fixed literal validation program now also checks version 0.2.0 and a generated public-format XMR vector using the selected bundle interpreter with -I; no evidence input or shell interpolation."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 47,
-      "source_sha256": "83e0ac02a0c30fe314b0c2eb7fd8c456c0a98fa5751c7c2bdd99839957eebe4a",
-      "reason": "Reviewed 2026-10-23: package validator launches the manifest-hash-checked 350-point binary with fixed synthetic commands, private temporary save path, sanitized environment, and shell=False. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged. Re-reviewed 2026-10-23 for CryptoMem: developer-selected bundle execution remains explicit, without a shell. The literal validation program adds pinned-source/license hashes, a fixed public address vector passed as a separate -c argument, and MCP discovery; no recovered input enters commands."
+      "source_sha256": "dd47afea8097301d85e881d7351989b45c1b7910e2223b6de360a63ed5fa04eb",
+      "reason": "Reviewed 2026-10-23: package validator launches the manifest-hash-checked 350-point binary with fixed synthetic commands, private temporary save path, sanitized environment, and shell=False. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged. Re-reviewed 2026-10-23 for CryptoMem: developer-selected bundle execution remains explicit, without a shell. The literal validation program adds pinned-source/license hashes, a fixed public address vector passed as a separate -c argument, and MCP discovery; no recovered input enters commands. Re-reviewed 2026-10-23 for Monero: the fixed literal validation program now also checks version 0.2.0 and a generated public-format XMR vector using the selected bundle interpreter with -I; no evidence input or shell interpolation."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-asyncio-create-exec-audit",

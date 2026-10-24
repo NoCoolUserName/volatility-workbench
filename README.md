@@ -1,8 +1,8 @@
 # Volatility Workbench
 
-*22,572 lines of code*
+*22,576 lines of code*
 
-*Latest measured macOS ARM64 build: `Volatility Workbench.app` 403.46 MiB (423,060,401 regular-file bytes, excluding symlink aliases); `Volatility-Workbench-macos-arm64.zip` 187.77 MiB (196,885,947 bytes). Built from 26abdaf23e3d4e1a000e65320fec9ad6c9479751, measured 2026-10-23.*
+*Latest measured macOS ARM64 build: `Volatility Workbench.app` 403.47 MiB (423,071,727 regular-file bytes, excluding symlink aliases); `Volatility-Workbench-macos-arm64.zip` 187.77 MiB (196,886,150 bytes). Built from cd8ec486bdc1681e152e8772fd7d85cb5c39a826, measured 2026-10-23.*
 
 Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
 
@@ -152,7 +152,7 @@ and [security](SECURITY.md).
 
 ## Pinned core and plugins
 
-The tested core pin is `62855a071fe085112d690b207e595c664fe7b158`, API revision 1.
+The tested core pin is `2cad7892f95639b7b97506ec74a845ce0e9c4f19`, API revision 1.
 `core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on the
 immutable commit. `pip install .` brings in that dependency; the pin helper checks
 installed Git provenance even when successive core commits share a package version.
@@ -179,13 +179,17 @@ BitLocker key roles or cipher modes. See the
 [core runtime-addon checks and limitations](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/RUNTIME_ADDONS.md).
 
 The bundled [CryptoMem plugin](https://github.com/NoCoolUserName/volatility3-cryptomem)
-scans one selected Windows process for Bitcoin, Ethereum-style and XRP classic
+scans one selected Windows process for Bitcoin, Ethereum-style, XRP classic and Monero
 address candidates and bounded payment requests. Find `windows.cryptomem.CryptoMem`
 in Plugins and supply a PID. It runs offline through the shared core, preserves
 process/virtual-offset provenance, and remains manual-only. Address validation
 does not establish wallet ownership; real-memory recovery is still unvalidated.
 Existing external analyzers receive it through the same explicit plugin installer.
 See [CryptoMem capabilities and limits](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/CRYPTOMEM.md).
+CryptoMem 0.2.0 adds `--currency xmr` (also included by `all`) for standard,
+subaddress and integrated Monero address candidates with encoding/checksum
+validation. It adds no command or dependency; wallet/curve validity, keys/seeds
+and Monero payment-URI interpretation are outside its scope.
 
 Redistribution restrictions keep selected upstream sources out of the public app;
 install them explicitly through idle Settings maintenance or core's installer:

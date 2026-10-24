@@ -202,3 +202,24 @@ Saved case/job inventories were unchanged and no analysis jobs were started.
 The security gate required renewed exact-file review records for the changed
 validation scripts; subprocess calls retain fixed argv, no shell and synthetic
 inputs. Scan rules and blocking thresholds were not changed.
+
+## CryptoMem Monero support — 2026-10-23
+
+Core pin `2cad7892f95639b7b97506ec74a845ce0e9c4f19` adopts CryptoMem 0.2.0.
+The existing command adds `--currency xmr` and includes Monero under `all`.
+No new command or dependency is introduced. The native validator now requires
+version 0.2.0 and a generated Monero format/checksum vector in the installed
+detector, alongside the existing Bitcoin, source/license hash and MCP checks.
+Its exact-file subprocess review was renewed; security rules remain unchanged.
+
+The fresh installed-wheel smoke passed all 268 tests, dependency checks, both
+ten-tool MCP modes and asset/HTTP checks outside the checkout. Targeted lint,
+selected-module type checks and all 11 security-gate tests passed. Native build
+`cd8ec486bdc1681e152e8772fd7d85cb5c39a826` has 201 discoverable commands with
+zero import failures, a verified signature and portable native linkage. Both
+currency vectors and synthetic banner execution passed; no real memory image
+was analyzed. Real-memory Monero recovery remains unvalidated.
+
+Measured 2026-10-23: app 423,071,727 regular-file bytes (403.47 MiB), excluding
+symlink aliases; ZIP 196,886,150 bytes (187.77 MiB).
+ZIP SHA-256: `a1e230ff8ec6314a805cc9d0882b1f2f6de04f3da9e6475984932a4ec2784151`.
