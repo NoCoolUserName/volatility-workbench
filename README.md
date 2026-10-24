@@ -2,7 +2,7 @@
 
 *22,576 lines of code*
 
-*Latest measured macOS ARM64 build: `Volatility Workbench.app` 403.46 MiB (423,060,401 regular-file bytes, excluding symlink aliases); `Volatility-Workbench-macos-arm64.zip` 187.77 MiB (196,885,947 bytes). Built from 26abdaf23e3d4e1a000e65320fec9ad6c9479751, measured 2026-10-23.*
+*Latest measured macOS ARM64 build: `Volatility Workbench.app` 403.47 MiB (423,071,727 regular-file bytes, excluding symlink aliases); `Volatility-Workbench-macos-arm64.zip` 187.77 MiB (196,886,150 bytes). Built from cd8ec486bdc1681e152e8772fd7d85cb5c39a826, measured 2026-10-23.*
 
 Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
 
