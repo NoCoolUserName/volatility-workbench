@@ -108,11 +108,11 @@ assert plugins['windows.evtxlog.evtxlog']['source']['kind']=='third_party'
 assert plugins['xpnet.XpNetScan']['source']['kind']=='local'
 crypto='windows.cryptomem.CryptoMem'
 assert plugins[crypto]['source']['kind']=='third_party' and plugins[crypto]['manual_only']
-assert plugins[crypto]['plugin_version']==[0,4,0]
+assert plugins[crypto]['plugin_version']==[0,5,0]
 linux_crypto='linux.cryptomem.CryptoMem'
-assert plugins[linux_crypto]['plugin_version']==[0,4,0] and plugins[linux_crypto]['manual_only']
+assert plugins[linux_crypto]['plugin_version']==[0,5,0] and plugins[linux_crypto]['manual_only']
 mac_crypto='mac.cryptomem.CryptoMem'
-assert plugins[mac_crypto]['plugin_version']==[0,4,0] and plugins[mac_crypto]['manual_only']
+assert plugins[mac_crypto]['plugin_version']==[0,5,0] and plugins[mac_crypto]['manual_only']
 from volatility_mcp.addons import profile as addon_profile
 inventory=addon_profile()
 assert {crypto,linux_crypto,mac_crypto} <= set(inventory['offline_plugins'])

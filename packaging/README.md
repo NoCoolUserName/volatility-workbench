@@ -143,3 +143,13 @@ Primary packaging references:
 [CPython embedding configuration](https://docs.python.org/3.12/c-api/init_config.html),
 [pywebview macOS backend](https://pywebview.flowrl.com/guide/renderer.html), and
 [pywebview FAQ](https://pywebview.flowrl.com/guide/faq).
+
+## CryptoMem 0.5.0 backend adoption
+
+Workbench 0.1.3 pins MCP 0.1.4 source and its verified full wheel together. The
+shared inventory supplies CryptoMem 0.5.0 unchanged, including the pinned English
+BIP-39 list and license. No UI detector or new MCP tool is added. New detectors
+remain opt-in; ordinary outputs are masked and full extraction stays local-only
+behind explicit permissions. No balance lookup, transaction confirmation, wallet
+import or network enrichment is performed. Real-memory Linux/macOS validation
+remains outstanding; existing architecture/submap limitations still apply.

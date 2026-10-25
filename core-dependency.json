@@ -1,7 +1,7 @@
 {
   "repository": "NoCoolUserName/volatility-mcp",
-  "version": "0.1.3",
-  "commit": "5b66bc42d8e349f162fb005107d12c94061b7073",
+  "version": "0.1.4",
+  "commit": "2887c77283da4a45860d8ac2f3042027401257a0",
   "api_revision": 1,
   "eligible_series": "0.1"
 }
