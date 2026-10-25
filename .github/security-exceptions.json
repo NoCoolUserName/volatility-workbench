@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-10-23",
+  "reviewed_at": "2026-10-24",
   "exceptions": [
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -27,8 +27,8 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/package_smoke.py",
       "line": 16,
-      "source_sha256": "50907454ec2f7207c6a66d3159a3a460e9997dba65760f4eb03bf080885cca2b",
-      "reason": "All callers supply fixed isolated wheel-install/test argv tuples; subprocess default shell=False, and no caller supplies shell=True. Developer test runner, no recovered input. Re-reviewed 2026-10-22: license metadata/text assertions added; subprocess argv paths unchanged. Re-reviewed 2026-10-23: packaged local artwork hash/provenance/HTTP assertions added; subprocess call and argv unchanged. Re-reviewed 2026-10-23: only the bundled SVG count changes from 30 to 29 after retiring the original Fallout 76 theme; subprocess call and argv unchanged. Re-reviewed 2026-10-23 for CryptoMem: only fixed profile assertions were added inside the literal test program; every run caller still supplies fixed argv with shell=False and temporary synthetic state."
+      "source_sha256": "a0b35e46d7b969d6a5b128d0b7ec46d4cdeafa8e034f2f74a3f1081d518bb069",
+      "reason": "Re-reviewed 2026-10-24: all callers still supply fixed isolated wheel-install/test argv tuples with subprocess default shell=False and no shell=True caller. New catalog and Linux/Windows CryptoMem assertions are inside the literal test program; no recovered data or external request input reaches execution."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -48,15 +48,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 36,
-      "source_sha256": "466f111ae264436730fb4a9305f47143246db67d82a5a237fe5ce561b0e81c98",
-      "reason": "Re-reviewed 2026-10-23: developer-selected bundle executables run with fixed arguments, isolated temporary HOME and no shell. The literal Python validator adds first-run provisioning of verified packaged symbol ZIPs and offline analyzer indexing; no real memory image, recovered code or extracted command controls an invocation."
+      "source_sha256": "661102b98005c76a75d2fcfbb915afa60659bfffcec35abe39d9d71fe164763f",
+      "reason": "Re-reviewed 2026-10-24: developer-selected verified bundle executables use separate argv elements, a temporary HOME and no shell. The literal validator adds catalog assertions, XP-independent discovery, and fixed Linux CryptoMem MCP invocation using only generated synthetic bytes and PID 42. No memory image, recovered code, server response or extracted command controls an invocation."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
-      "line": 145,
-      "source_sha256": "466f111ae264436730fb4a9305f47143246db67d82a5a237fe5ce561b0e81c98",
-      "reason": "Re-reviewed 2026-10-23: developer-selected bundle executables run with fixed arguments, isolated temporary HOME and no shell. The literal Python validator adds first-run provisioning of verified packaged symbol ZIPs and offline analyzer indexing; no real memory image, recovered code or extracted command controls an invocation."
+      "line": 159,
+      "source_sha256": "661102b98005c76a75d2fcfbb915afa60659bfffcec35abe39d9d71fe164763f",
+      "reason": "Re-reviewed 2026-10-24: developer-selected verified bundle executables use separate argv elements, a temporary HOME and no shell. The literal validator adds catalog assertions, XP-independent discovery, and fixed Linux CryptoMem MCP invocation using only generated synthetic bytes and PID 42. No memory image, recovered code, server response or extracted command controls an invocation."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -111,15 +111,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 40,
-      "source_sha256": "466f111ae264436730fb4a9305f47143246db67d82a5a237fe5ce561b0e81c98",
-      "reason": "Re-reviewed 2026-10-23: developer-selected bundle executables run with fixed arguments, isolated temporary HOME and no shell. The literal Python validator adds first-run provisioning of verified packaged symbol ZIPs and offline analyzer indexing; no real memory image, recovered code or extracted command controls an invocation."
+      "source_sha256": "661102b98005c76a75d2fcfbb915afa60659bfffcec35abe39d9d71fe164763f",
+      "reason": "Re-reviewed 2026-10-24: developer-selected verified bundle executables use separate argv elements, a temporary HOME and no shell. The literal validator adds catalog assertions, XP-independent discovery, and fixed Linux CryptoMem MCP invocation using only generated synthetic bytes and PID 42. No memory image, recovered code, server response or extracted command controls an invocation."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 47,
-      "source_sha256": "466f111ae264436730fb4a9305f47143246db67d82a5a237fe5ce561b0e81c98",
-      "reason": "Re-reviewed 2026-10-23: developer-selected bundle executables run with fixed arguments, isolated temporary HOME and no shell. The literal Python validator adds first-run provisioning of verified packaged symbol ZIPs and offline analyzer indexing; no real memory image, recovered code or extracted command controls an invocation."
+      "source_sha256": "661102b98005c76a75d2fcfbb915afa60659bfffcec35abe39d9d71fe164763f",
+      "reason": "Re-reviewed 2026-10-24: developer-selected verified bundle executables use separate argv elements, a temporary HOME and no shell. The literal validator adds catalog assertions, XP-independent discovery, and fixed Linux CryptoMem MCP invocation using only generated synthetic bytes and PID 42. No memory image, recovered code, server response or extracted command controls an invocation."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-asyncio-create-exec-audit",
