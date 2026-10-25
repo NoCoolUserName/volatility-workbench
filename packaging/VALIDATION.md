@@ -243,3 +243,31 @@ verification passed. No Developer ID signing/notarization is claimed.
 The measured app is 1,351,416,446 bytes and its ZIP is 1,125,229,445 bytes;
 README records MiB and build revision. Existing installations retain their
 configuration and symbols; fresh provisioning can take several minutes.
+
+## Experimental Intel64 Mac CryptoMem packaging — 2026-10-24
+
+Workbench 0.1.2 adopts core 0.1.3 source
+`5b66bc42d8e349f162fb005107d12c94061b7073` and full wheel SHA-256
+`831fbfad2a47c5ed9dc743b0eddfc0723109b935209cb873dc4c4ea4278e4da1`.
+The native build uses clean source `dc86f38ac211a21e66204f9fc0658a44f8a62f05`.
+
+- The installed-package smoke passed all 272 application tests, both MCP modes,
+  assets and synthetic HTTP startup. Eleven security-gate tests pass. Existing
+  fixed-argv security exceptions were re-reviewed with exact updated file hashes;
+  no rules, severities or thresholds were weakened.
+- Native validation found 203 analyzer commands with zero import failures. All
+  three CryptoMem 0.4.0 adapters remain visible with XP disabled, manual-only and
+  offline. Actual Linux and Mac MCP invocations with synthetic invalid captures
+  fail explicitly and preserve the input hash. No private image was opened.
+- Four bundled public symbol packs were provisioned/indexed with network blocked.
+  Native imports, BTC/Monero vectors, launcher, ARM64 binaries, deep signature
+  and system/bundle-relative linkage checks pass.
+- Versions: Python 3.12.15 in the app, Volatility 3 2.28.2, MCP SDK 2.3.0,
+  PyCryptodome 3.23.0. The desktop remains ad-hoc signed, not Apple-notarized.
+
+Artifact sizes: app 1,352,292,400 regular-file bytes excluding symlinks; ZIP
+1,126,059,654 bytes. ZIP SHA-256 `f1ed44cb5e8bc1d714a7f7a6bb77613822cce183f45fea19931ed6217cfd5559`.
+The existing Mac pack requires exact Darwin kernel matching. Nested VM submaps,
+Intel32/Apple-silicon Mac captures and modern macOS are unsupported. Real-memory
+Mac and Linux validation remain outstanding. Existing external symbol stores and
+case data are excluded from the artifacts and preserved by the installer.
