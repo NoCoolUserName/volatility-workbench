@@ -4,6 +4,8 @@
 
 *Last measured native package: `Volatility Workbench.app`, 1,352,292,400 regular-file bytes (1289.646530 MiB), excluding symlink aliases; `Volatility-Workbench-macos-arm64.zip`, 1,126,059,654 bytes (1073.894171 MiB). Measured on 2026-10-24 from source revision `dc86f38ac211a21e66204f9fc0658a44f8a62f05`; includes bundled runtimes, dependencies and four official starter symbol packs, excludes private evidence, case state and the external Linux community collection.*
 
+Workbench 0.1.3 pins MCP 0.1.4 and CryptoMem 0.5.0: opt-in English BIP-39, Bitcoin WIF/xprv/tprv and explicitly ambiguous transaction-ID candidates. Secrets remain masked in ordinary outputs; complete extraction is explicit and local-only. Existing address defaults, three OS adapters and ten MCP tools remain. Exact captured-kernel symbols are required; real-memory Linux/macOS validation remains outstanding.
+
 Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
 
 An experimental local application for exploring existing memory acquisitions with
