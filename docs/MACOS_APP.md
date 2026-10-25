@@ -115,3 +115,29 @@ credentials. Ad-hoc signing is not Developer ID signing or notarization; no
 Gatekeeper protections are disabled. See the [optional release pipeline](MACOS_RELEASE.md)
 for auditing, staged notarization and the credentialed checks still required. See [validation](../packaging/VALIDATION.md)
 and [UI validation](VALIDATION.md) for observed checks and remaining limits.
+
+## Linux CryptoMem in the Mac package
+
+Workbench 0.1.1 adopts core 0.1.2 and bundles CryptoMem 0.3.0's Windows and Linux
+x86-64 adapters through the existing analyzer/backend. Both commands are manual-only
+and offline; discovery remains available with XP compatibility disabled. This is
+Linux memory-image analysis on the existing Mac application, not a Linux desktop
+package or a separate detector. Matching captured-kernel symbols are required. The
+four starter symbol packs are not universal coverage; additional Linux ISFs can be
+selected from the [community symbol collection](https://github.com/Abyss-W4tcher/volatility3-symbols)
+by exact banner and installed locally. Real-memory Linux validation remains
+outstanding; other Linux architectures are unsupported until tested.
+
+Core 0.1.2 also carries the pinned 10,255-table Linux x86-64 catalog and verified
+operator installer. The 19.53 GiB community tables remain in the shared configured
+symbol store, outside the app bundle. Existing settings preserve this store on
+upgrade. To provision the entire collection from the installed app while idle:
+
+```sh
+"$HOME/Applications/Volatility Workbench.app/Contents/Resources/runtime/bin/python3" -I -m volatility_mcp symbols-install --config /path/to/config.json --linux-all
+```
+
+Use the existing configured backend JSON path. `--linux-banner 'FULL BANNER'`
+selects exact matches instead. These are core CLI operations; no Workbench symbol
+implementation or additional MCP tools are introduced. Initial app setup still
+installs the four bundled starter packs. Real-memory Linux validation is outstanding.

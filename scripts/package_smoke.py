@@ -42,15 +42,17 @@ from importlib.metadata import distribution
 from mcp import Client
 from mcp.client.stdio import StdioServerParameters
 from volatility_mcp.api import Config, report_spec, decode_result
+from volatility_mcp.api import linux_symbol_catalog
+assert linux_symbol_catalog()["tables"] == 10255
 from volatility_workbench.app import Workbench
 from volatility_workbench.http import Server
 from volatility_workbench.compatibility import require_core
 assert require_core().API_VERSION == 1
 from volatility_mcp.addons import profile
 addon_profile=profile()
-crypto='windows.cryptomem.CryptoMem'
-assert crypto in addon_profile['offline_plugins'] and crypto in addon_profile['manual_only_plugins']
-assert any(crypto in source['plugins'] for source in addon_profile['sources'])
+for crypto in ('windows.cryptomem.CryptoMem', 'linux.cryptomem.CryptoMem'):
+ assert crypto in addon_profile['offline_plugins'] and crypto in addon_profile['manual_only_plugins']
+ assert any(crypto in source['plugins'] for source in addon_profile['sources'])
 assert 'site-packages' in str(files('volatility_mcp'))
 assert 'site-packages' in str(files('volatility_workbench'))
 assert distribution('volatility-workbench').read_text('licenses/LICENSING.md')
