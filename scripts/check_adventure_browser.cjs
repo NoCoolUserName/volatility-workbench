@@ -108,13 +108,14 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
   assert.equal(await page.locator('#adventureDevButton').evaluate(x=>x.hidden),true);
   await page.evaluate(()=>{WorkbenchThemes.apply('fallout-76-field-terminal');document.querySelector('#consoleZoom').showModal();WorkbenchVolshell.restoreMode('volshell');});
   const upper=page.locator('#fieldAdventure1977'),lower=page.locator('#fieldAdventure1995');
-  for(const [width,height,scale] of [[1920,1080,1],[1400,1000,1],[900,600,1],[800,400,1],[701,1000,2],[900,600,2],[390,844,1],[320,844,2]]){
+  for(const [width,height,scale] of [[1920,1080,1],[1400,1000,1],[1200,800,1],[1120,800,1],[900,600,1],[800,400,1],[1400,1000,1.1],[1400,1000,2],[701,1000,2],[900,600,2],[390,844,1],[320,844,2]]){
    await page.setViewportSize({width,height});
    await page.evaluate(scale=>{document.documentElement.style.setProperty('--text-scale',String(scale));document.documentElement.dataset.textScaled=String(scale!==1);},scale);
    const geometry=await page.evaluate(()=>{
     const box=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
     const frame=box('#consoleZoom'),upper=box('#fieldAdventure1977'),lower=box('#fieldAdventure1995');
     return {frame,upper,lower,screen:box('.crt-screen'),output:box('#consoleOutputMode'),shell:box('#consoleVolshellMode'),saved:box('.crt-power'),savedVisible:getComputedStyle(document.querySelector('.crt-power')).display!=='none',collapse:box('#fieldConsoleCollapse'),collapseVisible:getComputedStyle(document.querySelector('#fieldConsoleCollapse')).display!=='none',
+     fonts:['#fieldConsoleCollapse','#consoleOutputMode','#consoleVolshellMode'].map(selector=>parseFloat(getComputedStyle(document.querySelector(selector)).fontSize)),
      labelsCentered:['#consoleOutputMode','#consoleVolshellMode'].every(selector=>{const node=document.querySelector(selector),text=[...node.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.trim()),range=document.createRange();range.selectNodeContents(text);const label=range.getBoundingClientRect(),button=node.getBoundingClientRect();return Math.abs(label.left+label.width/2-button.left-button.width/2)<1;}),
      fallback:getComputedStyle(document.querySelector('.crt-mode-controls')).position==='static',
      labelsFit:['#consoleOutputMode','#consoleVolshellMode'].every(selector=>{const node=document.querySelector(selector),texts=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);let text;while((text=texts.nextNode())){if(!text.textContent.trim())continue;const range=document.createRange();range.selectNodeContents(text);if(range.getClientRects().length>1)return false;}return node.scrollWidth<=node.clientWidth+1;}),
@@ -136,7 +137,8 @@ const state={cases:[],jobs:[],approvals:[],account:{},evidence_root:'/synthetic'
     assert.ok(geometry.shell.bottom<geometry.frame.bottom,'Mode buttons remain on the metal housing');
     assert.ok(geometry.saved.top>geometry.screen.bottom&&geometry.saved.bottom<geometry.frame.bottom,'Status sits on the lower bezel');
     assert.ok(geometry.collapseVisible,'Large Field Terminals use the housing Collapse button');
-    assert.ok(Math.abs(geometry.collapse.left+geometry.collapse.width/2-geometry.frame.left-geometry.frame.width*.875)<1,'Collapse is centered beneath the upper-right screw');
+    assert.ok(Math.abs(geometry.collapse.left+geometry.collapse.width/2-geometry.frame.left-geometry.frame.width*.87)<1,'Collapse is centered beneath the upper-right screw');
+    assert.deepEqual(geometry.fonts,[12,12,12],'Collapse, Output and VolShell use the same 12px label size');
     await page.locator('#fieldConsoleCollapse').focus();
     const fit=await page.locator('#fieldConsoleCollapse').evaluate(node=>{
      const r=node.getBoundingClientRect(),style=getComputedStyle(node),outset=node.matches(':focus-visible')?Math.max(0,parseFloat(style.outlineWidth)+parseFloat(style.outlineOffset)):0,range=document.createRange();range.selectNodeContents(node);const text=range.getBoundingClientRect();
