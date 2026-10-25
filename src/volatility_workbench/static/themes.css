@@ -670,10 +670,13 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 :root[data-theme="fallout-76-field-terminal"] .field-adventure-knob:focus-visible {
   outline: 2px solid var(--accent); outline-offset: 3px;
 }
-:root[data-theme="fallout-76-field-terminal"] .crt-chin { position: static; min-height: 0; padding: 0; }
+:root[data-theme="fallout-76-field-terminal"] .crt-chin {
+  position: absolute; top: 100%; left: 0; right: 0; min-height: 0; padding: 6px 0 0;
+  flex-direction: column; gap: 4px;
+}
 :root[data-theme="fallout-76-field-terminal"] .crt-mode-controls {
-  position: absolute; z-index: 3; top: 51%; left: 13%; width: max-content; margin: 0;
-  transform: translateX(-50%); flex-direction: column; flex-wrap: nowrap; gap: 6px; align-items: center;
+  position: static; width: 100%; margin: 0; transform: none;
+  flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 6px; align-items: center;
 }
 :root[data-theme="fallout-76-field-terminal"] .crt-mode-controls :is(#consoleOutputMode,#consoleVolshellMode) {
   position: relative; width: calc(124px * var(--text-scale,1)); min-height: 32px;
@@ -682,29 +685,29 @@ button:not(.report-remove):not(.dialog-close), select, input:not([type=checkbox]
 }
 :root[data-theme="fallout-76-field-terminal"] .crt-mode-controls .volshell-led { position: absolute; left: 7px; }
 :root[data-theme="fallout-76-field-terminal"] .crt-power {
-  z-index: 3; top: auto; bottom: 2.5%; left: 50%; right: auto;
-  transform: translateX(-50%); white-space: nowrap;
+  position: static; transform: none; align-self: center; white-space: nowrap;
 }
-@container field-terminal (width >= 56em) {
-  :root[data-theme="fallout-76-field-terminal"] .field-console-collapse {
-    display: block; position: absolute; z-index: 3; top: 13%; left: 87.5%; transform: translateX(-50%);
-    width: 5%; min-height: 32px; padding: 4px 3px; white-space: nowrap;
-    font-size: clamp(7px,.6cqw,calc(12px * var(--text-scale,1))); text-align: center;
+@container field-terminal (width >= 70em) {
+  :root[data-theme="fallout-76-field-terminal"]:not([data-text-scaled="true"]) .crt-chin {
+    position: static; padding: 0; flex-direction: row; gap: 12px;
+  }
+  :root[data-theme="fallout-76-field-terminal"]:not([data-text-scaled="true"]) .crt-mode-controls {
+    position: absolute; z-index: 3; top: 51%; left: 13%; width: max-content; margin: 0;
+    transform: translateX(-50%); flex-direction: column; flex-wrap: nowrap; gap: 6px; align-items: center;
+  }
+  :root[data-theme="fallout-76-field-terminal"]:not([data-text-scaled="true"]) .crt-power {
+    position: absolute; z-index: 3; top: auto; bottom: 2.5%; left: 50%; right: auto;
+    transform: translateX(-50%);
+  }
+  :root[data-theme="fallout-76-field-terminal"]:not([data-text-scaled="true"]) .field-console-collapse {
+    display: block; position: absolute; z-index: 3; top: 13%; left: 87%; transform: translateX(-50%);
+    width: 6.2%; min-height: 32px; padding: 4px 3px; white-space: nowrap;
+    font-size: calc(12px * var(--text-scale,1)); text-align: center;
   }
   :root[data-theme="fallout-76-field-terminal"] .field-console-collapse:focus-visible {
     outline: 2px solid var(--accent); outline-offset: -4px;
   }
-  :root[data-theme="fallout-76-field-terminal"] .crt-screen :is(#expandConsole,#collapseEmptyConsole,#collapseVolshell,#collapseVolshellAgent) { display: none; }
-}
-@container field-terminal (width < 56em) {
-  :root[data-theme="fallout-76-field-terminal"] .crt-chin {
-    position: absolute; top: 100%; left: 0; right: 0; padding: 6px 0 0;
-    flex-direction: column; gap: 4px;
-  }
-  :root[data-theme="fallout-76-field-terminal"] .crt-mode-controls {
-    position: static; width: 100%; transform: none; flex-direction: row; flex-wrap: wrap;
-  }
-  :root[data-theme="fallout-76-field-terminal"] .crt-power { position: static; transform: none; align-self: center; }
+  :root[data-theme="fallout-76-field-terminal"]:not([data-text-scaled="true"]) .crt-screen :is(#expandConsole,#collapseEmptyConsole,#collapseVolshell,#collapseVolshellAgent) { display: none; }
 }
 @media (max-width: 1100px) {
   :root[data-theme^="fallout-76-"] .layout { grid-template-columns: 230px minmax(0,1fr); gap: 18px; padding: 20px; }
