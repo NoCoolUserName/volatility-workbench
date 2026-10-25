@@ -141,3 +141,19 @@ Use the existing configured backend JSON path. `--linux-banner 'FULL BANNER'`
 selects exact matches instead. These are core CLI operations; no Workbench symbol
 implementation or additional MCP tools are introduced. Initial app setup still
 installs the four bundled starter packs. Real-memory Linux validation is outstanding.
+
+## Experimental Intel64 macOS CryptoMem
+
+Workbench 0.1.2 adopts core 0.1.3 and CryptoMem 0.4.0, adding
+`mac.cryptomem.CryptoMem` to the same Plugins/MCP workflow. Select a positive BSD
+PID from `mac.pslist.PsList`. This remains offline and manual-only with XP enabled
+or disabled. Existing Windows/Linux commands and the ten-tool surface remain.
+
+The existing legacy Mac pack can be reused only for an exactly matching Darwin
+kernel. The adapter supports only experimental legacy Intel64 captures with usable
+flat process maps; nested submaps fail explicitly before scanning (including
+ordinary shared-region submaps). Intel32 Mac, Apple silicon/ARM64 captures and
+modern macOS are unsupported. Upstream Mac analysis is no longer actively
+maintained. Real-memory macOS validation remains outstanding. An ARM64 application
+host does not establish ARM64 memory-image support. No Mac acquisition capability
+or separate Workbench detector is added.

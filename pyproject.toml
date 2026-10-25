@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "volatility-workbench"
-version = "0.1.1"
+version = "0.1.2"
 description = "Local case and report application powered by volatility-mcp"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT OR LicenseRef-Volatility-Software-License-1.0"
 license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md", "LICENSING.md", "licenses/MIT.txt", "licenses/LicenseRef-Volatility-Software-License-1.0.txt", "licenses/DEPENDENCY_LICENSES.txt"]
-dependencies = ["volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@5e3affb9c9fcf1be2e6b463194cef488518c7ff6"]
+dependencies = ["volatility-mcp @ git+https://github.com/NoCoolUserName/volatility-mcp.git@5b66bc42d8e349f162fb005107d12c94061b7073"]
 
 [project.optional-dependencies]
 desktop = ["pywebview==6.2.1; sys_platform == 'darwin'"]

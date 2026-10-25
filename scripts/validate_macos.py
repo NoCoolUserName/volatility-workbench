@@ -102,21 +102,23 @@ path=root/'config.json'; path.write_text(json.dumps(config.to_dict()))
 catalog=VolatilityBackend(config).list_plugins(refresh=True)
 assert not catalog['import_failures'],catalog['import_failures']
 plugins={p['name']:p for p in catalog['plugins']}
-for name in ['windows.info.Info','windows.pslist.PsList','xpnet.XpNetScan','vol_pypykatz.pypykatz','windows.evtxlog.evtxlog','windows.cryptomem.CryptoMem','linux.cryptomem.CryptoMem']: assert name in plugins,name
+for name in ['windows.info.Info','windows.pslist.PsList','xpnet.XpNetScan','vol_pypykatz.pypykatz','windows.evtxlog.evtxlog','windows.cryptomem.CryptoMem','linux.cryptomem.CryptoMem','mac.cryptomem.CryptoMem']: assert name in plugins,name
 assert plugins['vol_pypykatz.pypykatz']['source']['kind']=='third_party'
 assert plugins['windows.evtxlog.evtxlog']['source']['kind']=='third_party'
 assert plugins['xpnet.XpNetScan']['source']['kind']=='local'
 crypto='windows.cryptomem.CryptoMem'
 assert plugins[crypto]['source']['kind']=='third_party' and plugins[crypto]['manual_only']
-assert plugins[crypto]['plugin_version']==[0,3,0]
+assert plugins[crypto]['plugin_version']==[0,4,0]
 linux_crypto='linux.cryptomem.CryptoMem'
-assert plugins[linux_crypto]['plugin_version']==[0,3,0] and plugins[linux_crypto]['manual_only']
+assert plugins[linux_crypto]['plugin_version']==[0,4,0] and plugins[linux_crypto]['manual_only']
+mac_crypto='mac.cryptomem.CryptoMem'
+assert plugins[mac_crypto]['plugin_version']==[0,4,0] and plugins[mac_crypto]['manual_only']
 from volatility_mcp.addons import profile as addon_profile
 inventory=addon_profile()
-assert {crypto,linux_crypto} <= set(inventory['offline_plugins'])
+assert {crypto,linux_crypto,mac_crypto} <= set(inventory['offline_plugins'])
 from dataclasses import replace
 without_xp=VolatilityBackend(replace(config,enable_xpnet=False)).list_plugins(refresh=True)
-assert {crypto,linux_crypto} <= {p['name'] for p in without_xp['plugins']}
+assert {crypto,linux_crypto,mac_crypto} <= {p['name'] for p in without_xp['plugins']}
 assert not without_xp['import_failures']
 source=next(s for s in inventory['sources'] if crypto in s['plugins'])
 for item in source['files']:
@@ -141,20 +143,21 @@ async def check():
   result=decode_result(await client.call_tool('list_plugins',{'query':'evtxlog'}))
   assert not result.get('error'),result
   assert any(x['name']=='windows.evtxlog.evtxlog' for x in result['plugins'])
-  for name in (crypto,linux_crypto):
+  for name in (crypto,linux_crypto,mac_crypto):
    result=decode_result(await client.call_tool('list_plugins',{'query':name}))
    assert not result.get('error') and len(result['plugins'])==1,result
    assert result['plugins'][0]['name']==name and result['plugins'][0]['manual_only']
-  result=decode_result(await client.call_tool('run_plugin',{'image':'synthetic.raw','plugin':linux_crypto,'arguments':['--pid','42']}))
-  assert result['status']=='error' and result['integrity_verified'] and not result['reuse_eligible'],result
-  assert '--offline' in result['commands'][0]['argv']
-  assert hashlib.sha256(fixture.read_bytes()).hexdigest()==original_hash
+  for name in (linux_crypto,mac_crypto):
+   result=decode_result(await client.call_tool('run_plugin',{'image':'synthetic.raw','plugin':name,'arguments':['--pid','42']}))
+   assert result['status']=='error' and result['integrity_verified'] and not result['reuse_eligible'],result
+   assert '--offline' in result['commands'][0]['argv']
+   assert hashlib.sha256(fixture.read_bytes()).hexdigest()==original_hash
 asyncio.run(check())
 # A synthetic byte file exercises a real analyzer subprocess; never opens an image from the user.
 run=subprocess.run([str(python),'-I',str(vol),'-q','-f',str(fixture),'banners.Banners'],capture_output=True,text=True,timeout=60)
 assert run.returncode==0,(run.returncode,run.stderr[-1500:])
 assert 'SYNTHETIC TEST ONLY' in run.stdout,run.stdout[-1500:]
-print(json.dumps({'status':'passed','plugin_count':catalog['total'],'import_failures':catalog['import_failures'],'core_commit':info['core_commit'],'native_dependency_imports':True,'mcp_catalog_call':True,'cryptomem_discovery_and_vector':True,'synthetic_analyzer_invocations':2,'linux_cryptomem_mcp_failure':True,'real_images_opened':0}))
+print(json.dumps({'status':'passed','plugin_count':catalog['total'],'import_failures':catalog['import_failures'],'core_commit':info['core_commit'],'native_dependency_imports':True,'mcp_catalog_call':True,'cryptomem_discovery_and_vector':True,'synthetic_analyzer_invocations':3,'linux_cryptomem_mcp_failure':True,'mac_cryptomem_mcp_failure':True,'real_images_opened':0}))
 '''
         result=subprocess.run([str(resources/'runtime/bin/python3'),'-I','-c',script,str(resources)],cwd=temp,env=env,capture_output=True,text=True,timeout=1800)
         if result.returncode:
