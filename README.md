@@ -1,8 +1,8 @@
 # Volatility Workbench
 
-*22,721 lines of code*
+*22,724 lines of code*
 
-*Latest measured macOS ARM64 build: `Volatility Workbench.app` 1289.62 MiB (1,352,267,789 regular-file bytes, excluding symlink aliases); `Volatility-Workbench-macos-arm64.zip` 1073.89 MiB (1,126,050,594 bytes). Includes four official symbol packs and the Linux catalog; excludes community Linux ISF downloads. Built from 8015921c801dd80036321dc61c28062ad4969026, measured 2026-10-24; ad-hoc signed.*
+*Last measured native package: `Volatility Workbench.app`, 1,352,292,400 regular-file bytes (1289.646530 MiB), excluding symlink aliases; `Volatility-Workbench-macos-arm64.zip`, 1,126,059,654 bytes (1073.894171 MiB). Measured on 2026-10-24 from source revision `dc86f38ac211a21e66204f9fc0658a44f8a62f05`; includes bundled runtimes, dependencies and four official starter symbol packs, excludes private evidence, case state and the external Linux community collection.*
 
 Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
 
@@ -179,22 +179,28 @@ BitLocker key roles or cipher modes. See the
 [core runtime-addon checks and limitations](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/RUNTIME_ADDONS.md).
 
 The bundled [CryptoMem plugin](https://github.com/NoCoolUserName/volatility3-cryptomem)
-scans one selected Windows or Linux x86-64 process for Bitcoin, Ethereum-style,
+scans one selected Windows, Linux x86-64 or experimental legacy Intel64 Mac process for Bitcoin, Ethereum-style,
 XRP classic and Monero address candidates and bounded payment requests. Find
-`windows.cryptomem.CryptoMem` or `linux.cryptomem.CryptoMem` in Plugins and supply a
+`windows.cryptomem.CryptoMem`, `linux.cryptomem.CryptoMem` or
+`mac.cryptomem.CryptoMem` in Plugins and supply a
 process PID (not a Linux thread ID). It runs offline through the shared core, preserves
 process/virtual-offset provenance, and remains manual-only. Address validation
 does not establish wallet ownership; real-memory recovery is still unvalidated.
 Existing external analyzers receive it through the same explicit plugin installer.
 See [CryptoMem capabilities and limits](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/CRYPTOMEM.md).
-CryptoMem 0.3.0 retains `--currency xmr` (also included by `all`) for standard,
+CryptoMem 0.4.0 retains `--currency xmr` (also included by `all`) for standard,
 subaddress and integrated Monero address candidates with encoding/checksum
 validation. Wallet/curve validity, keys/seeds
 and Monero payment-URI interpretation are outside its scope. Linux symbols must
 match the captured kernel exactly. Core's explicit symbol installer can provision
 the pinned 10,255-table x86-64 collection into the shared offline store; see
 [package setup](docs/MACOS_APP.md). Other Linux architectures remain unsupported
-until tested. The app still uses the same ten MCP tools.
+until tested. The Mac adapter requires exact Darwin kernel symbols; the legacy
+Mac pack is not universal coverage. Nested submaps fail as incomplete, including
+ordinary shared-region submaps. Apple silicon/Intel32 Mac captures and modern
+macOS are unsupported; real-memory Mac validation remains outstanding. Running
+this ARM64 app is distinct from analyzing an ARM64 capture. The app still uses
+the same ten MCP tools.
 
 Redistribution restrictions keep selected upstream sources out of the public app;
 install them explicitly through idle Settings maintenance or core's installer:

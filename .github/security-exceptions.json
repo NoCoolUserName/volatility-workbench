@@ -27,8 +27,8 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/package_smoke.py",
       "line": 16,
-      "source_sha256": "a0b35e46d7b969d6a5b128d0b7ec46d4cdeafa8e034f2f74a3f1081d518bb069",
-      "reason": "Re-reviewed 2026-10-24: all callers still supply fixed isolated wheel-install/test argv tuples with subprocess default shell=False and no shell=True caller. New catalog and Linux/Windows CryptoMem assertions are inside the literal test program; no recovered data or external request input reaches execution."
+      "source_sha256": "2412f32493299f7abc3f5233f295a24471a64b9da654449b384198d6f13b187b",
+      "reason": "Re-reviewed 2026-10-24: fixed argv calls remain shell-free and use verified bundle executables, isolated temporary homes and literal synthetic test programs. Added Mac CryptoMem catalog assertions and fixed PID 42 invalid-image MCP invocation; no evidence, recovered code, external request or extracted command controls execution."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -48,15 +48,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 36,
-      "source_sha256": "661102b98005c76a75d2fcfbb915afa60659bfffcec35abe39d9d71fe164763f",
-      "reason": "Re-reviewed 2026-10-24: developer-selected verified bundle executables use separate argv elements, a temporary HOME and no shell. The literal validator adds catalog assertions, XP-independent discovery, and fixed Linux CryptoMem MCP invocation using only generated synthetic bytes and PID 42. No memory image, recovered code, server response or extracted command controls an invocation."
+      "source_sha256": "ec6c2e226dabde8cde325d18a542fbed8ff53d476ac4b4fd77c3a20ea43538bb",
+      "reason": "Re-reviewed 2026-10-24: fixed argv calls remain shell-free and use verified bundle executables, isolated temporary homes and literal synthetic test programs. Added Mac CryptoMem catalog assertions and fixed PID 42 invalid-image MCP invocation; no evidence, recovered code, external request or extracted command controls execution."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
-      "line": 159,
-      "source_sha256": "661102b98005c76a75d2fcfbb915afa60659bfffcec35abe39d9d71fe164763f",
-      "reason": "Re-reviewed 2026-10-24: developer-selected verified bundle executables use separate argv elements, a temporary HOME and no shell. The literal validator adds catalog assertions, XP-independent discovery, and fixed Linux CryptoMem MCP invocation using only generated synthetic bytes and PID 42. No memory image, recovered code, server response or extracted command controls an invocation."
+      "line": 162,
+      "source_sha256": "ec6c2e226dabde8cde325d18a542fbed8ff53d476ac4b4fd77c3a20ea43538bb",
+      "reason": "Re-reviewed 2026-10-24: fixed argv calls remain shell-free and use verified bundle executables, isolated temporary homes and literal synthetic test programs. Added Mac CryptoMem catalog assertions and fixed PID 42 invalid-image MCP invocation; no evidence, recovered code, external request or extracted command controls execution."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -111,15 +111,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 40,
-      "source_sha256": "661102b98005c76a75d2fcfbb915afa60659bfffcec35abe39d9d71fe164763f",
-      "reason": "Re-reviewed 2026-10-24: developer-selected verified bundle executables use separate argv elements, a temporary HOME and no shell. The literal validator adds catalog assertions, XP-independent discovery, and fixed Linux CryptoMem MCP invocation using only generated synthetic bytes and PID 42. No memory image, recovered code, server response or extracted command controls an invocation."
+      "source_sha256": "ec6c2e226dabde8cde325d18a542fbed8ff53d476ac4b4fd77c3a20ea43538bb",
+      "reason": "Re-reviewed 2026-10-24: fixed argv calls remain shell-free and use verified bundle executables, isolated temporary homes and literal synthetic test programs. Added Mac CryptoMem catalog assertions and fixed PID 42 invalid-image MCP invocation; no evidence, recovered code, external request or extracted command controls execution."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 47,
-      "source_sha256": "661102b98005c76a75d2fcfbb915afa60659bfffcec35abe39d9d71fe164763f",
-      "reason": "Re-reviewed 2026-10-24: developer-selected verified bundle executables use separate argv elements, a temporary HOME and no shell. The literal validator adds catalog assertions, XP-independent discovery, and fixed Linux CryptoMem MCP invocation using only generated synthetic bytes and PID 42. No memory image, recovered code, server response or extracted command controls an invocation."
+      "source_sha256": "ec6c2e226dabde8cde325d18a542fbed8ff53d476ac4b4fd77c3a20ea43538bb",
+      "reason": "Re-reviewed 2026-10-24: fixed argv calls remain shell-free and use verified bundle executables, isolated temporary homes and literal synthetic test programs. Added Mac CryptoMem catalog assertions and fixed PID 42 invalid-image MCP invocation; no evidence, recovered code, external request or extracted command controls execution."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-asyncio-create-exec-audit",

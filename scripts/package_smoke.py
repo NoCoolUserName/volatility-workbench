@@ -50,7 +50,7 @@ from volatility_workbench.compatibility import require_core
 assert require_core().API_VERSION == 1
 from volatility_mcp.addons import profile
 addon_profile=profile()
-for crypto in ('windows.cryptomem.CryptoMem', 'linux.cryptomem.CryptoMem'):
+for crypto in ('windows.cryptomem.CryptoMem', 'linux.cryptomem.CryptoMem', 'mac.cryptomem.CryptoMem'):
  assert crypto in addon_profile['offline_plugins'] and crypto in addon_profile['manual_only_plugins']
  assert any(crypto in source['plugins'] for source in addon_profile['sources'])
 assert 'site-packages' in str(files('volatility_mcp'))
