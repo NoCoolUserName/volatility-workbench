@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-10-24",
+  "reviewed_at": "2026-10-25",
   "exceptions": [
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -48,15 +48,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 36,
-      "source_sha256": "ec6c2e226dabde8cde325d18a542fbed8ff53d476ac4b4fd77c3a20ea43538bb",
-      "reason": "Re-reviewed 2026-10-24: fixed argv calls remain shell-free and use verified bundle executables, isolated temporary homes and literal synthetic test programs. Added Mac CryptoMem catalog assertions and fixed PID 42 invalid-image MCP invocation; no evidence, recovered code, external request or extracted command controls execution."
+      "source_sha256": "407fc77fdfddab8634ed9ac81d85c75c4e7d60bc1a52107d5ba367ceb14437f3",
+      "reason": "Re-reviewed 2026-10-25: only the three expected CryptoMem versions change from 0.4.0 to 0.5.0. Fixed shell-free argv, isolated temporary homes and literal synthetic fixtures are unchanged; no case or recovered data controls execution."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 162,
-      "source_sha256": "ec6c2e226dabde8cde325d18a542fbed8ff53d476ac4b4fd77c3a20ea43538bb",
-      "reason": "Re-reviewed 2026-10-24: fixed argv calls remain shell-free and use verified bundle executables, isolated temporary homes and literal synthetic test programs. Added Mac CryptoMem catalog assertions and fixed PID 42 invalid-image MCP invocation; no evidence, recovered code, external request or extracted command controls execution."
+      "source_sha256": "407fc77fdfddab8634ed9ac81d85c75c4e7d60bc1a52107d5ba367ceb14437f3",
+      "reason": "Re-reviewed 2026-10-25: only the three expected CryptoMem versions change from 0.4.0 to 0.5.0. Fixed shell-free argv, isolated temporary homes and literal synthetic fixtures are unchanged; no case or recovered data controls execution."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -111,15 +111,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 40,
-      "source_sha256": "ec6c2e226dabde8cde325d18a542fbed8ff53d476ac4b4fd77c3a20ea43538bb",
-      "reason": "Re-reviewed 2026-10-24: fixed argv calls remain shell-free and use verified bundle executables, isolated temporary homes and literal synthetic test programs. Added Mac CryptoMem catalog assertions and fixed PID 42 invalid-image MCP invocation; no evidence, recovered code, external request or extracted command controls execution."
+      "source_sha256": "407fc77fdfddab8634ed9ac81d85c75c4e7d60bc1a52107d5ba367ceb14437f3",
+      "reason": "Re-reviewed 2026-10-25: only the three expected CryptoMem versions change from 0.4.0 to 0.5.0. Fixed shell-free argv, isolated temporary homes and literal synthetic fixtures are unchanged; no case or recovered data controls execution."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 47,
-      "source_sha256": "ec6c2e226dabde8cde325d18a542fbed8ff53d476ac4b4fd77c3a20ea43538bb",
-      "reason": "Re-reviewed 2026-10-24: fixed argv calls remain shell-free and use verified bundle executables, isolated temporary homes and literal synthetic test programs. Added Mac CryptoMem catalog assertions and fixed PID 42 invalid-image MCP invocation; no evidence, recovered code, external request or extracted command controls execution."
+      "source_sha256": "407fc77fdfddab8634ed9ac81d85c75c4e7d60bc1a52107d5ba367ceb14437f3",
+      "reason": "Re-reviewed 2026-10-25: only the three expected CryptoMem versions change from 0.4.0 to 0.5.0. Fixed shell-free argv, isolated temporary homes and literal synthetic fixtures are unchanged; no case or recovered data controls execution."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-asyncio-create-exec-audit",
