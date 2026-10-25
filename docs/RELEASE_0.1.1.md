@@ -20,3 +20,17 @@ outstanding. This release does not add a Linux desktop build or redesign the UI.
 
 Local macOS arm64 packaging is ad-hoc signed unless built separately with a valid
 Developer ID identity and notarized. Ad-hoc validation is not notarization.
+
+The local macOS arm64 build passed native runtime/dependency checks, first-run
+provisioning of all four packs with network access blocked, discovery of both
+CryptoMem 0.3.0 commands with XP enabled/disabled, actual ten-tool MCP discovery
+and a synthetic Linux missing-kernel failure, input-integrity checks, signature
+verification and native library linkage checks. The app catalog contains 202
+commands with zero import failures. The installed Python package suite passed
+272 tests. No real memory image was used.
+
+Artifact source: `8015921c801dd80036321dc61c28062ad4969026` (the subsequent README
+size stamp is documentation only). Backend release source:
+`5e3affb9c9fcf1be2e6b463194cef488518c7ff6`. The native artifact uses CPython 3.12.15,
+Volatility 2.28.2, CryptoMem 0.3.0 and MCP 2.3.0. It is ad-hoc signed and has not
+been Apple-notarized.
