@@ -49,30 +49,41 @@ queries, citations and coverage. Shared forensic code is not duplicated here.
 - Use Settings for explicit AI connections, registered evidence locations, idle-only
   community-plugin maintenance, bounded symbol downloads and exact-identity local
   symbol imports. Existing case roots cannot be moved through a settings save.
+- Open the case's **Console / VolShell** for manual Python commands, reviewable
+  **AI command suggestions**, or **AI investigation** through the existing case
+  agent. Suggestions remain inert until explicitly run. AI investigation uses
+  saved evidence and the existing extraction approvals without creating a report
+  revision; manual input pauses while it runs. The VolShell bezel button connects
+  or disconnects the local interpreter, with its light reflecting confirmed
+  connection state. See [VolShell modes and limits](docs/LOCAL_UI.md).
 
 See [the local workflow](docs/LOCAL_UI.md), [Settings and symbols](docs/SETTINGS_AND_SYMBOLS.md),
 and [ownership and recovery](docs/SEPARATION.md).
 
 ## Themes
 
-The header and Settings share 33 locally bundled appearance choices. A new browser
+The header and Settings share 37 locally bundled appearance choices. A new browser
 without a saved preference starts with the original Matrix green appearance.
 Existing Soft black and white and Light blue preferences remain supported.
 Theme changes affect presentation; case contents and saved reports are unchanged.
 
 | Collection | Choices |
 | --- | --- |
-| Fallout — one skin per released game/table experience | Fallout; Fallout 2; Fallout Tactics: Brotherhood of Steel; Fallout: Brotherhood of Steel; Fallout 3; Fallout: New Vegas; Fallout Shelter; Fallout 4; Fallout Pinball; Fallout 4 VR; Fallout 76; Fallout Shelter Online |
+| Fallout — 18 choices including terminal variants | Fallout; Fallout 2; Fallout Tactics: Brotherhood of Steel; Fallout: Brotherhood of Steel; Fallout 3; Fallout 3 (RobCo Night) 1 and 2; Fallout 3 (Vault 112) 1 and 2; Fallout: New Vegas 1 and 2; Fallout Shelter; Fallout 4; Fallout Pinball; Fallout 4 VR; Fallout 76 (Camden Park); Fallout 76 (Field Terminal); Fallout Shelter Online |
 | Seasonal | Friendly Halloween; adult, non-cartoon Halloween; The Nightmare Before Christmas |
 | Arcade and adventure | 8-bit; Colossal Cave Adventure; Metroid; Silpheed (Sega CD); Elevator Action (NES) |
 | Neon and terminals | Vaporwave; retrowave; hacker |
 | Cinema and anime | Top Gun; Cyber City Oedo 808; Cyberpunk 2077; Golgo 13; The Punisher — War Journal #53 |
 | Classic choices | Matrix green; Soft black and white; Light blue |
 
-Original SVG scenes and the original generated adult-Halloween raster ship inside
-the package. Themes make no external asset requests. Opaque work surfaces, semantic
-warning colors, visible keyboard focus and selection indicators keep the forensic
-UI readable. The saved preference is local to the browser/native WebView profile.
+Original SVG scenes, the generated adult-Halloween raster and reference-derived
+terminal PNG housings ship inside the package. Themes make no external asset
+requests. Opaque work surfaces, semantic warning colors, visible keyboard focus
+and selection indicators keep the forensic
+UI readable. Theme selection is saved in application preferences outside cases
+and the app bundle, shared by Settings and Workbench, and survives port changes
+and desktop relaunches. Browser/WebView storage provides an initial cache and
+migrates older preferences.
 
 [Theme references and artwork provenance](docs/THEMES.md) document the official
 Fallout release audit, version-specific references and the comic correction:
@@ -87,6 +98,14 @@ Dock icon. Closing hides the window while work continues; reopening restores it.
 Quit asks before cancelling active work. Separate relocatable Python application
 and analyzer runtimes mean the installed app needs no source checkout, Homebrew,
 development environment or shell startup file.
+
+Download the [Workbench 0.1.3 macOS ARM64 prerelease](https://github.com/NoCoolUserName/volatility-workbench/releases/tag/v0.1.3)
+and its `Volatility-Workbench-macos-arm64.zip` asset. Verify the archive against
+the release's `SHA256SUMS`, then extract it to access `Volatility Workbench.app`.
+This published app is ad-hoc signed, without Developer ID signing or Apple
+notarization; downloaded-app Gatekeeper acceptance remains unvalidated. See
+[native setup and limits](docs/MACOS_APP.md) and the installation/rollback guidance
+below before replacing an existing app.
 
 Build from a clean, configured checkout with Python 3.12+ and Apple's command-line
 tools:
@@ -154,7 +173,7 @@ and [security](SECURITY.md).
 
 ## Pinned core and plugins
 
-The tested core pin is `2cad7892f95639b7b97506ec74a845ce0e9c4f19`, API revision 1.
+The tested core pin is MCP 0.1.4 at `2887c77283da4a45860d8ac2f3042027401257a0`, API revision 1.
 `core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on the
 immutable commit. `pip install .` brings in that dependency; the pin helper checks
 installed Git provenance even when successive core commits share a package version.
@@ -190,10 +209,10 @@ process/virtual-offset provenance, and remains manual-only. Address validation
 does not establish wallet ownership; real-memory recovery is still unvalidated.
 Existing external analyzers receive it through the same explicit plugin installer.
 See [CryptoMem capabilities and limits](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/CRYPTOMEM.md).
-CryptoMem 0.4.0 retains `--currency xmr` (also included by `all`) for standard,
+CryptoMem 0.5.0 retains `--currency xmr` (also included by `all`) for standard,
 subaddress and integrated Monero address candidates with encoding/checksum
-validation. Wallet/curve validity, keys/seeds
-and Monero payment-URI interpretation are outside its scope. Linux symbols must
+validation. Monero wallet/curve validity, Monero keys/seeds and Monero payment-URI
+interpretation are outside its scope. Linux symbols must
 match the captured kernel exactly. Core's explicit symbol installer can provision
 the pinned 10,255-table x86-64 collection into the shared offline store; see
 [package setup](docs/MACOS_APP.md). Other Linux architectures remain unsupported
@@ -232,7 +251,7 @@ Run focused checks for changed behavior during development. Before release, run
 wheels, checks dependencies, assets, HTTP startup and both MCP protocol modes, then
 runs the full Workbench suite against installed packages outside the checkout.
 Browser scripts under `scripts/check_*_browser.cjs` use synthetic data and Playwright
-as a validation-only dependency; `check_themes_browser.cjs` checks all 33 skins under
+as a validation-only dependency; `check_themes_browser.cjs` checks all 37 skins under
 the production content-security policy. `check_theme_persistence_browser.cjs` checks
 restart/port changes, shared preferences, migration and save races;
 `check_volshell_browser.cjs` checks the VolShell connection toggle and confirmed-disconnect lifecycle.
