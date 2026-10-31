@@ -4,12 +4,16 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const assets=path.join(__dirname,'../src/volatility_workbench/static');
-const versions=['legacy','explicit','uncertain'].map(id=>({id,status:'sealed',created_at:'2026-10-18T12:00:00Z'}));
+const support='Synthetic **assessment** cites F1 and [evidence](evidence/fixture.txt).';
+const legacySupport='The evidence supports a high-confidence assessment of host compromise.';
+const versions=['legacy','malicious','explicit','uncertain'].map(id=>({id,status:'sealed',created_at:'2026-10-18T12:00:00Z',
+  ai_maliciousness_support:id==='legacy'?[legacySupport]:id==='malicious'?[support,'Synthetic **assessment**','Synthetic scope stays normal.']:[]}));
 const state={cases:[{id:'synthetic',title:'Synthetic case',created_at:'2026-10-18T12:00:00Z',images:[],coins:[],
   readiness:{status:'Unchecked',reasons:[]},reports:versions,messages:[],activity:[]}],
   jobs:[],approvals:[],account:{},evidence_root:'/synthetic'};
 const narratives={
   legacy:'# Synthetic report\n## Executive summary\nThe evidence supports a high-confidence assessment of host compromise.\n## Scope and evidence\nSynthetic only.',
+  malicious:'# Synthetic report\n## Executive summary\nAI Determination: Malicious\nSynthetic timestamp 04:31:36 UTC. '+support+' Objective filename Malicious.exe was recorded.\nLimitations are unresolved.\n## Scope and evidence\nSynthetic scope stays normal.\n## Findings\n### F1 — Synthetic finding\nSynthetic finding stays normal.',
   explicit:'# Synthetic report\n## Executive summary\nAI Determination: Benign\nThe evidence supports a benign explanation.\n## Scope and evidence\nSynthetic only.',
   uncertain:'# Synthetic report\n## Executive summary\nAI Determination: Undetermined\nAvailable evidence is inconclusive (F2–F3, F11). Unknown F99 stays plain.\n## Scope and evidence\nSynthetic only.\n## Findings\n### F2 — Synthetic finding\nFixture text.\n### F3: Another finding\nFixture text.\n### F11 — Last finding\nFixture text.',
 };
@@ -92,9 +96,37 @@ const narratives={
     assert.deepEqual(rowSizes,[rowSizes[0],rowSizes[0],rowSizes[0],rowSizes[0]],
       'AI and human labels, choice, and save status use the same font size');
 
+    await page.locator('[data-report-id="malicious"] button:first-child').click();
+    await page.waitForFunction(()=>document.querySelector('.determination-value')?.textContent==='Malicious');
+    const assessmentColors=await page.locator('#reportView').evaluate(article=>{
+      const color=node=>getComputedStyle(node).color;
+      const paragraph=[...article.querySelectorAll('p')].find(n=>n.textContent.startsWith('Synthetic timestamp'));
+      const walker=document.createTreeWalker(paragraph,NodeFilter.SHOW_TEXT), red=[], normal=[];
+      while(walker.nextNode()) {
+        const node=walker.currentNode;
+        (color(node.parentElement)==='rgb(255, 137, 137)'?red:normal).push(node.textContent);
+      }
+      return {red:red.join(''),normal:normal.join(''),text:paragraph.textContent,
+        finding:color(paragraph.querySelector('a[aria-label="Jump to finding F1"] span')),
+        evidence:color(paragraph.querySelector('a:not([aria-label]) span')),
+        aiLabel:color(article.querySelector('.determination-row strong')),
+        humanLabel:color(article.querySelector('label.determination-row strong')),
+        scope:color([...article.querySelectorAll('p')].find(n=>n.textContent==='Synthetic scope stays normal.'))};
+    });
+    assert.equal(assessmentColors.red,'Synthetic assessment cites F1 and evidence.');
+    assert.equal(assessmentColors.normal,'Synthetic timestamp 04:31:36 UTC.  Objective filename Malicious.exe was recorded.');
+    assert.equal(assessmentColors.text,'Synthetic timestamp 04:31:36 UTC. Synthetic assessment cites F1 and evidence. Objective filename Malicious.exe was recorded.');
+    assert.equal(assessmentColors.finding,'rgb(255, 137, 137)');
+    assert.equal(assessmentColors.evidence,'rgb(255, 137, 137)');
+    assert.equal(assessmentColors.aiLabel,'rgb(255, 137, 137)');
+    assert.notEqual(assessmentColors.humanLabel,assessmentColors.aiLabel);
+    assert.notEqual(assessmentColors.scope,assessmentColors.aiLabel,'Out-of-summary quotes cannot color other sections');
+
     await page.locator('[data-report-id="legacy"] button:first-child').click();
     await page.waitForFunction(()=>document.querySelector('.determination-value')?.textContent==='Malicious');
     assert.equal(await ai.evaluate(node=>getComputedStyle(node).color),'rgb(255, 137, 137)');
+    assert.equal(await page.locator('#reportView > p').filter({hasText:legacySupport}).locator('.ai-malicious-support')
+      .evaluate(node=>getComputedStyle(node).color),'rgb(255, 137, 137)','Legacy malicious assessment is also red');
     await human.selectOption('Benign');
     await page.waitForFunction(()=>document.querySelector('.determination-save-status')?.textContent==='Saved');
     assert.equal(await human.evaluate(node=>getComputedStyle(node).color),'rgb(134, 230, 165)');
@@ -144,6 +176,7 @@ const narratives={
     await page.locator('[data-report-id="explicit"] button:first-child').click();
     await page.waitForFunction(()=>document.querySelector('.determination-value')?.textContent==='Benign');
     assert.equal(await ai.evaluate(node=>getComputedStyle(node).color),'rgb(134, 230, 165)');
+    assert.equal(await page.locator('#reportView .ai-malicious-support').count(),0,'No red assessment leaks between versions');
     assert.equal(await human.inputValue(),'','Human opinion belongs to its own report version');
     assert.equal(await page.locator('#reportView > p').getByText('AI Determination: Benign',{exact:true}).count(),0,
       'Saved Markdown determination is represented once by the UI line');

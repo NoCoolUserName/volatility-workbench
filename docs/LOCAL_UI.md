@@ -314,6 +314,16 @@ in private Workbench state with an activity timestamp, without editing the
 sealed report or starting an investigation. Benign appears bold green,
 Malicious bold red, and Undetermined bold white; an unset human choice remains
 visibly unset.
+When the AI determination is Malicious, its label and author-selected supporting
+clauses/sentences in the Executive summary appear red, including their citations.
+Disconnected objective facts, chronology, limitations and contrary evidence keep
+their normal text color, even within a mixed paragraph. The report-writing AI
+supplies exact `maliciousness_support` quotes with `case_save_report`; Workbench
+validates their presence in the summary and stores them as per-version private
+presentation metadata (`ai_maliciousness_support`). It does not guess from keywords
+or run a model when a report is opened. Older reports without reviewed quotes
+keep normal narrative colors until their presentation metadata is annotated.
+Human Determination retains independent colors; sealed report content is unchanged.
 
 Other supported command/file approvals and scoped Volatility MCP form requests are
 shown with details and approve-once/decline/cancel choices; user-input requests

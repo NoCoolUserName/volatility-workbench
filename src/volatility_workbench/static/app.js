@@ -457,6 +457,9 @@ function renderDeterminations(text, version, caseId) {
   const aiRow = el("p", undefined, "determination-row");
   const savedAI = ["Benign", "Malicious", "Undetermined"].includes(version.ai_determination)
     ? version.ai_determination : aiDetermination(text);
+  const malicious = savedAI === "Malicious";
+  aiRow.classList.toggle("ai-malicious-label", malicious);
+  if (malicious) highlightMaliciousnessSupport(heading, text, version);
   const aiValue = el("span", savedAI, "determination-value");
   aiValue.dataset.determination = aiValue.textContent;
   aiRow.append(el("strong", "AI Determination:"), aiValue);
@@ -507,6 +510,50 @@ function renderDeterminations(text, version, caseId) {
   select.addEventListener("change", saveDetermination);
   panel.append(aiRow, humanRow);
   heading.insertAdjacentElement("afterend", panel);
+}
+function highlightMaliciousnessSupport(heading, text, version) {
+  // Exact author-selected quotes, never a keyword-based maliciousness inference.
+  // Split text nodes so emphasis and clickable evidence/finding links survive.
+  const summary = executiveSummary(text);
+  const quotes = (Array.isArray(version.ai_maliciousness_support) ? version.ai_maliciousness_support : [])
+    .filter(quote => typeof quote === "string" && quote.trim() && summary.includes(quote) &&
+      !/[\r\n]/.test(quote) && !/AI Determination:|Human Determination:|^#/i.test(quote))
+    .map(quote => { const node = el("span"); inline(node, quote, "reports/" + version.id); return node.textContent; });
+  for (let block = heading.nextElementSibling; block && !/^H[12]$/.test(block.tagName);
+       block = block.nextElementSibling) {
+    if (block.classList.contains("report-determinations")) continue;
+    const content = block.textContent, ranges = [];
+    for (const quote of quotes) {
+      if (!quote) continue;
+      let start = 0, found;
+      while ((found = content.indexOf(quote, start)) !== -1) {
+        ranges.push([found, found + quote.length]); start = found + quote.length;
+      }
+    }
+    ranges.sort((a, b) => a[0] - b[0]);
+    const merged = [];
+    for (const range of ranges) {
+      const last = merged[merged.length - 1];
+      if (last && range[0] <= last[1]) last[1] = Math.max(last[1], range[1]);
+      else merged.push(range);
+    }
+    if (!merged.length) continue;
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT), nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    let offset = 0;
+    for (const node of nodes) {
+      const value = node.textContent, end = offset + value.length;
+      const fragment = document.createDocumentFragment(); let cursor = 0;
+      for (const [start, stop] of merged) {
+        const from = Math.max(start, offset) - offset, to = Math.min(stop, end) - offset;
+        if (to <= from) continue;
+        fragment.append(document.createTextNode(value.slice(cursor, from)));
+        fragment.append(el("span", value.slice(from, to), "ai-malicious-support")); cursor = to;
+      }
+      if (cursor) { fragment.append(document.createTextNode(value.slice(cursor))); node.replaceWith(fragment); }
+      offset = end;
+    }
+  }
 }
 function linkSummaryFindings(article) {
   const targets = new Map();
