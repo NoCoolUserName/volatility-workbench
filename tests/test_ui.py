@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import patch, AsyncMock
 import urllib.error
 import urllib.request
-from volatility_workbench.app import Workbench, report_ai_determination, report_maliciousness_support
+from volatility_workbench.app import Workbench, report_ai_determination, report_maliciousness_support, report_benignness_support
 from volatility_workbench.http import Server, check_running_version, runtime_fingerprint, serve
 from volatility_mcp.scoped import CaseBackend
 from volatility_workbench.storage import Bundle, read_chunk
@@ -105,20 +105,23 @@ class UITests(unittest.IsolatedAsyncioTestCase):
             with self.assertRaisesRegex(ValueError, 'exactly one line'):
                 report_ai_determination(markdown)
 
-    def test_maliciousness_support_requires_exact_summary_quotes(self):
-        text = ('## Executive summary\nAI Determination: Malicious\n'
-                'PID 42 was recorded. The correlated artifacts support compromise (F1).\n'
-                '## Scope and evidence\nOutside the summary.')
-        quote = 'The correlated artifacts support compromise (F1).'
-        self.assertEqual(report_maliciousness_support(text, [quote, quote]), [quote])
-        self.assertEqual(report_maliciousness_support(text, []), [])
-        for excerpts in ([None], [''], ['invented quote'], ['Outside the summary.'],
-                         ['AI Determination: Malicious'], ['PID 42 was recorded.\n'], 'not an array'):
-            with self.assertRaises(ValueError):
-                report_maliciousness_support(text, excerpts)
-        for verdict in ('Benign', 'Undetermined'):
-            with self.assertRaises(ValueError):
-                report_maliciousness_support(text.replace('Malicious', verdict), [quote])
+    def test_determination_support_requires_exact_matching_summary_quotes(self):
+        for verdict, validate, quote in (
+                ('Malicious', report_maliciousness_support, 'The correlated artifacts support compromise (F1).'),
+                ('Benign', report_benignness_support, 'Verified maintenance accounts for the observed changes (F1).')):
+            with self.subTest(verdict=verdict):
+                text = ('## Executive summary\nAI Determination: '+verdict+'\n'
+                        'PID 42 was recorded. '+quote+'\n'
+                        '## Scope and evidence\nOutside the summary.')
+                self.assertEqual(validate(text, [quote, quote]), [quote])
+                self.assertEqual(validate(text, []), [])
+                for excerpts in ([None], [''], ['invented quote'], ['Outside the summary.'],
+                                 ['AI Determination: '+verdict], ['PID 42 was recorded.\n'], 'not an array'):
+                    with self.assertRaises(ValueError):
+                        validate(text, excerpts)
+                for other in {'Benign', 'Malicious', 'Undetermined'} - {verdict}:
+                    with self.assertRaises(ValueError):
+                        validate(text.replace(verdict, other), [quote])
 
     def test_launcher_rejects_stale_and_legacy_instances(self):
         fingerprint=runtime_fingerprint()

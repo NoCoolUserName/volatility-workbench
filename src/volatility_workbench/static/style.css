@@ -286,6 +286,9 @@ article h2:first-child {
 #reportView .ai-malicious-label,
 #reportView .ai-malicious-label *,
 #reportView .ai-malicious-support { color: #ff8989; }
+#reportView .ai-benign-label,
+#reportView .ai-benign-label *,
+#reportView .ai-benign-support { color: #86e6a5; }
 .live-console-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .live-console-title { display: flex; align-items: baseline; flex: 1 1 420px; flex-wrap: wrap; gap: 0 16px; min-width: 0; }
 .live-console-title h3 { overflow-wrap: anywhere; }

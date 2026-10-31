@@ -5,16 +5,18 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assets=path.join(__dirname,'../src/volatility_workbench/static');
 const support='Synthetic **assessment** cites F1 and [evidence](evidence/fixture.txt).';
+const benignSupport='Verified **maintenance activity** explains the observed changes (F1) and [evidence](evidence/fixture.txt).';
 const legacySupport='The evidence supports a high-confidence assessment of host compromise.';
 const versions=['legacy','malicious','explicit','uncertain'].map(id=>({id,status:'sealed',created_at:'2026-10-18T12:00:00Z',
-  ai_maliciousness_support:id==='legacy'?[legacySupport]:id==='malicious'?[support,'Synthetic **assessment**','Synthetic scope stays normal.']:[]}));
+  ai_maliciousness_support:id==='legacy'?[legacySupport]:id==='malicious'?[support,'Synthetic **assessment**','Synthetic scope stays normal.']:id==='explicit'?['Objective filename Benign.exe was recorded.']:[],
+  ai_benignness_support:id==='explicit'?[benignSupport,'Verified **maintenance activity**','Synthetic only.']:['Available evidence is inconclusive (F2–F3, F11). Unknown F99 stays plain.']}));
 const state={cases:[{id:'synthetic',title:'Synthetic case',created_at:'2026-10-18T12:00:00Z',images:[],coins:[],
   readiness:{status:'Unchecked',reasons:[]},reports:versions,messages:[],activity:[]}],
   jobs:[],approvals:[],account:{},evidence_root:'/synthetic'};
 const narratives={
   legacy:'# Synthetic report\n## Executive summary\nThe evidence supports a high-confidence assessment of host compromise.\n## Scope and evidence\nSynthetic only.',
   malicious:'# Synthetic report\n## Executive summary\nAI Determination: Malicious\nSynthetic timestamp 04:31:36 UTC. '+support+' Objective filename Malicious.exe was recorded.\nLimitations are unresolved.\n## Scope and evidence\nSynthetic scope stays normal.\n## Findings\n### F1 — Synthetic finding\nSynthetic finding stays normal.',
-  explicit:'# Synthetic report\n## Executive summary\nAI Determination: Benign\nThe evidence supports a benign explanation.\n## Scope and evidence\nSynthetic only.',
+  explicit:'# Synthetic report\n## Executive summary\nAI Determination: Benign\nSynthetic timestamp 04:31:36 UTC. '+benignSupport+' Objective filename Benign.exe was recorded.\nCoverage is limited.\n## Scope and evidence\nSynthetic only.\n## Findings\n### F1 — Synthetic maintenance finding\nSynthetic finding stays normal.',
   uncertain:'# Synthetic report\n## Executive summary\nAI Determination: Undetermined\nAvailable evidence is inconclusive (F2–F3, F11). Unknown F99 stays plain.\n## Scope and evidence\nSynthetic only.\n## Findings\n### F2 — Synthetic finding\nFixture text.\n### F3: Another finding\nFixture text.\n### F11 — Last finding\nFixture text.',
 };
 (async()=>{
@@ -177,12 +179,48 @@ const narratives={
     await page.waitForFunction(()=>document.querySelector('.determination-value')?.textContent==='Benign');
     assert.equal(await ai.evaluate(node=>getComputedStyle(node).color),'rgb(134, 230, 165)');
     assert.equal(await page.locator('#reportView .ai-malicious-support').count(),0,'No red assessment leaks between versions');
+    const benignColors=await page.locator('#reportView').evaluate(article=>{
+      const color=node=>getComputedStyle(node).color;
+      const paragraph=[...article.querySelectorAll('p')].find(n=>n.textContent.startsWith('Synthetic timestamp'));
+      const walker=document.createTreeWalker(paragraph,NodeFilter.SHOW_TEXT),green=[],normal=[];
+      while(walker.nextNode()) {
+        const node=walker.currentNode;
+        (color(node.parentElement)==='rgb(134, 230, 165)'?green:normal).push(node.textContent);
+      }
+      return {green:green.join(''),normal:normal.join(''),
+        finding:color(paragraph.querySelector('a[aria-label="Jump to finding F1"] span')),
+        evidence:color(paragraph.querySelector('a:not([aria-label]) span')),
+        aiLabel:color(article.querySelector('.determination-row strong')),
+        humanLabel:color(article.querySelector('label.determination-row strong')),
+        scope:color([...article.querySelectorAll('p')].find(n=>n.textContent==='Synthetic only.')),
+        limitation:color([...article.querySelectorAll('p')].find(n=>n.textContent==='Coverage is limited.'))};
+    });
+    assert.equal(benignColors.green,'Verified maintenance activity explains the observed changes (F1) and evidence.');
+    assert.equal(benignColors.normal,'Synthetic timestamp 04:31:36 UTC.  Objective filename Benign.exe was recorded.');
+    for(const key of ['finding','evidence','aiLabel'])assert.equal(benignColors[key],'rgb(134, 230, 165)',key);
+    for(const key of ['humanLabel','scope','limitation'])assert.notEqual(benignColors[key],'rgb(134, 230, 165)',key);
+    const benignFinding=page.getByRole('link',{name:'Jump to finding F1'});
+    const benignTarget=await benignFinding.getAttribute('href');
+    await benignFinding.click();
+    assert.equal(await page.evaluate(()=>document.activeElement.id),benignTarget.slice(1));
+    if(process.env.WORKBENCH_BENIGN_SCREENSHOT){
+      await ai.scrollIntoViewIfNeeded();
+      await page.screenshot({path:process.env.WORKBENCH_BENIGN_SCREENSHOT});
+    }
+    await page.reload();
+    await page.locator('[data-report-id="explicit"] button:first-child').click();
+    await page.waitForFunction(()=>document.querySelector('.determination-value')?.textContent==='Benign');
+    assert.equal(await page.locator('.ai-benign-support').first().evaluate(node=>getComputedStyle(node).color),'rgb(134, 230, 165)',
+      'Supporting Benign passages stay green after reload');
+
     assert.equal(await human.inputValue(),'','Human opinion belongs to its own report version');
     assert.equal(await page.locator('#reportView > p').getByText('AI Determination: Benign',{exact:true}).count(),0,
       'Saved Markdown determination is represented once by the UI line');
     await page.locator('[data-report-id="uncertain"] button:first-child').click();
     await page.waitForFunction(()=>document.querySelector('.determination-value')?.textContent==='Undetermined');
     assert.equal(await ai.evaluate(node=>getComputedStyle(node).color),'rgb(255, 255, 255)');
+    assert.equal(await page.locator('#reportView .ai-benign-support, #reportView .ai-malicious-support').count(),0,
+      'Undetermined never inherits supporting highlights from another verdict');
     assert.equal(posts.length,4);
     assert.deepEqual(errors,[]);
     console.log('Report determinations: explicit and conservative legacy AI values; three color states; independent human opinion; per-version save and reload; no analysis submissions.');

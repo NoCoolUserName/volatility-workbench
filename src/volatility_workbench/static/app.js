@@ -457,9 +457,11 @@ function renderDeterminations(text, version, caseId) {
   const aiRow = el("p", undefined, "determination-row");
   const savedAI = ["Benign", "Malicious", "Undetermined"].includes(version.ai_determination)
     ? version.ai_determination : aiDetermination(text);
-  const malicious = savedAI === "Malicious";
-  aiRow.classList.toggle("ai-malicious-label", malicious);
-  if (malicious) highlightMaliciousnessSupport(heading, text, version);
+  const tone = savedAI === "Malicious" ? "malicious" : savedAI === "Benign" ? "benign" : null;
+  if (tone) {
+    aiRow.classList.add("ai-" + tone + "-label");
+    highlightDeterminationSupport(heading, text, version, tone);
+  }
   const aiValue = el("span", savedAI, "determination-value");
   aiValue.dataset.determination = aiValue.textContent;
   aiRow.append(el("strong", "AI Determination:"), aiValue);
@@ -511,11 +513,12 @@ function renderDeterminations(text, version, caseId) {
   panel.append(aiRow, humanRow);
   heading.insertAdjacentElement("afterend", panel);
 }
-function highlightMaliciousnessSupport(heading, text, version) {
+function highlightDeterminationSupport(heading, text, version, tone) {
   // Exact author-selected quotes, never a keyword-based maliciousness inference.
   // Split text nodes so emphasis and clickable evidence/finding links survive.
   const summary = executiveSummary(text);
-  const quotes = (Array.isArray(version.ai_maliciousness_support) ? version.ai_maliciousness_support : [])
+  const support = version[tone === "benign" ? "ai_benignness_support" : "ai_maliciousness_support"];
+  const quotes = (Array.isArray(support) ? support : [])
     .filter(quote => typeof quote === "string" && quote.trim() && summary.includes(quote) &&
       !/[\r\n]/.test(quote) && !/AI Determination:|Human Determination:|^#/i.test(quote))
     .map(quote => { const node = el("span"); inline(node, quote, "reports/" + version.id); return node.textContent; });
@@ -548,7 +551,7 @@ function highlightMaliciousnessSupport(heading, text, version) {
         const from = Math.max(start, offset) - offset, to = Math.min(stop, end) - offset;
         if (to <= from) continue;
         fragment.append(document.createTextNode(value.slice(cursor, from)));
-        fragment.append(el("span", value.slice(from, to), "ai-malicious-support")); cursor = to;
+        fragment.append(el("span", value.slice(from, to), "ai-" + tone + "-support")); cursor = to;
       }
       if (cursor) { fragment.append(document.createTextNode(value.slice(cursor))); node.replaceWith(fragment); }
       offset = end;

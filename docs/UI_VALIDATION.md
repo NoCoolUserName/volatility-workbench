@@ -1029,3 +1029,20 @@ four starter symbol packs, zero first-run symbol downloads, 203 discovered
 plugins with no import failures, MCP/catalog and synthetic analyzer checks,
 strict signing and system-or-bundle-relative native linkage. No private image
 was opened by these checks. Build-size measurements identify this same revision.
+
+## Benign AI Executive summary presentation — 2026-10-31
+
+Benign uses the same exact-excerpt validation and text-node highlighting path as
+Malicious, with independent green presentation metadata. The synthetic browser
+check passed for green supporting prose, formatting and finding/evidence links
+within a paragraph whose timestamp and unrelated Benign.exe filename keep their
+normal text color. It also covers overlapping excerpts, excluded limitations,
+out-of-summary quotes, opposite-verdict metadata, finding navigation, reload and
+no highlight leakage into Undetermined. Existing maliciousness and human-choice
+regressions passed. A Chromium screenshot was visually reviewed.
+
+The report-author prompt requires affirmative supported Benign rationale; absence
+of observed indicators alone does not qualify. No visible saved Benign reports
+were present to annotate. Existing private reports and maliciousness annotations
+are preserved. Risk review found no change to verdict calculation, evidence,
+collection authorization, permissions or publication.
