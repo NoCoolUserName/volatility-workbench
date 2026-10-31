@@ -1019,3 +1019,13 @@ Mixed-paragraph browser checks cover red rationale beside ordinary timestamps
 and filenames (including a filename containing “Malicious”), overlapping excerpts,
 formatted text and working finding/evidence links, report switching and independent
 human opinions. This is presentation metadata, not a new evidentiary conclusion.
+
+The final isolated fresh-wheel smoke passed **273 application tests**, dependency
+checks, installed assets/HTTP routes, and ten-tool MCP discovery in both modes.
+All six PR checks passed on application source `4120e7097d0d3421c5bfe15707a546929fd70d3f`:
+Python 3.12/3.13 compatibility, the complete synthetic browser job, quality,
+security/SAST and native Adventure gameplay. Native bundle validation passed:
+four starter symbol packs, zero first-run symbol downloads, 203 discovered
+plugins with no import failures, MCP/catalog and synthetic analyzer checks,
+strict signing and system-or-bundle-relative native linkage. No private image
+was opened by these checks. Build-size measurements identify this same revision.
