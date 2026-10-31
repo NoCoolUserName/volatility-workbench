@@ -4,10 +4,6 @@
 
 *Last measured native package (October 25, 2026): `Volatility Workbench.app` 1.4 GB; `Volatility-Workbench-macos-arm64.zip` 1.1 GB. Measured from source revision `acdf84a6c4e482a3bbdac3392f11a574545db15c`; includes bundled runtimes, dependencies and four official starter symbol packs, and excludes private evidence, case state and the external Linux community collection.*
 
-Workbench 0.1.3 pins MCP 0.1.4 and CryptoMem 0.5.0: opt-in English BIP-39, Bitcoin WIF/xprv/tprv and explicitly ambiguous transaction-ID candidates. Secrets remain masked in ordinary outputs; complete extraction is explicit and local-only. Existing address defaults, three OS adapters and ten MCP tools remain. Exact captured-kernel symbols are required; real-memory Linux/macOS validation remains outstanding.
-
-Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
-
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
 cases, sequential analysis jobs, resumable case conversations, versioned reports,
@@ -16,9 +12,13 @@ Use the native macOS application or the same interface in a browser. The optiona
 [Adventure Easter egg](docs/ADVENTURE.md) has a separate license and game-data
 provenance review for both the 1977 and 1995 editions.
 
-Workbench owns the application and presentation. The separately maintained core
-owns forensic execution, integrity checks, saved-result reuse, artifact inspection,
-queries, citations and coverage. Shared forensic code is not duplicated here.
+Workbench provides the interface. The separate core handles forensic execution,
+integrity checks, saved-result reuse, artifact inspection, queries, citations, and
+coverage.
+
+Workbench 0.1.3 pins MCP 0.1.4 and CryptoMem 0.5.0: opt-in English BIP-39, Bitcoin WIF/xprv/tprv and explicitly ambiguous transaction-ID candidates. Secrets remain masked in ordinary outputs; complete extraction is explicit and local-only. Existing address defaults, three OS adapters and ten MCP tools remain. Exact captured-kernel symbols are required; real-memory Linux/macOS validation remains outstanding.
+
+Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
 
 ## Implemented workflow
 
@@ -28,8 +28,8 @@ queries, citations and coverage. Shared forensic code is not duplicated here.
   MCP server can access only its selected files.
 - Check readiness, generate a report, ask follow-up questions, and create a new
   report revision. Jobs run sequentially with progress, Stop, cancellation and
-  interrupted-work recovery. Readiness is permission to attempt analysis, not a
-  clean verdict or a guarantee of matching symbols.
+  interrupted-work recovery. A successful readiness check allows analysis to be attempted;
+  it does not establish a clean result or guarantee matching symbols.
 - Reopen saved cases and conversations. Explore report sections, source artifacts,
   checked citations, coverage, and activity/failures. The displayed report revision
   stays visibly selected. Refreshing saved views does not start new analysis.
@@ -120,7 +120,7 @@ open "$HOME/Applications/Volatility Workbench.app"
 Quit only while idle before replacement. The installer refuses a running target
 and retains the old app and Desktop launcher in timestamped rollback storage.
 Configuration, evidence and case state remain outside the replaced bundle. The
-optional Desktop launcher is a real native `.app` and opens no Terminal window.
+optional Desktop launcher is a native `.app` and opens no Terminal window.
 An established external analyzer and existing case roots can be reused intact.
 
 See [build/install/rollback](packaging/README.md), [native behavior and limits](docs/MACOS_APP.md),
@@ -153,7 +153,7 @@ without opening it. Desktop dependencies are optional for browser/CLI use.
 Reuse the established private config and state directory to reopen existing cases.
 Without `--state-dir`, state defaults to `<configured output_root>/workbench`.
 Keep configuration, evidence, histories, outputs and environments out of Git.
-Physically moving existing roots requires backed-up mutable metadata rebasing;
+Before moving existing roots, back up and update their mutable path metadata;
 launching does not create aliases or rewrite sealed historical records.
 
 ## AI connections and data
@@ -232,7 +232,7 @@ install them explicitly through idle Settings maintenance or core's installer:
 
 Refresh Plugins afterwards; restart idle clients that retain an older catalog.
 See [core's profile, source attribution, licenses and limitations](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/COMMUNITY_PLUGINS.md).
-UI metadata/help uses decimal KB/MB; a 4,096-byte page is 4.096 KB. This conversion
+The UI and help text use decimal KB/MB; a 4,096-byte page is 4.096 KB. This conversion
 does not change binary page arithmetic, scan/read/output limits or upstream files.
 
 ## Development and validation

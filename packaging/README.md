@@ -60,7 +60,7 @@ An existing app is retained in
 `~/Library/Application Support/Volatility Workbench/rollback/<timestamp>/`.
 Only the application is replaced; configuration, evidence and case storage stay
 outside it. Roll back while idle by restoring that previous bundle, preserving
-user data. `--desktop-launcher` creates a real small
+user data. `--desktop-launcher` creates a small native
 `~/Desktop/Launch Volatility Workbench.app` using a bundled native Cocoa helper.
 It opens the installed application with NSWorkspace and reuses its icon. It is
 neither an alias/symlink nor a shell script, and it opens no Terminal window.
@@ -73,10 +73,10 @@ First installation has no prior main application bundle to back up.
 
 ## Runtime layout and immutability
 
-`Contents/Resources/runtime/bin/python3` is the real app/core interpreter, and
-`analyzer/bin/python3` is the separate real analyzer interpreter. Case-scoped MCP
+`Contents/Resources/runtime/bin/python3` is the app/core interpreter, and
+`analyzer/bin/python3` is the separate analyzer interpreter. Case-scoped MCP
 uses the former, and core invokes the latter with the explicit `analyzer/bin/vol`
-script. `sys.executable` is a genuine interpreter, not the app executable. Dynamic
+script. `sys.executable` points to the Python interpreter rather than the native app launcher. Dynamic
 plugin discovery, distribution RECORD metadata, resources and extension modules
 remain on disk. The native executable sets `VOLATILITY_WORKBENCH_RESOURCES` from
 its own bundle location; runtime resolution does not depend on a shell or cwd.
@@ -131,7 +131,7 @@ No new marketplace or arbitrary plugin-directory tool is introduced.
 
 `validate_macos.py` launches bundled interpreters from a temporary directory with
 a minimal GUI-like environment. It verifies core commit provenance, native
-imports, real catalog/source attribution, a real MCP handshake/catalog call, and
+imports, catalog/source attribution, an MCP handshake/catalog call, and
 one synthetic banner-plugin execution. It checks signing after runtime execution
 and rejects non-system absolute native-library dependencies. No private image is
 opened. This does not by itself verify native UI/window lifecycle; those are
