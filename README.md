@@ -60,36 +60,6 @@ Original project code is available under MIT and the Volatility Software License
 See [the local workflow](docs/LOCAL_UI.md), [Settings and symbols](docs/SETTINGS_AND_SYMBOLS.md),
 and [ownership and recovery](docs/SEPARATION.md).
 
-## Themes
-
-The header and Settings share 37 locally bundled appearance choices. A new browser
-without a saved preference starts with the original Matrix green appearance.
-Existing Soft black and white and Light blue preferences remain supported.
-Theme changes affect presentation; case contents and saved reports are unchanged.
-
-| Collection | Choices |
-| --- | --- |
-| Fallout — 18 choices including terminal variants | Fallout; Fallout 2; Fallout Tactics: Brotherhood of Steel; Fallout: Brotherhood of Steel; Fallout 3; Fallout 3 (RobCo Night) 1 and 2; Fallout 3 (Vault 112) 1 and 2; Fallout: New Vegas 1 and 2; Fallout Shelter; Fallout 4; Fallout Pinball; Fallout 4 VR; Fallout 76 (Camden Park); Fallout 76 (Field Terminal); Fallout Shelter Online |
-| Seasonal | Friendly Halloween; adult, non-cartoon Halloween; The Nightmare Before Christmas |
-| Arcade and adventure | 8-bit; Colossal Cave Adventure; Metroid; Silpheed (Sega CD); Elevator Action (NES) |
-| Neon and terminals | Vaporwave; retrowave; hacker |
-| Cinema and anime | Top Gun; Cyber City Oedo 808; Cyberpunk 2077; Golgo 13; The Punisher — War Journal #53 |
-| Classic choices | Matrix green; Soft black and white; Light blue |
-
-Original SVG scenes, the generated adult-Halloween raster and reference-derived
-terminal PNG housings ship inside the package. Themes make no external asset
-requests. Opaque work surfaces, semantic warning colors, visible keyboard focus
-and selection indicators keep the forensic
-UI readable. Theme selection is saved in application preferences outside cases
-and the app bundle, shared by Settings and Workbench, and survives port changes
-and desktop relaunches. Browser/WebView storage provides an initial cache and
-migrates older preferences.
-
-[Theme references and artwork provenance](docs/THEMES.md) document the official
-Fallout release audit, version-specific references and the comic correction:
-War Journal #53's signed cover is credited to Gary Kwapisz, rather than Jim Lee.
-The skin follows the verified issue's visual cues.
-
 ## Native macOS application
 
 The tested distribution targets Apple silicon and macOS 13 or later. It opens a
