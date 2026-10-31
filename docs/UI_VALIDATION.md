@@ -1046,3 +1046,12 @@ of observed indicators alone does not qualify. No visible saved Benign reports
 were present to annotate. Existing private reports and maliciousness annotations
 are preserved. Risk review found no change to verdict calculation, evidence,
 collection authorization, permissions or publication.
+
+The isolated fresh-wheel smoke passed all **273 application tests**, dependency
+checks, installed routes/assets and ten-tool MCP discovery in both protocol modes.
+All six PR jobs passed on source `f0619547bd10f882575373342be6f0751bba6b7d`,
+including Python 3.12/3.13 compatibility, the full browser job, security/SAST,
+quality and native game checks. Native bundle validation passed with 203 plugins,
+no import failures, four bundled symbol packs, synthetic analyzer/MCP checks and
+strict signing/native-linkage checks. No private image was opened by validation.
+README measurements identify this exact build rather than the documentation commit.
