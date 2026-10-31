@@ -9,7 +9,7 @@ An experimental local application for exploring existing memory acquisitions wit
 cases, sequential analysis jobs, resumable case conversations, versioned reports,
 saved evidence and citations, coverage views, and a searchable plugin catalog.
 Use the native macOS application or the same interface in a browser. The optional
-[Adventure Easter egg](docs/ADVENTURE.md) has a separate license and game-data
+[Colossal Cave Adventure Easter egg](docs/ADVENTURE.md) has a separate license and game-data
 provenance review for both the 1977 and 1995 editions.
 
 Workbench provides the interface. The separate core handles forensic execution,
