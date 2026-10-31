@@ -194,7 +194,7 @@ ran. The form handler now waits for an explicit decision and validates submitted
 content. Unsupported forms fail closed. Failed MCP requests without a core run
 are preserved as separate artifacts and investigation steps; they are not fabricated
 as successful runs or attributed to a different plugin. Both focused regressions
-passed and the repaired approval was exercised through the real browser/agent/MCP
+passed and the repaired approval was exercised through the browser/agent/MCP
 path. No third review cycle was performed.
 
 ## Limits

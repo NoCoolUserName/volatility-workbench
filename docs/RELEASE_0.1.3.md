@@ -20,9 +20,9 @@ enrichment, wallet import or transaction operations are added.
   Python 3.12.13; 29 focused macOS and 11 security tests also passed after updating
   native validator expectations to CryptoMem 0.5.0.
 - Native ARM64 Python 3.12.15, Volatility 2.28.2 and MCP SDK 2.3.0: clean imports,
-  203 catalog plugins, three CryptoMem commands, ten-tool real MCP discovery,
+  203 catalog plugins, three CryptoMem commands, ten-tool MCP discovery,
   synthetic invalid-image invocations and explicit missing-symbol failures.
-- Actual installed CryptoMem detector through real MCP transport: synthetic
+- Actual installed CryptoMem detector through MCP transport: synthetic
   process buffers for Windows/Linux/macOS, XP on/off, secret masking, local-only
   extraction/read guards, timeout and cancellation. No private evidence was used.
 - Native launcher, bundled assets, both Adventure editions, source/wheel/notice

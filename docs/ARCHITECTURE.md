@@ -1,6 +1,6 @@
 # Architecture
 
-Browser static assets → loopback HTTP controller → private durable case/jobs state.
+Browser static assets → loopback HTTP controller → private saved case/job state.
 The controller uses `volatility_mcp.api` for local saved-data access, confinement,
 coverage and report validation. Readiness and Codex case turns use the official
 MCP SDK and `python -m volatility_workbench.guarded_scoped` (a consent middleware wrapper around the public core server) for the same ten case-confined tools.

@@ -1,8 +1,6 @@
 # Preparing a signed macOS release
 
-Daily development remains ad-hoc signed. This is an explicit, optional release
-pipeline for the ARM64 Mac application, not an App Store submission or automatic
-publication workflow. No Apple credentials are required to develop or run its
+Daily development remains ad-hoc signed. This optional pipeline prepares an ARM64 Mac release. It does not submit to the App Store or publish automatically. No Apple credentials are required to develop or run its
 offline checks. Actual Developer ID runtime behavior and Apple acceptance remain
 unverified until a credentialed release is exercised.
 

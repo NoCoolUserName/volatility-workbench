@@ -111,7 +111,7 @@ binary release; this change prepares the machinery and does not claim one exists
 
 Workbench pins merged core `5bede5123abf7286ddea0a05cf0482920d94ac2e`.
 The installed-wheel smoke passed outside the checkout: all 118 application tests,
-real MCP negotiation in both protocol modes, HTTP/assets and zero analysis/model
+MCP negotiation in both protocol modes, HTTP/assets and zero analysis/model
 subprocesses during the UI smoke. The source review and optional-download manifest
 now include the six added commands; upstream implementations remain owned by core.
 Manual-only extraction is excluded from automatic investigation instructions.
@@ -185,7 +185,7 @@ type check passed. These checks use temporary synthetic state.
 The native ARM64 build from clean commit
 `26abdaf23e3d4e1a000e65320fec9ad6c9479751` discovers 201 bundled commands
 with zero import failures. Validation checks CryptoMem source and license hashes,
-manual-only/offline policy, real MCP discovery and a synthetic Bitcoin checksum
+manual-only/offline policy, MCP discovery and a synthetic Bitcoin checksum
 vector. Native imports, portable dependencies, synthetic banner execution, game
 validation and strict code-signature verification passed. No real memory image
 was opened; representative Windows memory validation remains outstanding.
