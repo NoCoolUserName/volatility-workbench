@@ -47,7 +47,7 @@ TOOLS = [
     {'type':'function','name':'case_note','description':'Record an important actual run: its question, result, concise rationale, next step and hypothesis disposition. Use its returned run_id. Do not invent hidden reasoning.',
      'inputSchema':{'type':'object','properties':{**{k:{'type':'string'} for k in ['run_id','question','result','rationale','next_step','hypothesis_disposition']},'prerequisite_run_ids':{'type':'array','items':{'type':'string'}}},'required':['run_id','question','result','rationale','next_step','hypothesis_disposition'],'additionalProperties':False}},
     {'type':'function','name':'case_save_report','description':'Save the explicit report revision and validate its links/provenance. The Executive summary must state one AI Determination: Benign, Malicious or Undetermined. Supply canonical Markdown, finding_id/evidence_refs objects and contextualized IOC rows. Errors must be corrected; a chat answer is not a report. Source metadata/artifacts/log/checksums are packaged by the UI.',
-     'inputSchema':{'type':'object','properties':{'markdown':{'type':'string'},'findings':{'type':'array','items':{'type':'object'}},'iocs':{'type':'array','items':{'type':'object'}}},'required':['markdown','findings','iocs'],'additionalProperties':False}},
+     'inputSchema':{'type':'object','properties':{'markdown':{'type':'string'},'findings':{'type':'array','items':{'type':'object'}},'iocs':{'type':'array','items':{'type':'object'}},'maliciousness_support':{'type':'array','items':{'type':'string'},'description':'Exact single-line Markdown excerpts from Executive summary prose that support a Malicious determination. Exclude unrelated objective facts, limitations, contrary evidence and determination labels. Empty for other verdicts.'}},'required':['markdown','findings','iocs'],'additionalProperties':False}},
 ]
 
 
@@ -62,6 +62,22 @@ def report_ai_determination(markdown):
     if len(values) != 1:
         raise ValueError('Executive summary must contain exactly one line: AI Determination: Benign, Malicious or Undetermined')
     return values[0].capitalize()
+
+
+def report_maliciousness_support(markdown, excerpts):
+    """Validate presentation quotes; the report author selects their meaning."""
+    if not isinstance(excerpts, list) or len(excerpts) > 128:
+        raise ValueError('maliciousness_support must be an array of at most 128 excerpts')
+    if excerpts and report_ai_determination(markdown) != 'Malicious':
+        raise ValueError('Only a Malicious determination can have maliciousness_support')
+    heading = re.search(r'^##\s+Executive summary\s*$', markdown, re.I | re.M)
+    summary = re.split(r'^##\s+', markdown[heading.end():], maxsplit=1, flags=re.M)[0] if heading else ''
+    for quote in excerpts:
+        if (not isinstance(quote, str) or not quote.strip() or len(quote) > 8000
+                or '\n' in quote or '\r' in quote or quote not in summary
+                or re.search(r'AI Determination:|Human Determination:|^#', quote, re.I)):
+            raise ValueError('maliciousness_support must quote exact Executive summary prose, excluding determination labels')
+    return list(dict.fromkeys(excerpts))
 
 
 class Workbench:
@@ -910,6 +926,12 @@ AI Determination: Benign, AI Determination: Malicious, or AI Determination: Unde
 Choose from supported findings, explain the basis and limitations in the summary, and choose
 Undetermined when evidence is insufficient or mixed. Absence of observed indicators alone
 does not establish Benign. This AI opinion never replaces the human determination.
+In case_save_report, supply maliciousness_support: exact single-line Markdown excerpts
+from Executive summary prose that support the Malicious determination. Select only the
+supporting clauses/sentences and their relevant citations, even within mixed paragraphs.
+Leave disconnected objective facts, chronology, limitations and contrary evidence out.
+These excerpts control red presentation only; do not add markup or alter facts to color them.
+Use an empty array for Benign or Undetermined. Do not infer maliciousness just from keywords.
 Include all required sections in REPORT_SPEC, including no-hunt justification. New versions preserve old ones.
 Each finding/IOC must reference an artifact ID and useful locator. Distinguish each image in related cases.
 No invented source identity or metadata. Concise rationale is a reviewable record, not hidden reasoning.
@@ -1257,8 +1279,10 @@ REPORT_SPEC follows:\n'''+spec
             return {'bundle_path':'reports/'+report['id'],'manifest':data,
                 'instructions':'Report links are relative to the bundle, e.g. artifacts/... . case_read_file paths are relative to the case, so prefix reports/<version>/. Supply findings as finding_id plus evidence_refs artifact_id/locator. Use required REPORT_SPEC headings.'}
         determination=report_ai_determination(args['markdown'])
+        support=report_maliciousness_support(args['markdown'],args.get('maliciousness_support',[]))
         result=bundle.save(args['markdown'],args['findings'],args['iocs'])
         report['ai_determination']=determination
+        report['ai_maliciousness_support']=support
         self.save()
         self.event(case,'report_draft_validated',result)
         return result

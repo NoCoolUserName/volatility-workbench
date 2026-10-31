@@ -1007,3 +1007,15 @@ header, history order, live console, running reports, report plugins, theme
 persistence, and Settings. These checks use intercepted synthetic requests and no
 private evidence, live interpreter or real investigation. Native installation and
 physical trackpad gestures were not exercised for this batch.
+
+
+## Malicious AI Executive summary presentation — 2026-10-31
+
+Exact author-selected supporting excerpts are rendered red only when the AI
+verdict is Malicious. Validation rejects invented, out-of-summary and label
+quotes, invalid types and supporting excerpts for other verdicts. Unannotated
+legacy prose remains normal rather than receiving a keyword-based classification.
+Mixed-paragraph browser checks cover red rationale beside ordinary timestamps
+and filenames (including a filename containing “Malicious”), overlapping excerpts,
+formatted text and working finding/evidence links, report switching and independent
+human opinions. This is presentation metadata, not a new evidentiary conclusion.

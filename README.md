@@ -1,6 +1,6 @@
 # Volatility Workbench
 
-*22,729 lines of code*
+*22,847 lines of code*
 
 *Last measured native package (October 25, 2026): `Volatility Workbench.app` 1.4 GB; `Volatility-Workbench-macos-arm64.zip` 1.1 GB. Measured from source revision `acdf84a6c4e482a3bbdac3392f11a574545db15c`; includes bundled runtimes, dependencies and four official starter symbol packs, and excludes private evidence, case state and the external Linux community collection.*
 

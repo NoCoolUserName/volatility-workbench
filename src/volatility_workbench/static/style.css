@@ -283,6 +283,9 @@ article h2:first-child {
 .determination-value[data-determination="Undetermined"],
 #humanDetermination[data-determination="Undetermined"] { color: #fff; }
 .determination-save-status { color: var(--muted); font-size: inherit; }
+#reportView .ai-malicious-label,
+#reportView .ai-malicious-label *,
+#reportView .ai-malicious-support { color: #ff8989; }
 .live-console-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .live-console-title { display: flex; align-items: baseline; flex: 1 1 420px; flex-wrap: wrap; gap: 0 16px; min-width: 0; }
 .live-console-title h3 { overflow-wrap: anywhere; }
