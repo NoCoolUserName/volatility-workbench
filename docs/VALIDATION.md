@@ -17,7 +17,7 @@ Only `ARM64 Adventure build and gameplay` is conditional. Its repository inputs
 are `scripts/build_adventure.py` and `scripts/build_bsd_adventure.py`: these embed
 the pinned upstream source/data/PyYAML downloads, hashes, portability patches and
 build commands. They import no other project modules or local build data. Changes
-to any `.github/workflows/` file, `scripts/adventure_changes.py`,
+to its owning `.github/workflows/ci.yml` file, `scripts/adventure_changes.py`,
 `tests/test_adventure_changes.py`, `tests/test_adventure.py`, the Adventure browser
 regression, application adapter, JavaScript, or theme SVG also run the native
 job. Extend the detector's input set if either builder gains a local dependency.

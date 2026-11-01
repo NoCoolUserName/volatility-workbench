@@ -12,6 +12,7 @@ import subprocess
 # validation itself exercise the native job too. Keep this list in sync if a
 # builder starts reading local inputs or imports another project module.
 INPUTS = frozenset({
+    ".github/workflows/ci.yml",
     "scripts/build_adventure.py",
     "scripts/build_bsd_adventure.py",
     "scripts/adventure_changes.py",
@@ -37,7 +38,7 @@ def commit(value: object) -> str:
 
 
 def relevant(path: str) -> bool:
-    return path in INPUTS or path.startswith(".github/workflows/")
+    return path in INPUTS
 
 
 def decide(repo: Path, event_name: str, event: dict, checkout_sha: str) -> tuple[bool, str]:

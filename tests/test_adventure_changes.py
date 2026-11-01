@@ -63,8 +63,7 @@ class AdventureChangesTests(unittest.TestCase):
         return output.read_text(), result.stdout
 
     def test_push_relevant_inputs(self):
-        for path in (*gate.INPUTS, ".github/workflows/ci.yml",
-                     ".github/workflows/new-validation.yml"):
+        for path in gate.INPUTS:
             with self.subTest(path=path):
                 self.write(path)
                 head = self.save()
@@ -84,6 +83,12 @@ class AdventureChangesTests(unittest.TestCase):
         self.write("README.md")
         head = self.save()
         self.assertTrue(gate.decide(self.repo, "push", self.event(head), head)[0])
+
+    def test_unrelated_workflow_does_not_rebuild_game(self):
+        self.write(".github/workflows/security.yml")
+        head = self.save()
+        self.assertFalse(gate.decide(self.repo, "push", self.event(head), head)[0])
+        self.assertEqual(self.run_cli()[0], "run_native=false\n")
 
     def test_large_diff_is_not_api_truncated(self):
         for index in range(350):
