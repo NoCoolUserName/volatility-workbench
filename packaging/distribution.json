@@ -4,7 +4,7 @@
   "application": {
     "name": "Volatility Workbench",
     "bundle_id": "org.volatilityworkbench.app",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "minimum_macos": "13.0"
   },
   "core_pin": "core-dependency.json",

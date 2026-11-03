@@ -1963,6 +1963,12 @@
           "source_url": "https://files.pythonhosted.org/packages/f2/cf/77d3e19b7fabd03895caca7857ef51e4c409e0ca6b37ee6e9f7daa50b642/proxy_tools-0.1.0.tar.gz",
           "notice_text_sha256": "21595df12acb61c2d31decdb56bf10472020ca7bf158b2e70323059eb6265b49",
           "notice_bundle": "DEPENDENCY_LICENSES.txt"
+        },
+        {
+          "path": "licenses/proxy_tools-0.1.0-LICENSE.txt",
+          "sha256": "a428fb8a2e762af3eb0a6edbbb88e9b42ccfee80fd9b423958bcacf9b9abbfe4",
+          "source_url": "https://raw.githubusercontent.com/jtushman/proxy_tools/db43f1e35d4f90a65c5a4d56d9e9af88212ec6e6/LICENSE.txt",
+          "notice_bundle": "DEPENDENCY_LICENSES.txt"
         }
       ],
       "wheel_metadata": {
@@ -1976,15 +1982,31 @@
           "Programming Language :: Python :: 3"
         ]
       },
-      "status": "license-conflict",
-      "license_conflict": "PyPI metadata says MIT, but the source identifies BSD and credits Armin Ronacher/Werkzeug. Missing referenced LICENSE; confirm upstream terms before redistribution.",
+      "status": "matching-source-license-verified",
       "notice_scan_version": 2,
       "uses": [
         {
           "source": "packaging/macos/desktop.lock.txt",
           "version_basis": "committed exact pin"
         }
-      ]
+      ],
+      "historical_license_conflict": "PyPI metadata says MIT, but the source identifies BSD and credits Armin Ronacher/Werkzeug. Missing referenced LICENSE; confirm upstream terms before redistribution.",
+      "license_resolution": {
+        "review_date": "2026-11-03",
+        "component": "proxy_tools",
+        "version": "0.1.0",
+        "upstream_repository": "https://github.com/jtushman/proxy_tools",
+        "upstream_revision": "db43f1e35d4f90a65c5a4d56d9e9af88212ec6e6",
+        "upstream_license_url": "https://raw.githubusercontent.com/jtushman/proxy_tools/db43f1e35d4f90a65c5a4d56d9e9af88212ec6e6/LICENSE.txt",
+        "upstream_source_url": "https://raw.githubusercontent.com/jtushman/proxy_tools/db43f1e35d4f90a65c5a4d56d9e9af88212ec6e6/proxy_tools/__init__.py",
+        "source_sha256": "d1539d95e1a713c068ca81d42e047b2c76568964cf277596d4e19efb22f476be",
+        "archive_url": "https://files.pythonhosted.org/packages/f2/cf/77d3e19b7fabd03895caca7857ef51e4c409e0ca6b37ee6e9f7daa50b642/proxy_tools-0.1.0.tar.gz",
+        "archive_sha256": "ccb3751f529c047e2d8a58440d86b205303cf0fe8146f784d1cbcd94f0a28010",
+        "upstream_source_matches_pypi_archive_and_installed_source": true,
+        "license_file": "licenses/proxy_tools-0.1.0-LICENSE.txt",
+        "license_sha256": "a428fb8a2e762af3eb0a6edbbb88e9b42ccfee80fd9b423958bcacf9b9abbfe4",
+        "metadata_difference": "The package declares MIT in setup/PyPI metadata, while its byte-identical upstream implementation identifies BSD and names both authors. The exact upstream LICENSE.txt is retained verbatim; original metadata and source attribution are preserved."
+      }
     },
     {
       "ecosystem": "pypi",
@@ -4344,12 +4366,6 @@
   },
   "review_items": [
     {
-      "name": "proxy_tools",
-      "version": "0.1.0",
-      "status": "license-conflict",
-      "detail": "PyPI metadata says MIT, but the source identifies BSD and credits Armin Ronacher/Werkzeug. Missing referenced LICENSE; confirm upstream terms before redistribution."
-    },
-    {
       "name": "CPython/python-build-standalone",
       "version": "3.12.15",
       "status": "notices-retained-by-build",
@@ -4373,5 +4389,13 @@
     "core_commit": "88f06e2e953efc117d442f1e81175b21adca354d",
     "profile_revision": 7,
     "scope": "Core addon inventory and source-license supplement; 237 configured analyzer commands preserved. Revision 7 permits scoped automatic PasswordManager investigation; SSHKeys and runtime additions remain manual-only. Public bundle allowlist unchanged."
-  }
+  },
+  "supplemental_reviews": [
+    {
+      "date": "2026-11-03",
+      "component": "proxy_tools@0.1.0",
+      "result": "Matching source BSD notice recovered and included; original MIT metadata retained as historical evidence.",
+      "evidence": "licenses/proxy_tools-0.1.0-license-evidence.json"
+    }
+  ]
 }
