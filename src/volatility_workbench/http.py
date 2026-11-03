@@ -269,8 +269,7 @@ class Handler(BaseHTTPRequestHandler):
                 '/bezel-fallout76-field-terminal.png':('bezel-fallout76-field-terminal.png','image/png'),
                 '/bezel-fallout3-robco-2.png':('bezel-fallout3-robco-2.png','image/png'),
                 '/bezel-fallout3-vault112-2.png':('bezel-fallout3-vault112-2.png','image/png'),
-                '/bezel-new-vegas-2.png':('bezel-new-vegas-2.png','image/png'),
-                '/halloween-night.png':('halloween-night.png','image/png')})
+                '/bezel-new-vegas-2.png':('bezel-new-vegas-2.png','image/png')})
             # Asset paths originate only in the package, never in request text.
             assets.update({'/'+p.name:(p.name,'image/svg+xml')
                 for p in (Path(__file__).parent/'static').glob('theme-*.svg') if p.is_file()})

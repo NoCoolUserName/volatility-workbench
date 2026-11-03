@@ -1,6 +1,6 @@
 # Volatility Workbench
 
-*23,204 lines of code*
+*23,207 lines of code*
 
 *Latest measured macOS ARM64 build: app 1,289.76 MiB (1,352,412,069 bytes); distribution ZIP 1,073.95 MiB (1,126,120,343 bytes). Built from `f0619547bd10f882575373342be6f0751bba6b7d`, measured 2026-10-31; excludes symlink aliases and private evidence, case state and caches.*
 
@@ -221,7 +221,7 @@ Run focused checks for changed behavior during development. Before release, run
 wheels, checks dependencies, assets, HTTP startup and both MCP protocol modes, then
 runs the full Workbench suite against installed packages outside the checkout.
 Browser scripts under `scripts/check_*_browser.cjs` use synthetic data and Playwright
-as a validation-only dependency; `check_themes_browser.cjs` checks all 37 skins under
+as a validation-only dependency; `check_themes_browser.cjs` checks all 18 skins under
 the production content-security policy. `check_theme_persistence_browser.cjs` checks
 restart/port changes, shared preferences, migration and save races;
 `check_volshell_browser.cjs` checks the VolShell connection toggle and confirmed-disconnect lifecycle.

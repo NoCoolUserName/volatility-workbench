@@ -79,3 +79,23 @@ malware names or use installed-plugin count as a coverage denominator.
 - Coordinate independent model-answer/report accuracy evaluation with core using
   authorized saved-evidence sets. Check citation values, unsupported conclusions,
   uncertainty and abstentions separately from UI/contract test pass rates.
+
+## Future theme possibilities — removed 3 November 2026
+
+These 19 themes are deferred ideas, removed from the active app catalog and its
+packaged artwork. Reconsider them only as a future theme-design task; this list
+does not schedule or authorize their reintroduction.
+
+| Category | Possible future themes |
+| --- | --- |
+| Fallout | Fallout 4 VR; Fallout Pinball; Fallout Shelter Online |
+| Arcade & adventure | 8-bit · bonus stage; Colossal Cave Adventure; Metroid; Silpheed · Sega CD; Elevator Action · NES |
+| Neon & terminals | Vaporwave · marble sunset; Retrowave · night drive; Hacker · secure terminal |
+| Cinema & anime | Top Gun; Cyber City Oedo 808; Cyberpunk 2077; Golgo 13; The Punisher · War Journal #53 |
+| Seasonal | Halloween · pumpkin night; Halloween · midnight orchard; The Nightmare Before Christmas |
+
+The app retains 18 choices: 3 Classic and 15 Fallout themes. Old selections of
+these deferred themes resolve to Matrix green without rewriting the original
+preference or resetting its revision. The Colossal Cave Adventure **theme** is
+deferred; the separately bundled 1977/1995 Adventure games remain available.
+Earlier visual-reference notes remain in [THEMES.md](THEMES.md) and Git history.

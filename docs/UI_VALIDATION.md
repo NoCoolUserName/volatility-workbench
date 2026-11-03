@@ -1055,3 +1055,24 @@ quality and native game checks. Native bundle validation passed with 203 plugins
 no import failures, four bundled symbol packs, synthetic analyzer/MCP checks and
 strict signing/native-linkage checks. No private image was opened by validation.
 README measurements identify this exact build rather than the documentation commit.
+
+## Deferred extras and seasonal themes — 3 November 2026
+
+Removed the screenshot's 16 theme choices and all three seasonal themes from
+the shared picker, backend save allowlist, theme-specific CSS and packaged art.
+The roadmap retains all 19 exact selector names as future possibilities. The
+active catalog has 18 choices (3 Classic, 15 Fallout) and 11 SVG scenes. The
+separate 1977/1995 Adventure games remain bundled.
+
+The isolated installed-wheel smoke passed **299 application tests**, packaged
+routes/assets and MCP checks. Five synthetic browser checks passed: all remaining
+themes, preference synchronization/fallback, reference terminals, VolShell and
+Adventure. All 19 retired IDs resolve to Matrix in main/Settings while preserving
+the saved preference bytes and revision; retired IDs cannot be newly saved.
+Remaining-theme contrast, focus, responsive/200% text and bezel-control checks
+passed, as did both Adventure editions and independent game-save behavior.
+
+Risk review: no evidence, case/session identities, conversations, sealed reports,
+AI determinations or collection/security permissions are changed. Retired assets
+remain recoverable from Git history; prior native installations are retained for
+rollback during installation. No private image or live-model loop was used.

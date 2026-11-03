@@ -437,7 +437,7 @@ async function checkBezelConnection(browser){
    if(['matrix','fallout-new-vegas','fallout-3-robco','fallout-3-vault-112'].includes(theme.id))await screenshot('volshell-'+theme.id+'-desktop');
   }
   assert.deepEqual(spacingIssues,[],'Every theme reserves at least 8px between the VolShell label and its LED at 100% and 200% text, inside the button');
-  assert.equal(themeStyles.length,37,'The current catalog contains all 37 themes');
+  assert.equal(themeStyles.length,18,'The current catalog contains all 18 themes');
   assert.equal(new Set(themeStyles.map(theme=>theme.signature)).size,themeStyles.length,'Every catalog theme has a distinct VolShell bezel');
   for(const id of ['fallout-3-robco','fallout-3-vault-112']){
    await page.evaluate(id=>window.WorkbenchThemes.apply(id),id);
@@ -635,6 +635,6 @@ async function checkBezelConnection(browser){
   assert.equal(await zoom.isVisible(),false,'Late events from a closed source cannot reopen the CRT');
   assert.equal(await page.evaluate(()=>window.injected),undefined);assert.deepEqual(errors,[]);
   if(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR)fs.writeFileSync(path.join(process.env.WORKBENCH_VOLSHELL_SCREENSHOT_DIR,'bezel-contrast.json'),JSON.stringify(themeStyles,null,2)+'\n');
-  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;37 distinct bezels, original Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
+  console.log('VolShell: direct bezel connect/disconnect, green through commands/stopping until confirmed exit, delayed/failed close and double-click guards; explicit input, ghost drafts, three modes, case/session isolation, AI approvals, pause and Stop all; no-poll SSE fragments, stale/malformed/cross-case rejection, reconnect, scroll preservation, AI tool LED and expanded-only activity;18 distinct bezels, original Fallout 3 terminals and New Vegas desktop/mobile; fully synthetic requests.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

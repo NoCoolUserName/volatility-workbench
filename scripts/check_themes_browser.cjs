@@ -70,9 +70,9 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       const style=getComputedStyle(element);return Object.fromEntries(['bg','panel','control-bg','text','muted','accent','privacy-bg','privacy-text','code-bg'].map(name=>[name,style.getPropertyValue('--'+name).trim()]));
     }),{'bg':'#0d1418','panel':'#141f25','control-bg':'#0c171c','text':'#e5eeee','muted':'#9fb2bb','accent':'#9cddb7','privacy-bg':'#1d2a27','privacy-text':'#bed9c9','code-bg':'#091014'},'Default restores the original green Workbench palette');
     const catalog=await page.evaluate(()=>window.WorkbenchThemes.catalog);
-    assert.equal(catalog.length,37);
-    assert.equal(catalog.filter(t=>t.group==='Fallout').length,18);
-    assert.equal(new Set(catalog.map(t=>t.id)).size,37);
+    assert.equal(catalog.length,18);
+    assert.equal(catalog.filter(t=>t.group==='Fallout').length,15);
+    assert.equal(new Set(catalog.map(t=>t.id)).size,18);
     const screenshotDir=process.env.WORKBENCH_THEME_SCREENSHOTS;
     if(screenshotDir)fs.mkdirSync(screenshotDir,{recursive:true});
     const measurements=[];
@@ -132,7 +132,7 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
         await noPageOverflow('New Vegas desktop');
         await headerNoOverlap('New Vegas desktop');
       }
-      const image=theme.scene===null?null:theme.id==='halloween-noir'?'halloween-night.png':`theme-${theme.scene}.svg`;
+      const image=theme.scene===null?null:`theme-${theme.scene}.svg`;
       if(image){
       assert.ok(fs.existsSync(path.join(assets,image)),'Artwork skins have a packaged scene');
       if(image.endsWith('.svg')){
@@ -189,9 +189,9 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
       await page.goto('http://localhost/');
     }
     await page.goto('http://localhost/settings.html');
-    await page.locator('#settings-theme').selectOption('silpheed');
+    await page.locator('#settings-theme').selectOption('fallout-4');
     await page.goto('http://localhost/');
-    assert.equal(await page.locator('#theme').inputValue(),'silpheed');
+    assert.equal(await page.locator('#theme').inputValue(),'fallout-4');
     await page.locator('#openPlugins').click();
     await page.waitForFunction(()=>document.querySelector('#pluginRows tr'));
     for(const id of catalog.map(t=>t.id)){
@@ -266,11 +266,11 @@ const plugins={plugins:[{name:'windows.synthetic.Example',description:'Harmless 
     await page.reload();assert.equal(await page.locator('#theme').inputValue(),'matrix');
     await page.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw new Error('disabled for fixture');}});});
     await page.reload();assert.equal(await page.locator('#theme').inputValue(),'matrix');
-    await chooseTheme('8-bit');
-    assert.equal(await page.locator('html').getAttribute('data-theme'),'8-bit');
+    await chooseTheme('fallout-shelter');
+    assert.equal(await page.locator('html').getAttribute('data-theme'),'fallout-shelter');
     assert.deepEqual(errors,[]);
     assert.deepEqual(policyErrors,[],'Production CSP must allow all packaged artwork');
-    console.log(`Theme browser: ${catalog.length} skins, 18 Fallout choices, text/control contrast, selected report, focus, legacy prefs, shared Settings, CSS Fallout housings/isolation, original Fallout 3 terminals at desktop/mobile sizes and 200% text, increased contrast and unavailable storage passed. ${network.length} local GET requests; zero analysis/mutation/external requests.`);
+    console.log(`Theme browser: ${catalog.length} skins, 15 Fallout choices, text/control contrast, selected report, focus, legacy prefs, shared Settings, CSS Fallout housings/isolation, original Fallout 3 terminals at desktop/mobile sizes and 200% text, increased contrast and unavailable storage passed. ${network.length} local GET requests; zero analysis/mutation/external requests.`);
     if(screenshotDir)fs.writeFileSync(path.join(screenshotDir,'contrast.json'),JSON.stringify(measurements,null,2)+'\n');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exit(1);});

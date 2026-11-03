@@ -36,7 +36,7 @@ const state={cases:[{id:'reference-fixture',title:'Synthetic reference terminal'
   const arrowRatio=await page.locator('.report-console-arrow').evaluate(node=>parseFloat(getComputedStyle(node).fontSize)/parseFloat(getComputedStyle(document.querySelector('#toggleReportConsole')).fontSize));
   assert.ok(arrowRatio>=1.15&&arrowRatio<=1.25,'The Report console arrow is about 20% larger than its original inherited size');
   const catalog=await page.evaluate(()=>WorkbenchThemes.catalog);
-  assert.equal(catalog.length,37);assert.equal(catalog.filter(theme=>theme.group==='Fallout').length,18);
+  assert.equal(catalog.length,18);assert.equal(catalog.filter(theme=>theme.group==='Fallout').length,15);
   for(const [original,label,reference,referenceLabel] of editions){
    for(const [id,text] of [[original,label],[reference,referenceLabel]]){
     assert.equal(catalog.find(theme=>theme.id===id)?.label,text,'Both numbered choices retain their stable preference IDs');

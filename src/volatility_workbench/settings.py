@@ -15,15 +15,20 @@ from .runtime_management import install_community_overlay
 
 
 THEME_IDS = frozenset({
-    'matrix', 'halloween', 'halloween-noir', 'nightmare', 'fallout', 'fallout-2',
-    'fallout-tactics', 'fallout-brotherhood', 'fallout-3', 'fallout-3-robco',
-    'fallout-3-vault-112', 'fallout-new-vegas', 'fallout-3-robco-2',
-    'fallout-3-vault-112-2', 'fallout-new-vegas-2',
-    'fallout-4', 'fallout-shelter', 'fallout-76-camden-park',
-    'fallout-76-field-terminal', 'fallout-4-vr', 'fallout-pinball',
-    'fallout-shelter-online', '8-bit', 'adventure', 'metroid', 'silpheed',
-    'elevator', 'vaporwave', 'retrowave', 'hacker', 'top-gun', 'oedo',
-    'cyberpunk', 'golgo', 'punisher', 'mono', 'blue',
+    'matrix', 'fallout', 'fallout-2', 'fallout-tactics',
+    'fallout-brotherhood', 'fallout-3', 'fallout-3-robco', 'fallout-3-robco-2',
+    'fallout-3-vault-112', 'fallout-3-vault-112-2', 'fallout-new-vegas', 'fallout-new-vegas-2',
+    'fallout-4', 'fallout-shelter', 'fallout-76-camden-park', 'fallout-76-field-terminal',
+    'mono', 'blue',
+})
+
+# Read old choices without rewriting the original preference or its revision.
+RETIRED_THEME_IDS = frozenset({
+    'fallout-4-vr', 'fallout-pinball', 'fallout-shelter-online', '8-bit',
+    'adventure', 'metroid', 'silpheed', 'elevator',
+    'vaporwave', 'retrowave', 'hacker', 'top-gun',
+    'oedo', 'cyberpunk', 'golgo', 'punisher',
+    'halloween', 'halloween-noir', 'nightmare',
 })
 
 
@@ -64,6 +69,8 @@ class SettingsManager:
             saved = json.loads(path.read_text())
             if isinstance(saved, dict) and saved.get('theme') == 'fallout-76':
                 saved['theme'] = 'fallout-76-field-terminal'
+            elif isinstance(saved, dict) and isinstance(saved.get('theme'), str) and saved['theme'] in RETIRED_THEME_IDS:
+                saved['theme'] = 'matrix'
             if (not isinstance(saved, dict) or saved.get('schema') != 'appearance/1'
                     or not isinstance(saved.get('theme'), str) or saved['theme'] not in THEME_IDS
                     or type(saved.get('revision')) is not int or not 1 <= saved['revision'] < 2**53):
