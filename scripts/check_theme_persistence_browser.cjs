@@ -85,22 +85,22 @@ function deferred(){let resolve;const promise=new Promise(r=>{resolve=r;});retur
     await settingsPage.goto('http://127.0.0.1:43102/settings.html');await theme(settingsPage,'fallout-new-vegas');
     saved=persisted(settingsPage,'fallout-2');await choose(settingsPage,'fallout-2');await saved;
     await theme(page,'fallout-2');
-    saved=persisted(page,'halloween');await choose(page,'halloween');await saved;
-    await theme(settingsPage,'halloween');
+    saved=persisted(page,'fallout-4');await choose(page,'fallout-4');await saved;
+    await theme(settingsPage,'fallout-4');
     await ctx.close();
 
     // The choice made before the first authenticated state response wins.
     holdRead=gate();const delayed=holdRead;
     ctx=await context();page=await ctx.newPage();
     await page.goto('http://127.0.0.1:43103/',{waitUntil:'domcontentloaded'});await delayed.started.promise;
-    await choose(page,'metroid');await staleStorage(page,'matrix');await theme(page,'metroid');
-    saved=persisted(page,'metroid');delayed.release.resolve();await saved;await theme(page,'metroid');
+    await choose(page,'fallout-tactics');await staleStorage(page,'matrix');await theme(page,'fallout-tactics');
+    saved=persisted(page,'fallout-tactics');delayed.release.resolve();await saved;await theme(page,'fallout-tactics');
 
     // An old save response or stale snapshot cannot paint over a later choice.
     holdSave=gate();const saving=holdSave;
-    await choose(page,'vaporwave');await saving.started.promise;
+    await choose(page,'fallout-brotherhood');await saving.started.promise;
     await choose(page,'fallout-new-vegas');await staleStorage(page,'matrix');
-    await page.evaluate(()=>WorkbenchThemes.sync({schema:'appearance/1',theme:'halloween',revision:1}));
+    await page.evaluate(()=>WorkbenchThemes.sync({schema:'appearance/1',theme:'fallout-4',revision:1}));
     await theme(page,'fallout-new-vegas');
     saved=persisted(page,'fallout-new-vegas');saving.release.resolve();await saved;
     await staleStorage(page,'matrix');await theme(page,'fallout-new-vegas');
@@ -108,16 +108,16 @@ function deferred(){let resolve;const promise=new Promise(r=>{resolve=r;});retur
 
     // Save rejection remains visible and does not silently claim persistence.
     await page.locator('[data-theme-save-retry]').waitFor({state:'hidden'});
-    failSave=true;await choose(page,'retrowave');
+    failSave=true;await choose(page,'fallout-shelter');
     await page.locator('[data-theme-save-status]').filter({hasText:'could not be saved'}).waitFor({state:'visible'});
     await page.getByRole('button',{name:'Retry save',exact:true}).waitFor({state:'visible'});
     assert.equal(preference.theme,'fallout-new-vegas');
     await page.evaluate(()=>WorkbenchThemes.sync({schema:'appearance/1',theme:'fallout-new-vegas',revision:999}));
-    await theme(page,'retrowave');
-    failSave=false;saved=persisted(page,'retrowave');await page.getByRole('button',{name:'Retry save',exact:true}).click();await saved;
+    await theme(page,'fallout-shelter');
+    failSave=false;saved=persisted(page,'fallout-shelter');await page.getByRole('button',{name:'Retry save',exact:true}).click();await saved;
     await page.locator('[data-theme-save-status]').waitFor({state:'hidden'});
     await page.locator('[data-theme-save-retry]').waitFor({state:'hidden'});
-    assert.equal(await page.locator('[data-theme-picker]').inputValue(),'retrowave','Retry saves the current selection without changing it');
+    assert.equal(await page.locator('[data-theme-picker]').inputValue(),'fallout-shelter','Retry saves the current selection without changing it');
     await ctx.close();
 
     // A legacy cache migrates only while stable preferences remain unset.
@@ -148,6 +148,27 @@ function deferred(){let resolve;const promise=new Promise(r=>{resolve=r;});retur
     assert.equal(await page.locator('[data-theme-picker] option[value="fallout-76"]').count(),0);
     assert.equal(await page.locator('[data-theme-picker] option[value="fallout-76-camden-park"]').count(),1);
     await ctx.close();
+
+    // Every newly deferred ID resolves consistently in both windows. Reading a
+    // positive-revision old preference must not submit a migration or reset it.
+    const retired=JSON.parse(fs.readFileSync(path.join(assets,'themes.js'),'utf8')
+      .split('const retiredThemes = new Set(')[1].split(');')[0]);
+    assert.equal(retired.length,19);
+    for(const id of retired){
+      preference={schema:'appearance/1',theme:id,revision:7};
+      ctx=await context(id);page=await ctx.newPage();
+      const postsBefore=requests.filter(r=>r.method==='POST').length;
+      await page.goto('http://127.0.0.1:43109/');
+      await page.waitForFunction(()=>document.querySelector('#connection').textContent!=='Connecting…');
+      await theme(page,'matrix');
+      assert.equal(await page.locator('[data-theme-picker] option').count(),18);
+      assert.equal(await page.locator('[data-theme-picker] option[value="'+id+'"]').count(),0);
+      await page.goto('http://127.0.0.1:43109/settings.html');await theme(page,'matrix');
+      assert.equal(await page.locator('[data-theme-picker] option[value="'+id+'"]').count(),0);
+      assert.deepEqual(preference,{schema:'appearance/1',theme:id,revision:7});
+      assert.equal(requests.filter(r=>r.method==='POST').length,postsBefore);
+      await ctx.close();
+    }
 
     // Backend-invalid preference is explicit; unknown browser cache falls back.
     preference={...empty(),error:'Saved theme could not be loaded. Choose a theme to save it again.'};

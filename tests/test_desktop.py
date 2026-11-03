@@ -122,9 +122,9 @@ class BackendHostTests(unittest.TestCase):
                     origin=f'http://{parsed.netloc}'
                     self.assertEqual(request('POST','/api/unlock',{'token':parsed.fragment},{'Content-Type':'application/json','Origin':origin})[0],200)
                     headers={'Cookie':'volatility_ui='+parsed.fragment}
-                    status,scene=request('GET','/theme-halloween.svg',headers=headers)
+                    status,scene=request('GET','/theme-fallout.svg',headers=headers)
                     self.assertEqual(status,200);self.assertIn(b'<svg',scene)
-                    for unknown in ('/theme-missing.svg','/theme-../../AGENTS.md.svg','/theme-%2e%2e%2fAGENTS.md.svg'):
+                    for unknown in ('/theme-halloween.svg','/halloween-night.png','/theme-adventure.svg','/theme-missing.svg','/theme-../../AGENTS.md.svg','/theme-%2e%2e%2fAGENTS.md.svg'):
                         self.assertEqual(request('GET',unknown,headers=headers)[0],400)
                     self.assertEqual(request('GET','/api/settings',headers=headers)[0],200)
                     bad=headers|{'Origin':'https://evil.example','Content-Type':'application/json'}

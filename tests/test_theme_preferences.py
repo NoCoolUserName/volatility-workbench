@@ -13,7 +13,7 @@ from types import SimpleNamespace
 import unittest
 
 from volatility_workbench.http import Handler
-from volatility_workbench.settings import SettingsManager, THEME_IDS
+from volatility_workbench.settings import SettingsManager, THEME_IDS, RETIRED_THEME_IDS
 
 
 def _appearance_save_worker(preferences, state, theme, ready, start, output):
@@ -103,6 +103,20 @@ class ThemePreferencesTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.save('fallout-76')
         self.assertEqual(self.save('fallout-76-camden-park')['revision'], 8)
+
+    def test_deferred_theme_preferences_fall_back_without_rewriting_or_resetting_revision(self):
+        path = self.manager.root/'appearance.json'
+        self.assertEqual(len(RETIRED_THEME_IDS), 19)
+        self.assertFalse(RETIRED_THEME_IDS & THEME_IDS)
+        for theme in RETIRED_THEME_IDS:
+            with self.subTest(theme=theme):
+                original = json.dumps({'schema': 'appearance/1', 'theme': theme, 'revision': 7})
+                path.write_text(original)
+                self.assertEqual(self.manager.appearance(), {'schema': 'appearance/1', 'theme': 'matrix', 'revision': 7})
+                self.assertEqual(path.read_text(), original)
+                with self.assertRaises(ValueError):
+                    self.save(theme)
+                self.assertEqual(self.save('fallout-2')['revision'], 8)
 
     def test_legacy_migration_cannot_overwrite_newer_selection(self):
         migrated = self.save('fallout', expected_revision=0)
@@ -215,8 +229,10 @@ class ThemePreferencesTests(unittest.TestCase):
         asset = files('volatility_workbench').joinpath('static/themes.js')
         catalog = asset.read_text().split('const catalog = [', 1)[1].split('\n  ];', 1)[0]
         names = re.findall(r"^    \['([^']+)',", catalog, re.MULTILINE)
-        self.assertEqual(len(names), 37)
+        self.assertEqual(len(names), 18)
         self.assertEqual(frozenset(names), THEME_IDS)
+        retired = json.loads(asset.read_text().split('const retiredThemes = new Set(', 1)[1].split(');', 1)[0])
+        self.assertEqual(frozenset(retired), RETIRED_THEME_IDS)
 
 
 if __name__ == '__main__':

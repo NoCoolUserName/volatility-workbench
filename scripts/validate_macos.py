@@ -70,10 +70,10 @@ assert sys.dont_write_bytecode
 manifest=json.loads((resources/'distribution.json').read_text())
 profile=json.loads(files('volatility_workbench').joinpath('resources/symbols.json').read_text())
 assert profile['profile']==manifest['symbols']['profile']
-for asset in ('static/settings.html','static/settings.js','static/settings.css','static/app.js','static/zoom.js','static/icon.png','static/themes.js','static/themes.css','static/adventure.js','static/halloween-night.png'):
+for asset in ('static/settings.html','static/settings.js','static/settings.css','static/app.js','static/zoom.js','static/icon.png','static/themes.js','static/themes.css','static/adventure.js'):
  assert files('volatility_workbench').joinpath(asset).read_bytes(),asset
 scenes=list(files('volatility_workbench').joinpath('static').glob('theme-*.svg'))
-assert len(scenes)==29 and all(scene.read_bytes() for scene in scenes)
+assert len(scenes)==11 and all(scene.read_bytes() for scene in scenes)
 core=json.loads(m.distribution('volatility-mcp').read_text('direct_url.json'))
 assert core['archive_info']['hashes']['sha256']==manifest['core_bundle']['sha256']
 assert info['core_bundle']==manifest['core_bundle']
