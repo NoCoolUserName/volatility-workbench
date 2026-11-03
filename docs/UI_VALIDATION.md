@@ -1065,9 +1065,9 @@ active catalog has 18 choices (3 Classic, 15 Fallout) and 11 SVG scenes. The
 separate 1977/1995 Adventure games remain bundled.
 
 The isolated installed-wheel smoke passed **299 application tests**, packaged
-routes/assets and MCP checks. Five synthetic browser checks passed: all remaining
-themes, preference synchronization/fallback, reference terminals, VolShell and
-Adventure. All 19 retired IDs resolve to Matrix in main/Settings while preserving
+routes/assets and MCP checks. Six synthetic browser checks passed: all remaining
+themes, preference synchronization/fallback, reference terminals, VolShell,
+Adventure and live/saved consoles. All 19 retired IDs resolve to Matrix in main/Settings while preserving
 the saved preference bytes and revision; retired IDs cannot be newly saved.
 Remaining-theme contrast, focus, responsive/200% text and bezel-control checks
 passed, as did both Adventure editions and independent game-save behavior.
@@ -1091,3 +1091,7 @@ import failures, synthetic analyzer/MCP checks, Adventure gameplay, strict code
 signing and system-or-bundle-relative native linkage. No private image was opened.
 Later changes only refresh reviewed security metadata and documentation; the
 measured README stamp identifies the actual artifact rather than a docs commit.
+
+The complete CI browser job also exposed a live-console fixture still selecting
+the retired 8-bit option. That fixture now uses retained Fallout 4; its focused
+regression passed without any application-code change.

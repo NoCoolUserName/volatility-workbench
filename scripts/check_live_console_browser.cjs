@@ -136,7 +136,7 @@ const entry=(id,text)=>({id:String(id),time:'2026-10-18T12:00:00Z',text});
   assert.equal(await zoom.isHidden(),true,'Escape closes the monitor');
   await expectConsoleOperation('');
   assert.equal(await page.locator('body').evaluate(node=>node.classList.contains('console-zoom-open')),false);
-  for(const theme of ['matrix','blue','8-bit','fallout-new-vegas','fallout-2']){
+  for(const theme of ['matrix','blue','fallout-4','fallout-new-vegas','fallout-2']){
    if(await page.locator('#theme').isHidden())await page.locator('#toggleTheme').click();
    await page.locator('#theme').selectOption(theme);
    await expand.click();await zoom.waitFor();
