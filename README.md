@@ -72,7 +72,7 @@ Quit asks before cancelling active work. Separate relocatable Python application
 and analyzer runtimes mean the installed app needs no source checkout, Homebrew,
 development environment or shell startup file.
 
-Download the [Workbench 0.1.3 macOS ARM64 prerelease](https://github.com/NoCoolUserName/volatility-workbench/releases/tag/v0.1.4)
+Download the [Workbench 0.1.4 macOS ARM64 prerelease](https://github.com/NoCoolUserName/volatility-workbench/releases/tag/v0.1.4)
 and its `Volatility-Workbench-macos-arm64.zip` asset. Verify the archive against
 the release's `SHA256SUMS`, then extract it to access `Volatility Workbench.app`.
 This published app is ad-hoc signed, without Developer ID signing or Apple
