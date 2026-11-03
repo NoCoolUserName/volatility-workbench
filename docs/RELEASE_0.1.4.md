@@ -24,9 +24,28 @@ human determinations are preserved. No model runs merely to view a report.
 
 ## Validation and artifact provenance
 
-Release-candidate validation, exact build revision, sizes, hashes and source links
-will be recorded before publication. The versioned ZIP, artifact.json and
-SHA256SUMS will identify the same clean source build.
+- The isolated installed-wheel smoke passed all 299 application tests.
+- Native ARM64 validation passed with 203 catalog plugins, no import failures,
+  ten-tool MCP discovery, CryptoMem synthetic vectors and three synthetic analyzer
+  invocations. First-run provisioning verified four bundled symbol packs with
+  downloads blocked. Both Adventure editions passed gameplay and save checks.
+- Code signatures and system-or-bundle-relative native linkage passed. The release
+  audit checked layout, selected private filenames, contained symlinks, the addon
+  allowlist, notices and 14,425 regular-file hashes. The ZIP passed its
+  integrity check. These checks do not establish artwork redistribution rights.
+- Runtime and analyzer package versions match the preceding local build, except
+  for Workbench's own 0.1.4 version. The matched proxy_tools notice is present in
+  both the native notices and collected dependency license texts.
+
+Candidate measured 2026-11-03 from clean source
+[`7ac98793b3151ad009c983bf397b774ce80275d4`](https://github.com/NoCoolUserName/volatility-workbench/tree/7ac98793b3151ad009c983bf397b774ce80275d4):
+`Volatility Workbench.app` has 1,348,421,025 regular-file bytes
+(1285.954499 MiB), excluding symlink aliases. The candidate ZIP has
+1,122,203,281 bytes (1070.216447 MiB), SHA-256
+`fc3bd64fae6bf43485b22b9e9483562e4440202dca10ad295370bef00def6454`.
+The matching [MCP source](https://github.com/NoCoolUserName/volatility-mcp/tree/2887c77283da4a45860d8ac2f3042027401257a0)
+remains pinned. A later documentation-only measurement stamp does not require
+rebuilding this artifact. Final CI and publication status remain pending.
 
 ## Distribution checkpoint
 
