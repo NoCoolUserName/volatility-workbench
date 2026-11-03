@@ -1076,3 +1076,10 @@ Risk review: no evidence, case/session identities, conversations, sealed reports
 AI determinations or collection/security permissions are changed. Retired assets
 remain recoverable from Git history; prior native installations are retained for
 rollback during installation. No private image or live-model loop was used.
+
+The SAST gate rejected stale whole-file review hashes after the two validation
+scripts changed their retired-artwork checks and SVG count. Five existing review
+entries were re-reviewed against that exact diff and the complete saved scan.
+Only hashes/reasons changed: rule IDs, source paths, locations, scanner policy
+and covered execution boundaries are unchanged. Re-evaluation found no blocking
+findings and no missing or unused reviews; the required fresh CI scan is retained.

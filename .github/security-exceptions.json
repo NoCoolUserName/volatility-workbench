@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-10-25",
+  "reviewed_at": "2026-11-03",
   "exceptions": [
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -27,8 +27,8 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/package_smoke.py",
       "line": 16,
-      "source_sha256": "2412f32493299f7abc3f5233f295a24471a64b9da654449b384198d6f13b187b",
-      "reason": "Re-reviewed 2026-10-24: fixed argv calls remain shell-free and use verified bundle executables, isolated temporary homes and literal synthetic test programs. Added Mac CryptoMem catalog assertions and fixed PID 42 invalid-image MCP invocation; no evidence, recovered code, external request or extracted command controls execution."
+      "source_sha256": "0f439a47bad8312e9cf70fa8204db802e33cbb4af4af808f114c0b5a5ab349a2",
+      "reason": "Re-reviewed 2026-11-03: the only source changes remove retired theme asset checks/URLs and change the fixed SVG scene count from 29 to 11. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -48,15 +48,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 36,
-      "source_sha256": "407fc77fdfddab8634ed9ac81d85c75c4e7d60bc1a52107d5ba367ceb14437f3",
-      "reason": "Re-reviewed 2026-10-25: only the three expected CryptoMem versions change from 0.4.0 to 0.5.0. Fixed shell-free argv, isolated temporary homes and literal synthetic fixtures are unchanged; no case or recovered data controls execution."
+      "source_sha256": "44b3afca15cacf64ea3247affd8a453118cbab40db167b135802ecf8a2102603",
+      "reason": "Re-reviewed 2026-11-03: the only source changes remove retired theme asset checks/URLs and change the fixed SVG scene count from 29 to 11. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 162,
-      "source_sha256": "407fc77fdfddab8634ed9ac81d85c75c4e7d60bc1a52107d5ba367ceb14437f3",
-      "reason": "Re-reviewed 2026-10-25: only the three expected CryptoMem versions change from 0.4.0 to 0.5.0. Fixed shell-free argv, isolated temporary homes and literal synthetic fixtures are unchanged; no case or recovered data controls execution."
+      "source_sha256": "44b3afca15cacf64ea3247affd8a453118cbab40db167b135802ecf8a2102603",
+      "reason": "Re-reviewed 2026-11-03: the only source changes remove retired theme asset checks/URLs and change the fixed SVG scene count from 29 to 11. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -111,15 +111,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 40,
-      "source_sha256": "407fc77fdfddab8634ed9ac81d85c75c4e7d60bc1a52107d5ba367ceb14437f3",
-      "reason": "Re-reviewed 2026-10-25: only the three expected CryptoMem versions change from 0.4.0 to 0.5.0. Fixed shell-free argv, isolated temporary homes and literal synthetic fixtures are unchanged; no case or recovered data controls execution."
+      "source_sha256": "44b3afca15cacf64ea3247affd8a453118cbab40db167b135802ecf8a2102603",
+      "reason": "Re-reviewed 2026-11-03: the only source changes remove retired theme asset checks/URLs and change the fixed SVG scene count from 29 to 11. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 47,
-      "source_sha256": "407fc77fdfddab8634ed9ac81d85c75c4e7d60bc1a52107d5ba367ceb14437f3",
-      "reason": "Re-reviewed 2026-10-25: only the three expected CryptoMem versions change from 0.4.0 to 0.5.0. Fixed shell-free argv, isolated temporary homes and literal synthetic fixtures are unchanged; no case or recovered data controls execution."
+      "source_sha256": "44b3afca15cacf64ea3247affd8a453118cbab40db167b135802ecf8a2102603",
+      "reason": "Re-reviewed 2026-11-03: the only source changes remove retired theme asset checks/URLs and change the fixed SVG scene count from 29 to 11. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-asyncio-create-exec-audit",
