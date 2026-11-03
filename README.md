@@ -18,9 +18,8 @@ coverage.
 
 Workbench 0.1.4 retains MCP 0.1.4 and CryptoMem 0.5.0: opt-in English BIP-39, Bitcoin WIF/xprv/tprv and explicitly ambiguous transaction-ID candidates. Secrets remain masked in ordinary outputs; complete extraction is explicit and local-only. Existing address defaults, three OS adapters and ten MCP tools remain. Exact captured-kernel symbols are required; real-memory Linux/macOS validation remains outstanding.
 
-The [0.1.4 release candidate](docs/RELEASE_0.1.4.md) adds selective red/green
+The [0.1.4 release](docs/RELEASE_0.1.4.md) adds selective red/green
 AI determination support in Executive summaries and a curated theme catalog.
-Public binary publication remains subject to the release's recorded artwork checkpoint.
 
 Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
 
@@ -73,7 +72,7 @@ Quit asks before cancelling active work. Separate relocatable Python application
 and analyzer runtimes mean the installed app needs no source checkout, Homebrew,
 development environment or shell startup file.
 
-Download the [Workbench 0.1.3 macOS ARM64 prerelease](https://github.com/NoCoolUserName/volatility-workbench/releases/tag/v0.1.3)
+Download the [Workbench 0.1.3 macOS ARM64 prerelease](https://github.com/NoCoolUserName/volatility-workbench/releases/tag/v0.1.4)
 and its `Volatility-Workbench-macos-arm64.zip` asset. Verify the archive against
 the release's `SHA256SUMS`, then extract it to access `Volatility Workbench.app`.
 This published app is ad-hoc signed, without Developer ID signing or Apple
