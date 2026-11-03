@@ -38,11 +38,11 @@ human determinations are preserved. No model runs merely to view a report.
   both the native notices and collected dependency license texts.
 
 Measured 2026-11-03 from clean source
-[`7ac98793b3151ad009c983bf397b774ce80275d4`](https://github.com/NoCoolUserName/volatility-workbench/tree/7ac98793b3151ad009c983bf397b774ce80275d4):
-`Volatility Workbench.app` has 1,348,421,025 regular-file bytes
-(1285.954499 MiB), excluding symlink aliases. The ZIP has
-1,122,203,281 bytes (1070.216447 MiB), SHA-256
-`fc3bd64fae6bf43485b22b9e9483562e4440202dca10ad295370bef00def6454`.
+[`bc7dff51ba64b9c5ba5ff3fa3f2b3a17712ae453`](https://github.com/NoCoolUserName/volatility-workbench/tree/bc7dff51ba64b9c5ba5ff3fa3f2b3a17712ae453):
+`Volatility Workbench.app` has 1,348,420,889 regular-file bytes
+(1285.954370 MiB), excluding symlink aliases. The ZIP has
+1,122,203,471 bytes (1070.216628 MiB), SHA-256
+`3f77572030f0f4c9e5abce9df1a2ada8865c2035ec9d1b5fe93e9618ee6281a6`.
 The matching [MCP source](https://github.com/NoCoolUserName/volatility-mcp/tree/2887c77283da4a45860d8ac2f3042027401257a0)
 remains pinned. A later documentation-only measurement stamp does not require
 rebuilding this artifact. Python 3.12/3.13 compatibility and installed-package
