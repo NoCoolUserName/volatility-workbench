@@ -2,7 +2,7 @@
 
 *23,207 lines of code*
 
-*Latest measured macOS ARM64 build: app 1,289.76 MiB (1,352,412,069 bytes); distribution ZIP 1,073.95 MiB (1,126,120,343 bytes). Built from `f0619547bd10f882575373342be6f0751bba6b7d`, measured 2026-10-31; excludes symlink aliases and private evidence, case state and caches.*
+*Latest measured macOS ARM64 build: app 1,285.94 MiB (1,348,408,043 bytes); distribution ZIP 1,070.21 MiB (1,122,195,097 bytes). Built from `c79de571908439e1333a072b607156b54a2dce30`, measured 2026-11-03; excludes symlink aliases and private evidence, case state and caches.*
 
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
