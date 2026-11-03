@@ -16,7 +16,11 @@ Workbench provides the interface. The separate core handles forensic execution,
 integrity checks, saved-result reuse, artifact inspection, queries, citations, and
 coverage.
 
-Workbench 0.1.3 pins MCP 0.1.4 and CryptoMem 0.5.0: opt-in English BIP-39, Bitcoin WIF/xprv/tprv and explicitly ambiguous transaction-ID candidates. Secrets remain masked in ordinary outputs; complete extraction is explicit and local-only. Existing address defaults, three OS adapters and ten MCP tools remain. Exact captured-kernel symbols are required; real-memory Linux/macOS validation remains outstanding.
+Workbench 0.1.4 retains MCP 0.1.4 and CryptoMem 0.5.0: opt-in English BIP-39, Bitcoin WIF/xprv/tprv and explicitly ambiguous transaction-ID candidates. Secrets remain masked in ordinary outputs; complete extraction is explicit and local-only. Existing address defaults, three OS adapters and ten MCP tools remain. Exact captured-kernel symbols are required; real-memory Linux/macOS validation remains outstanding.
+
+The [0.1.4 release candidate](docs/RELEASE_0.1.4.md) adds selective red/green
+AI determination support in Executive summaries and a curated theme catalog.
+Public binary publication remains subject to the release's recorded artwork checkpoint.
 
 Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
 

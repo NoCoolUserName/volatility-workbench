@@ -55,9 +55,16 @@ and affected theme options. See LICENSING.md for the release checkpoint.
 
 [Dependency inventory](licenses/DEPENDENCIES.json) records exact versions, source commits, archive URLs/hashes, dependency context and review items. [Collected license texts](licenses/DEPENDENCY_LICENSES.txt) preserve upstream notices, including recovered omissions. This snapshot includes build/test and optional packages; it is not a claim that all listed components ship together or that a finished release has been cleared. Unlocked requirements are labeled audit-time resolutions, not new project pins. Refresh the inventory and verify actual release contents when dependencies change.
 
-Unresolved upstream notice/conflict items: `proxy_tools@0.1.0` (license-conflict). These entries are not represented as cleared. Obtain matching upstream terms or exclude/replace the affected dependency before redistribution that requires them.
-
-`proxy_tools==0.1.0` declares MIT in PyPI metadata but identifies BSD/Werkzeug in its source. The source attribution is preserved; the missing referenced BSD license and conflicting metadata remain a separate upstream clarification item. The macOS builder copies the inventory and collected notices alongside the Python and plugin notices. The project's VSL/MIT licensing arrangement is documented in LICENSING.md.
+Matching-source supplement — 2026-11-03: `proxy_tools==0.1.0` declares MIT in
+PyPI metadata, while its implementation names Armin Ronacher and Jonathan Tushman
+and identifies BSD. The official upstream `LICENSE.txt` at immutable commit
+`db43f1e35d4f90a65c5a4d56d9e9af88212ec6e6` supplies the matching BSD notice.
+The PyPI archive was SHA-256 verified, and its implementation is byte-identical
+to both that upstream revision and the bundled source. The exact notice is
+included in `licenses/proxy_tools-0.1.0-LICENSE.txt` and the collected notices;
+source/archive/license hashes are recorded in
+`licenses/proxy_tools-0.1.0-license-evidence.json`. The original MIT metadata and
+historical conflict are retained in the inventory. No dependency was upgraded.
 
 - **Open Adventure 1.22 (430-point Adventure 2.5):** BSD-2-Clause source and
   game data from [Eric S. Raymond's release](https://gitlab.com/esr/open-adventure/-/tree/1.22).

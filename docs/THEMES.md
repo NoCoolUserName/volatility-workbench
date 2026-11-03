@@ -222,8 +222,8 @@ was:
 > mist, two carved pumpkins on right; panoramic 3:1; almost-black left negative
 > space; charcoal/slate/amber/bone; no text/logos/gore/people.
 
-The image ships inside the application package and is served locally. It is
-decorative and contains no case data.
+This retired seasonal image is no longer shipped. It was decorative and
+contained no case data; its name and direction remain future roadmap material.
 
 ## Readability and limits
 
