@@ -1,0 +1,16 @@
+{
+  "review_date": "2026-11-03",
+  "component": "proxy_tools",
+  "version": "0.1.0",
+  "upstream_repository": "https://github.com/jtushman/proxy_tools",
+  "upstream_revision": "db43f1e35d4f90a65c5a4d56d9e9af88212ec6e6",
+  "upstream_license_url": "https://raw.githubusercontent.com/jtushman/proxy_tools/db43f1e35d4f90a65c5a4d56d9e9af88212ec6e6/LICENSE.txt",
+  "upstream_source_url": "https://raw.githubusercontent.com/jtushman/proxy_tools/db43f1e35d4f90a65c5a4d56d9e9af88212ec6e6/proxy_tools/__init__.py",
+  "source_sha256": "d1539d95e1a713c068ca81d42e047b2c76568964cf277596d4e19efb22f476be",
+  "archive_url": "https://files.pythonhosted.org/packages/f2/cf/77d3e19b7fabd03895caca7857ef51e4c409e0ca6b37ee6e9f7daa50b642/proxy_tools-0.1.0.tar.gz",
+  "archive_sha256": "ccb3751f529c047e2d8a58440d86b205303cf0fe8146f784d1cbcd94f0a28010",
+  "upstream_source_matches_pypi_archive_and_installed_source": true,
+  "license_file": "licenses/proxy_tools-0.1.0-LICENSE.txt",
+  "license_sha256": "a428fb8a2e762af3eb0a6edbbb88e9b42ccfee80fd9b423958bcacf9b9abbfe4",
+  "metadata_difference": "The package declares MIT in setup/PyPI metadata, while its byte-identical upstream implementation identifies BSD and names both authors. The exact upstream LICENSE.txt is retained verbatim; original metadata and source attribution are preserved."
+}

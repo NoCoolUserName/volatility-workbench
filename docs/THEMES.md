@@ -3,7 +3,7 @@
 Workbench themes change the presentation of the application. They do not alter
 evidence, plugin availability, analysis settings, saved output or report contents.
 Choose a theme from the Theme control in Workbench's header or Settings →
-Appearance. Both use the same catalog of 37 themes, including 18 Fallout choices.
+Appearance. Both use the same catalog of 18 themes, including 15 Fallout choices.
 The choice is saved in application preferences and updates other open Workbench tabs. Existing Matrix, Mono and Blue preferences
 remain supported as Matrix green, Soft black and white, and Light blue. A browser
 without a saved preference starts with the original Matrix green appearance.
@@ -19,10 +19,11 @@ the three plain classic themes omit that band entirely. Fallout 2 replaces the
 artwork band with a compact CSS ventilation rail. Selected controls use an even
 border without a one-sided inset stripe; Fallout 2 adds a symmetric bevel.
 
-## Fallout coverage
+## Fallout references
 
-Each of these released games or playable table experiences has its own skin.
-The scope includes regional mobile releases and the standalone VR adaptation.
+The table retains the earlier visual-reference research. Fallout 4 VR, Fallout
+Pinball and Fallout Shelter Online are now deferred roadmap ideas rather than
+selectable skins. The remaining Fallout titles and terminal variants are active.
 Ports, collections, anniversary editions, expansions, in-game minigames, tabletop
 games, cancelled projects and unreleased announcements do not add separate skins.
 
@@ -124,7 +125,7 @@ Field Terminal stacks them beneath the left latch, with a below-frame fallback
 when space is limited. The latch is decorative. Field Terminal's upper and lower
 knobs open the 1977 and 1995 Adventure editions on double-click; focused knobs
 also activate with Enter or Space. All assets are packaged locally without remote
-downloads. The original Fallout 76 theme and saved theme choices remain available.
+downloads. Saved original Fallout 76 choices resolve to Field Terminal.
 
 Asset files: `bezel-fallout76-camden-park.png` and
 `bezel-fallout76-field-terminal.png`. The edit prompts required preserving the
@@ -132,7 +133,7 @@ reference contours, wear, material, colors and control placement, with transpare
 screen holes and no added lettering or hardware. Their integration uses CSS;
 the detailed frame textures are raster artwork rather than CSS approximations.
 
-## Other requested skins
+## Deferred theme reference notes (not in the active catalog)
 
 | Reference | Visual direction |
 | --- | --- |
@@ -154,6 +155,10 @@ the detailed frame textures are raster artwork rather than CSS approximations.
 | Elevator Action — NES | The NES/Famicom port's stacked office floors, dark teal walls, purple doors, black shafts and pale floor rails. |
 | The Punisher — War Journal #53 | Red-and-black ink, a stark skull motif, navy tactical colors and olive accents; attribution details below. |
 
+These retained notes describe future possibilities listed in the
+[roadmap](ROADMAP.md#future-theme-possibilities--removed-3-november-2026); their
+artwork is no longer shipped. Matrix green remains an active Classic theme.
+
 The version choices matter. Silpheed refers to the 1993 console game, confirmed
 by [Game Arts](https://www.gamearts.co.jp/products/mcd-silpheed.html) and
 [Sega](https://www.sega.jp/mdmini2/soft/sylpheed.html), rather than the earlier
@@ -162,7 +167,7 @@ over space, asteroid, fortress and planetary settings. Elevator Action refers to
 the NES/Famicom port, whose original June 28, 1985 release and screenshots appear
 on [Nintendo's Virtual Console page](https://www.nintendo.co.jp/wii/vc/vc_ea/vc_ea_01.html).
 
-## The Punisher reference correction
+## Deferred Punisher reference correction
 
 The requested reference was “Jim Lee War Journal #53 cover.” The issue number
 and artist do not match. [Marvel's issue page](https://www.marvel.com/comics/issue/22210/punisher_war_journal_1988_53)
@@ -217,8 +222,8 @@ was:
 > mist, two carved pumpkins on right; panoramic 3:1; almost-black left negative
 > space; charcoal/slate/amber/bone; no text/logos/gore/people.
 
-The image ships inside the application package and is served locally. It is
-decorative and contains no case data.
+This retired seasonal image is no longer shipped. It was decorative and
+contained no case data; its name and direction remain future roadmap material.
 
 ## Readability and limits
 

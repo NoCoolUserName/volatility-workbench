@@ -1055,3 +1055,43 @@ quality and native game checks. Native bundle validation passed with 203 plugins
 no import failures, four bundled symbol packs, synthetic analyzer/MCP checks and
 strict signing/native-linkage checks. No private image was opened by validation.
 README measurements identify this exact build rather than the documentation commit.
+
+## Deferred extras and seasonal themes — 3 November 2026
+
+Removed the screenshot's 16 theme choices and all three seasonal themes from
+the shared picker, backend save allowlist, theme-specific CSS and packaged art.
+The roadmap retains all 19 exact selector names as future possibilities. The
+active catalog has 18 choices (3 Classic, 15 Fallout) and 11 SVG scenes. The
+separate 1977/1995 Adventure games remain bundled.
+
+The isolated installed-wheel smoke passed **299 application tests**, packaged
+routes/assets and MCP checks. Six synthetic browser checks passed: all remaining
+themes, preference synchronization/fallback, reference terminals, VolShell,
+Adventure and live/saved consoles. All 19 retired IDs resolve to Matrix in main/Settings while preserving
+the saved preference bytes and revision; retired IDs cannot be newly saved.
+Remaining-theme contrast, focus, responsive/200% text and bezel-control checks
+passed, as did both Adventure editions and independent game-save behavior.
+
+Risk review: no evidence, case/session identities, conversations, sealed reports,
+AI determinations or collection/security permissions are changed. Retired assets
+remain recoverable from Git history; prior native installations are retained for
+rollback during installation. No private image or live-model loop was used.
+
+The SAST gate rejected stale whole-file review hashes after the two validation
+scripts changed their retired-artwork checks and SVG count. Five existing review
+entries were re-reviewed against that exact diff and the complete saved scan.
+Only hashes/reasons changed: rule IDs, source paths, locations, scanner policy
+and covered execution boundaries are unchanged. Re-evaluation found no blocking
+findings and no missing or unused reviews; the required fresh CI scan is retained.
+
+Native bundle validation passed for application source
+`c79de571908439e1333a072b607156b54a2dce30`: 11 remaining SVG scenes, four starter
+symbol packs, zero first-run symbol downloads, 203 discovered plugins without
+import failures, synthetic analyzer/MCP checks, Adventure gameplay, strict code
+signing and system-or-bundle-relative native linkage. No private image was opened.
+Later changes only refresh reviewed security metadata and documentation; the
+measured README stamp identifies the actual artifact rather than a docs commit.
+
+The complete CI browser job also exposed a live-console fixture still selecting
+the retired 8-bit option. That fixture now uses retained Fallout 4; its focused
+regression passed without any application-code change.

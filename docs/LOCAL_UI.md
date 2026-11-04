@@ -11,8 +11,8 @@ credential handling and tested limits.
 
 ## Appearance
 
-The header's Theme selector and Settings → Appearance offer the same 37 local
-skins, including 18 Fallout choices. New profiles start with the
+The header's Theme selector and Settings → Appearance offer the same 18 local
+skins, including 15 Fallout choices. New profiles start with the
 original Matrix green appearance; the three original preference values remain
 supported. Selection persists in application preferences across desktop launches,
 including changes to the local server port. Workbench and Settings synchronize
@@ -30,7 +30,10 @@ supplied references. Fallout: New Vegas 1 retains the original CSS marquee;
 Fallout: New Vegas 2 adapts the supplied rusty Welcome sign around a live CRT.
 Theme changes do not submit jobs or modify cases, conversations or saved reports.
 The displayed report retains its selection border. See [the catalog and verified
-references](THEMES.md), including the Punisher #53 artist correction.
+references](THEMES.md). The screenshot-listed extras and all seasonal themes
+are deferred in the [roadmap](ROADMAP.md#future-theme-possibilities--removed-3-november-2026).
+Their old saved IDs resolve to Matrix green without rewriting the original
+preference; new selections are limited to the active catalog.
 Text size is separate from WebView/page zoom. Pinch apart or together on a trackpad,
 hold Control while scrolling a mouse wheel, or use the A−/percentage/A+ controls
 in Settings. The main screen and console omit the text-size control strip.
@@ -771,7 +774,7 @@ inline and leave the checkbox at its previously saved value.
 The Fallout: New Vegas 1 expanded console takes its CSS housing from the weathered
 Welcome sign: neon letter discs and star, warm perimeter bulbs with several dark
 sockets, faded red lettering and aged trim. The display remains opaque and legible.
-All 37 themes give the VolShell bezel button their own treatment while retaining
+All 18 themes give the VolShell bezel button their own treatment while retaining
 a separate rectangular connection LED and visible keyboard focus.
 Button labels reserve at least 8px of clearance from that LED, including at
 200% text size; Camden Park uses symmetric side padding to keep its label centered.

@@ -1,8 +1,8 @@
 # Volatility Workbench
 
-*22,901 lines of code*
+*23,207 lines of code*
 
-*Latest measured macOS ARM64 build: app 1,289.76 MiB (1,352,412,069 bytes); distribution ZIP 1,073.95 MiB (1,126,120,343 bytes). Built from `f0619547bd10f882575373342be6f0751bba6b7d`, measured 2026-10-31; excludes symlink aliases and private evidence, case state and caches.*
+*Latest measured macOS ARM64 build: app 1,285.95 MiB (1,348,420,889 bytes); distribution ZIP 1,070.22 MiB (1,122,203,471 bytes). Built from `bc7dff51ba64b9c5ba5ff3fa3f2b3a17712ae453`, measured 2026-11-03; excludes symlink aliases and private evidence, case state and caches.*
 
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
@@ -16,7 +16,10 @@ Workbench provides the interface. The separate core handles forensic execution,
 integrity checks, saved-result reuse, artifact inspection, queries, citations, and
 coverage.
 
-Workbench 0.1.3 pins MCP 0.1.4 and CryptoMem 0.5.0: opt-in English BIP-39, Bitcoin WIF/xprv/tprv and explicitly ambiguous transaction-ID candidates. Secrets remain masked in ordinary outputs; complete extraction is explicit and local-only. Existing address defaults, three OS adapters and ten MCP tools remain. Exact captured-kernel symbols are required; real-memory Linux/macOS validation remains outstanding.
+Workbench 0.1.4 retains MCP 0.1.4 and CryptoMem 0.5.0: opt-in English BIP-39, Bitcoin WIF/xprv/tprv and explicitly ambiguous transaction-ID candidates. Secrets remain masked in ordinary outputs; complete extraction is explicit and local-only. Existing address defaults, three OS adapters and ten MCP tools remain. Exact captured-kernel symbols are required; real-memory Linux/macOS validation remains outstanding.
+
+The [0.1.4 release](docs/RELEASE_0.1.4.md) adds selective red/green
+AI determination support in Executive summaries and a curated theme catalog.
 
 Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
 
@@ -69,7 +72,7 @@ Quit asks before cancelling active work. Separate relocatable Python application
 and analyzer runtimes mean the installed app needs no source checkout, Homebrew,
 development environment or shell startup file.
 
-Download the [Workbench 0.1.3 macOS ARM64 prerelease](https://github.com/NoCoolUserName/volatility-workbench/releases/tag/v0.1.3)
+Download the [Workbench 0.1.4 macOS ARM64 prerelease](https://github.com/NoCoolUserName/volatility-workbench/releases/tag/v0.1.4)
 and its `Volatility-Workbench-macos-arm64.zip` asset. Verify the archive against
 the release's `SHA256SUMS`, then extract it to access `Volatility Workbench.app`.
 This published app is ad-hoc signed, without Developer ID signing or Apple
@@ -221,7 +224,7 @@ Run focused checks for changed behavior during development. Before release, run
 wheels, checks dependencies, assets, HTTP startup and both MCP protocol modes, then
 runs the full Workbench suite against installed packages outside the checkout.
 Browser scripts under `scripts/check_*_browser.cjs` use synthetic data and Playwright
-as a validation-only dependency; `check_themes_browser.cjs` checks all 37 skins under
+as a validation-only dependency; `check_themes_browser.cjs` checks all 18 skins under
 the production content-security policy. `check_theme_persistence_browser.cjs` checks
 restart/port changes, shared preferences, migration and save races;
 `check_volshell_browser.cjs` checks the VolShell connection toggle and confirmed-disconnect lifecycle.
