@@ -56,3 +56,16 @@ remain outstanding. The ARM64 application host does not imply support for
 Apple-silicon memory captures. Existing forensic platform and symbol-matching
 limits remain unchanged. Validation uses harmless synthetic/public fixtures;
 no private evidence or live-model loop is used for release checks.
+
+## OpenTelemetry dependency assessment — 2026-11-16
+
+The published ZIP contains `opentelemetry-api==1.45.1` in its application
+runtime; the separate analyzer does not contain OpenTelemetry. This version is
+affected by [GHSA-mf5v-w3w3-f6cg](https://github.com/open-telemetry/opentelemetry-python/security/advisories/GHSA-mf5v-w3w3-f6cg).
+The bundled MCP SDK extracts trace context from JSON request metadata even
+without an exporter. Workbench uses private stdio MCP connections and does not
+forward HTTP headers, provider tool arguments or evidence content into that
+metadata; no untrusted route to the affected extractor was identified in the
+shipped application. Custom clients that supply untrusted MCP request metadata
+must use OpenTelemetry API 1.45.2 or later. The existing artifact is retained;
+the dependency fix should be included in the next validated application build.
