@@ -27,8 +27,8 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/package_smoke.py",
       "line": 16,
-      "source_sha256": "0f439a47bad8312e9cf70fa8204db802e33cbb4af4af808f114c0b5a5ab349a2",
-      "reason": "Re-reviewed 2026-11-03: the only source changes remove retired theme asset checks/URLs and change the fixed SVG scene count from 29 to 11. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
+      "source_sha256": "ba80bac108acba359bf515cf62f2a649c29965d76bdc82373ba47873ade27bc7",
+      "reason": "Re-reviewed 2026-11-16: the only source changes assert discovery of four additional literal job tools and update the fixed MCP tool count from ten to fourteen. The fixed argv runner, default shell=False behavior, isolated temporary installation/cwd, literal harmless fixtures and no-analysis/model launch boundary are unchanged. No executable input, access, rule scope or exception location was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
