@@ -150,7 +150,8 @@ and [security](SECURITY.md).
 
 ## Pinned core and plugins
 
-The tested core pin is MCP 0.1.4 at `2887c77283da4a45860d8ac2f3042027401257a0`, API revision 1.
+The tested core pin is MCP 0.1.4 at `47743a060b29074f2fe7e56ab46bc2a905258c5c`, API revision 1.
+This is the privacy-cleaned Git identity for the reviewed `84aeddcc9b7b09ad688ae8dc8aa5e9d1d1b0545d` source; published app artifacts retain their original source revisions.
 `core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on the
 immutable commit. `pip install .` brings in that dependency; the pin helper checks
 installed Git provenance even when successive core commits share a package version.
