@@ -6,8 +6,8 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/build_macos.py",
       "line": 25,
-      "source_sha256": "e6720294a7958e00ec30c89fe8078380d9bbad37a2eabf6452df32176eee5a21",
-      "reason": "Re-reviewed 2026-10-23: the build helper uses shell=False and fixed tool arguments or developer-selected build paths. The new pip input is a local release wheel verified against a reviewed SHA-256 and core source pin before installation. No evidence, recovered strings, or case input reaches this build helper."
+      "source_sha256": "60ef46d75e1f65a8f304217329a329639e4043d7b12b1b7a97f45eaa4cd898a3",
+      "reason": "Re-reviewed 2026-11-16: the explicit local full core wheel is trusted developer input checked against the exact source revision/version pin and all four embedded symbol pack hashes and notices before installation; its computed SHA-256 and portable filename/source revision are recorded. The default remote artifact still requires its preexisting expected SHA-256. Fixed tool argv, shell=False and the absence of recovered/case input are unchanged; the public release audit still rejects a local distribution override. No exception rule, location or access scope was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -48,15 +48,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 36,
-      "source_sha256": "44b3afca15cacf64ea3247affd8a453118cbab40db167b135802ecf8a2102603",
-      "reason": "Re-reviewed 2026-11-03: the only source changes remove retired theme asset checks/URLs and change the fixed SVG scene count from 29 to 11. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
+      "source_sha256": "9e736a392b8e6af7375b620450361dfd8b098e9c9ecf550ab666c970712bb080",
+      "reason": "Re-reviewed 2026-11-16: the changes assert the exact fourteen-tool MCP contract, the CPU-capped default of four concurrent runs in fresh and explicit configurations, and existing original terminal assets against their packaged byte/hash manifest. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
-      "line": 162,
-      "source_sha256": "44b3afca15cacf64ea3247affd8a453118cbab40db167b135802ecf8a2102603",
-      "reason": "Re-reviewed 2026-11-03: the only source changes remove retired theme asset checks/URLs and change the fixed SVG scene count from 29 to 11. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
+      "line": 170,
+      "source_sha256": "9e736a392b8e6af7375b620450361dfd8b098e9c9ecf550ab666c970712bb080",
+      "reason": "Re-reviewed 2026-11-16: the changes assert the exact fourteen-tool MCP contract, the CPU-capped default of four concurrent runs in fresh and explicit configurations, and existing original terminal assets against their packaged byte/hash manifest. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -111,15 +111,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 40,
-      "source_sha256": "44b3afca15cacf64ea3247affd8a453118cbab40db167b135802ecf8a2102603",
-      "reason": "Re-reviewed 2026-11-03: the only source changes remove retired theme asset checks/URLs and change the fixed SVG scene count from 29 to 11. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
+      "source_sha256": "9e736a392b8e6af7375b620450361dfd8b098e9c9ecf550ab666c970712bb080",
+      "reason": "Re-reviewed 2026-11-16: the changes assert the exact fourteen-tool MCP contract, the CPU-capped default of four concurrent runs in fresh and explicit configurations, and existing original terminal assets against their packaged byte/hash manifest. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 47,
-      "source_sha256": "44b3afca15cacf64ea3247affd8a453118cbab40db167b135802ecf8a2102603",
-      "reason": "Re-reviewed 2026-11-03: the only source changes remove retired theme asset checks/URLs and change the fixed SVG scene count from 29 to 11. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
+      "source_sha256": "9e736a392b8e6af7375b620450361dfd8b098e9c9ecf550ab666c970712bb080",
+      "reason": "Re-reviewed 2026-11-16: the changes assert the exact fourteen-tool MCP contract, the CPU-capped default of four concurrent runs in fresh and explicit configurations, and existing original terminal assets against their packaged byte/hash manifest. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-asyncio-create-exec-audit",
