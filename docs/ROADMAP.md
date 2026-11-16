@@ -12,6 +12,12 @@ addon inventory, execution policy, symbols, provenance and accuracy evaluation.
 Use the public core API and existing catalog; do not duplicate upstream plugin
 implementations or inventory policy in this repository.
 
+Parallel execution status, updated 16 November 2026: plugin concurrency settings,
+core job controls and case-agent support for independent batches, incremental
+results and saved-evidence follow-ups are implemented; see
+[Plugin concurrency](LOCAL_UI.md#plugin-concurrency). The proposed modes below
+concern named, versioned profiles and controls with their own acceptance criteria.
+
 ## Release and usability priorities
 
 | Priority | Remaining Workbench work | Acceptance check |
@@ -49,10 +55,14 @@ database. Updating a core pin or refreshing the catalog does not authorize a swe
 
 ## Proposed investigation modes — not implemented
 
+The existing case agent already supports investigations, explicit plugin batches
+and saved-evidence follow-ups. These proposals add versioned workloads and dedicated controls over
+the existing agent/core job foundation.
+
 | Mode | Remaining design and acceptance work |
 | --- | --- |
 | Quick triage | Define versioned OS-specific profiles using measured cost and human-reviewed lead yield on authorized benign/malicious fixtures. Start with OS/symbol readiness and bounded process/command-line/network/module observations; follow justified anomalies within a declared time/output budget. Preserve leads, citations and gaps without presenting a clean verdict. |
-| Compatibility sweep ("Run all applicable plugins") | Define an explicit diagnostic job that sequentially attempts suitable commands with satisfiable arguments/prerequisites. Record success, valid empty, skipped, unsupported, failure, duration, integrity-hashing cost, reuse and output volume separately. Require explicit inclusion for commands whose core policy is manual-only; apply bounded extraction/expensive-operation settings. |
+| Compatibility sweep ("Run all applicable plugins") | Define a versioned diagnostic profile/control using the existing case-agent and core job APIs to attempt suitable commands with satisfiable arguments/prerequisites under a declared concurrency/resource budget. Record success, valid empty, skipped, unsupported, failure, duration, integrity-hashing cost, reuse and output volume separately. Require explicit inclusion for commands whose core policy is manual-only; apply bounded extraction/expensive-operation settings. |
 
 These are proposed controls, not permission to execute them. Installation alone
 does not establish applicability: PID/address/rules, runtime layouts and matching
@@ -68,9 +78,6 @@ malware names or use installed-plugin count as a coverage denominator.
 - Add provider protocols or model/effort controls only after defining their actual
   capability, provenance, secret-storage and interruption contracts. The existing
   compatible tool API and provider usage display do not imply support for every API.
-- Evaluate parallel analysis only after measuring evidence/output locking, resource
-  contention, cancellation and result-reuse behavior; sequential jobs remain the
-  baseline.
 - Scope Intel macOS, Windows and container distributions separately. A container
   must pin the official analyzer dependency profile, use core's inventory and
   license policy, and validate imports plus harmless runtime fixtures. Keep optional
