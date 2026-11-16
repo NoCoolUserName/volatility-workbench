@@ -1142,3 +1142,23 @@ installed suite, 13 focused checks and two browser fixtures are reused for the
 unchanged execution and UI code; the full suite was not repeated for this
 configuration-default delta. Historical benchmark rows and the prior app build
 measurement remain unchanged.
+
+
+## Native parallel-core app build — 16 November 2026
+
+A clean local ARM64 build from `17ef6f5f6931084541fd6414dc86b3e3eee6090c`
+includes the exact reviewed core `84aeddcc9b7b09ad688ae8dc8aa5e9d1d1b0545d`.
+Twelve focused packaging tests passed. Native validation verified fourteen MCP
+tools, default concurrency four, 203 bundled analyzer commands without import
+failures, the three original terminal assets, native dependencies and linkage,
+code signatures, both Adventure editions and their save checks. Four bundled
+symbol packs provisioned into an isolated fresh setup with downloads blocked.
+Three harmless synthetic analyzer invocations passed; no real acquisition was
+opened. Earlier application/runtime suite evidence is reused for unchanged code.
+
+The app contains 1,348,531,943 regular-file bytes (1,286.06 MiB), excluding symlink
+aliases; its ZIP is 1,122,247,989 bytes (1,070.26 MiB). These measurements describe
+the built revision, so a later documentation stamp does not trigger a rebuild.
+The explicit local core-wheel override records its source and checksum in the
+bundle; this is a local installation artifact, not a newly published binary
+release. The strict public-release audit remains unchanged.
