@@ -1,0 +1,56 @@
+name: Public path privacy
+on:
+  push:
+    branches: [main]
+  pull_request_target:
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Full SHA immediately before the commits to inspect
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: public-path-privacy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  machine-paths:
+    name: Machine path privacy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      # Only this trusted base/default-branch scanner is executed.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: trusted
+          fetch-depth: 0
+          persist-credentials: false
+      # Pull request content is data; never run its scripts or install its code.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'pull_request_target'
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: proposed
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check tracked content and new commits
+        if: github.event_name != 'pull_request_target'
+        env:
+          BASE_SHA: ${{ github.event.before || inputs.base_sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          cd trusted
+          python3 -I scripts/check_public_privacy.py --paths-only \
+            --base "$BASE_SHA" --head "$HEAD_SHA" --base-mode direct
+      - name: Check proposed content and commit messages using the trusted scanner
+        if: github.event_name == 'pull_request_target'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git -C proposed fetch --no-tags --no-recurse-submodules "https://github.com/$GITHUB_REPOSITORY.git" "$BASE_SHA"
+          cd proposed
+          python3 -I ../trusted/scripts/check_public_privacy.py --paths-only \
+            --base "$BASE_SHA" --head "$HEAD_SHA" --base-mode merge-base
