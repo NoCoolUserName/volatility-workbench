@@ -2,9 +2,11 @@
 """Propose a compatible immutable core pin; never install or merge anything."""
 import argparse
 import json
+import os
 import re
 from pathlib import Path
 import tomllib
+import urllib.error
 import urllib.request
 
 REPO = 'NoCoolUserName/volatility-mcp'
@@ -25,10 +27,26 @@ def select_release(releases, current, series):
 
 
 def get_json(path):
+    token = os.environ.get('GH_TOKEN', '').strip()
+    if not token:
+        raise RuntimeError('GH_TOKEN is required for GitHub API requests; use --fixture for offline testing')
     request = urllib.request.Request('https://api.github.com/repos/' + REPO + '/' + path,
                                      headers={'Accept': 'application/vnd.github+json', 'User-Agent': 'volatility-workbench-updater'})
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.load(response)
+    request.add_unredirected_header('Authorization', 'Bearer ' + token)
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as error:
+        if error.code in (403, 429) and (error.code == 429
+                or error.headers.get('X-RateLimit-Remaining') == '0'
+                or error.headers.get('Retry-After')
+                or 'rate limit' in str(error.reason).lower()):
+            raise RuntimeError(
+                f'GitHub API rate limit exceeded (HTTP {error.code}); retry later. '
+                f'Retry-After: {error.headers.get("Retry-After", "not provided")}; '
+                f'X-RateLimit-Reset (UTC epoch seconds): {error.headers.get("X-RateLimit-Reset", "not provided")}'
+            ) from None
+        raise
 
 
 def content(path, sha):
