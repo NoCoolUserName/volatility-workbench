@@ -1,6 +1,6 @@
 # Volatility Workbench
 
-*23,207 lines of code*
+*23,581 lines of code*
 
 *Latest measured macOS ARM64 build: app 1.3 GB (1,348,420,889 bytes); distribution ZIP 1.1 GB (1,122,203,471 bytes). Built from `bc7dff51ba64b9c5ba5ff3fa3f2b3a17712ae453`, measured 2026-11-03; excludes symlink aliases and private evidence, case state and caches.*
 
@@ -36,6 +36,10 @@ Original project code is available under MIT and the Volatility Software License
 - Reopen saved cases and conversations. Explore report sections, source artifacts,
   checked citations, coverage, and activity/failures. The displayed report revision
   stays visibly selected. Refreshing saved views does not start new analysis.
+- Set **Plugin concurrency** in Settings (1–64) for explicit independent core
+  plugin batches. The selected case shows queued/running jobs and cancellation;
+  report requests retain their existing order. Completed saved evidence remains
+  available for follow-ups and reports.
 - Inspect **Plugins used in this report** for the selected revision's saved
   execution inventory: exact plugin names, arguments, outcomes and run/call IDs.
   Reused outputs and requests without a recorded execution are distinguished.

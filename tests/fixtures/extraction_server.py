@@ -7,8 +7,10 @@ server=MCPServer('synthetic-extraction')
 def run_plugin(image:str,plugin:str,arguments:list[str]|None=None)->dict:
     return {'synthetic':True,'plugin':plugin,'arguments':arguments}
 @server.tool()
+def submit_jobs(jobs:list[dict],order:str='input')->dict:return {'synthetic':True,'jobs':jobs}
+@server.tool()
 def query_output()->dict:return {'saved':True}
-backend=SimpleNamespace(validate_arguments=lambda p,a:a,list_plugins=lambda p:{'plugins':[
+backend=SimpleNamespace(resolve_input=lambda image:image,validate_arguments=lambda p,a:a,list_plugins=lambda p:{'plugins':[
     {'name':p,'manual_only':p=='linux.openssh_sessionkeys.SSHKeys','description':'Lists processes' if p=='windows.pslist.PsList' else 'Dumps files',
      'options':[{'flag':'--dump'}] if p=='windows.pslist.PsList' else []}]})
 server.middleware.append(ExtractionGuard(backend,'/synthetic/outputs'))

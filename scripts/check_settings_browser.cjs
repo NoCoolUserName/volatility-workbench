@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const assets = path.join(__dirname, '../src/volatility_workbench/static');
 const settings = {
-  config:{evidence_root:'/synthetic/default',output_root:'/synthetic/outputs',vol_python:'/synthetic/python'},
+  config:{max_concurrent_runs:8,evidence_root:'/synthetic/default',output_root:'/synthetic/outputs',vol_python:'/synthetic/python'},
   state_dir:'/synthetic/state',has_cases:true,native_folder_picker:false,managed_runtime_available:false,
   evidence_locations:[{path:'/synthetic/default',default:true,image_count:1,case_count:1}],
   symbols:{installed:{synthetic:false},directory:'/synthetic/symbols',cache:'/synthetic/cache',matching:'Synthetic symbols only',profile:{packs:[{id:'synthetic',label:'Synthetic pack',version:'1',size:8388608,limitations:'Fixture only',url:'https://example.test/pack',sha256:'a'.repeat(64)}],macos_status:'Synthetic fixture'}},
@@ -28,6 +28,11 @@ const settings = {
       if(url.pathname==='/api/settings'){
         calls.push(url.pathname);
         return route.fulfill({json:settings});
+      }
+      if(url.pathname==='/api/settings/execution'){
+        const body=route.request().postDataJSON();assert.deepEqual(body,{max_concurrent_runs:12});
+        calls.push(url.pathname);settings.config.max_concurrent_runs=body.max_concurrent_runs;
+        return route.fulfill({json:{saved:true,max_concurrent_runs:body.max_concurrent_runs}});
       }
       if(url.pathname==='/api/settings/provider/models'){
         calls.push(url.pathname);
@@ -58,6 +63,14 @@ const settings = {
     });
     await page.goto('http://workbench.test/settings.html');
     await page.waitForFunction(()=>document.querySelector('#evidence-locations li'));
+    assert.equal(await page.locator('#max-concurrent-runs').inputValue(),'8');
+    await page.locator('#max-concurrent-runs').fill('65');
+    await page.getByRole('button',{name:'Save concurrency',exact:true}).click();
+    assert.equal(calls.filter(item=>item==='/api/settings/execution').length,0,'Native bounds prevent invalid submissions');
+    await page.locator('#max-concurrent-runs').fill('12');
+    await page.getByRole('button',{name:'Save concurrency',exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('#settings-message').textContent==='Saved.');
+    assert.equal(settings.config.max_concurrent_runs,12);
     assert.match(await page.locator('#recycle-list').innerText(),/recycled-one/);
     await page.getByRole('button',{name:'Restore',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('#recycle-list').textContent.includes('Recycle Bin is empty.'));
@@ -121,6 +134,7 @@ const settings = {
     assert.equal(saved[2].codex_executable,undefined);
     await page.reload();
     await page.waitForFunction(()=>document.querySelectorAll('#evidence-locations li').length===2);
+    assert.equal(await page.locator('#max-concurrent-runs').inputValue(),'12','Concurrency survives reload');
     assert.equal(await page.locator('#symbol-packs button').textContent(),'Installed');
     assert.equal(await page.locator('#symbol-packs button').isDisabled(),true);
     assert.deepEqual(errors,[]);

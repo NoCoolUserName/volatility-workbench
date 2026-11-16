@@ -42,6 +42,20 @@ Workbench scales text from 75% to
 size in application preferences outside the bundle. The connection status appears
 above Settings in the header.
 
+## Plugin concurrency
+
+Settings → Plugin concurrency persists the core `max_concurrent_runs` limit (1–64)
+in the application configuration and existing case MCP configurations while idle.
+The core chooses its initial default from available CPUs (up to four). Investigation
+and report requests retain their existing queue order; independent explicit plugin
+batches run through the core scheduler. Increased concurrency trades memory and
+storage bandwidth for overlapping work and does not authorize additional collection.
+The selected case's Core plugin jobs panel shows queued/running work, recent terminal
+states and per-plugin cancellation. These are actual durable core job records, separate
+from orchestration progress. Cancellation preserves completed saved evidence. The AI
+adapter can submit explicit independent batches, inspect each terminal result and use
+saved evidence for follow-ups. No autonomous agent pool or automatic broad scan is added.
+
 ## Launch
 
 From the repository, using the existing configured environment:

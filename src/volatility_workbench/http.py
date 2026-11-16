@@ -148,6 +148,8 @@ class Handler(BaseHTTPRequestHandler):
             return app.investigate_volshell(body['case_id'],body['session_id'],body['text'],body.get('request_id'))
         if path=='/api/cases':return {'cases':app.add(body['paths'],body.get('related',False),body.get('title',''),body.get('source',''))}
         if path=='/api/history-order':return app.set_history_order(body['case_id'],body['section'],body['order'])
+        if path=='/api/plugin-jobs/cancel':
+            return await asyncio.to_thread(app.cancel_plugin_job, app.case(body['case_id']), body['job_id'])
         if path=='/api/jobs':return app.enqueue(body['case_id'],body['kind'],body.get('text',''),body.get('request_id'),retry_of=body.get('retry_of'))
         if path=='/api/reports/remove':return await app.remove_report(body['case_id'],body['report_id'],body['action'])
         if path=='/api/reports/determination':return app.set_human_determination(body['case_id'],body['report_id'],body.get('value'))
@@ -185,6 +187,8 @@ class Handler(BaseHTTPRequestHandler):
             return await app.plugin_catalog(refresh=one('refresh', '0') == '1')
         if path=='/api/browse':return app.browse(one('path'),one('location') or None)
         if path=='/api/artifacts':return app.artifacts(app.case(one('case')))
+        if path=='/api/plugin-jobs':
+            return await asyncio.to_thread(app.plugin_jobs, app.case(one('case')))
         if path=='/api/coverage':
             return await asyncio.to_thread(app.coverage, app.case(one('case')), one('image'),
                 int(one('offset','0')), one('entry') or None, int(one('attempt_offset','0')))

@@ -1095,3 +1095,50 @@ measured README stamp identifies the actual artifact rather than a docs commit.
 The complete CI browser job also exposed a live-console fixture still selecting
 the retired 8-bit option. That fixture now uses retained Fallout 4; its focused
 regression passed without any application-code change.
+
+## Explicit parallel plugin controls — 16 November 2026
+
+Focused source checks passed 11 harmless tests covering saved concurrency bounds
+and reopen persistence, unchanged case paths/evidence, busy/background-job holds,
+paginated core progress and cancellation beyond the first 256 records, exact case
+HTTP routes, malformed continuation failure, and existing plus batch extraction
+consent through both supported SDK modes. The application and current core source
+paths were explicit for this check; no real investigation or provider was started.
+
+Two offline browser fixtures passed: Settings validates its 1–64 input and keeps
+the saved value across reload; the plugin-jobs fixture verifies selected-case
+counts, escaped untrusted plugin text, per-plugin cancellation, Stop with only
+background core jobs, immediate case-switch hiding, and button bounds at 100% and
+200% text. The available cached Chromium executable was explicitly selected after
+the default browser path proved absent. The new fixture joins the existing CI
+browser glob. Installed-package/full-suite checks remain the final publication
+gate and are recorded separately, without repeating these source checks.
+
+The focused batch-failure delta passed two inventory tests (new submission case
+and existing saved diagnostic binding). A failed batch remains one request
+failure with a null plugin and zero executions, linked to its registered exact
+request JSON. The affected plugin browser fixture also passed its batch tool
+label, zero-execution display and saved-request follow-up reference checks.
+
+Final isolated installed-wheel validation passed with core pinned to
+`dc7d67ef7f28884e07bfcda01fb1a98ec88da6fa`: **306 application tests** passed
+in 37.935 seconds. Installation resolved that exact published core commit and
+`pip check` reported no broken requirements. Fourteen MCP tools passed discovery
+in both legacy and auto protocol modes; installed resources, authenticated
+loopback HTTP routes and CLI help passed from outside both checkouts with zero
+analysis/model subprocesses during the launch smoke. The previously passed
+13 focused tests and two browser fixtures were reused. No native app bundle was
+built, installed or restarted; the last labeled build-size measurement remains
+unchanged.
+
+The final default-only update pins core
+`84aeddcc9b7b09ad688ae8dc8aa5e9d1d1b0545d`. A focused isolated install verified
+the rebuilt wheel dependency metadata and actual installed VCS commit, the
+starting concurrency default of **4**, and an explicit **64** override saved
+through Settings and preserved in root configuration, case MCP configuration
+and the reopened Settings snapshot. The harmless fixture source stayed unchanged;
+no analyzer/model subprocess ran, and `pip check` passed. The prior 306-test
+installed suite, 13 focused checks and two browser fixtures are reused for the
+unchanged execution and UI code; the full suite was not repeated for this
+configuration-default delta. Historical benchmark rows and the prior app build
+measurement remain unchanged.

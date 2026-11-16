@@ -182,7 +182,7 @@ class SettingsManager:
             for path,content in originals.items():
                 if path==self.config_path:continue
                 data=json.loads(content)
-                for key in ('vol_python','vol_executable','symbols','cache_path'):
+                for key in ('vol_python','vol_executable','symbols','cache_path','max_concurrent_runs'):
                     data['config'][key]=config.to_dict()[key]
                 atomic_json(path,data)
             atomic_json(self.config_path,config.to_dict())
@@ -199,6 +199,23 @@ class SettingsManager:
         self.busy=True
         try: return await operation()
         finally: self.busy=False
+
+    async def save_execution(self, body):
+        if (not isinstance(body, dict) or set(body) != {'max_concurrent_runs'}
+                or type(body['max_concurrent_runs']) is not int
+                or not 1 <= body['max_concurrent_runs'] <= 64):
+            raise ValueError('Concurrent plugin runs must be an integer between 1 and 64')
+        async def save():
+            # Background MCP jobs can outlive a model turn. Never change their runtime.
+            if hasattr(self.app, 'plugin_jobs'):
+                for case in self.app.state['cases']:
+                    snapshot = await asyncio.to_thread(self.app.plugin_jobs, case)
+                    if snapshot['active_count']:
+                        raise ValueError('Wait for queued and running plugins to finish before changing concurrency')
+            config = Config.from_dict({**self.app.config.to_dict(), **body})
+            backup = await self._activate(config)
+            return {'saved': True, 'max_concurrent_runs': config.max_concurrent_runs, 'backup': backup}
+        return await self.exclusive(save)
 
     async def save_locations(self, body):
         return await self.exclusive(lambda:self._save_locations(body))
@@ -269,6 +286,7 @@ class SettingsManager:
     async def dispatch(self, path, body):
         if path=='/api/settings/appearance': return self.save_appearance(body)
         if path=='/api/settings/zoom': return self.save_zoom(body)
+        if path=='/api/settings/execution': return await self.save_execution(body)
         if path=='/api/settings/save': return await self.save_locations(body)
         if path=='/api/settings/pick-folder':
             if not self.folder_picker: raise ValueError('Native selection is available in the desktop application; enter a physical path here')

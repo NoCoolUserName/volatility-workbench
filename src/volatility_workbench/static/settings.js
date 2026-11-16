@@ -148,6 +148,7 @@ async function refresh(){
   byId('all-symbols').textContent=allInstalled?'Installed':'Download all supported packs';
   byId('all-symbols').disabled=allInstalled||data.operation.status==='running';
   if(!initialized){
+    byId('max-concurrent-runs').value=data.config.max_concurrent_runs;
     byId('evidence-root').value=data.config.evidence_root;byId('output-root').value=data.config.output_root;
     const provider=data.provider;
     for(const item of provider.cases||[]){const option=document.createElement('option');option.value=item.case_id;option.textContent=(item.title||item.case_id)+' — '+(item.provider.provider||'codex');byId('provider-case').append(option);}
@@ -157,6 +158,7 @@ async function refresh(){
   }
 }
 document.querySelectorAll('[data-folder]').forEach(button=>button.addEventListener('click',()=>act(async()=>{const result=await request('/api/settings/pick-folder',{kind:'folder'});if(result.path)byId(button.dataset.folder).value=result.path;})));
+byId('execution-form').addEventListener('submit',event=>{event.preventDefault();act(()=>request('/api/settings/execution',{max_concurrent_runs:Number(byId('max-concurrent-runs').value)}));});
 byId('locations').addEventListener('submit',event=>{event.preventDefault();act(()=>request('/api/settings/save',{evidence_root:byId('evidence-root').value,output_root:byId('output-root').value}));});
 byId('provider').addEventListener('change',()=>{
   const next=byId('provider').value;

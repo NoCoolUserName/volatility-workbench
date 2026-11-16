@@ -80,7 +80,7 @@ async def main():
     for mode in ['legacy','auto']:
         async with Client(StdioServerParameters(command=sys.executable,args=['-m','volatility_mcp','serve','--config',str(path)]),mode=mode) as client:
             names={t.name for t in (await client.list_tools()).tools}
-            assert len(names)==10 and {'query_output','get_coverage','inspect_artifact'} <= names
+            assert len(names)==14 and {'query_output','get_coverage','inspect_artifact','submit_jobs','get_job','list_jobs','cancel_job'} <= names
     calls=[]
     def forbidden(*a,**kw):calls.append(a);raise AssertionError('No analysis or model subprocess permitted')
     subprocess.Popen=forbidden
@@ -99,7 +99,7 @@ async def main():
         await app.close();await asyncio.to_thread(server.shutdown);server.server_close()
     assert not calls
 asyncio.run(main())
-print('Installed wheels: ten MCP tools in both modes; assets, HTTP launch, and zero analysis/model subprocesses passed')
+print('Installed wheels: fourteen MCP tools in both modes; assets, HTTP launch, and zero analysis/model subprocesses passed')
 '''
         run(python, '-c', code, cwd=temp)
         run(str(env/'bin/volatility-workbench'), '--help', cwd=temp)
