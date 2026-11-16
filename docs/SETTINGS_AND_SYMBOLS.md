@@ -44,6 +44,20 @@ invalidates the old capability result; a successful check confirms tool round-tr
 compatibility, not that a provider honored the requested effort. Reports label a
 compatible override as requested rather than verified effective effort.
 
+## Plugin concurrency
+
+**Maximum concurrent plugin runs** accepts integer values from 1 to 64. The
+initial default is selected by the core from available CPUs, capped at four.
+Saving requires idle investigation, queued work, VolShell and durable core plugin
+jobs; active-job checks traverse every metadata page. The value persists in the
+main configuration and each existing case MCP configuration with rollback copies.
+This does not move evidence or rewrite saved results and reports. The Core plugin
+jobs panel shows queued/running counts, up to 256 active entries and ten recent
+terminal entries, with per-job cancellation. If more active entries exist, the
+panel states the omitted count; Stop all traverses every page. A stale historical
+case cannot prevent Stop from interrupting active model/VolShell work; any failed
+core cancellation is returned and shown explicitly.
+
 ## Locations and maintenance
 
 The configured evidence folder is the default for relative paths and folder

@@ -3,7 +3,7 @@
 Browser static assets → loopback HTTP controller → private saved case/job state.
 The controller uses `volatility_mcp.api` for local saved-data access, confinement,
 coverage and report validation. Readiness and Codex case turns use the official
-MCP SDK and `python -m volatility_workbench.guarded_scoped` (a consent middleware wrapper around the public core server) for the same ten case-confined tools.
+MCP SDK and `python -m volatility_workbench.guarded_scoped` (a consent middleware wrapper around the public core server) for the same fourteen case-confined tools.
 Codex is an adapter; core imports no model provider or application package.
 
 `app.py` owns sequential jobs, cancellation and case conversations. `storage.py`
@@ -41,6 +41,19 @@ The optional legacy `--project` only keeps state outside a named source tree.
 Read the detailed boundaries in [LOCAL_UI.md](LOCAL_UI.md), the
 [ownership map](SEPARATION.md), and the authoritative
 [core API](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/PUBLIC_API.md).
+
+## Explicit parallel plugin jobs
+
+The core owns bounded plugin execution and durable case-scoped job records.
+Workbench uses the public `submit_jobs`, `list_jobs`, `get_job` and `cancel_job`
+contract; it does not duplicate the execution queue. Model MCP subprocesses and
+HTTP controls share the case core output root, so progress and cancellation work
+across processes. The report/investigation request queue remains sequential.
+Settings changes the core concurrency cap only while idle, preserving case paths
+and existing evidence. The extraction middleware checks every entry before an
+entire sensitive batch can be admitted through its existing exact-request consent.
+Failed submissions remain request failures with their saved request artifact,
+without inferred plugin executions.
 
 ## Optional macOS desktop
 

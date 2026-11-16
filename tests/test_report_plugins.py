@@ -72,6 +72,29 @@ class InventoryTests(unittest.TestCase):
         self.manifest['plugin_inventory'] = {'schema':inventory.SCHEMA, 'path':'plugin-inventory.json'}
         self.write()
 
+    def test_failed_batch_submission_is_one_request_with_exact_saved_diagnostic(self):
+        jobs=[{'image':'/synthetic/image.raw','plugin':'windows.pslist.PsList'},
+              {'image':'/synthetic/image.raw','plugin':'windows.dumpfiles.DumpFiles'}]
+        self.steps.append({'call_id':'UI-batch', 'tool':'submit_jobs', 'status':'error',
+                           'arguments':{'jobs':jobs}})
+        self.artifact('artifacts/UI-batch.json', {'id':'batch', 'detail':{
+            'tool':'submit_jobs','arguments':{'jobs':jobs},'error':'Synthetic batch not approved'}})
+        result=self.derive()
+        self.assertEqual(result['summary']['request_failures'],1)
+        self.assertEqual(result['summary']['executions'],0)
+        self.assertEqual(len(result['entries']),1)
+        entry=result['entries'][0]
+        self.assertEqual(entry['request_tool'],'submit_jobs')
+        self.assertIsNone(entry['plugin']);self.assertIsNone(entry['run_id'])
+        self.assertFalse(entry['execution_recorded'])
+        self.persist(result)
+        page=inventory.read(self.root,'case','revision')
+        self.assertEqual(page['executed_plugin_names'],[])
+        failed=page['errored_entries'][0]
+        self.assertEqual(failed['reason'],'Synthetic batch not approved')
+        self.assertEqual(failed['error_sources'],[{'path':'artifacts/UI-batch.json','label':'Saved request error'}])
+        self.assertIn('submit&#95;jobs',inventory.markdown('## Investigative workflow\nSaved.',result))
+
     def test_exact_runs_inspections_reuse_and_failed_requests_are_distinct(self):
         self.add_run('run0')
         self.add_run('run1', status='error')

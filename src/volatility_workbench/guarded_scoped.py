@@ -62,18 +62,29 @@ class ExtractionGuard:
 
     async def __call__(self, ctx, call_next):
         params=ctx.params
-        if ctx.method!='tools/call' or not isinstance(params,dict) or params.get('name')!='run_plugin':
+        if ctx.method!='tools/call' or not isinstance(params,dict) or params.get('name') not in ('run_plugin', 'submit_jobs'):
             return await call_next(ctx)
         args=params.get('arguments') or {}
-        plugin=args.get('plugin');arguments=args.get('arguments') or []
-        # Validate through the public core API, without running a plugin/image scan.
-        arguments=await asyncio.to_thread(self.backend.validate_arguments,plugin,arguments)
-        catalog=await asyncio.to_thread(self.backend.list_plugins,plugin)
-        metadata=next((p for p in catalog['plugins'] if p['name']==plugin),None)
-        reason=extraction_reason(plugin,arguments,metadata)
-        if reason:
-            message=(TITLE+"\n"+reason+"\nPlugin: "+plugin+"\nImage: "+str(args.get('image'))+
-                "\nArguments: "+json.dumps(arguments)+"\nOutput root: "+self.output_root+
+        batch = params.get('name') == 'submit_jobs'
+        jobs = args.get('jobs') if batch else [args]
+        if not isinstance(jobs, list) or not 1 <= len(jobs) <= 256 or any(not isinstance(job, dict) for job in jobs):
+            raise ValueError('Supply a bounded explicit list of plugin jobs')
+        requests=[];reasons=[]
+        # Inspect the complete batch before consent or dispatch. A denied batch
+        # starts no earlier safe entries, and SDK requestState binds every entry.
+        for job in jobs:
+            plugin=job.get('plugin')
+            arguments=await asyncio.to_thread(self.backend.validate_arguments,plugin,job.get('arguments') or [])
+            if batch:
+                await asyncio.to_thread(self.backend.resolve_input,job.get('image'))
+            catalog=await asyncio.to_thread(self.backend.list_plugins,plugin)
+            metadata=next((p for p in catalog['plugins'] if p['name']==plugin),None)
+            reason=extraction_reason(plugin,arguments,metadata)
+            requests.append({'plugin':plugin,'image':job.get('image'),'arguments':arguments})
+            if reason: reasons.append(plugin+': '+reason)
+        if reasons:
+            message=(TITLE+"\n"+"\n".join(reasons)+"\nExact request: "+json.dumps(requests)+
+                "\nOutput root: "+self.output_root+
                 "\nRecovered files may contain live malware or credentials. Keep them in the case output area. "
                 "Do not execute, open externally, or upload them. This approval applies only to this exact request.")
             if ctx.protocol_version >= '2026-07-28':

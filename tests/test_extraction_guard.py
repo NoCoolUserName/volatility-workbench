@@ -63,6 +63,27 @@ class GuardTests(unittest.IsolatedAsyncioTestCase):
             replay=await client.session.call_tool('run_plugin',args,request_state=request.request_state,input_responses=response,allow_input_required=True)
             self.assertTrue(replay.is_error)
 
+    async def test_batch_consent_covers_every_entry_before_any_dispatch(self):
+        server=StdioServerParameters(command=sys.executable,args=[str(Path(__file__).parent/'fixtures/extraction_server.py')],env={'PYTHONPATH':str(Path(guarded_scoped.__file__).parents[1])})
+        jobs=[{'image':'fixture','plugin':'windows.pslist.PsList'},
+              {'image':'fixture','plugin':'windows.dumpfiles.DumpFiles','arguments':['--filter','synthetic']}]
+        for mode in ('auto','legacy'):
+            prompts=[]
+            async def decline(context,params):
+                prompts.append(params.message);return ElicitResult(action='decline')
+            async with Client(server,mode=mode,elicitation_callback=decline) as client:
+                result=await client.call_tool('submit_jobs',{'jobs':jobs})
+                self.assertTrue(result.is_error)
+            self.assertEqual(len(prompts),1)
+            for job in jobs:self.assertIn(job['plugin'],prompts[0])
+        async def accept(context,params):return ElicitResult(action='accept',content={'confirm':True})
+        async with Client(server,elicitation_callback=accept) as client:
+            result=await client.call_tool('submit_jobs',{'jobs':jobs})
+            self.assertFalse(result.is_error)
+            # Normal batches do not introduce extraction consent.
+            normal=await client.call_tool('submit_jobs',{'jobs':jobs[:1]})
+            self.assertFalse(normal.is_error)
+
     def test_conservative_classification(self):
         normal={'description':'Lists modules','options':[{'flag':'--dump'}]}
         self.assertIsNone(extraction_reason('windows.modules.Modules',[],normal))

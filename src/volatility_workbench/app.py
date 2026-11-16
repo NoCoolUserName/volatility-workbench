@@ -88,6 +88,20 @@ def report_benignness_support(markdown, excerpts):
     return report_determination_support(markdown, excerpts, 'Benign', 'benignness_support')
 
 
+def core_job_records(backend):
+    """Traverse authorized durable core records without dropping older active work."""
+    offset = 0
+    while True:
+        page = backend.list_jobs(offset=offset, limit=256)
+        yield from page['jobs']
+        following = page.get('next_offset')
+        if following is None:
+            return
+        if type(following) is not int or following <= offset:
+            raise ValueError('Core plugin jobs returned an invalid continuation')
+        offset = following
+
+
 class Workbench:
     def __init__(self, config_path, state_dir, project=None, codex_factory=CodexClient):
         self.config = load_config(config_path)
@@ -818,8 +832,8 @@ class Workbench:
         reasons=[]
         async with Client(transport,read_timeout_seconds=max(1800,self.config.command_timeout*3)) as client:
             tools=await client.list_tools()
-            if {t.name for t in tools.tools}!={'list_memory_images','list_plugins','get_image_info','run_plugin','read_output','case_history','inspect_artifact','query_output','get_evidence','get_coverage'}:
-                raise ValueError('Expected the ten core MCP tools, including saved-evidence queries')
+            if {t.name for t in tools.tools}!={'list_memory_images','list_plugins','get_image_info','run_plugin','read_output','case_history','inspect_artifact','query_output','get_evidence','get_coverage','submit_jobs','get_job','list_jobs','cancel_job'}:
+                raise ValueError('Expected the fourteen core MCP tools, including saved-evidence queries and plugin jobs')
             self.progress(job,'Discovering installed plugins through MCP')
             catalog=decode_result(await client.call_tool('list_plugins',{}))
             if not catalog.get('count'):
@@ -908,6 +922,12 @@ Use get_coverage to distinguish declared scope, attempts, applicability, saved r
 If adopting a plan, explicitly record it with case_set_plan(image_id, plan): profile and entries
 (id, question, plugin, arguments; optional applicability/reason). This declares intent now, never a
 historical plan or successful outcome. Exact arguments define scope; do not collapse PID filters.
+For independent, explicitly authorized plugin calls, submit_jobs accepts a finite list of
+{image, plugin, arguments}. Discover and validate each schema first. Batch independent calls;
+wait for get_job terminal results before dependent calls or report sealing. Inspect failures
+and saved evidence individually. list_jobs gives progress; cancel_job requests cancellation.
+Do not broaden collection scope to fill workers. Saved-evidence-first and extraction approvals
+apply equally to batches. The configured concurrency limit controls actual plugin execution.
 Use recorded jobs only as orchestration context, not proof a plugin completed. Reuse cites the
 original run. A page limit is not partial collection. Failed/missing/unsupported/partial data are gaps.
 Negative statements must name successfully examined scopes and limits; never conclude no compromise.
@@ -1305,6 +1325,31 @@ REPORT_SPEC follows:\n'''+spec
         scoped = Config.from_dict(json.loads((self.directory(case)/'mcp.json').read_text())['config'])
         return CaseBackend(scoped, [i['path'] for i in case['images']])
 
+    def plugin_jobs(self, case):
+        backend = self.case_backend(case)
+        # Poll only bounded progress metadata; evidence remains in saved core results.
+        fields = ('job_id', 'state', 'submitted_at', 'started_at', 'completed_at',
+                  'plugin', 'arguments', 'error', 'cancel_requested')
+        active=[];recent=[];running=queued=total=0
+        for job in core_job_records(backend):
+            total += 1
+            item = {key: job[key] for key in fields if key in job}
+            if job['state'] in ('queued', 'running'):
+                running += job['state'] == 'running'
+                queued += job['state'] == 'queued'
+                if len(active) < 256: active.append(item)
+            else:
+                recent.append(item)
+                recent.sort(key=lambda entry: (entry.get('submitted_at') or '', entry['job_id']))
+                recent = recent[-10:]
+        return {'case_id': case['id'], 'max_concurrent_runs': backend.config.max_concurrent_runs,
+                'jobs': active + recent, 'count': total, 'running_count': running,
+                'queued_count': queued, 'active_count': running + queued,
+                'omitted_active': max(0, running + queued - len(active))}
+
+    def cancel_plugin_job(self, case, job_id):
+        return self.case_backend(case).cancel_job(job_id)
+
     def coverage(self, case, image_id, offset=0, entry_id=None, attempt_offset=0):
         from volatility_mcp.api import job_view, request_failures
         image=next((i for i in case['images'] if i['id']==image_id),None)
@@ -1567,6 +1612,20 @@ REPORT_SPEC follows:\n'''+spec
             if job['status']=='queued':job.update(status='cancelled',finished_at=now(),error='Removed by Stop')
         for approval in self.approvals.values():
             if not approval['future'].done():approval['future'].set_result('decline')
+        # Cross-process core cancellation uses its durable case-scoped job API.
+        # Stop all includes batches still running after an orchestration turn.
+        plugin_cancel_errors=[]
+        def cancel_case_plugins(case):
+            backend = self.case_backend(case)
+            for plugin_job in core_job_records(backend):
+                if plugin_job['state'] in ('queued', 'running'):
+                    backend.cancel_job(plugin_job['job_id'])
+        for plugin_case in self.state['cases']:
+            try:
+                await asyncio.to_thread(cancel_case_plugins, plugin_case)
+            except Exception as error:
+                # A stale old case must never prevent interruption of active work.
+                plugin_cancel_errors.append({'case_id': plugin_case['id'], 'error': str(error)})
         if self._agent_volshell_task:
             self._agent_volshell_task.cancel()
             await asyncio.gather(self._agent_volshell_task, return_exceptions=True)
@@ -1588,7 +1647,7 @@ REPORT_SPEC follows:\n'''+spec
         if self.active is None:
             for cleanup_case in self.state['cases']:
                 await self._drain_report_deletions(cleanup_case)
-        return {'stopping':True}
+        return {'stopping':True, 'plugin_cancel_errors':plugin_cancel_errors}
 
     async def close(self):
         await self.stop()
@@ -1642,5 +1701,5 @@ REPORT_SPEC follows:\n'''+spec
         return {**view,'live_console':console,'volshell':self.volshell_snapshot(),'plugin_speed_summary':plugin_speeds.summary(self.plugin_speed_history),
             'report_cleanup_cases':list(self.report_cleanup),'default_provider':self.provider['provider'],'account':self.account,'active_job':self.active['id'] if self.active else None,
             'evidence_root':str(self.config.evidence_root),'state_dir':str(self.root),
-            'native_picker':platform.system()=='Darwin',
+            'native_picker':platform.system()=='Darwin', 'plugin_jobs_available': True,
             'approvals':[{k:v for k,v in a.items() if k!='future'} for a in self.approvals.values()]}

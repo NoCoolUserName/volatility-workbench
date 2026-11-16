@@ -311,7 +311,8 @@ def derive(root, case_id, report_id):
             try: args = json.loads(args)
             except ValueError: args = None
         plugin = args.get('plugin') if isinstance(args, dict) else None
-        if tool.rsplit('.', 1)[-1] not in ('run_plugin', 'get_image_info') and not re.fullmatch(r'(windows|linux|mac)\.[\w.]+', tool):
+        if tool.rsplit('.', 1)[-1] == 'submit_jobs': plugin = None
+        if tool.rsplit('.', 1)[-1] not in ('run_plugin', 'get_image_info', 'submit_jobs') and not re.fullmatch(r'(windows|linux|mac)\.[\w.]+', tool):
             continue
         if plugin is None and tool.startswith(('windows.', 'linux.', 'mac.')):
             plugin = tool
@@ -323,6 +324,7 @@ def derive(root, case_id, report_id):
             'reuse_count': 0, 'source_path': 'investigation.jsonl', 'execution_recorded': False,
             'synthetic': step.get('synthetic') is True or step.get('execution_kind') == 'simulated',
             'execution_kind': 'request',
+            **({'request_tool':'submit_jobs'} if tool.rsplit('.', 1)[-1] == 'submit_jobs' else {}),
             'provenance': 'investigation_log', 'reason': 'Failed request; no physical plugin execution established.'})
     coverage_info = manifest.get('coverage')
     if isinstance(coverage_info, dict) and coverage_info.get('path'):
@@ -445,6 +447,10 @@ def _error_sources(root, manifest, entries):
                 except ValueError: args = None
             if not isinstance(args, dict) or args.get('plugin') != entry.get('plugin'):
                 continue
+            if entry.get('request_tool') == 'submit_jobs':
+                if (str(detail.get('tool', '')).rsplit('.', 1)[-1] != 'submit_jobs'
+                        or not isinstance(args.get('jobs'), list)):
+                    continue
             entry['requested_image'] = _text(args.get('image'))
             if entry.get('arguments') is None:
                 entry['arguments'] = _array(args.get('arguments'))
@@ -551,7 +557,7 @@ def read(root, case_id, report_id, offset=0, limit=20):
                              if e.get('kind') == 'plugin_run' and e.get('execution_recorded') is True
                              and e.get('synthetic') is not True and e.get('execution_kind') != 'simulated'
                              and isinstance(e.get('plugin'), str)})
-    errored = [{key: e.get(key) for key in ('plugin', 'image_id', 'requested_image', 'arguments', 'status', 'kind', 'run_id', 'call_id', 'reason')}
+    errored = [{key: e.get(key) for key in ('plugin', 'request_tool', 'image_id', 'requested_image', 'arguments', 'status', 'kind', 'run_id', 'call_id', 'reason')}
                for e in entries if e.get('kind') == 'request_failure' or
                (e.get('kind') == 'plugin_run' and isinstance(e.get('status'), str) and
                 re.search(r'fail|error|denied|cancel|timeout', e['status'], re.I))]
@@ -589,7 +595,7 @@ def markdown(text, inventory):
     labels = ('Record', 'Plugin', 'Arguments (bounded display)', 'Recorded argv (bounded display)',
               'Result', 'Image', 'Run / call', 'Start / finish', 'Reuse receipts')
     for number, entry in enumerate(inventory['entries'][:100], 1):
-        values = [entry['kind'] + (' (simulated)' if entry.get('synthetic') else ''), entry['plugin'], entry['arguments'], entry['argv'], entry['status'], entry['image_id'],
+        values = [entry['kind'] + (' (simulated)' if entry.get('synthetic') else ''), entry['plugin'] or entry.get('request_tool'), entry['arguments'], entry['argv'], entry['status'], entry['image_id'],
                   (entry.get('run_id') or 'Unknown') + ' / ' + (entry.get('call_id') or 'Unknown'),
                   (entry.get('started_at') or 'Unknown') + ' / ' + (entry.get('finished_at') or 'Unknown'), entry['reuse_count']]
         lines += [f'#### Saved record {number}', *(f'**{label}:** {cell(value)}' for label, value in zip(labels, values)), '']
