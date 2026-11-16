@@ -5,6 +5,40 @@ Core execution/reuse, artifact inspection, saved-evidence/citation, coverage, an
 protocol checks are maintained in the
 [core validation record](https://github.com/NoCoolUserName/volatility-mcp/blob/main/docs/VALIDATION.md).
 
+## Machine-path privacy CI
+
+The **Public path privacy** workflow adds a **Machine path privacy** job for
+main pushes, proposed pull requests and manual dispatch. It checks tracked paths
+and content, plus bounded newly introduced commit content and messages, for
+portable patterns representing personal machine locations. Inspecting each new
+commit also catches sensitive content that is added and then removed before the
+final tree. Diagnostics withhold matched values and file names. Incomplete Git
+ranges, unreadable inputs or exceeded scan limits fail the check.
+
+Workbench uses the portable core privacy scanner in `--paths-only` mode. Paths in
+commit metadata are still checked; contributor author, committer and co-author
+identities are not restricted by this workflow. No private aliases or user names
+are needed in CI. The existing secret-scanning workflow remains separate.
+
+Pull request checks use `pull_request_target` so the scanner comes from the
+trusted base checkout. The proposed checkout is read only as Git data; no script,
+test, dependency or other proposed code is executed or installed. Python runs in
+isolated mode, action revisions are pinned, repository permissions are read only,
+and checkout credentials are not persisted. Pull requests inspect their merge-base
+range; pushes use the event before/head range. Manual dispatch requires an exact
+base commit. The scanner does not rewrite commits or inspect all historical Git
+objects outside the selected range.
+
+This is an additive job: existing checks and branch-protection requirements are
+unchanged. The new trusted-base workflow becomes available to pull requests after
+it reaches the default branch. Its first introducing pull request cannot exercise
+that hosted boundary in advance. Making the new status required is a separate
+repository setting; adding this file does not change merge permissions.
+
+Focused synthetic regressions live in `tests/test_public_privacy.py`. The portable
+scanner and fixtures intentionally match the core implementation; keep changes
+in sync rather than introducing different detection policies.
+
 ## Native Adventure CI scope
 
 The compatibility workflow always starts for pull requests and main pushes. Its

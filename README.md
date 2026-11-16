@@ -1,6 +1,6 @@
 # Volatility Workbench
 
-*23,644 lines of code*
+*24,069 lines of code*
 
 *Latest measured local macOS ARM64 build: app 1.3 GB (1,348,531,943 bytes; 1286.06 MiB); distribution ZIP 1.1 GB (1,122,247,989 bytes; 1070.26 MiB). Built from `17ef6f5f6931084541fd6414dc86b3e3eee6090c`, measured 2026-11-16; excludes symlink aliases and private evidence, case state and caches. Local installation artifact; no new binary release was published.*
 
@@ -241,9 +241,12 @@ No private case is a test fixture. Synthetic checks establish application contra
 not broad forensic accuracy. Remaining gaps include a clean-account/second-Mac
 acceptance run, independent multi-OS accuracy evidence, wider symbol/plugin
 compatibility, interruption/storage limits, broader accessibility testing and
-credentialed release acceptance. Intel/Windows distributions, parallel analysis and
-polished report exports remain future work. **Quick triage and compatibility sweep
-buttons are proposals and are not implemented.**
+credentialed release acceptance. Intel/Windows distributions and polished report
+exports remain future work. [Plugin concurrency and core job controls](docs/LOCAL_UI.md#plugin-concurrency)
+are implemented; the existing case agent can submit independent plugin batches,
+inspect terminal results and use saved evidence for follow-ups. **Versioned Quick
+triage and compatibility sweep profiles/buttons remain proposals and are not
+implemented.**
 
 The weekly/manual core updater proposes eligible stable `v0.1.x` API-1 updates in a
 PR; startup never updates or merges automatically. Review and validate each new pin.
