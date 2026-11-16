@@ -37,7 +37,23 @@ a signed/notarized installer package.
 
 The native build installs the full MCP release wheel pinned by URL and SHA-256 in
 `distribution.json`, verifies its source revision against `core-dependency.json`,
-and checks every embedded symbol pack. Update both pins together. Source/CLI
+and checks every embedded symbol pack. Update both pins together. For a local
+application build before the matching release artifact is published, explicitly
+select a full wheel built from the pinned core revision:
+
+```sh
+python3 scripts/build_macos.py --core-wheel /path/to/volatility_mcp-0.1.4-py3-none-any.whl --output dist/macos
+```
+
+The local wheel must match the exact core source revision and version and pass
+the same four-pack integrity and notices checks. The embedded distribution and
+build information record its SHA-256, source revision, filename and `local-build`
+origin; they include neither its private absolute path nor the older release URL.
+Omitting `--core-wheel` retains the hash-pinned remote release path. The separate
+public-release audit still requires the distribution profile to match the reviewed
+checkout, so a local override is for the local application build/install workflow.
+
+Source/CLI
 installs retain the VCS dependency; the native app includes all four packs and
 their upstream notices. The large wheel remains in the build cache rather than
 being duplicated in the app wheelhouse. Fresh setup provisions local copies through

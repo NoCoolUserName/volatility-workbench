@@ -57,6 +57,49 @@ class MacPackagingTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'Incomplete'):
                 build.verify_core_bundle(wheel,pin)
 
+    def test_explicit_local_core_wheel_is_verified_and_has_portable_provenance(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);wheel=root/'volatility_mcp-0.1.4-py3-none-any.whl'
+            pin={'commit':'a'*40,'version':'0.1.4'}
+            raw=b'SYNTHETIC SYMBOL DATA'
+            packs=[{'name':f'{i}.zip','bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()} for i in range(4)]
+            with zipfile.ZipFile(wheel,'w') as archive:
+                archive.writestr('volatility_mcp/resources/symbol-bundle.json',json.dumps({
+                    'source_revision':pin['commit'],'core_version':pin['version'],'packs':packs}))
+                archive.writestr('volatility_mcp/resources/SYMBOL_PACK_NOTICES.md','SYNTHETIC NOTICE')
+                for pack in packs:
+                    archive.writestr('volatility_mcp/resources/symbol-packs/'+pack['name'],raw)
+            manifest={'core_bundle':{'url':'https://example.invalid/old.whl','sha256':'old'}}
+            with patch.object(build,'fetch',side_effect=AssertionError('local wheel must not download')):
+                selected,bundle=build.select_core_bundle(manifest,pin,root/'cache',wheel)
+                self.assertEqual(selected,wheel.resolve())
+                self.assertEqual(bundle,{'source':'local-build','filename':wheel.name,
+                                        'sha256':hashlib.sha256(wheel.read_bytes()).hexdigest(),
+                                        'source_revision':pin['commit']})
+                self.assertNotIn(str(root),json.dumps(bundle))
+                self.assertNotIn('url',bundle)
+                self.assertEqual(manifest['core_bundle']['sha256'],'old')
+                for wrong_pin in (pin|{'commit':'b'*40},pin|{'version':'0.1.3'}):
+                    with self.subTest(pin=wrong_pin),self.assertRaisesRegex(ValueError,'source pin'):
+                        build.select_core_bundle(manifest,wrong_pin,root/'cache',wheel)
+                # A changed declared pack must still fail before installation.
+                with zipfile.ZipFile(wheel) as archive:
+                    content={name:archive.read(name) for name in archive.namelist()}
+                content['volatility_mcp/resources/symbol-packs/0.zip']=b'CORRUPT'
+                with zipfile.ZipFile(wheel,'w') as archive:
+                    for name,value in content.items():archive.writestr(name,value)
+                with self.assertRaisesRegex(ValueError,'differs'):
+                    build.select_core_bundle(manifest,pin,root/'cache',wheel)
+
+    def test_default_core_wheel_keeps_remote_hash_pin(self):
+        manifest={'core_bundle':{'url':'https://example.invalid/core.whl','sha256':'a'*64}}
+        cache=Path('/synthetic-cache');pin={'commit':'b'*40,'version':'0.1.4'}
+        with patch.object(build,'fetch',return_value=cache/'core.whl') as fetch,patch.object(build,'verify_core_bundle') as verify:
+            wheel,bundle=build.select_core_bundle(manifest,pin,cache)
+        fetch.assert_called_once_with(manifest['core_bundle']['url'],cache/'core.whl','a'*64)
+        verify.assert_called_once_with(wheel,pin)
+        self.assertEqual(bundle,manifest['core_bundle'])
+
     def test_python_archive_cannot_escape_build_directory(self):
         with tempfile.TemporaryDirectory() as temp:
             root=Path(temp); archive=root/'bad.tar.gz'

@@ -74,6 +74,11 @@ for asset in ('static/settings.html','static/settings.js','static/settings.css',
  assert files('volatility_workbench').joinpath(asset).read_bytes(),asset
 scenes=list(files('volatility_workbench').joinpath('static').glob('theme-*.svg'))
 assert len(scenes)==11 and all(scene.read_bytes() for scene in scenes)
+bezel_manifest=json.loads(files('volatility_workbench').joinpath('resources/reference-terminal-assets.json').read_text())
+assert len(bezel_manifest['assets'])==3
+for asset in bezel_manifest['assets']:
+ data=files('volatility_workbench').joinpath('static',asset['asset']).read_bytes()
+ assert len(data)==asset['bytes'] and hashlib.sha256(data).hexdigest()==asset['sha256']
 core=json.loads(m.distribution('volatility-mcp').read_text('direct_url.json'))
 assert core['archive_info']['hashes']['sha256']==manifest['core_bundle']['sha256']
 assert info['core_bundle']==manifest['core_bundle']
@@ -89,6 +94,7 @@ with patch.object(symbol_packs, '_download', side_effect=AssertionError('no symb
  preferences, fresh_path, _, _=desktop.bootstrap(args, resources)
 from volatility_mcp.api import load_config
 fresh=load_config(fresh_path)
+assert fresh.max_concurrent_runs == min(4, os.cpu_count() or 1)
 for pack in bundle['packs']:
  with (fresh.symbols/pack['name']).open('rb') as stream:
   assert hashlib.file_digest(stream,'sha256').hexdigest()==pack['sha256']
@@ -98,6 +104,7 @@ python=resources/'analyzer/bin/python3'; vol=resources/'analyzer/bin/vol'
 probe=subprocess.run([str(python),'-I','-c','import platform,volatility3,capstone,yara,Crypto,PIL,Evtx,pypykatz; assert platform.machine()=="arm64"; print("native imports passed")'],capture_output=True,text=True,check=True)
 evidence=root/'evidence'; evidence.mkdir(); output=root/'outputs'
 config=Config(evidence,output,python,vol,cache_path=root/'symbols-cache')
+assert config.max_concurrent_runs == min(4, os.cpu_count() or 1)
 path=root/'config.json'; path.write_text(json.dumps(config.to_dict()))
 catalog=VolatilityBackend(config).list_plugins(refresh=True)
 assert not catalog['import_failures'],catalog['import_failures']
@@ -139,7 +146,8 @@ fixture=evidence/'synthetic.raw'; fixture.write_bytes(b'\x00'*4096+b'Linux versi
 original_hash=hashlib.sha256(fixture.read_bytes()).hexdigest()
 async def check():
  async with Client(StdioServerParameters(command=sys.executable,args=['-I','-m','volatility_mcp','serve','--config',str(path)])) as client:
-  tools=await client.list_tools(); assert len(tools.tools)==10 and {'list_plugins','query_output','get_coverage'} <= {x.name for x in tools.tools}
+  tools=await client.list_tools()
+  assert {x.name for x in tools.tools} == {'list_memory_images','list_plugins','get_image_info','run_plugin','read_output','case_history','inspect_artifact','query_output','get_evidence','get_coverage','submit_jobs','get_job','list_jobs','cancel_job'}
   result=decode_result(await client.call_tool('list_plugins',{'query':'evtxlog'}))
   assert not result.get('error'),result
   assert any(x['name']=='windows.evtxlog.evtxlog' for x in result['plugins'])
@@ -157,7 +165,7 @@ asyncio.run(check())
 run=subprocess.run([str(python),'-I',str(vol),'-q','-f',str(fixture),'banners.Banners'],capture_output=True,text=True,timeout=60)
 assert run.returncode==0,(run.returncode,run.stderr[-1500:])
 assert 'SYNTHETIC TEST ONLY' in run.stdout,run.stdout[-1500:]
-print(json.dumps({'status':'passed','plugin_count':catalog['total'],'import_failures':catalog['import_failures'],'core_commit':info['core_commit'],'native_dependency_imports':True,'mcp_catalog_call':True,'cryptomem_discovery_and_vector':True,'synthetic_analyzer_invocations':3,'linux_cryptomem_mcp_failure':True,'mac_cryptomem_mcp_failure':True,'real_images_opened':0}))
+print(json.dumps({'status':'passed','plugin_count':catalog['total'],'import_failures':catalog['import_failures'],'core_commit':info['core_commit'],'native_dependency_imports':True,'mcp_catalog_call':True,'mcp_tool_count':14,'max_concurrent_runs':config.max_concurrent_runs,'reference_terminal_assets':len(bezel_manifest['assets']),'cryptomem_discovery_and_vector':True,'synthetic_analyzer_invocations':3,'linux_cryptomem_mcp_failure':True,'mac_cryptomem_mcp_failure':True,'real_images_opened':0}))
 '''
         result=subprocess.run([str(resources/'runtime/bin/python3'),'-I','-c',script,str(resources)],cwd=temp,env=env,capture_output=True,text=True,timeout=1800)
         if result.returncode:

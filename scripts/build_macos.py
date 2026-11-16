@@ -122,10 +122,26 @@ def verify_core_bundle(wheel, pin):
     return manifest
 
 
+def select_core_bundle(manifest, pin, cache, local_wheel=None):
+    """Verify either the pinned release artifact or an explicitly selected wheel."""
+    if local_wheel is None:
+        bundle = manifest['core_bundle']
+        wheel = fetch(bundle['url'], cache/bundle['url'].rsplit('/', 1)[1], bundle['sha256'])
+        verify_core_bundle(wheel, pin)
+        return wheel, bundle
+    wheel = local_wheel.resolve(strict=True)
+    if not wheel.is_file() or wheel.suffix != '.whl':
+        raise ValueError('--core-wheel must select a local .whl file')
+    verified = verify_core_bundle(wheel, pin)
+    return wheel, {'source': 'local-build', 'filename': wheel.name,
+                   'sha256': digest(wheel), 'source_revision': verified['source_revision']}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=ROOT/'dist'/'macos')
     parser.add_argument('--cache', type=Path, default=Path.home()/'Library/Caches/Volatility Workbench/build')
+    parser.add_argument('--core-wheel', type=Path, help='Use a local full core wheel matching the exact source/version pin and all four symbol packs')
     parser.add_argument('--allow-dirty', action='store_true', help='Development artifact only; provenance records uncommitted source')
     parser.add_argument('--sign-identity', default='-', help='Default ad-hoc local signing; no notarization claim')
     args = parser.parse_args()
@@ -144,9 +160,8 @@ def main():
         raise SystemExit('Commit source before a release build, or explicitly use --allow-dirty for validation')
     output, cache = args.output.resolve(), args.cache.resolve()
     output.mkdir(parents=True, exist_ok=True); cache.mkdir(parents=True, exist_ok=True)
-    bundle = manifest['core_bundle']
-    core_wheel = fetch(bundle['url'], cache/bundle['url'].rsplit('/', 1)[1], bundle['sha256'])
-    verify_core_bundle(core_wheel, pin)
+    core_wheel, bundle = select_core_bundle(manifest, pin, cache, args.core_wheel)
+    manifest['core_bundle'] = bundle
     archive = fetch(manifest['python']['url'], cache/'python.tar.gz', manifest['python']['sha256'])
     with tempfile.TemporaryDirectory(prefix='workbench-build-') as temporary:
         temporary = Path(temporary)
@@ -181,7 +196,8 @@ def main():
         run([app_python, '-I', '-m', 'pip', 'install', '--no-compile', '--no-deps', str(core_wheel)])
         run([app_python, '-I', '-m', 'pip', 'install', '--no-compile', '--no-deps', '--no-index', '--find-links', app_wheels, 'volatility-workbench==' + manifest['application']['version']])
         run([app_python, '-I', '-m', 'pip', 'check']); run([analyzer, '-I', '-m', 'pip', 'check'])
-        for relative in ('packaging/distribution.json', manifest['analyzer_lock'], manifest['desktop_lock'], 'core-dependency.json'):
+        write_json(resources/'distribution.json', manifest)
+        for relative in (manifest['analyzer_lock'], manifest['desktop_lock'], 'core-dependency.json'):
             shutil.copy2(ROOT/relative, resources/Path(relative).name)
         notices = resources/'notices'; notices.mkdir()
         notice_pin=manifest['python']['notices_archive']
