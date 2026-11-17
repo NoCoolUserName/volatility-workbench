@@ -104,3 +104,10 @@ class GuardTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(extraction_reason('layerwriter.LayerWriter',['--list'],layer))
         self.assertTrue(extraction_reason('unknown.Plugin',[],None))
         self.assertTrue(extraction_reason('windows.recovery.Plugin',[],{'description':'Extracts cached files'}))
+
+
+class KeyringClassificationTests(unittest.TestCase):
+    def test_manual_keyring_metadata_requires_secret_extraction_consent(self):
+        metadata = {"description": "Linux kernel keyring inventory", "manual_only": True, "options": []}
+        self.assertEqual(guarded_scoped.extraction_reason("linux.keyring.Keyring", [], metadata),
+                         "This plugin may recover credentials or other secrets.")
