@@ -4,7 +4,7 @@
   "application": {
     "name": "Volatility Workbench",
     "bundle_id": "org.volatilityworkbench.app",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "minimum_macos": "13.0"
   },
   "core_pin": "core-dependency.json",
@@ -72,7 +72,9 @@
     "Unlicensed and GPL-derived community sources require explicit upstream download; they are not bundled in the public artifact."
   ],
   "core_bundle": {
-    "url": "https://github.com/NoCoolUserName/volatility-mcp/releases/download/v0.1.4/volatility_mcp-0.1.4-py3-none-any.whl",
-    "sha256": "339dd2bb671893c9a3c5606486c4b9e7cbb824b86fd125d9980a4c86ae329975"
+    "source": "local-build",
+    "filename": "volatility_mcp-0.1.4-py3-none-any.whl",
+    "sha256": "0383c1d698cea1e324a542fcf302c1558bc3f55bd43ec1b67ec966b35d9a7e6f",
+    "source_revision": "128625bc2ee8850f76ba257e0ffe80dccbbef95d"
   }
 }
