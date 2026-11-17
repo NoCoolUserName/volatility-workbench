@@ -220,7 +220,7 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
     const c=caseNow(),oldImages=c.images,oldCatalog=reportPluginCatalog;
     const record=reportPluginCache.get(reportPluginKey);
     reportPluginCatalog={plugins:[{name:'windows.Test',target_os:'windows'},{name:'mac.Secret',target_os:'mac',manual_only:true},{name:'mac.Test',target_os:'mac'},
-      {name:'linux.Test',target_os:'linux'},{name:'unknown.Test',target_os:'other'},
+      {name:'linux.Test',target_os:'linux'},{name:'linux.keyring.Keyring',target_os:'linux',manual_only:false},{name:'unknown.Test',target_os:'other'},
       {name:'windowsMisleading.Test',target_os:'mac'}]};
     c.images=[{id:'E002',discovery:{detected_os:'macos'}},{id:'E003',discovery:{detected_os:'linux'}},{id:'E004',discovery:{detected_os:'unknown'}}];
     const mixed=bulkPluginRequest(record);
@@ -230,7 +230,8 @@ const payload=(id,rows,status='available',next=null)=>({schema:'report-plugin-in
     return {mixed,unknown};
   });
   assert.match(osChecks.mixed.text,/E002 \(macOS\): `mac.Test`, `windowsMisleading.Test`/);
-  assert.match(osChecks.mixed.text,/E003 \(linux\): `linux.Test`/);
+  assert.ok(osChecks.mixed.text.includes('E003 (linux): `linux.keyring.Keyring`, `linux.Test`'));
+  assert.ok(osChecks.mixed.text.includes('linux.keyring.Keyring'));
   assert.doesNotMatch(osChecks.mixed.text,/`windows.Test`|mac.Secret|unknown.Test|E004/);
   assert.match(osChecks.mixed.note,/1 image\(s\) have unresolved/);
   assert.equal(osChecks.unknown.text,'');

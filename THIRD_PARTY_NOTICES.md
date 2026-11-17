@@ -81,3 +81,10 @@ The build retains its unchanged source, complete LICENSE and Bitcoin standards
 notices under `Contents/Resources/notices/NoCoolUserName/volatility3-cryptomem/`.
 CryptoScan research attribution and other protocol notices remain in that LICENSE
 and the independent repository. No CryptoScan implementation is bundled.
+
+## Linux kernel keyring addon
+
+The bundled mischw/volatility3_plugins keyring addon is MIT, copyright (c) 2026
+mischw. The original source and verified LICENSE are included under application
+notices. The bounded core adaptation retains that attribution. See
+[upstream license](https://github.com/mischw/volatility3_plugins/blob/2e733c847e7cd2a2fab34bf81205c2e004dd755b/LICENSE).

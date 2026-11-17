@@ -43,8 +43,10 @@ class GuardTests(unittest.IsolatedAsyncioTestCase):
             async def unexpected_prompt(context,params):
                 self.fail('Authorized PasswordManager should not request extraction approval')
             async with Client(server,mode=mode,elicitation_callback=unexpected_prompt) as client:
-                result=await client.call_tool('run_plugin',{'image':'fixture','plugin':'windows.passwordmanagers.PasswordManager','arguments':['--pid','123']})
-                self.assertFalse(result.is_error)
+                for plugin, arguments in (('windows.passwordmanagers.PasswordManager', ['--pid','123']),
+                                          ('linux.keyring.Keyring', [])):
+                    result=await client.call_tool('run_plugin',{'image':'fixture','plugin':plugin,'arguments':arguments})
+                    self.assertFalse(result.is_error)
         async with Client(server) as client:
             result=await client.session.call_tool('run_plugin',{'image':'fixture','plugin':'linux.openssh_sessionkeys.SSHKeys','arguments':['--pid','123','--address','0x1000']},allow_input_required=True)
             self.assertEqual(result.result_type,'input_required')
@@ -104,3 +106,11 @@ class GuardTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(extraction_reason('layerwriter.LayerWriter',['--list'],layer))
         self.assertTrue(extraction_reason('unknown.Plugin',[],None))
         self.assertTrue(extraction_reason('windows.recovery.Plugin',[],{'description':'Extracts cached files'}))
+
+
+class KeyringClassificationTests(unittest.TestCase):
+    def test_keyring_automatic_metadata_skips_additional_consent(self):
+        metadata = {"description": "Extract cryptographic keys from the Linux kernel", "manual_only": False, "options": []}
+        self.assertIsNone(guarded_scoped.extraction_reason("linux.keyring.Keyring", [], metadata))
+        self.assertTrue(guarded_scoped.extraction_reason("linux.keyring.Keyring", [], {**metadata, "manual_only": True}))
+        self.assertTrue(guarded_scoped.extraction_reason("linux.keyring.Keyring", [], None))

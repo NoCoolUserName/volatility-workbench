@@ -48,15 +48,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 36,
-      "source_sha256": "9e736a392b8e6af7375b620450361dfd8b098e9c9ecf550ab666c970712bb080",
-      "reason": "Re-reviewed 2026-11-16: the changes assert the exact fourteen-tool MCP contract, the CPU-capped default of four concurrent runs in fresh and explicit configurations, and existing original terminal assets against their packaged byte/hash manifest. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
+      "source_sha256": "a92bf0bc5f325a508213563a0a180aed807d57139be0d97399e8b112d9a68fee",
+      "reason": "Re-reviewed 2026-11-16: the native validator adds read-only assertions for Linux Keyring catalog metadata, normal network/manual policy, installed plugin and MIT notice hashes, and MCP discovery using synthetic fixtures. Existing subprocess calls use fixed shell-free argv within the isolated temporary validation environment. No executable input, evidence access, rule scope, or exception line changed."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
-      "line": 170,
-      "source_sha256": "9e736a392b8e6af7375b620450361dfd8b098e9c9ecf550ab666c970712bb080",
-      "reason": "Re-reviewed 2026-11-16: the changes assert the exact fourteen-tool MCP contract, the CPU-capped default of four concurrent runs in fresh and explicit configurations, and existing original terminal assets against their packaged byte/hash manifest. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
+      "line": 186,
+      "source_sha256": "a92bf0bc5f325a508213563a0a180aed807d57139be0d97399e8b112d9a68fee",
+      "reason": "Re-reviewed 2026-11-16: this fixed-argv subprocess runs the bundled analyzer only on a literal synthetic fixture in isolated native validation. Keyring adds catalog and notice assertions before this call, shifting its line number without changing the subprocess invocation or access to user evidence."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
@@ -111,15 +111,15 @@
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 40,
-      "source_sha256": "9e736a392b8e6af7375b620450361dfd8b098e9c9ecf550ab666c970712bb080",
-      "reason": "Re-reviewed 2026-11-16: the changes assert the exact fourteen-tool MCP contract, the CPU-capped default of four concurrent runs in fresh and explicit configurations, and existing original terminal assets against their packaged byte/hash manifest. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
+      "source_sha256": "a92bf0bc5f325a508213563a0a180aed807d57139be0d97399e8b112d9a68fee",
+      "reason": "Re-reviewed 2026-11-16: the native validator adds read-only assertions for Linux Keyring catalog metadata, normal network/manual policy, installed plugin and MIT notice hashes, and MCP discovery using synthetic fixtures. Existing subprocess calls use fixed shell-free argv within the isolated temporary validation environment. No executable input, evidence access, rule scope, or exception line changed."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-subprocess-use-audit",
       "path": "scripts/validate_macos.py",
       "line": 47,
-      "source_sha256": "9e736a392b8e6af7375b620450361dfd8b098e9c9ecf550ab666c970712bb080",
-      "reason": "Re-reviewed 2026-11-16: the changes assert the exact fourteen-tool MCP contract, the CPU-capped default of four concurrent runs in fresh and explicit configurations, and existing original terminal assets against their packaged byte/hash manifest. Existing shell-free fixed argv, literal synthetic fixtures, isolated temporary homes, hashes/signature checks and no-private-evidence boundaries are unchanged. No executable input, access, rule scope or exception location was added."
+      "source_sha256": "a92bf0bc5f325a508213563a0a180aed807d57139be0d97399e8b112d9a68fee",
+      "reason": "Re-reviewed 2026-11-16: the native validator adds read-only assertions for Linux Keyring catalog metadata, normal network/manual policy, installed plugin and MIT notice hashes, and MCP discovery using synthetic fixtures. Existing subprocess calls use fixed shell-free argv within the isolated temporary validation environment. No executable input, evidence access, rule scope, or exception line changed."
     },
     {
       "rule_id": "python.lang.security.audit.dangerous-asyncio-create-exec-audit",

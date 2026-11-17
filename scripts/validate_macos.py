@@ -113,6 +113,22 @@ for name in ['windows.info.Info','windows.pslist.PsList','xpnet.XpNetScan','vol_
 assert plugins['vol_pypykatz.pypykatz']['source']['kind']=='third_party'
 assert plugins['windows.evtxlog.evtxlog']['source']['kind']=='third_party'
 assert plugins['xpnet.XpNetScan']['source']['kind']=='local'
+keyring='linux.keyring.Keyring'
+assert plugins[keyring]['source']['label']=='mischw/volatility3_plugins'
+assert plugins[keyring]['manual_only'] is False and plugins[keyring]['target_os']=='linux'
+assert plugins[keyring]['plugin_version']==[1,1,0]
+from volatility_mcp.backend import OFFLINE_ADDONS
+from volatility_workbench.guarded_scoped import extraction_reason
+assert keyring not in OFFLINE_ADDONS and extraction_reason(keyring,[],plugins[keyring]) is None
+from volatility_mcp.addons import profile as keyring_profile
+keyring_source=next(s for s in keyring_profile()['sources'] if keyring in s['plugins'])
+for item in keyring_source['files']:
+ original=resources/'notices'/keyring_source['repository']/item['path']
+ installed=resources/'analyzer/lib/python3.12/site-packages/volatility3/framework/plugins'/item['target']
+ assert hashlib.sha256(original.read_bytes()).hexdigest()==item['sha256']
+ assert hashlib.sha256(installed.read_bytes()).hexdigest()==item['installed_sha256']
+for item in keyring_source['notices']:
+ assert hashlib.sha256((resources/'notices'/keyring_source['repository']/item['path']).read_bytes()).hexdigest()==item['sha256']
 crypto='windows.cryptomem.CryptoMem'
 assert plugins[crypto]['source']['kind']=='third_party' and plugins[crypto]['manual_only']
 assert plugins[crypto]['plugin_version']==[0,5,0]
@@ -151,10 +167,10 @@ async def check():
   result=decode_result(await client.call_tool('list_plugins',{'query':'evtxlog'}))
   assert not result.get('error'),result
   assert any(x['name']=='windows.evtxlog.evtxlog' for x in result['plugins'])
-  for name in (crypto,linux_crypto,mac_crypto):
+  for name in (crypto,linux_crypto,mac_crypto,keyring):
    result=decode_result(await client.call_tool('list_plugins',{'query':name}))
    assert not result.get('error') and len(result['plugins'])==1,result
-   assert result['plugins'][0]['name']==name and result['plugins'][0]['manual_only']
+   assert result['plugins'][0]['name']==name and result['plugins'][0]['manual_only'] == (name != keyring)
   for name in (linux_crypto,mac_crypto):
    result=decode_result(await client.call_tool('run_plugin',{'image':'synthetic.raw','plugin':name,'arguments':['--pid','42']}))
    assert result['status']=='error' and result['integrity_verified'] and not result['reuse_eligible'],result
@@ -165,7 +181,7 @@ asyncio.run(check())
 run=subprocess.run([str(python),'-I',str(vol),'-q','-f',str(fixture),'banners.Banners'],capture_output=True,text=True,timeout=60)
 assert run.returncode==0,(run.returncode,run.stderr[-1500:])
 assert 'SYNTHETIC TEST ONLY' in run.stdout,run.stdout[-1500:]
-print(json.dumps({'status':'passed','plugin_count':catalog['total'],'import_failures':catalog['import_failures'],'core_commit':info['core_commit'],'native_dependency_imports':True,'mcp_catalog_call':True,'mcp_tool_count':14,'max_concurrent_runs':config.max_concurrent_runs,'reference_terminal_assets':len(bezel_manifest['assets']),'cryptomem_discovery_and_vector':True,'synthetic_analyzer_invocations':3,'linux_cryptomem_mcp_failure':True,'mac_cryptomem_mcp_failure':True,'real_images_opened':0}))
+print(json.dumps({'status':'passed','plugin_count':catalog['total'],'import_failures':catalog['import_failures'],'core_commit':info['core_commit'],'native_dependency_imports':True,'mcp_catalog_call':True,'mcp_tool_count':14,'max_concurrent_runs':config.max_concurrent_runs,'reference_terminal_assets':len(bezel_manifest['assets']),'cryptomem_discovery_and_vector':True,'synthetic_analyzer_invocations':3,'linux_cryptomem_mcp_failure':True,'mac_cryptomem_mcp_failure':True,'keyring_discovery_and_notices':True,'real_images_opened':0}))
 '''
         result=subprocess.run([str(resources/'runtime/bin/python3'),'-I','-c',script,str(resources)],cwd=temp,env=env,capture_output=True,text=True,timeout=1800)
         if result.returncode:

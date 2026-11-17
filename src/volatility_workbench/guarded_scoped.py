@@ -32,9 +32,9 @@ def extraction_reason(plugin, arguments, metadata):
     # Core argument validation still runs before this consent classification.
     if plugin=='windows.truecrypt.Passphrase':
         return None
-    # This exact addon is authorized for automatic investigation by core policy.
+    # These exact addons are authorized for automatic investigation by core policy.
     # Older core metadata and other credential plugins retain their existing gate.
-    if plugin=='windows.passwordmanagers.PasswordManager' and metadata and metadata.get('manual_only') is False:
+    if plugin in {'windows.passwordmanagers.PasswordManager', 'linux.keyring.Keyring'} and metadata and metadata.get('manual_only') is False:
         return None
     if not metadata or not metadata.get('description'):
         return "The installed plugin has no usable extraction-risk description."
