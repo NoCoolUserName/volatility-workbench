@@ -2,7 +2,7 @@
 
 *24,099 lines of code*
 
-*Latest measured local macOS ARM64 build: Volatility Workbench.app, 1,348,582,204 bytes (1286.108212 MiB); Volatility-Workbench-macos-arm64.zip, 1,122,276,914 bytes (1070.286669 MiB). Built from 17c4794ce861fe7a4dc6729ee729cc8cc99f8fa0, measured 2026-11-16; excludes symlink aliases and private evidence, case state and caches. Local keyring integration artifact; no new binary release was published.*
+*Latest measured local macOS ARM64 build: Volatility Workbench.app, 1,348,583,352 bytes (1286.109306 MiB); Volatility-Workbench-macos-arm64.zip, 1,122,281,697 bytes (1070.291230 MiB). Built from 21fc58eb9aa3231c74158ca1ee1402e4dc72b243, measured 2026-11-16; excludes symlink aliases and private evidence, case state and caches. Local keyring integration artifact; no new binary release was published.*
 
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
