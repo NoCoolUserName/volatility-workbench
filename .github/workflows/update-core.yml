@@ -30,6 +30,8 @@ jobs:
           node-version: '22'
       - name: Select eligible immutable release
         id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           python scripts/update_core.py
@@ -73,6 +75,7 @@ jobs:
           persist-credentials: false
       - name: Recreate and verify the tested proposal
         env:
+          GH_TOKEN: ${{ github.token }}
           CORE_COMMIT: ${{ needs.validate.outputs.commit }}
           VALIDATED_DIGEST: ${{ needs.validate.outputs.digest }}
         run: |
