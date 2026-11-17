@@ -11,10 +11,15 @@ POSIX process locking).
 
 ## Build, install, open
 
-From a configured development checkout, with Xcode command-line tools:
+Download the [Workbench 0.1.5 macOS ARM64 prerelease](https://github.com/NoCoolUserName/volatility-workbench/releases/tag/v0.1.5),
+verify its ZIP against `SHA256SUMS`, and extract the app. It is ad-hoc signed and
+not Apple notarized; downloaded-app Gatekeeper/clean-Mac acceptance remains unvalidated.
+
+From a configured development checkout, with Xcode command-line tools and a local
+full MCP wheel matching the pinned source revision (see [packaging](../packaging/README.md)):
 
 ```sh
-python scripts/build_macos.py --cache /tmp/workbench-build-cache --output dist/macos
+python scripts/build_macos.py --core-wheel /path/to/volatility_mcp-0.1.4-py3-none-any.whl --cache /tmp/workbench-build-cache --output dist/macos
 python scripts/install_macos.py 'dist/macos/Volatility Workbench.app' --desktop-launcher
 open "$HOME/Applications/Volatility Workbench.app"
 ```
@@ -92,7 +97,7 @@ The current public bundle contains CPython 3.12.15, pywebview 6.2.1, the pinned
 core recorded by `core-dependency.json`, and Volatility3 2.28.2 with locked analysis
 dependencies. The release builder refuses a core pin that disagrees with
 `pyproject.toml` or `requirements.lock.txt`. Packaged discovery includes the official commands, XP addon, pypykatz, EVTX and
-CryptoMem, including Monero detection. The build validator checks their discovery
+CryptoMem, including Monero detection, and Linux Keyring. The build validator checks their discovery
 and records the command count; this is not a count of independent plugin projects
 or a claim that every command works against every memory image.
 
@@ -147,7 +152,8 @@ installs the four bundled starter packs. Real-memory Linux validation is outstan
 Workbench 0.1.2 adopts core 0.1.3 and CryptoMem 0.4.0, adding
 `mac.cryptomem.CryptoMem` to the same Plugins/MCP workflow. Select a positive BSD
 PID from `mac.pslist.PsList`. This remains offline and manual-only with XP enabled
-or disabled. Existing Windows/Linux commands and the ten-tool surface remain.
+or disabled. At that release, existing Windows/Linux commands and the ten-tool surface remained;
+Workbench 0.1.5 validation confirms fourteen MCP tools.
 
 The existing legacy Mac pack can be reused only for an exactly matching Darwin
 kernel. The adapter supports only experimental legacy Intel64 captures with usable
