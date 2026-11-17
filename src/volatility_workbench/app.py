@@ -907,6 +907,11 @@ PasswordManager may run during automatic investigations when relevant to the aut
 case scope. Discover its schema and select an observed supported browser PID; keep
 its offline execution, bounds and source provenance. No separate extraction approval
 is needed for this exact plugin when the catalog marks it manual_only: false.
+Linux Keyring (linux.keyring.Keyring) may run during automatic investigations and
+report workflows when relevant to the authorized Linux case. It is eligible for
+report suggestions and needs no separate extraction approval when manual_only is
+false. It follows normal analyzer symbol/network behavior; matching kernel symbols
+and the plugin's documented bounds still apply.
 Plugins marked manual_only (including SSHKeys) require a direct
 user request for that sensitive extraction and its PID/address scope. Never include
 them in routine triage, automatic baselines, or broad investigation/report flows.

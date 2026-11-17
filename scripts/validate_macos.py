@@ -115,11 +115,11 @@ assert plugins['windows.evtxlog.evtxlog']['source']['kind']=='third_party'
 assert plugins['xpnet.XpNetScan']['source']['kind']=='local'
 keyring='linux.keyring.Keyring'
 assert plugins[keyring]['source']['label']=='mischw/volatility3_plugins'
-assert plugins[keyring]['manual_only'] and plugins[keyring]['target_os']=='linux'
+assert plugins[keyring]['manual_only'] is False and plugins[keyring]['target_os']=='linux'
 assert plugins[keyring]['plugin_version']==[1,1,0]
 from volatility_mcp.backend import OFFLINE_ADDONS
 from volatility_workbench.guarded_scoped import extraction_reason
-assert keyring in OFFLINE_ADDONS and extraction_reason(keyring,[],plugins[keyring])
+assert keyring not in OFFLINE_ADDONS and extraction_reason(keyring,[],plugins[keyring]) is None
 from volatility_mcp.addons import profile as keyring_profile
 keyring_source=next(s for s in keyring_profile()['sources'] if keyring in s['plugins'])
 for item in keyring_source['files']:
@@ -170,7 +170,7 @@ async def check():
   for name in (crypto,linux_crypto,mac_crypto,keyring):
    result=decode_result(await client.call_tool('list_plugins',{'query':name}))
    assert not result.get('error') and len(result['plugins'])==1,result
-   assert result['plugins'][0]['name']==name and result['plugins'][0]['manual_only']
+   assert result['plugins'][0]['name']==name and result['plugins'][0]['manual_only'] == (name != keyring)
   for name in (linux_crypto,mac_crypto):
    result=decode_result(await client.call_tool('run_plugin',{'image':'synthetic.raw','plugin':name,'arguments':['--pid','42']}))
    assert result['status']=='error' and result['integrity_verified'] and not result['reuse_eligible'],result

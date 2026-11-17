@@ -1,6 +1,6 @@
 # Volatility Workbench
 
-*24,090 lines of code*
+*24,099 lines of code*
 
 *Latest measured local macOS ARM64 build: Volatility Workbench.app, 1,348,582,204 bytes (1286.108212 MiB); Volatility-Workbench-macos-arm64.zip, 1,122,276,914 bytes (1070.286669 MiB). Built from 17c4794ce861fe7a4dc6729ee729cc8cc99f8fa0, measured 2026-11-16; excludes symlink aliases and private evidence, case state and caches. Local keyring integration artifact; no new binary release was published.*
 

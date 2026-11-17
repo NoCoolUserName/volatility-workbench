@@ -164,8 +164,10 @@ The app bundles the pinned MIT linux.keyring.Keyring addon from
 [mischw/volatility3_plugins](https://github.com/mischw/volatility3_plugins), with
 its original source and full license retained in notices. The core adaptation
 bounds traversal and payload reads, fails on incomplete reads, and supplies UTC
-and memory-layer provenance. It is manual-only and offline; existing extraction
-consent applies. Linux Intel64 with matching kernel symbols is required.
+and memory-layer provenance. It is eligible for automatic authorized Linux
+investigations and report suggestions, without a separate extraction prompt.
+It follows normal analyzer symbol/network behavior. Linux Intel64 with matching
+kernel symbols is required.
 User/logon and supported asymmetric payloads can be recovered; this is not
 universal LUKS recovery or disk decryption. Real Linux-image accuracy remains
 unvalidated. External analyzers need the same reviewed addon installed separately.
