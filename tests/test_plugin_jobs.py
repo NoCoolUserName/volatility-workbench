@@ -1,6 +1,9 @@
 """Core job controls use harmless metadata and preserve existing case work."""
 import asyncio
+import fcntl
 import json
+import os
+from pathlib import Path
 import unittest
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -20,6 +23,73 @@ class PluginJobTests(unittest.IsolatedAsyncioTestCase):
         self.app = Workbench(self.config, fixture.root/'ui')
         self.case = self.app.add([str(fixture.image)])[0]
         self.manager = SettingsManager(self.app, self.config, fixture.root/'preferences')
+
+    def test_progress_rereads_completion_after_owner_unlock_without_restarting_analysis(self):
+        # Use the real case-scoped core and saved results. Only the persistence
+        # timing is controlled: completion lands after the poll's first read.
+        from volatility_mcp.execution import JobManager
+        from volatility_mcp.reuse import _open_lock
+        backend = self.app.case_backend(self.case)
+        self.addCleanup(backend.shutdown_jobs)
+        result = backend.run_plugin(str(self.fixture.image), 'windows.pslist.PsList', ['--pid', '42'])
+        manifest = Path(result['manifest_path'])
+        saved_manifest = manifest.read_bytes()
+        counter = self.fixture.root/'analysis-count.jsonl'
+        invocations = counter.read_bytes()
+        self.assertEqual(len(invocations.splitlines()), 1)
+        manager = backend._job_manager()
+        job_id = 'completed-during-progress'
+        running = {'job_id': job_id, 'image': str(self.fixture.image),
+                   'plugin': 'windows.pslist.PsList', 'arguments': ['--pid', '42'],
+                   'state': 'running', 'result': None, 'error': None}
+        terminal = {**running, 'state': 'success', 'result': result,
+                    'completed_at': '2026-11-20 00:00:00Z'}
+        manager._save(running)
+        owner = _open_lock(manager._path(job_id, '.lock'))
+        fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        original_read = JobManager._read
+        reads = []
+
+        def finish_after_first_read(observer, selected_id):
+            nonlocal owner
+            record = original_read(observer, selected_id)
+            reads.append(record['state'])
+            if len(reads) == 1:
+                manager._save(terminal)
+                os.close(owner)
+                owner = None
+            return record
+
+        try:
+            with patch.object(JobManager, '_read', new=finish_after_first_read), \
+                 patch('subprocess.Popen', side_effect=AssertionError('Polling must not launch work')):
+                progress = self.app.plugin_jobs(self.case)
+        finally:
+            if owner is not None:
+                os.close(owner)
+        self.assertEqual(reads, ['running', 'success'])
+        self.assertEqual(progress['jobs'][0]['state'], 'success')
+        self.assertIsNone(progress['jobs'][0]['error'])
+        self.assertNotIn('result', progress['jobs'][0])
+        self.assertEqual((progress['count'], progress['active_count']), (1, 0))
+        with patch('subprocess.Popen', side_effect=AssertionError('Readback/cancel must not launch work')):
+            self.assertEqual(backend.get_job(job_id)['result'], result)
+            cancelled = self.app.cancel_plugin_job(self.case, job_id)
+            self.assertEqual(cancelled['state'], 'success')
+            self.assertEqual(cancelled['result'], result)
+            self.assertFalse(cancelled['cancel_requested'])
+            self.assertEqual(self.app.plugin_jobs(self.case)['jobs'][0]['state'], 'success')
+            self.assertEqual(backend.case_history(str(self.fixture.image))['entries'][0]['status'], 'success')
+            # A truly abandoned active record must still be reported interrupted.
+            manager._save({**running, 'job_id': 'abandoned-job'})
+            abandoned = {job['job_id']: job for job in self.app.plugin_jobs(self.case)['jobs']}
+            self.assertEqual(abandoned['abandoned-job']['state'], 'interrupted')
+            self.assertEqual(abandoned[job_id]['state'], 'success')
+        self.assertEqual(original_read(manager, job_id), terminal)
+        self.assertEqual(original_read(manager, 'abandoned-job')['state'], 'running')
+        self.assertFalse(manager._path(job_id, '.cancel').exists())
+        self.assertEqual(manifest.read_bytes(), saved_manifest)
+        self.assertEqual(counter.read_bytes(), invocations)
 
     async def test_execution_setting_persists_without_changing_case_paths_or_evidence(self):
         scoped = self.app.directory(self.case)/'mcp.json'

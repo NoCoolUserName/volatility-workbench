@@ -1,6 +1,6 @@
 # Volatility Workbench
 
-*24,254 lines of code*
+*24,332 lines of code*
 
 *Latest measured macOS ARM64 prerelease 0.1.5: Volatility Workbench.app, 1,348,583,976 bytes (1286.109901 MiB); Volatility-Workbench-macos-arm64.zip, 1,122,281,593 bytes (1070.291131 MiB). Built from 4efdd5b279b2623d5a281fc3b33bdd8892edc083, measured 2026-11-16; excludes symlink aliases and private evidence, case state and caches.*
 
@@ -96,8 +96,9 @@ notarization; downloaded-app Gatekeeper acceptance remains unvalidated. See
 below before replacing an existing app.
 
 Build from a clean, configured checkout with Python 3.12+ and Apple's command-line
-tools. The 0.1.5 distribution profile requires a local full MCP wheel matching
-the pinned source revision; see [wheel requirements](packaging/README.md):
+tools. Building the updated source requires a local full MCP wheel matching
+the new source pin; the checked-in distribution profile still records the historical
+0.1.5 wheel. See [wheel requirements](packaging/README.md):
 
 ```sh
 python3 scripts/build_macos.py --core-wheel /path/to/volatility_mcp-0.1.4-py3-none-any.whl --cache /tmp/workbench-build-cache --output dist/macos
@@ -162,10 +163,22 @@ and [security](SECURITY.md).
 
 ## Pinned core and plugins
 
-The tested core pin for Workbench 0.1.5 is MCP 0.1.4 at `128625bc2ee8850f76ba257e0ffe80dccbbef95d`, API revision 1.
-`core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on the
-immutable commit. `pip install .` brings in that dependency; the pin helper checks
-installed Git provenance even when successive core commits share a package version.
+The current source pins MCP 0.1.4 at `d3f3ee6452f9c0d435e9f035767b5e212ecfb616`, API revision 1.
+`core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on this
+immutable commit. It fixes a job-status polling race that could briefly report a
+completed job as interrupted with no result in that response. Saved successful
+results remain intact. `pip install .` declares the dependency; run
+`scripts/install_core_pin.py` as shown above to force-reinstall a same-version
+core update when needed and verify the installed `direct_url.json` commit.
+Checking package version 0.1.4 alone does not establish the source revision.
+
+The retained published Workbench 0.1.5 macOS binary uses the historical MCP pin
+`128625bc2ee8850f76ba257e0ffe80dccbbef95d` and does **not** contain this polling fix.
+This source-only update does not patch installed apps; the binary, release tag,
+checksums and measured sizes above remain unchanged until the next planned release.
+On 0.1.5, poll the same job again or inspect saved history/evidence before
+resubmitting analysis. Updating core changes execution reuse identity: older saved
+results remain readable, but equivalent new requests may execute again.
 
 The public bundle includes Linux Keyring and CryptoMem alongside the native and previously bundled
 plugins. The configured analyzer may include additional optional community
