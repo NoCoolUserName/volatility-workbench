@@ -38,9 +38,13 @@ a signed/notarized installer package.
 
 The Workbench 0.1.5 `distribution.json` records a locally built full MCP 0.1.4
 wheel at source revision `128625bc2ee8850f76ba257e0ffe80dccbbef95d`, with its SHA-256;
-it does not provide a remote wheel URL. Reproducing this profile requires
-`--core-wheel` with that matching wheel. The native build verifies its source
-revision against `core-dependency.json` and checks every embedded symbol pack:
+it does not provide a remote wheel URL. That historical wheel does not contain
+the job-status polling fix and must not be relabeled as a newer source build.
+Reproducing the published 0.1.5 profile requires its matching historical checkout
+and wheel. The next native build from current source instead requires a full MCP
+0.1.4 wheel built from `d3f3ee6452f9c0d435e9f035767b5e212ecfb616`, supplied
+with `--core-wheel`. The builder verifies its source revision against
+`core-dependency.json` and checks every embedded symbol pack:
 
 ```sh
 python3 scripts/build_macos.py --core-wheel /path/to/volatility_mcp-0.1.4-py3-none-any.whl --output dist/macos
@@ -54,8 +58,16 @@ Omitting `--core-wheel` is supported only by profiles with a hash-pinned remote
 wheel URL. The separate public-release audit requires the recorded wheel metadata,
 including its hash, to match the reviewed checkout's distribution profile.
 
-Source/CLI
-installs retain the VCS dependency; the native app includes all four packs and
+Keep `distribution.json` unchanged until that full symbol wheel exists. At the
+next release, update `core_bundle.source_revision` and its measured `sha256`
+together, retaining the actual wheel filename and source origin, and record a
+new Workbench release version. The existing builder records the explicit local
+wheel accurately in each build; public-release auditing also requires matching
+checked-in metadata. A lightweight source/CLI wheel is insufficient for a native
+distribution. This source update does not rebuild or replace the published 0.1.5
+app, assets, checksums or tag.
+
+Source/CLI installs retain the VCS dependency; the native app includes all four packs and
 their upstream notices. The large wheel remains in the build cache rather than
 being duplicated in the app wheelhouse. Fresh setup provisions local copies through
 the shared MCP API and never falls back to downloads for a missing bundle.
