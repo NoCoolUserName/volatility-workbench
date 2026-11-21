@@ -9,6 +9,14 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 EXTENSIONS = {'.py', '.js', '.cjs', '.css', '.html', '.sh'}
 LINE = re.compile(r'^\*[\d,]+ lines of code\*$', re.MULTILINE)
+SIZE_LINE = re.compile(r'^\*Latest measured macOS ARM64 prerelease .+\*$', re.MULTILINE)
+SIZE_FORMAT = re.compile(
+    r'^\*Latest measured macOS ARM64 prerelease .+: '
+    r'Volatility Workbench\.app, \d+\.\d{2} GB; '
+    r'Volatility-Workbench-macos-arm64\.zip, \d+\.\d{2} GB\. '
+    r'Built from [0-9a-f]{40}, measured \d{4}-\d{2}-\d{2}; '
+    r'excludes symlink aliases and private evidence, case state and caches\.\*$'
+)
 
 
 def count_lines():
@@ -30,6 +38,9 @@ def main():
     args = parser.parse_args()
     readme = ROOT / 'README.md'
     original = readme.read_text()
+    sizes = SIZE_LINE.findall(original)
+    if len(sizes) != 1 or not SIZE_FORMAT.fullmatch(sizes[0]):
+        raise SystemExit('README artifact sizes must use decimal GB with exactly two decimals; no raw bytes or MiB')
     label = f'*{count_lines():,} lines of code*'
     if LINE.search(original):
         updated = LINE.sub(label, original, count=1)

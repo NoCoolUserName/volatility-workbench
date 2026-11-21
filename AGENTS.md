@@ -41,9 +41,13 @@ Update relevant documentation; inspect staged contents before publication.
 After every merge and before every push, run `python3 scripts/update_readme_loc.py`
 and stage the README count. Keep that italic line first below the title. CI checks
 that it matches nonblank tracked source and test lines. After each available build,
-put an italic measured-size line immediately after it: app logical file bytes and
-distribution ZIP bytes, with MiB, measurement date and the artifact source revision.
-Use actual artifacts; count regular app files once, excluding symlink aliases.
+put an italic measured-size line immediately after it: app and distribution ZIP
+sizes in decimal GB (1 GB = 1,000,000,000 bytes), rounded to exactly two decimal
+places, with measurement date and artifact source revision. Use this same format
+for human-facing app artifact sizes in release notes and validation documents;
+do not show raw byte counts or MiB there. Exact byte counts belong in artifact
+manifests for machine verification. Use actual artifacts; count regular app files
+once, excluding symlink aliases. CI enforces the README size format.
 Do not guess sizes or include private data, cases or caches.
 If building elsewhere makes a measurement unavailable, preserve the last labeled
 measurement and state the limitation. A docs-only size stamp identifies the build
