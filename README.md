@@ -1,12 +1,13 @@
 # Volatility Workbench
 
-*24,265 lines of code*
+*24,343 lines of code*
 
 *Latest measured macOS ARM64 prerelease 0.1.5: Volatility Workbench.app, 1.35 GB; Volatility-Workbench-macos-arm64.zip, 1.12 GB. Built from 4efdd5b279b2623d5a281fc3b33bdd8892edc083, measured 2026-11-16; excludes symlink aliases and private evidence, case state and caches.*
 
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved
-cases, sequential analysis jobs, resumable case conversations, versioned reports,
+cases, sequential report operations, parallel independent plugin batches,
+resumable case conversations, versioned reports,
 saved evidence and citations, coverage views, and a searchable plugin catalog.
 Use the native macOS application or the same interface in a browser. The optional
 [Colossal Cave Adventure Easter egg](docs/ADVENTURE.md) has a separate license and game-data
@@ -16,9 +17,19 @@ Workbench provides the interface. The separate core handles forensic execution,
 integrity checks, saved-result reuse, artifact inspection, queries, citations, and
 coverage.
 
-Workbench 0.1.4 retains MCP 0.1.4 and CryptoMem 0.5.0: opt-in English BIP-39, Bitcoin WIF/xprv/tprv and explicitly ambiguous transaction-ID candidates. Secrets remain masked in ordinary outputs; complete extraction is explicit and local-only. Existing address defaults, three OS adapters and ten MCP tools remain. Exact captured-kernel symbols are required; real-memory Linux/macOS validation remains outstanding.
+Workbench [0.1.5](docs/RELEASE_0.1.5.md) adds Linux Keyring integration and includes
+parallel plugin execution improvements and the core-updater authentication fix.
+It retains MCP 0.1.4 and CryptoMem 0.5.0, with fourteen Model Context Protocol (MCP)
+tools confirmed by release validation. Keyring supports Linux Intel64 and selected
+user/logon/asymmetric payloads with matching kernel symbols; it is eligible for
+authorized automatic investigations and report suggestions without a separate
+extraction prompt. Real Linux-image key recovery remains unvalidated; checks use
+synthetic fixtures. It does not guarantee volume decryption or recovery of every
+key type.
 
-The [0.1.4 release](docs/RELEASE_0.1.4.md) adds selective red/green
+CryptoMem retains opt-in English BIP-39, Bitcoin WIF/xprv/tprv and explicitly ambiguous transaction-ID candidates. Secrets remain masked in ordinary outputs; complete extraction is explicit and local-only. Existing address defaults and three OS adapters remain. Exact captured-kernel symbols are required; real-memory Linux/macOS validation remains outstanding.
+
+The earlier [0.1.4 release](docs/RELEASE_0.1.4.md) added selective red/green
 AI determination support in Executive summaries and a curated theme catalog.
 
 Original project code is available under MIT and the Volatility Software License 1.0. Integrated Volatility distributions follow VSL's source and notice requirements; see [LICENSING.md](LICENSING.md) for the component map and release steps.
@@ -30,7 +41,7 @@ Original project code is available under MIT and the Volatility Software License
   captures can share a case even when they live in different folders. Each case's
   MCP server can access only its selected files.
 - Check readiness, generate a report, ask follow-up questions, and create a new
-  report revision. Jobs run sequentially with progress, Stop, cancellation and
+  report revision. Report operations run sequentially with progress, Stop, cancellation and
   interrupted-work recovery. A successful readiness check allows analysis to be attempted;
   it does not establish a clean result or guarantee matching symbols.
 - Reopen saved cases and conversations. Explore report sections, source artifacts,
@@ -76,7 +87,7 @@ Quit asks before cancelling active work. Separate relocatable Python application
 and analyzer runtimes mean the installed app needs no source checkout, Homebrew,
 development environment or shell startup file.
 
-Download the [Workbench 0.1.4 macOS ARM64 prerelease](https://github.com/NoCoolUserName/volatility-workbench/releases/tag/v0.1.4)
+Download the [Workbench 0.1.5 macOS ARM64 prerelease](https://github.com/NoCoolUserName/volatility-workbench/releases/tag/v0.1.5)
 and its `Volatility-Workbench-macos-arm64.zip` asset. Verify the archive against
 the release's `SHA256SUMS`, then extract it to access `Volatility Workbench.app`.
 This published app is ad-hoc signed, without Developer ID signing or Apple
@@ -85,10 +96,12 @@ notarization; downloaded-app Gatekeeper acceptance remains unvalidated. See
 below before replacing an existing app.
 
 Build from a clean, configured checkout with Python 3.12+ and Apple's command-line
-tools:
+tools. Building the updated source requires a local full MCP wheel matching
+the new source pin; the checked-in distribution profile still records the historical
+0.1.5 wheel. See [wheel requirements](packaging/README.md):
 
 ```sh
-python3 scripts/build_macos.py --cache /tmp/workbench-build-cache --output dist/macos
+python3 scripts/build_macos.py --core-wheel /path/to/volatility_mcp-0.1.4-py3-none-any.whl --cache /tmp/workbench-build-cache --output dist/macos
 python3 scripts/validate_macos.py 'dist/macos/Volatility Workbench.app'
 python3 scripts/install_macos.py 'dist/macos/Volatility Workbench.app' --desktop-launcher
 open "$HOME/Applications/Volatility Workbench.app"
@@ -150,13 +163,24 @@ and [security](SECURITY.md).
 
 ## Pinned core and plugins
 
-The tested core pin is MCP 0.1.4 at `47743a060b29074f2fe7e56ab46bc2a905258c5c`, API revision 1.
-This is the privacy-cleaned Git identity for the reviewed `84aeddcc9b7b09ad688ae8dc8aa5e9d1d1b0545d` source; published app artifacts retain their original source revisions.
-`core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on the
-immutable commit. `pip install .` brings in that dependency; the pin helper checks
-installed Git provenance even when successive core commits share a package version.
+The current source pins MCP 0.1.4 at `d3f3ee6452f9c0d435e9f035767b5e212ecfb616`, API revision 1.
+`core-dependency.json`, `pyproject.toml` and `requirements.lock.txt` agree on this
+immutable commit. It fixes a job-status polling race that could briefly report a
+completed job as interrupted with no result in that response. Saved successful
+results remain intact. `pip install .` declares the dependency; run
+`scripts/install_core_pin.py` as shown above to force-reinstall a same-version
+core update when needed and verify the installed `direct_url.json` commit.
+Checking package version 0.1.4 alone does not establish the source revision.
 
-The public bundle includes CryptoMem alongside the native and previously bundled
+The retained published Workbench 0.1.5 macOS binary uses the historical MCP pin
+`128625bc2ee8850f76ba257e0ffe80dccbbef95d` and does **not** contain this polling fix.
+This source-only update does not patch installed apps; the binary, release tag,
+checksums and measured sizes above remain unchanged until the next planned release.
+On 0.1.5, poll the same job again or inspect saved history/evidence before
+resubmitting analysis. Updating core changes execution reuse identity: older saved
+results remain readable, but equivalent new requests may execute again.
+
+The public bundle includes Linux Keyring and CryptoMem alongside the native and previously bundled
 plugins. The configured analyzer may include additional optional community
 plugins. Exact counts are measured during validation; discovery does not
 establish image compatibility.
@@ -198,8 +222,8 @@ until tested. The Mac adapter requires exact Darwin kernel symbols; the legacy
 Mac pack is not universal coverage. Nested submaps fail as incomplete, including
 ordinary shared-region submaps. Apple silicon/Intel32 Mac captures and modern
 macOS are unsupported; real-memory Mac validation remains outstanding. Running
-this ARM64 app is distinct from analyzing an ARM64 capture. The app still uses
-the same ten MCP tools.
+this ARM64 app is distinct from analyzing an ARM64 capture. Workbench 0.1.5
+exposes fourteen MCP tools, as confirmed by release validation.
 
 Redistribution restrictions keep selected upstream sources out of the public app;
 install them explicitly through idle Settings maintenance or core's installer:

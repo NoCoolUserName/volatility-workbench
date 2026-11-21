@@ -16,10 +16,11 @@ macOS; no Windows or container distribution has been built.
 
 ## Build, validate, install
 
-On an ARM64 Mac with Python 3.12+ and Apple's command-line compiler tools:
+On an ARM64 Mac with Python 3.12+, Apple's command-line compiler tools and a local
+full MCP wheel matching the pinned source revision (see below):
 
 ```sh
-python3 scripts/build_macos.py --output dist/macos
+python3 scripts/build_macos.py --core-wheel /path/to/volatility_mcp-0.1.4-py3-none-any.whl --output dist/macos
 python3 scripts/validate_macos.py 'dist/macos/Volatility Workbench.app'
 python3 scripts/install_macos.py 'dist/macos/Volatility Workbench.app' --desktop-launcher
 open "$HOME/Applications/Volatility Workbench.app"
@@ -35,11 +36,15 @@ package versions and artifact hashes. The dependency wheelhouse and Python,
 package and plugin notices are retained. The ZIP is an installable archive, not
 a signed/notarized installer package.
 
-The native build installs the full MCP release wheel pinned by URL and SHA-256 in
-`distribution.json`, verifies its source revision against `core-dependency.json`,
-and checks every embedded symbol pack. Update both pins together. For a local
-application build before the matching release artifact is published, explicitly
-select a full wheel built from the pinned core revision:
+The Workbench 0.1.5 `distribution.json` records a locally built full MCP 0.1.4
+wheel at source revision `128625bc2ee8850f76ba257e0ffe80dccbbef95d`, with its SHA-256;
+it does not provide a remote wheel URL. That historical wheel does not contain
+the job-status polling fix and must not be relabeled as a newer source build.
+Reproducing the published 0.1.5 profile requires its matching historical checkout
+and wheel. The next native build from current source instead requires a full MCP
+0.1.4 wheel built from `d3f3ee6452f9c0d435e9f035767b5e212ecfb616`, supplied
+with `--core-wheel`. The builder verifies its source revision against
+`core-dependency.json` and checks every embedded symbol pack:
 
 ```sh
 python3 scripts/build_macos.py --core-wheel /path/to/volatility_mcp-0.1.4-py3-none-any.whl --output dist/macos
@@ -49,12 +54,20 @@ The local wheel must match the exact core source revision and version and pass
 the same four-pack integrity and notices checks. The embedded distribution and
 build information record its SHA-256, source revision, filename and `local-build`
 origin; they include neither its private absolute path nor the older release URL.
-Omitting `--core-wheel` retains the hash-pinned remote release path. The separate
-public-release audit still requires the distribution profile to match the reviewed
-checkout, so a local override is for the local application build/install workflow.
+Omitting `--core-wheel` is supported only by profiles with a hash-pinned remote
+wheel URL. The separate public-release audit requires the recorded wheel metadata,
+including its hash, to match the reviewed checkout's distribution profile.
 
-Source/CLI
-installs retain the VCS dependency; the native app includes all four packs and
+Keep `distribution.json` unchanged until that full symbol wheel exists. At the
+next release, update `core_bundle.source_revision` and its measured `sha256`
+together, retaining the actual wheel filename and source origin, and record a
+new Workbench release version. The existing builder records the explicit local
+wheel accurately in each build; public-release auditing also requires matching
+checked-in metadata. A lightweight source/CLI wheel is insufficient for a native
+distribution. This source update does not rebuild or replace the published 0.1.5
+app, assets, checksums or tag.
+
+Source/CLI installs retain the VCS dependency; the native app includes all four packs and
 their upstream notices. The large wheel remains in the build cache rather than
 being duplicated in the app wheelhouse. Fresh setup provisions local copies through
 the shared MCP API and never falls back to downloads for a missing bundle.
@@ -126,7 +139,8 @@ retain their own rights and notices.
 
 The base public artifact includes official Volatility plugins, core's independent
 XP compatibility addon, the pinned MIT pypykatz wrapper/dependencies, and MIT EVTX
-from the core community profile, plus the independent VSL-1.0 CryptoMem plugin.
+from the core community profile, plus the independent VSL-1.0 CryptoMem plugin
+and the attributed MIT Linux Keyring addon.
 CryptoMem is fetched unchanged from the core inventory pin; its original source
 and complete LICENSE/standards notices are retained under `notices/`. The app
 contains no separate detector implementation. Catalog attribution distinguishes

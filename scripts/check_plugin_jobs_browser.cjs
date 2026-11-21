@@ -46,6 +46,17 @@ let jobs=[{job_id:'running',plugin:'synthetic.<img src=x onerror=alert(1)>',stat
   await page.locator('#pluginJobs li').nth(1).getByRole('button',{name:'Cancel plugin',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('#pluginJobsSummary').textContent.includes('0 queued'));
   assert.deepEqual(posts,[{case_id:'case-a',job_id:'queued'}]);
+  // The corrected core poll returns completion immediately when the owner
+  // finishes during the read. Refresh clears active controls without a retry.
+  jobs[0].state='success';jobs[0].error=null;
+  await page.evaluate(()=>refreshPluginJobs());
+  assert.match(await page.locator('#pluginJobsSummary').innerText(),/^0 running · 0 queued/);
+  assert.match(await page.locator('#pluginJobs li').first().innerText(),/success/);
+  assert.doesNotMatch(await page.locator('#pluginJobs').innerText(),/interrupted/i);
+  assert.equal(await page.locator('#pluginJobs').getByRole('button',{name:'Cancel plugin',exact:true}).count(),0);
+  assert.equal(await page.locator('#stop').isHidden(),true);
+  assert.deepEqual(posts,[{case_id:'case-a',job_id:'queued'}],'Completion refresh never resubmits work');
+  jobs[0].state='running';await page.evaluate(()=>refreshPluginJobs());
   await page.evaluate(()=>choose('case-b'));
   assert.equal(await page.locator('#pluginJobsSection').isHidden(),true,'Switching cases immediately hides previous progress');
   await page.evaluate(()=>refreshPluginJobs());assert.equal(await page.locator('#pluginJobsSection').isHidden(),true);
@@ -66,6 +77,6 @@ let jobs=[{job_id:'running',plugin:'synthetic.<img src=x onerror=alert(1)>',stat
   assert.match(batch.prompt,/"request_tool":"submit_jobs"/);
   assert.match(batch.prompt,/reports\/batch-report\/artifacts\/UI-batch.json/);
   assert.deepEqual(errors,[]);
-  console.log('Plugin jobs browser: selected-case progress, escaped text, individual cancellation, background-only Stop, case switching and 100%/200% control bounds; no analysis.');
+  console.log('Plugin jobs browser: selected-case progress, terminal completion refresh, escaped text, individual cancellation, background-only Stop, case switching and 100%/200% control bounds; no analysis.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
