@@ -1,8 +1,8 @@
 # Volatility Workbench
 
-*24,254 lines of code*
+*24,265 lines of code*
 
-*Latest measured macOS ARM64 prerelease 0.1.5: Volatility Workbench.app, 1,348,583,976 bytes (1286.109901 MiB); Volatility-Workbench-macos-arm64.zip, 1,122,281,593 bytes (1070.291131 MiB). Built from 4efdd5b279b2623d5a281fc3b33bdd8892edc083, measured 2026-11-16; excludes symlink aliases and private evidence, case state and caches.*
+*Latest measured macOS ARM64 prerelease 0.1.5: Volatility Workbench.app, 1.35 GB; Volatility-Workbench-macos-arm64.zip, 1.12 GB. Built from 4efdd5b279b2623d5a281fc3b33bdd8892edc083, measured 2026-11-16; excludes symlink aliases and private evidence, case state and caches.*
 
 An experimental local application for exploring existing memory acquisitions with
 [volatility-mcp](https://github.com/NoCoolUserName/volatility-mcp). It provides saved

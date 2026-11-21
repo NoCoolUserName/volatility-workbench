@@ -34,9 +34,9 @@ enrichment, wallet import or transaction operations are added.
   exact captured-kernel symbols are always required.
 
 Measured 2026-10-25 from clean source `acdf84a6c4e482a3bbdac3392f11a574545db15c`:
-`Volatility Workbench.app` has 1,352,402,393 regular-file bytes (1289.751428 MiB),
-excluding symlink aliases. `Volatility-Workbench-macos-arm64.zip` has 1,126,118,069
-bytes (1073.949880 MiB), SHA-256 `16d5a6def6762522d720c87c3f1f9ef0ec6b600a916bb2bd34236a274d2206dd`.
+`Volatility Workbench.app` is 1.35 GB, excluding symlink aliases.
+`Volatility-Workbench-macos-arm64.zip` is 1.13 GB, SHA-256
+`16d5a6def6762522d720c87c3f1f9ef0ec6b600a916bb2bd34236a274d2206dd`.
 The later README measurement commit does not require a recursive rebuild.
 
 ## Remaining limits

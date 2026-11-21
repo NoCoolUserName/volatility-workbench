@@ -1156,8 +1156,7 @@ symbol packs provisioned into an isolated fresh setup with downloads blocked.
 Three harmless synthetic analyzer invocations passed; no real acquisition was
 opened. Earlier application/runtime suite evidence is reused for unchanged code.
 
-The app contains 1,348,531,943 regular-file bytes (1,286.06 MiB), excluding symlink
-aliases; its ZIP is 1,122,247,989 bytes (1,070.26 MiB). These measurements describe
+The app is 1.35 GB, excluding symlink aliases; its ZIP is 1.12 GB. These measurements describe
 the built revision, so a later documentation stamp does not trigger a rebuild.
 The explicit local core-wheel override records its source and checksum in the
 bundle; this is a local installation artifact, not a newly published binary
